@@ -13,6 +13,7 @@ This fork fixes some issues and includes some additions to make the mapper more 
 * Improved error messages that help you find configuration errors
 * Conditional mapping
 
+
 ###Examples
 ####Mapping to a new object
 
@@ -68,3 +69,10 @@ When mapping nested or tree-type structures, it's often necessary to specify a m
         .ToList();
     }
 
+####Performance Comparisons
+Fapper is slightly slower than FastMapper, mainly due to support for better error messaging.  
+While FastMapper is very fast, it can be very difficult to determine the location of errors when mapping across non-identical types.  
+We're looking to regain parity in this area with some additional optimization.  
+
+For complex objects, we're seeing a 20-25x speed improvement in comparison to AutoMapper.  
+Our tests with the original FastMapper were closer to 30X.
