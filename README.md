@@ -2,8 +2,8 @@
 
 A fast, fun and stimulating object to object mapper for .Net 4.5.  
 
-Fapper was originally forked from FastMapper (http://https://fmapper.codeplex.com/).
-The mapper maps properties by convention, including nested complex objects and collections, but also allows
+Fapper was originally forked from FastMapper (https://fmapper.codeplex.com/).
+Fapper maps properties by convention, including nested complex objects and collections, but also supports
 explicit mapping.
 
 This fork fixes some issues and includes some additions to make the mapper more configurable and useful for .Net 4.5:
