@@ -74,5 +74,5 @@ Fapper is slightly slower than FastMapper, mainly due to support for better erro
 While FastMapper is very fast, it can be very difficult to determine the location of errors when mapping across non-identical types.  
 We're looking to regain parity in this area with some additional optimization.  
 
-For complex objects, we're seeing a 20-25x speed improvement in comparison to AutoMapper.  
-Our tests with the original FastMapper were closer to 30X.
+For complex objects, we're seeing a ~25x speed improvement in comparison to AutoMapper.  
+Our tests with the original FastMapper were closer to ~30X.
