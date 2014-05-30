@@ -14,7 +14,6 @@
         <language />
         <tags>Mapper AutoMapper</tags>
         <dependencies>
-          <dependency id="RabbitMQ.Client" version="3.2.1" />
         </dependencies>
     </metadata>
   <files>
