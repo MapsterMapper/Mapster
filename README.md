@@ -1,4 +1,4 @@
-##Fapper - Mapper of Your Domain
+##Fapper - The Mapper of Your Domain
 
 A fast, fun and stimulating object to object mapper for .Net 4.5.  
 
