@@ -6,8 +6,8 @@
     <ProjectGuid>{7E1F904D-B410-417A-9212-66E55F0AAB91}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Fapper.Tests</RootNamespace>
-    <AssemblyName>Fapper.Tests</AssemblyName>
+    <RootNamespace>Fpr.Tests</RootNamespace>
+    <AssemblyName>Fpr.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -75,9 +75,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Fapper\Fapper.csproj">
+    <ProjectReference Include="..\Fapper\Fpr.csproj">
       <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
-      <Name>Fapper</Name>
+      <Name>Fpr</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

@@ -1,7 +1,7 @@
 ﻿using System;
-using Fapper.Utils;
+using Fpr.Utils;
 
-namespace Fapper.Models
+namespace Fpr.Models
 {
     public class PropertyModel<TSource, TDestination>
     {

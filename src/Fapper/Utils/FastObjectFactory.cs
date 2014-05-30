@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Reflection.Emit;
 
-namespace Fapper.Utils
+namespace Fpr.Utils
 {
     public static class FastObjectFactory
     {

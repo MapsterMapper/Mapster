@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Fapper.Models
+namespace Fpr.Models
 {
     public class InvokerModel<TSource>
     {

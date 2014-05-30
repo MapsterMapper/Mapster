@@ -1,7 +1,7 @@
 ﻿using System;
-using Fapper.Utils;
+using Fpr.Utils;
 
-namespace Fapper.Adapters
+namespace Fpr.Adapters
 {
     public class PrimitiveAdapter<TSource, TDestination>
     {

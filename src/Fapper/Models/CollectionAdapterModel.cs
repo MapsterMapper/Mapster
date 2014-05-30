@@ -1,6 +1,6 @@
-﻿using Fapper.Utils;
+﻿using Fpr.Utils;
 
-namespace Fapper.Models
+namespace Fpr.Models
 {
     public class CollectionAdapterModel
     {

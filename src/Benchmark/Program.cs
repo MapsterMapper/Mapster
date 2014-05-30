@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Fapper;
+using Fpr;
 using AutoMapper;
 using Omu.ValueInjecter;
 
@@ -24,7 +24,7 @@ namespace Benchmark
         private static void TestSimpleTypes()
         {
             Console.WriteLine("Test 1 : Simple Types");
-            Console.WriteLine("Competitors : Fapper, Value Injecter, AutoMapper");
+            Console.WriteLine("Competitors : Fpr, Value Injecter, AutoMapper");
 
             var foo = GetFoo();
 
@@ -47,7 +47,7 @@ namespace Benchmark
             Console.WriteLine();
 
             Console.WriteLine("Test 2 : Complex Types");
-            Console.WriteLine("Competitors : Handwriting Mapper, Fapper, AutoMapper");
+            Console.WriteLine("Competitors : Handwriting Mapper, Fpr, AutoMapper");
             Console.WriteLine("(Value Injecter cannot convert complex type, Value injecter need a custom injecter)");
 
             var customer = GetCustomer();
@@ -127,7 +127,7 @@ namespace Benchmark
             where TSrc : class
             where TDest : class, new()
         {
-            Console.WriteLine("Fapper:\t\t" + Loop<TSrc>(item, get =>
+            Console.WriteLine("Fpr:\t\t" + Loop<TSrc>(item, get =>
             {
                 TypeAdapter.Adapt<TSrc, TDest>(get);
             }, iterations));

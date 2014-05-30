@@ -3,11 +3,11 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Collections;
-using Fapper.Adapters;
+using Fpr.Adapters;
 using NUnit.Framework;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
-namespace Fapper.Tests
+namespace Fpr.Tests
 {
     #region Test Objects
 

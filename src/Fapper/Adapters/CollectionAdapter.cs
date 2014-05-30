@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Fapper.Models;
-using Fapper.Utils;
+using Fpr.Models;
+using Fpr.Utils;
 
-namespace Fapper.Adapters
+namespace Fpr.Adapters
 {
     public class CollectionAdapter<TSource, TDestinationElementType, TDestination>
         where TSource : IEnumerable

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using Fapper;
-using Fapper.Tests.Classes;
+using Fpr;
+using Fpr.Tests.Classes;
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace Fapper.Tests
+namespace Fpr.Tests
 {
     [TestFixture]
     public class WhenProjecting

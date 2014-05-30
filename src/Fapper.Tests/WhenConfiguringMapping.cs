@@ -1,10 +1,10 @@
 ﻿using System;
-using Fapper.Adapters;
+using Fpr.Adapters;
 using System.Collections.Generic;
-using Fapper.Tests.Classes;
+using Fpr.Tests.Classes;
 using NUnit.Framework;
 
-namespace Fapper.Tests
+namespace Fpr.Tests
 {
     #region Test Object
 

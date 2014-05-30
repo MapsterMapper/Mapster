@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Fapper.Utils
+namespace Fpr.Utils
 {
     public class ProjectionExpression<TSource>
     {

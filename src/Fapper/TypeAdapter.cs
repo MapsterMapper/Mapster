@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Fapper.Adapters;
-using Fapper.Utils;
+using Fpr.Adapters;
+using Fpr.Utils;
 
-namespace Fapper
+namespace Fpr
 {
     public static class TypeAdapter
     {

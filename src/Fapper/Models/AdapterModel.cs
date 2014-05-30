@@ -1,4 +1,4 @@
-﻿namespace Fapper.Models
+﻿namespace Fpr.Models
 {
     public class AdapterModel<TSource, TDestination>
     {

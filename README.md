@@ -1,9 +1,9 @@
-##Fapper - The Mapper of Your Domain
+##Fpr - The Mapper of Your Domain
 
 A fast, fun and stimulating object to object mapper for .Net 4.5.  
 
-Fapper was originally forked from FastMapper (https://fmapper.codeplex.com/).
-Fapper maps properties by convention, including nested complex objects and collections, but also supports
+Fpr was originally forked from FastMapper (https://fmapper.codeplex.com/).
+Fpr maps properties by convention, including nested complex objects and collections, but also supports
 explicit mapping.
 
 This fork fixes some issues and includes some additions to make the mapper more configurable and useful for .Net 4.5:
@@ -70,7 +70,7 @@ When mapping nested or tree-type structures, it's often necessary to specify a m
     }
 
 ####Performance Comparisons
-Fapper is slightly slower than FastMapper, mainly due to support for better error messaging.  
+Fpr is slightly slower than FastMapper, mainly due to support for better error messaging.  
 While FastMapper is very fast, it can be very difficult to determine the location of errors when mapping across non-identical types.  
 We're looking to regain parity in this area with some additional optimization.  
 

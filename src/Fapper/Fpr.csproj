@@ -7,8 +7,8 @@
     <ProjectGuid>{994A64A1-C542-4B4A-A4D6-4CC93A8B59BA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Fapper</RootNamespace>
-    <AssemblyName>Fapper</AssemblyName>
+    <RootNamespace>Fpr</RootNamespace>
+    <AssemblyName>Fpr</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

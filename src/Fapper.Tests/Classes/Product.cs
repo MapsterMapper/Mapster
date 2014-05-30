@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Fapper.Tests.Classes
+namespace Fpr.Tests.Classes
 {
     public class Product
     {

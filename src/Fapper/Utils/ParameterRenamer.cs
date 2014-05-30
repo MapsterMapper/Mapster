@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Fapper.Utils
+namespace Fpr.Utils
 {
     public class ParameterRenamer : ExpressionVisitor
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Fapper.Models;
-using Fapper.Utils;
+using Fpr.Models;
+using Fpr.Utils;
 
-namespace Fapper
+namespace Fpr
 {
 
     public class TypeAdapterConfig

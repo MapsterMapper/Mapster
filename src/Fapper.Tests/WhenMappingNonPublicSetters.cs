@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Should;
 
-namespace Fapper.Tests
+namespace Fpr.Tests
 {
     [TestFixture]
     public class WhenMappingNonPublicSetters

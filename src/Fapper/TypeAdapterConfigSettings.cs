@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Fapper.Models;
+using Fpr.Models;
 
-namespace Fapper
+namespace Fpr
 {
 
     internal class TypeAdapterConfigSettings

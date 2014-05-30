@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Fapper.Adapters;
+using Fpr.Adapters;
 using NUnit.Framework;
 using Should;
 
-namespace Fapper.Tests
+namespace Fpr.Tests
 {
     [TestFixture]
     public class WhenMappingConditionally

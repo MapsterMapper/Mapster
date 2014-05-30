@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fapper.Utils
+namespace Fpr.Utils
 {
     public static class PropertyCaller<TClass, TReturn> where TClass : class
     {

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Fapper.Utils
+namespace Fpr.Utils
 {
     public delegate object FastInvokeHandler(object target, object[] parameters);
 

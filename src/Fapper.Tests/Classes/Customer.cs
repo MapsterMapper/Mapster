@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fapper.Tests.Classes
+namespace Fpr.Tests.Classes
 {
     public class Customer
     {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Fapper.Utils;
+using Fpr.Utils;
 
-namespace Fapper
+namespace Fpr
 {
     public static class IQueryableExtensions
     {

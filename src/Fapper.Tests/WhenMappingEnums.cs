@@ -1,8 +1,8 @@
 ﻿using System;
-using Fapper.Adapters;
+using Fpr.Adapters;
 using NUnit.Framework;
 
-namespace Fapper.Tests
+namespace Fpr.Tests
 {
     #region Test Objects
 

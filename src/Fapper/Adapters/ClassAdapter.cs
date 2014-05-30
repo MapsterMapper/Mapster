@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Fapper.Models;
-using Fapper.Utils;
+using Fpr.Models;
+using Fpr.Utils;
 
-namespace Fapper.Adapters
+namespace Fpr.Adapters
 {
     public sealed class ClassAdapter<TSource, TDestination>
         where TSource : class
