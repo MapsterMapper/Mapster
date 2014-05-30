@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <title>$id$</title>
+        <authors>eric_swann</authors>
+        <owners>eric_swann</owners>
+        <projectUrl>https://github.com/eswann/Fapper</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>$description$</description>
+        <summary>A fast, fun and stimulating object to object mapper.</summary>
+        <copyright>Copyright 2014 Eric Swann, et. al. - All rights reserved.</copyright>
+        <language />
+        <tags>Mapper AutoMapper</tags>
+        <dependencies>
+          <dependency id="RabbitMQ.Client" version="3.2.1" />
+        </dependencies>
+    </metadata>
+  <files>
+    <file src="bin\$configuration$\$id$.pdb" target="lib\net45\" />
+    <file src="bin\$configuration$\$id$.dll" target="lib\net45\" />
+  </files>
+</package>
