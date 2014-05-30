@@ -74,7 +74,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Fapper\Fpr.csproj">
+    <ProjectReference Include="..\Fpr\Fpr.csproj">
       <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
       <Name>Fpr</Name>
     </ProjectReference>
