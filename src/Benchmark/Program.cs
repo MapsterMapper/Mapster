@@ -143,7 +143,7 @@ namespace Benchmark
             Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get =>
             {
                 new TDest().InjectFrom<DeepCloning.FastDeepCloneInjection>(item);
-            }, iterations));
+            }, iterations));  
         }
 
         private static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)
