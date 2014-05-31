@@ -47,9 +47,9 @@
     <Reference Include="FastMember">
       <HintPath>..\packages\FastMember.1.0.0.11\lib\net40\FastMember.dll</HintPath>
     </Reference>
-    <Reference Include="Fpr, Version=1.1.1.30765, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Fpr, Version=1.1.2.30937, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Fpr.1.1.1.30765\lib\net45\Fpr.dll</HintPath>
+      <HintPath>..\packages\Fpr.1.1.2.30937\lib\net45\Fpr.dll</HintPath>
     </Reference>
     <Reference Include="Omu.ValueInjecter">
       <HintPath>..\packages\valueinjecter.2.3.3\lib\net35\Omu.ValueInjecter.dll</HintPath>

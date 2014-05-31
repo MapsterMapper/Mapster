@@ -7,6 +7,7 @@
         <authors>eric_swann</authors>
         <owners>eric_swann</owners>
         <projectUrl>https://github.com/eswann/Fapper</projectUrl>
+        <iconUrl>http://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Paddleball.svg/202px-Paddleball.svg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>$description$</description>
         <summary>A fast, fun and stimulating object to object mapper.</summary>
