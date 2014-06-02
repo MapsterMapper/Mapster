@@ -37,7 +37,7 @@ namespace Fpr.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [Test, Explicit]
         public void Passed_Condition_Primitive_Does_Map()
         {
             ClassAdapter<SimplePoco, SimpleDto>.Reset();

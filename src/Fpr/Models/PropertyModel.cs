@@ -25,11 +25,6 @@ namespace Fpr.Models
             get { return ExtractPropertyName(Setter, "Set"); }
         }
 
-        public string GetterPropertyName
-        {
-            get { return ExtractPropertyName(Getter, "Get"); }
-        }
-
         private static string ExtractPropertyName(Delegate caller, string prefix)
         {
             if (caller == null || caller.Method == null)

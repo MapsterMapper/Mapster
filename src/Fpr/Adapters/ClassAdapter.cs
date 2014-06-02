@@ -19,7 +19,7 @@ namespace Fpr.Adapters
                 typeof (TSource), typeof (TDestination));
 
         private static readonly string _propertyMappingErrorMessage =
-            String.Format("Error occurred mapping the following property, review the inner exception for details.\nSource Type: {0}  Destination Type: {1}  Destination Property: ",
+            String.Format("Error occurred mapping the following property.\nSource Type: {0}  Destination Type: {1}  Destination Property: ",
             typeof (TSource), typeof (TDestination));
 
 
@@ -63,18 +63,15 @@ namespace Fpr.Adapters
 
             bool ignoreNullValues = isNew || (hasConfig && config.IgnoreNullValues.HasValue && config.IgnoreNullValues.Value);
 
-            //Todo: This slows things down
-            if (_adapterModel == null)
-            {
-                throw new InvalidOperationException(_nonInitializedAdapterMessage);
-            }
 
-            var properties = _adapterModel.Properties;
-
-            foreach (var property in properties)
+            PropertyModel<TSource, TDestination> property = null;
+            try
             {
-                try
+                var properties = _adapterModel.Properties;
+
+                for (int index = 0; index < properties.Length; index++)
                 {
+                    property = properties[index];
                     switch (property.ConvertType)
                     {
                         case 1: //Primitive
@@ -131,8 +128,7 @@ namespace Fpr.Adapters
                                 sourceValue = property.DefaultDestinationValue;
                             }
 
-                            property.Setter.Invoke(destination,
-                                property.AdaptInvoker(null,
+                            property.Setter.Invoke(destination, property.AdaptInvoker(null,
                                     new[]
                                     {
                                         sourceValue,
@@ -148,10 +144,16 @@ namespace Fpr.Adapters
                             break;
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                if(_adapterModel == null)
+                    throw new InvalidOperationException(_nonInitializedAdapterMessage);
+
+                if (property != null)
                 {
                     //Todo: This slows things down with the try-catch but the information is critical in debugging
-                    throw new InvalidOperationException(_propertyMappingErrorMessage + property.SetterPropertyName, ex);
+                    throw new InvalidOperationException(_propertyMappingErrorMessage + property.SetterPropertyName + "\nException: " + ex);
                 }
             }
 

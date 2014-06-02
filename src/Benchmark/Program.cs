@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Fpr;
 using AutoMapper;
 using Omu.ValueInjecter;
+using Fm = FastMapper;
 
 namespace Benchmark
 {
@@ -24,13 +25,15 @@ namespace Benchmark
         private static void TestSimpleTypes()
         {
             Console.WriteLine("Test 1 : Simple Types");
-            Console.WriteLine("Competitors : Fapper, Value Injecter, AutoMapper");
+            Console.WriteLine("Competitors : Fapper, Fast Mapper, Value Injecter, AutoMapper");
 
             var foo = GetFoo();
 
             Mapper.CreateMap<Foo, Foo>();
 
             TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
+
+            Fm.TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
 
             TestSimple(foo, 1000);
 
@@ -47,7 +50,7 @@ namespace Benchmark
             Console.WriteLine();
 
             Console.WriteLine("Test 2 : Complex Types");
-            Console.WriteLine("Competitors : Handwriting Mapper, Fapper, AutoMapper");
+            Console.WriteLine("Competitors : Handwriting Mapper, Fapper, FastMapper, AutoMapper");
             Console.WriteLine("(Value Injecter cannot convert complex type, Value injecter need a custom injecter)");
 
             var customer = GetCustomer();
@@ -57,6 +60,8 @@ namespace Benchmark
             Mapper.CreateMap<Customer, CustomerDTO>();
 
             TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
+
+            Fm.TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
 
             Test(customer, 100);
 
@@ -77,6 +82,8 @@ namespace Benchmark
 
             TestTypeAdapter<Customer, CustomerDTO>(item, iterations);
 
+            TestFmTypeAdapter<Customer, CustomerDTO>(item, iterations);
+
             TestAutoMapper<Customer, CustomerDTO>(item, iterations);
         }
 
@@ -87,6 +94,8 @@ namespace Benchmark
             Console.WriteLine("Iterations : {0}", iterations);
 
             TestTypeAdapter<Foo, Foo>(item, iterations);
+
+            TestFmTypeAdapter<Foo, Foo>(item, iterations);
 
             TestValueInjecter<Foo, Foo>(item, iterations);
 
@@ -127,10 +136,14 @@ namespace Benchmark
             where TSrc : class
             where TDest : class, new()
         {
-            Console.WriteLine("Fapper:\t\t\t" + Loop<TSrc>(item, get =>
-            {
-                TypeAdapter.Adapt<TSrc, TDest>(get);
-            }, iterations));
+            Console.WriteLine("Fpr:\t\t\t" + Loop<TSrc>(item, get => TypeAdapter.Adapt<TSrc, TDest>(get), iterations));
+        }
+
+        private static void TestFmTypeAdapter<TSrc, TDest>(TSrc item, int iterations)
+            where TSrc : class
+            where TDest : class, new()
+        {
+            Console.WriteLine("FastMapper:\t\t" + Loop<TSrc>(item, get => Fm.TypeAdapter.Adapt<TSrc, TDest>(get), iterations));
         }
 
         private static void TestValueInjecter<TSrc, TDest>(TSrc item, int iterations)
@@ -140,10 +153,7 @@ namespace Benchmark
             if (iterations > 500000)
                 Console.WriteLine("ValueInjecter still working please wait...");
 
-            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get =>
-            {
-                new TDest().InjectFrom<DeepCloning.FastDeepCloneInjection>(item);
-            }, iterations));  
+            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<DeepCloning.FastDeepCloneInjection>(item), iterations));  
         }
 
         private static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)
