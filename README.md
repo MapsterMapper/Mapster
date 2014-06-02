@@ -28,6 +28,23 @@ This fork fixes some issues and includes some additions to make the mapper more 
 
     var destObjectList = TypeAdapter.Adapt<List<TSource>, List<TDestination>>(sourceList);
 
+####Mapping Enums Included
+Fpr maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
+The default Enum.ToString() in .Net is quite slow.  The implementation in Fpr is double the speed.  
+Likewise, a fast conversion from strings to enums is also included.  If the string is emplty, by default the mapper will err, 
+if the string is null, the enum will initialize to 0.
+
+In addition, fast Enum mapper extension methods are included for convenience.
+
+    //Convert enum to string
+    var myEnum = new SomeEnum.FirstValue;
+    myEnum.ToFastString();
+
+    //Convert string to enum
+    var myEnumString = "FirstValue";
+    myEnumString.ToFastEnum<SomeEnum>();
+    
+
 ####Customized Mapping
 
     TypeAdapterConfig<TSource, TDestination>()
