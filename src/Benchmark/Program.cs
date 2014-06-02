@@ -25,7 +25,7 @@ namespace Benchmark
         private static void TestSimpleTypes()
         {
             Console.WriteLine("Test 1 : Simple Types");
-            Console.WriteLine("Competitors : Fapper, Fast Mapper, Value Injecter, AutoMapper");
+            Console.WriteLine("Competitors : Fpr, Fast Mapper, Value Injecter, AutoMapper");
 
             var foo = GetFoo();
 

@@ -86,10 +86,37 @@ When mapping nested or tree-type structures, it's often necessary to specify a m
         .ToList();
     }
 
-####Performance Comparisons
+###Performance Comparisons
 Fpr is slightly slower than FastMapper, mainly due to support for better error messaging.  
 While FastMapper is very fast, it can be very difficult to determine the location of errors when mapping across non-identical types.  
 We're looking to regain parity in this area with some additional optimization.  
 
-For complex objects, we're seeing a ~25x speed improvement in comparison to AutoMapper.  
+For complex objects, we're seeing a ~28x speed improvement in comparison to AutoMapper.  
 Our tests with the original FastMapper were closer to ~30X.
+
+####Benchmark "Complex"" Object
+
+The following test converts a Customer object with 2 nested address collections and two nested address sub-objects to a DTO.
+
+Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper
+(Value Injecter cannot convert complex type, Value injecter need a custom inject
+er)
+
+Iterations : 100
+Handwritten Mapper:     1
+Fpr:                    0
+FastMapper:             0
+AutoMapper:             10
+
+Iterations : 10000
+Handwritten Mapper:     4
+Fpr:                    19
+FastMapper:             18
+AutoMapper:             522
+
+Iterations : 100000
+Handwritten Mapper:     29
+Fpr:                    185
+FastMapper:             175
+AutoMapper:             5167
+Finish
