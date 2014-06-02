@@ -94,7 +94,7 @@ We're looking to regain parity in this area with some additional optimization.
 For complex objects, we're seeing a ~28x speed improvement in comparison to AutoMapper.  
 Our tests with the original FastMapper were closer to ~30X.
 
-####Benchmark "Complex"" Object
+####Benchmark "Complex" Object
 
 The following test converts a Customer object with 2 nested address collections and two nested address sub-objects to a DTO.
 
