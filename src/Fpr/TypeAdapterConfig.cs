@@ -127,6 +127,13 @@ namespace Fpr
             return this;
         }
 
+        public TypeAdapterConfig<TSource, TDestination> DefaultEnumsOnNullOrEmptyString(bool defaultEnumsOnNullOrEmptyString)
+        {
+            Configuration.DefaultEnumsOnNullOrEmptyString = defaultEnumsOnNullOrEmptyString;
+
+            return this;
+        }
+
         public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
         {
             Configuration.MaxDepth = maxDepth;

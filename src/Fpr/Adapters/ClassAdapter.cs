@@ -222,7 +222,6 @@ namespace Fpr.Adapters
                 MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty, destinationMember.Name);
                 if (sourceMember == null)
                 {
-
                     if (FlattenMethod(sourceType, destinationMember, propertyModelFactory, properties)) continue;
 
                     FlattenClass(sourceType, destinationMember, propertyModelFactory, properties);
@@ -256,7 +255,7 @@ namespace Fpr.Adapters
                     if (ReflectionUtils.IsPrimitive(destinationPropertyType))
                     {
                         propertyModel.ConvertType = 1;
-                        
+                       
                         var converter = ReflectionUtils.CreatePrimitiveConverter(sourceProperty.PropertyType, destinationPropertyType);
                         if (converter != null)
                             propertyModel.AdaptInvoker = converter;

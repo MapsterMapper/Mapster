@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Fpr.Adapters;
 using Fpr.Utils;
 
@@ -14,7 +13,7 @@ namespace Fpr
 
         public static TDestination Adapt<TDestination>(object source)
         {
-            return (TDestination)GetAdapter(source.GetType(), typeof(TDestination))(null, new object[] { source });
+            return (TDestination)GetAdapter(source.GetType(), typeof(TDestination))(null, new[] { source });
         }
 
         public static TDestination Adapt<TSource, TDestination>(TSource source)
@@ -29,12 +28,12 @@ namespace Fpr
 
         public static object Adapt(object source, Type sourceType, Type destinationType)
         {
-            return GetAdapter(sourceType, destinationType)(null, new object[] { source });
+            return GetAdapter(sourceType, destinationType)(null, new[] { source });
         }
 
         public static object Adapt(object source, object destination, Type sourceType, Type destinationType)
         {
-            return GetAdapter(sourceType, destinationType, true)(null, new object[] { source, destination });
+            return GetAdapter(sourceType, destinationType, true)(null, new[] { source, destination });
         }
 
         public static void Reset()
@@ -71,21 +70,28 @@ namespace Fpr
                     return _cache[hashCode];
                 }
 
-                Type[] arguments = hasDestination ? new Type[] { sourceType, destinationType } : new Type[] { sourceType };
+                Type[] arguments = hasDestination ? new[] { sourceType, destinationType } : new[] { sourceType };
 
                 FastInvokeHandler invoker;
 
                 if (ReflectionUtils.IsPrimitive(sourceType) && ReflectionUtils.IsPrimitive(destinationType))
                 {
-                    invoker = FastInvoker.GetMethodInvoker(typeof(PrimitiveAdapter<,>).MakeGenericType(sourceType, destinationType).GetMethod("Adapt", arguments));
+                    invoker = FastInvoker.GetMethodInvoker(
+                                typeof (PrimitiveAdapter<,>).MakeGenericType(sourceType, destinationType)
+                                    .GetMethod("Adapt", arguments));
                 }
                 else if (ReflectionUtils.IsCollection(sourceType) && ReflectionUtils.IsCollection(destinationType))
                 {
-                    invoker = FastInvoker.GetMethodInvoker(typeof(CollectionAdapter<,,>).MakeGenericType(sourceType, ReflectionUtils.ExtractElementType(destinationType), destinationType).GetMethod("Adapt", arguments));
+                    invoker = FastInvoker.GetMethodInvoker(
+                            typeof (CollectionAdapter<,,>).MakeGenericType(sourceType,
+                                ReflectionUtils.ExtractElementType(destinationType), destinationType)
+                                .GetMethod("Adapt", arguments));
                 }
                 else
                 {
-                    invoker = FastInvoker.GetMethodInvoker(typeof(ClassAdapter<,>).MakeGenericType(sourceType, destinationType).GetMethod("Adapt", arguments));
+                    invoker = FastInvoker.GetMethodInvoker(
+                            typeof (ClassAdapter<,>).MakeGenericType(sourceType, destinationType)
+                                .GetMethod("Adapt", arguments));
                 }
 
                 _cache.Add(hashCode, invoker);

@@ -5,9 +5,7 @@ namespace Fpr.Adapters
 {
     public class PrimitiveAdapter<TSource, TDestination>
     {
-
         public static readonly FastInvokeHandler _converter = CreateConverter();
-
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {

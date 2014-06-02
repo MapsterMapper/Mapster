@@ -177,8 +177,6 @@ namespace Fpr.Adapters
         {
             var cam = new CollectionAdapterModel();
 
-            var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
-
             var sourceElementType = ReflectionUtils.ExtractElementType(typeof(TSource));
             var destinationElementType = typeof(TDestinationElementType);
 
