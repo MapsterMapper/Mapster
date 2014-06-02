@@ -102,21 +102,21 @@ Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper
 (Value Injecter cannot convert complex type, Value injecter need a custom inject
 er)
 
-Iterations : 100
-Handwritten Mapper:     1
-Fpr:                    0
-FastMapper:             0
-AutoMapper:             10
+    Iterations : 100
+    Handwritten Mapper:     1
+    Fpr:                    0
+    FastMapper:             0
+    AutoMapper:             10
 
-Iterations : 10000
-Handwritten Mapper:     4
-Fpr:                    19
-FastMapper:             18
-AutoMapper:             522
+    Iterations : 10000
+    Handwritten Mapper:     4
+    Fpr:                    19
+    FastMapper:             18
+    AutoMapper:             522
 
-Iterations : 100000
-Handwritten Mapper:     29
-Fpr:                    185
-FastMapper:             175
-AutoMapper:             5167
-Finish
+    Iterations : 100000
+    Handwritten Mapper:     29
+    Fpr:                    185
+    FastMapper:             175
+    AutoMapper:             5167
+    Finish
