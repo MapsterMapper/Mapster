@@ -99,8 +99,6 @@ Our tests with the original FastMapper were closer to ~30X.
 The following test converts a Customer object with 2 nested address collections and two nested address sub-objects to a DTO.
 
 Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper
-(Value Injecter cannot convert complex type, Value injecter need a custom inject
-er)
 
     Iterations : 100
     Handwritten Mapper:     1
