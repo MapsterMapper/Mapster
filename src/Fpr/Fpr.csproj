@@ -44,6 +44,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Registration\Registrar.cs" />
+    <Compile Include="Registration\Registry.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TypeAdapterConfigSettings.cs" />
     <Compile Include="IQueryableExtensions.cs" />
     <Compile Include="Models\AdapterModel.cs">

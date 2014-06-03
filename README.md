@@ -12,6 +12,7 @@ This fork fixes some issues and includes some additions to make the mapper more 
 * Mapping of members with non-public setters
 * Improved error messages that help you find configuration errors
 * Conditional mapping
+* Assembly scanning for custom mappers
 
 
 ###Examples
@@ -89,6 +90,33 @@ When mapping nested or tree-type structures, it's often necessary to specify a m
         })
         .ToList();
     }
+
+###Assembly Scanning for Custom Mappings
+To make it easier to register custom mappings, we've implemented an assembly scanning approach.
+To allow this, either inherit from IRegistry or Registry in the Fpr.Registration namespace.
+
+Override the Apply() method and perform your registrations there.  When your app starts up, use the Registrar class to perform registration.
+
+    //Implement a registry class
+    public class MyRegistry : Registry
+    {
+        public override void Apply()
+        {
+            TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .IgnoreMember(dest => dest.CurrencyCode)
+                .IgnoreMember(dest => dest.ExtraElements);
+        }
+    }
+
+    //In my boostrap/startup code, call the registry
+    //Method 1: Call registry directly with extension method
+    new MyRegistry().Register();
+
+    //Method 2: Scan the assembly (by assembly or class type)
+    Registrar.RegisterFromAssemblyContaining<MyRegistry>();
+    //or
+    Assembly.GetExecutingAssembly().RegisterFromAssembly();
+
 
 ###Performance Comparisons
 Fpr is slightly slower than FastMapper, mainly due to support for better error messaging.  
