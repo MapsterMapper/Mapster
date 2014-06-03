@@ -10,9 +10,9 @@ namespace Fpr.Tests
 
     public enum Departments
     {
-        Finance = 1,
-        IT = 2,
-        Sales = 3
+        Finance = 0,
+        IT = 1,
+        Sales = 2
     }
 
     public class Employee
@@ -73,12 +73,11 @@ namespace Fpr.Tests
             dto.Department.ShouldEqual(Departments.IT);
         }
 
-        [Test, Ignore]
+        [Test]
         public void Null_String_Is_Mapped_To_Enum()
         {
             TypeAdapterConfig<EmployeeWithStringEnum, EmployeeDTO>
-                .NewConfig()
-                .IgnoreNullValues(false);
+                .NewConfig();
 
             var employee = new EmployeeWithStringEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = null };
 

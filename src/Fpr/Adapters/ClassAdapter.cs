@@ -78,10 +78,10 @@ namespace Fpr.Adapters
                             object primitiveValue = property.Getter.Invoke(source);
                             if (primitiveValue == null)
                             {
-                                if (ignoreNullValues)
-                                    continue;
+                                if (!ignoreNullValues)
+                                    property.Setter.Invoke(destination, property.DefaultDestinationValue);
 
-                                primitiveValue = property.DefaultDestinationValue;
+                                continue;
                             }
 
                             if (property.AdaptInvoker == null)
@@ -149,12 +149,14 @@ namespace Fpr.Adapters
             {
                 if(_adapterModel == null)
                     throw new InvalidOperationException(_nonInitializedAdapterMessage);
-
+                
                 if (property != null)
                 {
                     //Todo: This slows things down with the try-catch but the information is critical in debugging
                     throw new InvalidOperationException(_propertyMappingErrorMessage + property.SetterPropertyName + "\nException: " + ex);
                 }
+
+                throw;
             }
 
             return destination;
