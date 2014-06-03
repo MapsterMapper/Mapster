@@ -16,23 +16,26 @@ This fork fixes some issues and includes some additions to make the mapper more 
 
 ###Examples
 ####Mapping to a new object
+Fpr makes the object and maps values to it.
 
     TDestination destObject = TypeAdapter.Adapt<TSource, TDestination>(sourceObject);
 
 ####Mapping to an existing object
+You make the object, Fpr maps to the object.
 
     TDestination destObject = new TDestination();
     destObject = TypeAdapter.Adapt(sourceObject, destObject);
 
 ####Mapping Lists Included
+This includes lists, arrays, collections, enumerables etc...
 
     var destObjectList = TypeAdapter.Adapt<List<TSource>, List<TDestination>>(sourceList);
 
 ####Mapping Enums Included
 Fpr maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
 The default Enum.ToString() in .Net is quite slow.  The implementation in Fpr is double the speed.  
-Likewise, a fast conversion from strings to enums is also included.  If the string is emplty, by default the mapper will err, 
-if the string is null, the enum will initialize to 0.
+Likewise, a fast conversion from strings to enums is also included.  If the string is empty, by default the mapper will err, 
+if the string is null, the enum will initialize to 0 which typically represents the default enum value.
 
 In addition, fast Enum mapper extension methods are included for convenience.
 
@@ -46,6 +49,7 @@ In addition, fast Enum mapper extension methods are included for convenience.
     
 
 ####Customized Mapping
+When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
 
     TypeAdapterConfig<TSource, TDestination>()
     .NewConfig()
@@ -117,4 +121,4 @@ Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper
     Fpr:                    185
     FastMapper:             175
     AutoMapper:             5167
-    Finish
+
