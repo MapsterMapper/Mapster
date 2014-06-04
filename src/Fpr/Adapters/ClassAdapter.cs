@@ -8,7 +8,7 @@ namespace Fpr.Adapters
 {
     public sealed class ClassAdapter<TSource, TDestination>
         where TSource : class
-        where TDestination : class
+        where TDestination : class, new()
     {
 
         private static readonly FastObjectFactory.CreateObject _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
@@ -254,7 +254,7 @@ namespace Fpr.Adapters
                     propertyModel.Setter = setter;
 
                     if (!ReflectionUtils.IsNullable(destinationPropertyType) && destinationPropertyType != typeof(string) && ReflectionUtils.IsPrimitive(destinationPropertyType))
-                        propertyModel.DefaultDestinationValue = Activator.CreateInstance(destinationPropertyType);
+                        propertyModel.DefaultDestinationValue = new TDestination();
 
                     if (ReflectionUtils.IsPrimitive(destinationPropertyType))
                     {

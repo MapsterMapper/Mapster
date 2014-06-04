@@ -194,7 +194,7 @@ namespace Fpr.Utils
                     Expression defaultValueExp;
 
                     if (!isNullable && destinationPropertyType.IsValueType)
-                        defaultValueExp = Expression.Constant(Activator.CreateInstance(destinationPropertyType));
+                        defaultValueExp = Expression.Constant(destinationPropertyType.CreateInstance());
                     else
                         defaultValueExp = Expression.Convert(Expression.Constant(null), destinationPropertyType);
 

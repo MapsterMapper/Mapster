@@ -67,15 +67,13 @@ namespace Fpr.Utils
                 type.IsPrimitive
                 || type == typeof(string)
                 || type == typeof(decimal)
-                || type == typeof(double)
                 || type == typeof(Guid)
-                || type == typeof(float)
-                || type == typeof(long)
-                || type == typeof(ulong)
-                || type == typeof(short)
                 || type == typeof(DateTime)
+                || type.IsEnum
                 || (IsNullable(type) && IsPrimitive(Nullable.GetUnderlyingType(type)))
-                || type.IsEnum;
+                || type == typeof(object)
+                ;
+
         }
 
         public static bool IsString(Type type)

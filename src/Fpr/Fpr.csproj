@@ -58,6 +58,9 @@
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\InvokerModel.cs" />
     <Compile Include="Models\PropertyModel.cs" />
+    <Compile Include="Utils\Activator.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Utils\EnumExtensions.cs" />
     <Compile Include="Utils\FastEnum.cs" />
     <Compile Include="Utils\ParameterRenamer.cs" />
