@@ -10,6 +10,7 @@ This fork fixes some issues and includes some additions to make the mapper more 
 
 * Support for IReadOnlyList
 * Mapping of members with non-public setters
+* Automatic mapping of nullable primitives to non-nullable primitives
 * Improved error messages that help you find configuration errors
 * Conditional mapping
 * Assembly scanning for custom mappers
@@ -119,12 +120,9 @@ Override the Apply() method and perform your registrations there.  When your app
 
 
 ###Performance Comparisons
-Fpr is slightly slower than FastMapper, mainly due to support for better error messaging.  
-While FastMapper is very fast, it can be very difficult to determine the location of errors when mapping across non-identical types.  
-We're looking to regain parity in this area with some additional optimization.  
+Fpr now has speed parity with the original FastMapper.
 
-For complex objects, we're seeing a ~28x speed improvement in comparison to AutoMapper.  
-Our tests with the original FastMapper were closer to ~30X.
+For complex objects, we're seeing a ~30x speed improvement in comparison to AutoMapper.  
 
 ####Benchmark "Complex" Object
 
@@ -140,13 +138,13 @@ Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper
 
     Iterations : 10000
     Handwritten Mapper:     4
-    Fpr:                    19
-    FastMapper:             18
-    AutoMapper:             522
+    Fpr:                    17
+    FastMapper:             17
+    AutoMapper:             507
 
     Iterations : 100000
     Handwritten Mapper:     29
-    Fpr:                    185
+    Fpr:                    177
     FastMapper:             175
-    AutoMapper:             5167
+    AutoMapper:             5058
 
