@@ -56,7 +56,7 @@ namespace Fpr
 
         private static FastInvokeHandler GetAdapter(Type sourceType, Type destinationType, bool hasDestination = false)
         {
-            int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType);
+            int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType, hasDestination);
 
             if (_cache.ContainsKey(hashCode))
             {

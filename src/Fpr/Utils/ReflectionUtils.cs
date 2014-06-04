@@ -229,14 +229,14 @@ namespace Fpr.Utils
           
         }
 
-        public static int GetHashKey<TSource, TDestination>()
+        public static int GetHashKey<TSource, TDestination>(bool hasDestination = false)
         {
-            return (typeof(TSource).GetHashCode() / 2) + typeof(TDestination).GetHashCode();
+            return GetHashKey(typeof(TSource), typeof(TDestination), hasDestination);
         }
 
-        public static int GetHashKey(Type source, Type destination)
+        public static int GetHashKey(Type source, Type destination, bool hasDestination = false)
         {
-            return (source.GetHashCode()/2) + destination.GetHashCode();
+            return (source.GetHashCode()/2) + destination.GetHashCode() + (hasDestination ? 1: 0);
         }
 
     }
