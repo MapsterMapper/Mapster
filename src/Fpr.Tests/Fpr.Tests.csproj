@@ -67,6 +67,7 @@
     <Compile Include="WhenMappingEnums.cs" />
     <Compile Include="WhenMappingCollections.cs" />
     <Compile Include="WhenFlattening.cs" />
+    <Compile Include="WhenMappingNullablePrimitives.cs" />
     <Compile Include="WhenMappingPrimitives.cs" />
     <Compile Include="WhenConfiguringMapping.cs" />
     <Compile Include="WhenProjecting.cs" />
