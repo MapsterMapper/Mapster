@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using NUnit.Framework;
 using Should;
 
@@ -7,6 +6,23 @@ namespace Fpr.Tests
 {
     public class WhenMappingNullablePrimitives
     {
+
+        [Test]
+        public void Can_Map_From_Null_Source_To_Non_Nullable_Existing_Target()
+        {
+            var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            var dto = new NullablePrimitivesDto();
+
+            TypeAdapter.Adapt(poco, dto);
+
+            dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NullablePrimitivesDto>(poco);
+
+            dto.Id.ShouldEqual(poco.Id);
+            dto.Name.ShouldEqual(poco.Name);
+            dto.IsImport.ShouldBeFalse();
+        }
+
         [Test]
         public void Can_Map_From_Null_Source_To_Non_Nullable_Target()
         {

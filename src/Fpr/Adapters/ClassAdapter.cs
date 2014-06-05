@@ -78,9 +78,6 @@ namespace Fpr.Adapters
                             object primitiveValue = property.Getter.Invoke(source);
                             if (primitiveValue == null)
                             {
-                                if (!ignoreNullValues)
-                                    property.Setter.Invoke(destination, property.DefaultDestinationValue);
-
                                 continue;
                             }
 
@@ -108,24 +105,18 @@ namespace Fpr.Adapters
                                     break;
                             }
 
-                            if (value == null)
+                            if (value == null && ignoreNullValues)
                             {
-                                if (ignoreNullValues)
                                     continue;
-
-                                value = property.DefaultDestinationValue;
                             }
 
                             property.Setter.Invoke(destination, value);
                             break;
                         case 4: // Adapter
                             object sourceValue = property.Getter.Invoke(source);
-                            if (sourceValue == null)
+                            if (sourceValue == null && ignoreNullValues)
                             {
-                                if (ignoreNullValues)
-                                    continue;
-
-                                sourceValue = property.DefaultDestinationValue;
+                                continue;
                             }
 
                             property.Setter.Invoke(destination, property.AdaptInvoker(null,
@@ -253,8 +244,8 @@ namespace Fpr.Adapters
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
 
-                    if (!ReflectionUtils.IsNullable(destinationPropertyType) && destinationPropertyType != typeof(string) && ReflectionUtils.IsPrimitive(destinationPropertyType))
-                        propertyModel.DefaultDestinationValue = new TDestination();
+                    //if (!ReflectionUtils.IsNullable(destinationPropertyType) && destinationPropertyType != typeof(string) && ReflectionUtils.IsPrimitive(destinationPropertyType))
+                    //    propertyModel.DefaultDestinationValue = new TDestination();
 
                     if (ReflectionUtils.IsPrimitive(destinationPropertyType))
                     {

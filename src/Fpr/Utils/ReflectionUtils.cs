@@ -120,15 +120,8 @@ namespace Fpr.Utils
                 destType = destinationType;
 
             if (srcType == destType)
-            {
-                if (isNullableSource && !isNullableDest)
-                {
-                    return FastInvoker.GetMethodInvoker(sourceType.GetMethod("GetValueOrDefault", Type.EmptyTypes));
-                }
                 return null;
-            }
                 
-
             if (destType == typeof (string))
             {
                 if (IsEnum(srcType))

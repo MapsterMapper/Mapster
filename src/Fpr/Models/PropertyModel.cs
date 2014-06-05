@@ -8,7 +8,7 @@ namespace Fpr.Models
         public PropertyCaller<TSource>.GenGetter Getter;
         public PropertyCaller<TDestination>.GenSetter Setter;
 
-        public object DefaultDestinationValue;
+        //public object DefaultDestinationValue;
 
         public FastInvokeHandler AdaptInvoker;
         public GenericGetter[] FlatteningInvokers;
