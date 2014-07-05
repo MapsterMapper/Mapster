@@ -50,7 +50,7 @@ namespace Benchmark
             Console.WriteLine();
 
             Console.WriteLine("Test 2 : Complex Types");
-            Console.WriteLine("Competitors : Handwriting Mapper, Fapper, FastMapper, AutoMapper");
+            Console.WriteLine("Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper");
             Console.WriteLine("(Value Injecter cannot convert complex type, Value injecter need a custom injecter)");
 
             var customer = GetCustomer();
