@@ -10,7 +10,7 @@ namespace Fpr.Adapters
     {
 
         private static readonly FastObjectFactory.CreateObject _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
-        private static AdapterModel<TSource, TDestination> _adapterModel = CreateAdapterModel();
+        private static AdapterModel<TSource, TDestination> _adapterModel;
 
         private static readonly string _nonInitializedAdapterMessage =
             String.Format("This class adapter was not initialized properly. This typically happens if one of the classes does not have a default (empty) constructor.  SourceType: {0}, DestinationType{1}",
