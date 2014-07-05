@@ -7,8 +7,6 @@ using Fpr.Utils;
 namespace Fpr.Adapters
 {
     public sealed class ClassAdapter<TSource, TDestination>
-        where TSource : class
-        where TDestination : class, new()
     {
 
         private static readonly FastObjectFactory.CreateObject _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
@@ -45,7 +43,7 @@ namespace Fpr.Adapters
             Dictionary<int, int> parameterIndexs)
         {
             if (source == null)
-                return null;
+                return default(TDestination);
 
             var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
 
@@ -55,7 +53,7 @@ namespace Fpr.Adapters
 
             if (hasMaxDepth)
             {
-                if (CheckMaxDepth(ref parameterIndexs, config)) return null;
+                if (CheckMaxDepth(ref parameterIndexs, config)) return default(TDestination);;
             }
 
             if (destination == null)
@@ -67,7 +65,7 @@ namespace Fpr.Adapters
             PropertyModel<TSource, TDestination> property = null;
             try
             {
-                var properties = _adapterModel.Properties;
+                var properties = GetAdapterModel().Properties;
 
                 for (int index = 0; index < properties.Length; index++)
                 {
@@ -181,7 +179,12 @@ namespace Fpr.Adapters
 
         public static void Reset()
         {
-            _adapterModel = CreateAdapterModel();
+            _adapterModel = null;
+        }
+
+        public static AdapterModel<TSource, TDestination> GetAdapterModel()
+        {
+            return _adapterModel ?? (_adapterModel = CreateAdapterModel());
         }
 
         private static AdapterModel<TSource, TDestination> CreateAdapterModel()
@@ -190,8 +193,8 @@ namespace Fpr.Adapters
             FastObjectFactory.CreateObject propertyModelFactory = FastObjectFactory.CreateObjectFactory<PropertyModel<TSource, TDestination>>();
             FastObjectFactory.CreateObject adapterModelFactory = FastObjectFactory.CreateObjectFactory<AdapterModel<TSource, TDestination>>();
 
-            Type destinationType = typeof(TDestination);
-            Type sourceType = typeof(TSource);
+            Type destinationType = typeof (TDestination);
+            Type sourceType = typeof (TSource);
 
             var fields = new List<FieldModel>();
             var properties = new List<PropertyModel<TSource, TDestination>>();
@@ -206,15 +209,17 @@ namespace Fpr.Adapters
             {
                 MemberInfo destinationMember = destinationMembers[i];
                 bool isProperty = destinationMember is PropertyInfo;
-               
+
                 if (hasConfig)
                 {
                     if (ProcessIgnores(config, destinationMember)) continue;
 
-                    if (ProcessCustomResolvers(config, destinationMember, propertyModelFactory, properties)) continue;
+                    if (ProcessCustomResolvers(config, destinationMember, propertyModelFactory, properties))
+                        continue;
                 }
 
-                MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty, destinationMember.Name);
+                MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty,
+                    destinationMember.Name);
                 if (sourceMember == null)
                 {
                     if (FlattenMethod(sourceType, destinationMember, propertyModelFactory, properties)) continue;
@@ -226,13 +231,13 @@ namespace Fpr.Adapters
 
                 if (isProperty)
                 {
-                    var destinationProperty = (PropertyInfo)destinationMember;
+                    var destinationProperty = (PropertyInfo) destinationMember;
 
                     var setter = PropertyCaller<TDestination>.CreateSetMethod(destinationProperty);
                     if (setter == null)
                         continue;
 
-                    var sourceProperty = (PropertyInfo)sourceMember;
+                    var sourceProperty = (PropertyInfo) sourceMember;
 
                     var getter = PropertyCaller<TSource>.CreateGetMethod(sourceProperty);
                     if (getter == null)
@@ -240,7 +245,7 @@ namespace Fpr.Adapters
 
                     Type destinationPropertyType = destinationProperty.PropertyType;
 
-                    var propertyModel = (PropertyModel<TSource, TDestination>)propertyModelFactory();
+                    var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
 
@@ -250,8 +255,9 @@ namespace Fpr.Adapters
                     if (ReflectionUtils.IsPrimitive(destinationPropertyType))
                     {
                         propertyModel.ConvertType = 1;
-                       
-                        var converter = ReflectionUtils.CreatePrimitiveConverter(sourceProperty.PropertyType, destinationPropertyType);
+
+                        var converter = ReflectionUtils.CreatePrimitiveConverter(sourceProperty.PropertyType,
+                            destinationPropertyType);
                         if (converter != null)
                             propertyModel.AdaptInvoker = converter;
                     }
@@ -261,7 +267,17 @@ namespace Fpr.Adapters
 
                         if (ReflectionUtils.IsCollection(destinationPropertyType)) //collections
                         {
-                            propertyModel.AdaptInvoker = FastInvoker.GetMethodInvoker(typeof(CollectionAdapter<,,>).MakeGenericType(sourceProperty.PropertyType, ReflectionUtils.ExtractElementType(destinationPropertyType), destinationPropertyType).GetMethod("Adapt", new[] { sourceProperty.PropertyType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) }));
+                            propertyModel.AdaptInvoker =
+                                FastInvoker.GetMethodInvoker(
+                                    typeof (CollectionAdapter<,,>).MakeGenericType(sourceProperty.PropertyType,
+                                        ReflectionUtils.ExtractElementType(destinationPropertyType),
+                                        destinationPropertyType)
+                                        .GetMethod("Adapt",
+                                            new[]
+                                            {
+                                                sourceProperty.PropertyType,
+                                                typeof (Dictionary<,>).MakeGenericType(typeof (int), typeof (int))
+                                            }));
                         }
                         else // class
                         {
@@ -277,15 +293,27 @@ namespace Fpr.Adapters
                                 if (!newInstance)
                                     propertyModel.ConvertType = 1;
                                 else
-                                    propertyModel.AdaptInvoker = FastInvoker.GetMethodInvoker(typeof(ClassAdapter<,>)
-                                        .MakeGenericType(sourceProperty.PropertyType, destinationPropertyType)
-                                        .GetMethod("Adapt", new [] { sourceProperty.PropertyType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) }));                                    
+                                    propertyModel.AdaptInvoker =
+                                        FastInvoker.GetMethodInvoker(typeof (ClassAdapter<,>)
+                                            .MakeGenericType(sourceProperty.PropertyType, destinationPropertyType)
+                                            .GetMethod("Adapt",
+                                                new[]
+                                                {
+                                                    sourceProperty.PropertyType,
+                                                    typeof (Dictionary<,>).MakeGenericType(typeof (int),
+                                                        typeof (int))
+                                                }));
                             }
                             else
                             {
-                                propertyModel.AdaptInvoker = FastInvoker.GetMethodInvoker(typeof(ClassAdapter<,>)
+                                propertyModel.AdaptInvoker = FastInvoker.GetMethodInvoker(typeof (ClassAdapter<,>)
                                     .MakeGenericType(sourceProperty.PropertyType, destinationPropertyType)
-                                    .GetMethod("Adapt", new [] { sourceProperty.PropertyType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) }));
+                                    .GetMethod("Adapt",
+                                        new[]
+                                        {
+                                            sourceProperty.PropertyType,
+                                            typeof (Dictionary<,>).MakeGenericType(typeof (int), typeof (int))
+                                        }));
                             }
                         }
                     }
@@ -294,8 +322,8 @@ namespace Fpr.Adapters
                 }
                 else // Fields
                 {
-                    var fieldModel = (FieldModel)fieldModelFactory();
-                    var fieldInfoType = typeof(FieldInfo);
+                    var fieldModel = (FieldModel) fieldModelFactory();
+                    var fieldInfoType = typeof (FieldInfo);
 
                     fieldModel.Getter = FastInvoker.GetMethodInvoker(fieldInfoType.GetMethod("GetValue"));
                     fieldModel.Setter = FastInvoker.GetMethodInvoker(fieldInfoType.GetMethod("SetValue"));
@@ -304,14 +332,14 @@ namespace Fpr.Adapters
                 }
             }
 
-            var adapterModel = (AdapterModel<TSource, TDestination>)adapterModelFactory();
+            var adapterModel = (AdapterModel<TSource, TDestination>) adapterModelFactory();
             adapterModel.Fields = fields.ToArray();
             adapterModel.Properties = properties.ToArray();
 
             return adapterModel;
         }
 
-        private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
+        private static void FlattenClass(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
             List<PropertyModel<TSource, TDestination>> properties)
         {
             var delegates = new List<GenericGetter>();
@@ -319,17 +347,16 @@ namespace Fpr.Adapters
             if (delegates.Count > 0)
             {
                 var setter = PropertyCaller<TDestination>.CreateSetMethod((PropertyInfo) destinationMember);
-                if (setter == null)
-                    return true;
+                if (setter != null)
+                {
+                    var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
+                    propertyModel.ConvertType = 3;
+                    propertyModel.Setter = setter;
+                    propertyModel.FlatteningInvokers = delegates.ToArray();
 
-                var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
-                propertyModel.ConvertType = 3;
-                propertyModel.Setter = setter;
-                propertyModel.FlatteningInvokers = delegates.ToArray();
-
-                properties.Add(propertyModel);
+                    properties.Add(propertyModel);
+                }
             }
-            return true;
         }
 
         private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,

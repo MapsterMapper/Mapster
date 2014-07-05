@@ -36,24 +36,6 @@ namespace Fpr
             return GetAdapter(sourceType, destinationType, true)(null, new[] { source, destination });
         }
 
-        public static void Reset()
-        {
-            _cache.Clear();
-        }
-
-        public static void Reset<TSource, TDestination>()
-        {
-            var hashCode = ReflectionUtils.GetHashKey<TSource, TDestination>();
-
-            if (_cache.ContainsKey(hashCode))
-            {
-                lock (_cacheLock)
-                {
-                    _cache.Remove(hashCode);
-                }
-            }
-        }
-
         private static FastInvokeHandler GetAdapter(Type sourceType, Type destinationType, bool hasDestination = false)
         {
             int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType, hasDestination);

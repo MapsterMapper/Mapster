@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Fpr.Adapters;
 using NUnit.Framework;
 using Should;
 
@@ -37,10 +36,10 @@ namespace Fpr.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test, Explicit]
+        [Test]
         public void Passed_Condition_Primitive_Does_Map()
         {
-            ClassAdapter<SimplePoco, SimpleDto>.Reset();
+            
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .MapFrom(dest => dest.Name, src => src.Name, cond => cond.Name == "TestName");
 
@@ -95,5 +94,6 @@ namespace Fpr.Tests
         }
 
         #endregion
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Fpr.Adapters;
 using Fpr.Models;
 using Fpr.Utils;
 
@@ -46,11 +47,9 @@ namespace Fpr
         public static TypeAdapterConfig<TSource, TDestination> NewConfig()
         {
             Configuration.Reset();
-            TypeAdapter.Reset<TSource, TDestination>();
-            
+            ClassAdapter<TSource,TDestination>.Reset();
             return new TypeAdapterConfig<TSource, TDestination>();
         }
-
 
         public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params Expression<Func<TDestination, object>>[] members)
         {

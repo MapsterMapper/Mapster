@@ -10,10 +10,10 @@
         <iconUrl>http://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Paddleball.svg/202px-Paddleball.svg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>$description$</description>
-        <summary>A fast, fun and stimulating object to object mapper.</summary>
+        <summary>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.</summary>
         <copyright>Copyright 2014 Eric Swann, et. al. - All rights reserved.</copyright>
         <language />
-        <tags>Mapper AutoMapper Fapper</tags>
+        <tags>Mapper AutoMapper Fast</tags>
         <dependencies>
         </dependencies>
     </metadata>
