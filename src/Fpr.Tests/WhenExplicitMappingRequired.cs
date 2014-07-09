@@ -7,7 +7,7 @@ namespace Fpr.Tests
 {
     
     [TestFixture]
-    public class WhenImplicitMappingDisallowed
+    public class WhenExplicitMappingRequired
     {
         [TestFixtureTearDown]
         public void TearDown()

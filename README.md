@@ -106,6 +106,8 @@ Forcing all classes to be explicitly mapped:
 
     //Default is "false"
     TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+    //This means you have to have an explicit configuration for each class, even if it's just:
+    TypeAdapterConfig<Source, Destination>.NewConfig();
 
 
 ###Assembly Scanning for Custom Mappings

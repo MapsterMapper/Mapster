@@ -29,7 +29,7 @@ namespace Fpr.Tests
         }
 
         [Test]
-        public void Error_Thrown_With_Err_Configuration_On_Unmapped_Primitive()
+        public void Error_Thrown_With_Explicit_Configuration_On_Unmapped_Primitive()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
@@ -55,7 +55,7 @@ namespace Fpr.Tests
         }
 
         [Test]
-        public void Error_Thrown_With_Err_Configuration_On_Unmapped_Child_Collection()
+        public void Error_Thrown_With_Explicit_Configuration_On_Unmapped_Child_Collection()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
