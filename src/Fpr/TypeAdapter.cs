@@ -81,6 +81,7 @@ namespace Fpr
             }
         }
 
+
         private static FastInvokeHandler GetAdapter<TSource, TDestination>(bool hasDestination = false)
         {
             return GetAdapter(typeof(TSource), typeof(TDestination), hasDestination);

@@ -14,6 +14,7 @@ This fork fixes some issues and includes some additions to make the mapper more 
 * Improved error messages that help you find configuration errors
 * Conditional mapping
 * Assembly scanning for custom mappers
+* Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).
 
 
 ###Examples
@@ -91,6 +92,21 @@ When mapping nested or tree-type structures, it's often necessary to specify a m
         })
         .ToList();
     }
+
+####Forcing Explicit Mapping
+In order to help with "Fail Fast" situations, the following strict mapping modes have been added.
+An ArgumentOutOfRange exception will currently be thrown in the situations below if an appropriate mapping and/or source cannot be located.
+
+Forcing all destination properties to have a corresponding source member or explicit mapping/ignore:
+
+    //Default is "false"
+    TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+
+Forcing all classes to be explicitly mapped:
+
+    //Default is "false"
+    TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+
 
 ###Assembly Scanning for Custom Mappings
 To make it easier to register custom mappings, we've implemented an assembly scanning approach.

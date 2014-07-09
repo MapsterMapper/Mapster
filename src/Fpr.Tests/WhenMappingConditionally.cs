@@ -82,7 +82,7 @@ namespace Fpr.Tests
             public Guid Id { get; set; }
             public string Name { get; set; }
 
-            public List<ChildDto> Children { get; set; }
+            public List<ChildPoco> Children { get; set; }
         }
 
         public class CollectionDto

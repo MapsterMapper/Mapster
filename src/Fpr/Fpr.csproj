@@ -58,6 +58,7 @@
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\InvokerModel.cs" />
     <Compile Include="Models\PropertyModel.cs" />
+    <Compile Include="TypeAdapterGlobalSettings.cs" />
     <Compile Include="Utils\Activator.cs">
       <SubType>Code</SubType>
     </Compile>

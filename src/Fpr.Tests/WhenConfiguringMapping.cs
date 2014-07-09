@@ -171,7 +171,6 @@ namespace Fpr.Tests
             Assert.IsTrue(newObj2.Child.Name == "Antalya");
         }
 
-
         #region Data
 
         private Source _source;

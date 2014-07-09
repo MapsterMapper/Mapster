@@ -10,8 +10,16 @@ namespace Fpr
 
     public class TypeAdapterConfig
     {
+        private static TypeAdapterGlobalSettings _globalSettings = new TypeAdapterGlobalSettings();
+
         private TypeAdapterConfig()
         {
+        }
+        
+        public static TypeAdapterGlobalSettings GlobalSettings
+        {
+            get { return _globalSettings; }
+            set { _globalSettings = value; }
         }
 
         internal static readonly TypeAdapterConfigSettings Configuration = new TypeAdapterConfigSettings();
@@ -35,7 +43,7 @@ namespace Fpr
     public class TypeAdapterConfig<TSource, TDestination>
     {
 
-        internal static readonly TypeAdapterConfigSettings<TSource> Configuration = new TypeAdapterConfigSettings<TSource>();
+        internal static TypeAdapterConfigSettings<TSource> Configuration;
 
         private readonly ProjectionConfig<TSource, TDestination> _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
 
@@ -46,9 +54,22 @@ namespace Fpr
 
         public static TypeAdapterConfig<TSource, TDestination> NewConfig()
         {
-            Configuration.Reset();
+            if (Configuration == null)
+            {
+                Configuration = new TypeAdapterConfigSettings<TSource>();
+            }
+            else
+            {
+                Configuration.Reset();
+            }
             ClassAdapter<TSource,TDestination>.Reset();
             return new TypeAdapterConfig<TSource, TDestination>();
+        }
+
+        public static void Clear()
+        {
+            Configuration = null;
+            ClassAdapter<TSource, TDestination>.Reset();
         }
 
         public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params Expression<Func<TDestination, object>>[] members)

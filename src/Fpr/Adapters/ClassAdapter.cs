@@ -20,6 +20,12 @@ namespace Fpr.Adapters
             String.Format("Error occurred mapping the following property.\nSource Type: {0}  Destination Type: {1}  Destination Property: ",
             typeof (TSource), typeof (TDestination));
 
+        private static readonly string _noExplicitMappingMessage =
+            String.Format("Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {0} TDestination: {1}",
+            typeof(TSource), typeof(TDestination));
+
+        private static readonly string _unmappedMembers =
+            String.Format("The following members of destination class {0} do not have a corresponding source member mapped or ignored:", typeof(TDestination));
 
         public static TDestination Adapt(TSource source)
         {
@@ -105,7 +111,7 @@ namespace Fpr.Adapters
 
                             if (value == null && ignoreNullValues)
                             {
-                                    continue;
+                                continue;
                             }
 
                             property.Setter.Invoke(destination, value);
@@ -118,11 +124,11 @@ namespace Fpr.Adapters
                             }
 
                             property.Setter.Invoke(destination, property.AdaptInvoker(null,
-                                    new[]
-                                    {
-                                        sourceValue,
-                                        (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs)
-                                    }));
+                                new[]
+                                {
+                                    sourceValue,
+                                    (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs)
+                                }));
                             break;
                         case 5: // Custom Resolve
                             if (property.Condition == null || property.Condition(source))
@@ -134,8 +140,15 @@ namespace Fpr.Adapters
                     }
                 }
             }
+            catch (ArgumentOutOfRangeException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
+                if (ex is ArgumentOutOfRangeException)
+                    throw;
+
                 if(_adapterModel == null)
                     throw new InvalidOperationException(_nonInitializedAdapterMessage);
                 
@@ -196,6 +209,8 @@ namespace Fpr.Adapters
             Type destinationType = typeof (TDestination);
             Type sourceType = typeof (TSource);
 
+            var unmappedDestinationMembers = new List<string>();
+
             var fields = new List<FieldModel>();
             var properties = new List<PropertyModel<TSource, TDestination>>();
 
@@ -204,6 +219,11 @@ namespace Fpr.Adapters
 
             var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
             bool hasConfig = config != null;
+
+            if (!hasConfig && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
+            {
+                throw new ArgumentOutOfRangeException(_noExplicitMappingMessage);
+            }
 
             for (int i = 0; i < length; i++)
             {
@@ -214,17 +234,17 @@ namespace Fpr.Adapters
                 {
                     if (ProcessIgnores(config, destinationMember)) continue;
 
-                    if (ProcessCustomResolvers(config, destinationMember, propertyModelFactory, properties))
-                        continue;
+                    if (ProcessCustomResolvers(config, destinationMember, propertyModelFactory, properties)) continue;
                 }
 
-                MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty,
-                    destinationMember.Name);
+                MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty, destinationMember.Name);
                 if (sourceMember == null)
                 {
                     if (FlattenMethod(sourceType, destinationMember, propertyModelFactory, properties)) continue;
 
-                    FlattenClass(sourceType, destinationMember, propertyModelFactory, properties);
+                    if (FlattenClass(sourceType, destinationMember, propertyModelFactory, properties)) continue;
+
+                    unmappedDestinationMembers.Add(destinationMember.Name);
 
                     continue;
                 }
@@ -332,6 +352,11 @@ namespace Fpr.Adapters
                 }
             }
 
+            if (TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
+            {
+                throw new ArgumentOutOfRangeException(_unmappedMembers + string.Join(",", unmappedDestinationMembers));
+            }
+
             var adapterModel = (AdapterModel<TSource, TDestination>) adapterModelFactory();
             adapterModel.Fields = fields.ToArray();
             adapterModel.Properties = properties.ToArray();
@@ -339,7 +364,7 @@ namespace Fpr.Adapters
             return adapterModel;
         }
 
-        private static void FlattenClass(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
+        private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
             List<PropertyModel<TSource, TDestination>> properties)
         {
             var delegates = new List<GenericGetter>();
@@ -355,8 +380,12 @@ namespace Fpr.Adapters
                     propertyModel.FlatteningInvokers = delegates.ToArray();
 
                     properties.Add(propertyModel);
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
         private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
@@ -418,6 +447,7 @@ namespace Fpr.Adapters
             return false;
         }
 
+
         private static bool ProcessIgnores(TypeAdapterConfigSettings<TSource> config, MemberInfo destinationMember)
         {
             var ignoreMembers = config.IgnoreMembers;
@@ -437,6 +467,7 @@ namespace Fpr.Adapters
             }
             return false;
         }
+
 
         private static void GetDeepFlattening(Type type, string propertyName, List<GenericGetter> invokers)
         {

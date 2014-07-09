@@ -60,6 +60,8 @@
     <Compile Include="Classes\Customer.cs" />
     <Compile Include="Classes\Product.cs" />
     <Compile Include="Classes\TypeTestClass.cs" />
+    <Compile Include="WhenHandlingUnmappedMembers.cs" />
+    <Compile Include="WhenImplicitMappingDisallowed.cs" />
     <Compile Include="WhenMappingConditionally.cs" />
     <Compile Include="WhenMappingNonPublicSetters.cs" />
     <Compile Include="WhenMappingEntityWithOnlyPrimitives.cs" />

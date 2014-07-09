@@ -95,7 +95,7 @@ namespace Fpr.Tests
         {
             var employee = new EmployeeWithStringEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = "" };
 
-            Assert.Throws<InvalidOperationException>(() => ClassAdapter<EmployeeWithStringEnum, EmployeeDTO>.Adapt(employee));
+            Assert.Throws<ArgumentOutOfRangeException>(() => ClassAdapter<EmployeeWithStringEnum, EmployeeDTO>.Adapt(employee));
 
         }
 

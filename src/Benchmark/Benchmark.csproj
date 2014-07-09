@@ -51,10 +51,6 @@
     <Reference Include="FastMember">
       <HintPath>..\packages\FastMember.1.0.0.11\lib\net40\FastMember.dll</HintPath>
     </Reference>
-    <Reference Include="Fpr, Version=1.1.9.30100, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Fpr.1.1.9.30100\lib\net45\Fpr.dll</HintPath>
-    </Reference>
     <Reference Include="Omu.ValueInjecter">
       <HintPath>..\packages\valueinjecter.2.3.3\lib\net35\Omu.ValueInjecter.dll</HintPath>
     </Reference>
@@ -80,6 +76,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Fpr\Fpr.csproj">
+      <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
+      <Name>Fpr</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\AutoMapper.3.2.1\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.2.1\tools\AutoMapper.targets')" />
