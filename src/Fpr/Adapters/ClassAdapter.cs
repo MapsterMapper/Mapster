@@ -11,6 +11,7 @@ namespace Fpr.Adapters
 
         private static readonly FastObjectFactory.CreateObject _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
         private static AdapterModel<TSource, TDestination> _adapterModel;
+        private static IDictionary<Type, Func<object, object>> _destinationTransforms;
 
         private static readonly string _nonInitializedAdapterMessage =
             String.Format("This class adapter was not initialized properly. This typically happens if one of the classes does not have a default (empty) constructor.  SourceType: {0}, DestinationType{1}",
@@ -53,6 +54,8 @@ namespace Fpr.Adapters
 
             var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
 
+            LoadDestinationTransforms(config);
+
             var hasConfig = config != null;
 
             var hasMaxDepth = hasConfig && config.MaxDepth > 0;
@@ -67,40 +70,42 @@ namespace Fpr.Adapters
 
             bool ignoreNullValues = isNew || (hasConfig && config.IgnoreNullValues.HasValue && config.IgnoreNullValues.Value);
 
-
-            PropertyModel<TSource, TDestination> property = null;
+            bool hasDestinationTransforms = _destinationTransforms.Count > 0;
+            PropertyModel<TSource, TDestination> propertyModel = null;
             try
             {
-                var properties = GetAdapterModel().Properties;
+                var propertyModels = GetAdapterModel().Properties;
 
-                for (int index = 0; index < properties.Length; index++)
+                for (int index = 0; index < propertyModels.Length; index++)
                 {
-                    property = properties[index];
-                    switch (property.ConvertType)
+                    propertyModel = propertyModels[index];
+
+                    object destinationValue = null;
+
+                    switch (propertyModel.ConvertType)
                     {
                         case 1: //Primitive
-                            object primitiveValue = property.Getter.Invoke(source);
+                            object primitiveValue = propertyModel.Getter.Invoke(source);
                             if (primitiveValue == null)
                             {
                                 continue;
                             }
 
-                            if (property.AdaptInvoker == null)
-                                property.Setter.Invoke(destination, primitiveValue);
+                            if (propertyModel.AdaptInvoker == null)
+                                destinationValue = primitiveValue;
                             else
-                                property.Setter.Invoke(destination,
-                                    property.AdaptInvoker(null,
-                                        new[]
-                                        {
-                                            primitiveValue,
-                                            (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs)
-                                        }));
+                                destinationValue = propertyModel.AdaptInvoker(null,
+                                    new[]
+                                    {
+                                        primitiveValue,
+                                        (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs)
+                                    });
                             break;
                         case 2: //Flattening Get Method
-                            property.Setter.Invoke(destination, property.AdaptInvoker(source, null));
+                            destinationValue = propertyModel.AdaptInvoker(source, null);
                             break;
                         case 3: //Flattening Deep Property
-                            var flatInvokers = property.FlatteningInvokers;
+                            var flatInvokers = propertyModel.FlatteningInvokers;
                             object value = source;
                             foreach (GenericGetter getter in flatInvokers)
                             {
@@ -113,30 +118,39 @@ namespace Fpr.Adapters
                             {
                                 continue;
                             }
-
-                            property.Setter.Invoke(destination, value);
+                            destinationValue = value;
                             break;
                         case 4: // Adapter
-                            object sourceValue = property.Getter.Invoke(source);
+                            object sourceValue = propertyModel.Getter.Invoke(source);
                             if (sourceValue == null && ignoreNullValues)
                             {
                                 continue;
                             }
 
-                            property.Setter.Invoke(destination, property.AdaptInvoker(null,
+                            destinationValue = propertyModel.AdaptInvoker(null,
                                 new[]
                                 {
                                     sourceValue,
                                     (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs)
-                                }));
+                                });
                             break;
                         case 5: // Custom Resolve
-                            if (property.Condition == null || property.Condition(source))
+                            if (propertyModel.Condition == null || propertyModel.Condition(source))
                             {
-                                property.Setter.Invoke(destination, property.CustomResolver(source));
+                                destinationValue = propertyModel.CustomResolver(source);
                             }
 
                             break;
+                    }
+
+                    if (hasDestinationTransforms && _destinationTransforms.ContainsKey(propertyModel.DestinationType))
+                    {
+                        Func<object, object> destinationTransform = _destinationTransforms[propertyModel.DestinationType];
+                        propertyModel.Setter.Invoke(destination, destinationTransform(destinationValue));
+                    }
+                    else
+                    {
+                        propertyModel.Setter.Invoke(destination, destinationValue);
                     }
                 }
             }
@@ -152,17 +166,15 @@ namespace Fpr.Adapters
                 if(_adapterModel == null)
                     throw new InvalidOperationException(_nonInitializedAdapterMessage);
                 
-                if (property != null)
+                if (propertyModel != null)
                 {
                     //Todo: This slows things down with the try-catch but the information is critical in debugging
-                    throw new InvalidOperationException(_propertyMappingErrorMessage + property.SetterPropertyName + "\nException: " + ex);
+                    throw new InvalidOperationException(_propertyMappingErrorMessage + propertyModel.SetterPropertyName + "\nException: " + ex);
                 }
-
                 throw;
             }
 
             return destination;
-
         }
 
         private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexs, TypeAdapterConfigSettings<TSource> config)
@@ -193,11 +205,20 @@ namespace Fpr.Adapters
         public static void Reset()
         {
             _adapterModel = null;
+            _destinationTransforms = null;
         }
 
         public static AdapterModel<TSource, TDestination> GetAdapterModel()
         {
             return _adapterModel ?? (_adapterModel = CreateAdapterModel());
+        }
+
+        private static void LoadDestinationTransforms(TypeAdapterConfigSettings<TSource> config)
+        {
+            if (_destinationTransforms == null)
+            {
+                _destinationTransforms = config != null ? config.DestinationTransforms.Transforms : TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
+            }
         }
 
         private static AdapterModel<TSource, TDestination> CreateAdapterModel()
@@ -266,6 +287,7 @@ namespace Fpr.Adapters
                     Type destinationPropertyType = destinationProperty.PropertyType;
 
                     var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
+                    propertyModel.DestinationType = destinationPropertyType;
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
 
@@ -377,6 +399,7 @@ namespace Fpr.Adapters
                     var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                     propertyModel.ConvertType = 3;
                     propertyModel.Setter = setter;
+                    propertyModel.DestinationType = typeof (TDestination);
                     propertyModel.FlatteningInvokers = delegates.ToArray();
 
                     properties.Add(propertyModel);
@@ -401,6 +424,7 @@ namespace Fpr.Adapters
                 var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                 propertyModel.ConvertType = 2;
                 propertyModel.Setter = setter;
+                propertyModel.DestinationType = typeof(TDestination);
                 propertyModel.AdaptInvoker = FastInvoker.GetMethodInvoker(getMethod);
 
                 properties.Add(propertyModel);
@@ -431,6 +455,7 @@ namespace Fpr.Adapters
 
                         var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                         propertyModel.ConvertType = 5;
+                        propertyModel.DestinationType = typeof (TDestination);
                         propertyModel.Setter = setter;
                         propertyModel.CustomResolver = resolver.Invoker;
                         propertyModel.Condition = resolver.Condition;

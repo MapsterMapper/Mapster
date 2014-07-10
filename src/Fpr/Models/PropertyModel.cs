@@ -9,6 +9,7 @@ namespace Fpr.Models
         public PropertyCaller<TDestination>.GenSetter Setter;
 
         //public object DefaultDestinationValue;
+        public Type DestinationType;
 
         public FastInvokeHandler AdaptInvoker;
         public GenericGetter[] FlatteningInvokers;

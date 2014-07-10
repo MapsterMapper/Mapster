@@ -72,6 +72,7 @@
     <Compile Include="WhenMappingNullablePrimitives.cs" />
     <Compile Include="WhenMappingPrimitives.cs" />
     <Compile Include="WhenConfiguringMapping.cs" />
+    <Compile Include="WhenPerformingDestinationTransforms.cs" />
     <Compile Include="WhenProjecting.cs" />
   </ItemGroup>
   <ItemGroup>

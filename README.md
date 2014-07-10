@@ -14,7 +14,8 @@ This fork fixes some issues and includes some additions to make the mapper more 
 * Improved error messages that help you find configuration errors
 * Conditional mapping
 * Assembly scanning for custom mappers
-* Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).
+* Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).\
+* Type specific destination transforms (typically such as trim or lowercase all strings).  Can be used on any destination type.
 
 
 ###Examples
@@ -59,6 +60,19 @@ When the default convention mappings aren't enough to do the job, you can specif
     .IgnoreMember(dest => dest.Property)
     .MapFrom(dest => dest.FullName, 
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+####Type-Specific Destination Transforms
+This allows transforms for all items of a type, such as trimming all strings.  But really any operation 
+can be performed on the destination value before assignment.  This can be set up at either a global
+or a mapping level.
+
+    //Global
+    TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+
+    //Per mapping configuration
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+        .DestinationTransforms.Upsert<string>(x => x.Trim());
+    
 
 ####Conditional Mapping
 The MapFrom configuration can accept a third parameter that provides a condition based on the source.

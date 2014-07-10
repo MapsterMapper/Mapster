@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -8,10 +7,10 @@ namespace Fpr.Utils
 {
     public static class PropertyCaller<TClass, TReturn> where TClass : class
     {
-        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>> _dGets =
+        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>> _getterCache =
             new Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>>();
 
-        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>> _dSets =
+        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>> _setterCache =
             new Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>>();
 
         public delegate void GenSetter(TClass target, TReturn value);
@@ -25,11 +24,18 @@ namespace Fpr.Utils
 
             string propertyName = pi.Name;
 
-            //Let’s return the cached delegate if we have one.
-            if (_dGets.ContainsKey(classType) && _dGets[classType].ContainsKey(returnType) 
-                && _dGets[classType][returnType].ContainsKey(propertyName))
+            Dictionary<Type, Dictionary<string, GenGetter>> classGetters;
+            if (_getterCache.TryGetValue(classType, out classGetters))
             {
-                return _dGets[classType][returnType][propertyName];
+                Dictionary<string, GenGetter> propertyTypeGetters;
+                if (classGetters.TryGetValue(returnType, out propertyTypeGetters))
+                {
+                    GenGetter cachedGetter;
+                    if (propertyTypeGetters.TryGetValue(propertyName, out cachedGetter))
+                    {
+                        return cachedGetter;
+                    }
+                }
             }
 
             //If there is no getter, return nothing
@@ -55,25 +61,25 @@ namespace Fpr.Utils
             //Cache the delegate for future use.
             Dictionary<string, GenGetter> tempPropDict;
 
-            if (!_dGets.ContainsKey(classType))
+            if (!_getterCache.ContainsKey(classType))
             {
                 tempPropDict = new Dictionary<string, GenGetter> {{propertyName, genGetter}};
 
                 var tempDict = new Dictionary<Type, Dictionary<string, GenGetter>> {{returnType, tempPropDict}};
 
-                _dGets.Add(classType, tempDict);
+                _getterCache.Add(classType, tempDict);
             }
             else
             {
-                if (!_dGets[classType].ContainsKey(returnType))
+                if (!_getterCache[classType].ContainsKey(returnType))
                 {
                     tempPropDict = new Dictionary<string, GenGetter> {{propertyName, genGetter}};
-                    _dGets[classType].Add(returnType, tempPropDict);
+                    _getterCache[classType].Add(returnType, tempPropDict);
                 }
                 else
                 {
-                    if (!_dGets[classType][returnType].ContainsKey(propertyName))
-                        _dGets[classType][returnType].Add(propertyName, genGetter);
+                    if (!_getterCache[classType][returnType].ContainsKey(propertyName))
+                        _getterCache[classType][returnType].Add(propertyName, genGetter);
                 }
             }
 
@@ -91,10 +97,18 @@ namespace Fpr.Utils
             string propertyName = pi.Name;
 
             //Let’s return the cached delegate if we have one.
-            if (_dSets.ContainsKey(classType) && _dSets[classType].ContainsKey(returnType)
-                && _dSets[classType][returnType].ContainsKey(propertyName))
+            Dictionary<Type, Dictionary<string, GenSetter>> classSetters;
+            if (_setterCache.TryGetValue(classType, out classSetters))
             {
-                    return _dSets[classType][returnType][propertyName];
+                Dictionary<string, GenSetter> propertyTypeSetters;
+                if (classSetters.TryGetValue(returnType, out propertyTypeSetters))
+                {
+                    GenSetter cachedSetter;
+                    if (propertyTypeSetters.TryGetValue(propertyName, out cachedSetter))
+                    {
+                        return cachedSetter;
+                    }
+                }
             }
 
             //If there is no setter, return nothing
@@ -128,26 +142,26 @@ namespace Fpr.Utils
             //Cache the delegate for future use.
             Dictionary<string, GenSetter> tempPropDict;
 
-            if (!_dSets.ContainsKey(classType))
+            if (!_setterCache.ContainsKey(classType))
             {
                 tempPropDict = new Dictionary<string, GenSetter> {{propertyName, genSetter}};
 
                 var tempDict = new Dictionary<Type, Dictionary<string, GenSetter>> {{returnType, tempPropDict}};
 
-                _dSets.Add(classType, tempDict);
+                _setterCache.Add(classType, tempDict);
             }
             else
             {
-                if (!_dSets[classType].ContainsKey(returnType))
+                if (!_setterCache[classType].ContainsKey(returnType))
                 {
                     tempPropDict = new Dictionary<string, GenSetter> {{propertyName, genSetter}};
 
-                    _dSets[classType].Add(returnType, tempPropDict);
+                    _setterCache[classType].Add(returnType, tempPropDict);
                 }
                 else
                 {
-                    if (!_dSets[classType][returnType].ContainsKey(propertyName))
-                        _dSets[classType][returnType].Add(propertyName, genSetter);
+                    if (!_setterCache[classType][returnType].ContainsKey(propertyName))
+                        _setterCache[classType][returnType].Add(propertyName, genSetter);
                 }
             }
             //Return delegate to the caller.
@@ -161,8 +175,8 @@ namespace Fpr.Utils
         public delegate void GenSetter(T target, Object value);
         public delegate Object GenGetter(T target);
 
-        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>> _dGets = new Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>>();
-        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>> _dSets = new Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>>();
+        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>> _getterCache = new Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>>();
+        private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>> _setterCache = new Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>>();
 
         public static GenGetter CreateGetMethod(PropertyInfo pi)
         {
@@ -170,16 +184,16 @@ namespace Fpr.Utils
             var propType = pi.PropertyType;
             var propName = pi.Name;
 
-            Dictionary<Type, Dictionary<string, GenGetter>> i1;
-            if (_dGets.TryGetValue(classType, out i1))
+            Dictionary<Type, Dictionary<string, GenGetter>> classGetters;
+            if (_getterCache.TryGetValue(classType, out classGetters))
             {
-                Dictionary<string, GenGetter> i2;
-                if (i1.TryGetValue(propType, out i2))
+                Dictionary<string, GenGetter> propertyTypeGetters;
+                if (classGetters.TryGetValue(propType, out propertyTypeGetters))
                 {
-                    GenGetter i3;
-                    if (i2.TryGetValue(propName, out i3))
+                    GenGetter cachedGetter;
+                    if (propertyTypeGetters.TryGetValue(propName, out cachedGetter))
                     {
-                        return i3;
+                        return cachedGetter;
                     }
                 }
             }
@@ -205,24 +219,24 @@ namespace Fpr.Utils
             var genGetter = (GenGetter)getter.CreateDelegate(typeof(GenGetter));
 
             Dictionary<string, GenGetter> tempPropDict;
-            if (!_dGets.ContainsKey(classType))
+            if (!_getterCache.ContainsKey(classType))
             {
                 tempPropDict = new Dictionary<string, GenGetter> {{propName, genGetter}};
                 var tempDict = new Dictionary<Type, Dictionary<string, GenGetter>> {{propType, tempPropDict}};
-                _dGets.Add(classType, tempDict);
+                _getterCache.Add(classType, tempDict);
             }
             else
             {
-                if (!_dGets[classType].ContainsKey(propType))
+                if (!_getterCache[classType].ContainsKey(propType))
                 {
                     tempPropDict = new Dictionary<string, GenGetter> {{propName, genGetter}};
-                    _dGets[classType].Add(propType, tempPropDict);
+                    _getterCache[classType].Add(propType, tempPropDict);
                 }
                 else
                 {
-                    if (!_dGets[classType][propType].ContainsKey(propName))
+                    if (!_getterCache[classType][propType].ContainsKey(propName))
                     {
-                        _dGets[classType][propType].Add(propName, genGetter);
+                        _getterCache[classType][propType].Add(propName, genGetter);
                     }
                 }
             }
@@ -235,16 +249,16 @@ namespace Fpr.Utils
             Type propType = pi.PropertyType;
             string propName = pi.Name;
 
-            Dictionary<Type, Dictionary<string, GenSetter>> i1;
-            if (_dSets.TryGetValue(classType, out i1))
+            Dictionary<Type, Dictionary<string, GenSetter>> classSetters;
+            if (_setterCache.TryGetValue(classType, out classSetters))
             {
-                Dictionary<string, GenSetter> i2;
-                if (i1.TryGetValue(propType, out i2))
+                Dictionary<string, GenSetter> propertyTypeSetters;
+                if (classSetters.TryGetValue(propType, out propertyTypeSetters))
                 {
-                    GenSetter i3;
-                    if (i2.TryGetValue(propName, out i3))
+                    GenSetter cachedSetter;
+                    if (propertyTypeSetters.TryGetValue(propName, out cachedSetter))
                     {
-                        return i3;
+                        return cachedSetter;
                     }
                 }
             }
@@ -277,24 +291,24 @@ namespace Fpr.Utils
             var genSetter = (GenSetter)setter.CreateDelegate(typeof(GenSetter));
 
             Dictionary<string, GenSetter> tempPropDict;
-            if (!_dSets.ContainsKey(classType))
+            if (!_setterCache.ContainsKey(classType))
             {
                 tempPropDict = new Dictionary<string, GenSetter> {{propName, genSetter}};
                 var tempDict = new Dictionary<Type, Dictionary<string, GenSetter>> {{propType, tempPropDict}};
-                _dSets.Add(classType, tempDict);
+                _setterCache.Add(classType, tempDict);
             }
             else
             {
-                if (!_dSets[classType].ContainsKey(propType))
+                if (!_setterCache[classType].ContainsKey(propType))
                 {
                     tempPropDict = new Dictionary<string, GenSetter> {{propName, genSetter}};
-                    _dSets[classType].Add(propType, tempPropDict);
+                    _setterCache[classType].Add(propType, tempPropDict);
                 }
                 else
                 {
-                    if (!_dSets[classType][propType].ContainsKey(propName))
+                    if (!_setterCache[classType][propType].ContainsKey(propName))
                     {
-                        _dSets[classType][propType].Add(propName, genSetter);
+                        _setterCache[classType][propType].Add(propName, genSetter);
                     }
                 }
             }

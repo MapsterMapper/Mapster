@@ -3,7 +3,7 @@
     <metadata>
         <id>$id$</id>
         <version>$version$</version>
-        <title>$id$</title>
+        <title>$id$ Mapper</title>
         <authors>eric_swann</authors>
         <owners>eric_swann</owners>
         <projectUrl>https://github.com/eswann/Fpr</projectUrl>
@@ -13,7 +13,7 @@
         <summary>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.</summary>
         <copyright>Copyright 2014 Eric Swann, et. al. - All rights reserved.</copyright>
         <language />
-        <tags>Mapper AutoMapper Fast</tags>
+        <tags>Mapper AutoMapper Fast Mapping</tags>
         <dependencies>
         </dependencies>
     </metadata>

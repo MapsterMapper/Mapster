@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Fpr.Utils;
 
 namespace Fpr.Adapters
@@ -9,13 +10,23 @@ namespace Fpr.Adapters
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {
+            TDestination destinationValue;
+
             if (source == null)
-                return default(TDestination);
+                destinationValue = default(TDestination);
+            else if (_converter == null)
+                destinationValue = (TDestination)Convert.ChangeType(source, typeof(TDestination));
+            else
+                destinationValue = (TDestination)_converter(null, new object[] { source });
 
-            if (_converter == null)
-                return (TDestination)Convert.ChangeType(source, typeof(TDestination));
+            IDictionary<Type,Func<object, object>> transforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
+            Type destinationType = typeof (TDestination);
+            if (transforms.Count > 0 && transforms.ContainsKey(destinationType))
+            {
+                return (TDestination)transforms[destinationType](destinationValue);
+            }
 
-            return (TDestination)_converter(null, new object[] { source });
+            return destinationValue;
         }
 
         public static TDestination Adapt(TSource source)

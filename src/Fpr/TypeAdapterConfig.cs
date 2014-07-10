@@ -42,7 +42,6 @@ namespace Fpr
 
     public class TypeAdapterConfig<TSource, TDestination>
     {
-
         internal static TypeAdapterConfigSettings<TSource> Configuration;
 
         private readonly ProjectionConfig<TSource, TDestination> _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
@@ -161,6 +160,17 @@ namespace Fpr
             _projection.MaxDepth(maxDepth);
 
             return this;
+        }
+
+        public TransformsCollection DestinationTransforms
+        {
+            get
+            {
+                if (Configuration == null)
+                    return null;
+
+                return Configuration.DestinationTransforms;
+            }
         }
 
     }
