@@ -31,9 +31,9 @@ namespace Benchmark
 
             Mapper.CreateMap<Foo, Foo>();
 
-            TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
-
             Fm.TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
+
+            TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
 
             TestSimple(foo, 1000);
 
@@ -59,9 +59,11 @@ namespace Benchmark
             Mapper.CreateMap<Address, AddressDTO>();
             Mapper.CreateMap<Customer, CustomerDTO>();
 
+            Fm.TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
+
+            //TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<Guid>(x => x);
             TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
 
-            Fm.TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
 
             Test(customer, 100);
 
@@ -80,9 +82,9 @@ namespace Benchmark
 
             TestCustomerNative(item, iterations);
 
-            TestTypeAdapter<Customer, CustomerDTO>(item, iterations);
-
             TestFmTypeAdapter<Customer, CustomerDTO>(item, iterations);
+
+            TestFprAdapter<Customer, CustomerDTO>(item, iterations);
 
             TestAutoMapper<Customer, CustomerDTO>(item, iterations);
         }
@@ -93,9 +95,9 @@ namespace Benchmark
 
             Console.WriteLine("Iterations : {0}", iterations);
 
-            TestTypeAdapter<Foo, Foo>(item, iterations);
-
             TestFmTypeAdapter<Foo, Foo>(item, iterations);
+
+            TestFprAdapter<Foo, Foo>(item, iterations);
 
             TestValueInjecter<Foo, Foo>(item, iterations);
 
@@ -132,7 +134,7 @@ namespace Benchmark
             }, iterations));
         }
 
-        private static void TestTypeAdapter<TSrc, TDest>(TSrc item, int iterations)
+        private static void TestFprAdapter<TSrc, TDest>(TSrc item, int iterations)
             where TSrc : class
             where TDest : class, new()
         {

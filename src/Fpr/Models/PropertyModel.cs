@@ -9,7 +9,6 @@ namespace Fpr.Models
         public PropertyCaller<TDestination>.GenSetter Setter;
 
         //public object DefaultDestinationValue;
-        public Type DestinationType;
 
         public FastInvokeHandler AdaptInvoker;
         public GenericGetter[] FlatteningInvokers;
@@ -17,6 +16,8 @@ namespace Fpr.Models
         public Func<TSource, object> CustomResolver;
 
         public Func<TSource, bool> Condition;
+
+        public Func<object, object> DestinationTransform;
 
         // Use byte, because byte performance better than enum
         public byte ConvertType; //Primitive = 1, FlatteningGetMethod = 2, FlatteningDeep = 3, Adapter = 4, CustomResolve = 5;

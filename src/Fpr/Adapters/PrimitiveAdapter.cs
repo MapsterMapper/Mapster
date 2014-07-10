@@ -7,6 +7,7 @@ namespace Fpr.Adapters
     public class PrimitiveAdapter<TSource, TDestination>
     {
         public static readonly FastInvokeHandler _converter = CreateConverter();
+        public static Func<object, object> _transform;
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {
@@ -19,12 +20,8 @@ namespace Fpr.Adapters
             else
                 destinationValue = (TDestination)_converter(null, new object[] { source });
 
-            IDictionary<Type,Func<object, object>> transforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
-            Type destinationType = typeof (TDestination);
-            if (transforms.Count > 0 && transforms.ContainsKey(destinationType))
-            {
-                return (TDestination)transforms[destinationType](destinationValue);
-            }
+            if (_transform != null)
+                return (TDestination)_transform(destinationValue);
 
             return destinationValue;
         }
@@ -36,6 +33,12 @@ namespace Fpr.Adapters
 
         private static FastInvokeHandler CreateConverter()
         {
+            Type destinationType = typeof(TDestination);
+            if (TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms.ContainsKey(destinationType))
+            {
+                _transform = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms[destinationType];
+            }
+
             return ReflectionUtils.CreatePrimitiveConverter(typeof(TSource), typeof(TDestination));
         }
 

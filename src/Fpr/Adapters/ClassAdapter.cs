@@ -11,7 +11,6 @@ namespace Fpr.Adapters
 
         private static readonly FastObjectFactory.CreateObject _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
         private static AdapterModel<TSource, TDestination> _adapterModel;
-        private static IDictionary<Type, Func<object, object>> _destinationTransforms;
 
         private static readonly string _nonInitializedAdapterMessage =
             String.Format("This class adapter was not initialized properly. This typically happens if one of the classes does not have a default (empty) constructor.  SourceType: {0}, DestinationType{1}",
@@ -54,15 +53,13 @@ namespace Fpr.Adapters
 
             var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
 
-            LoadDestinationTransforms(config);
-
             var hasConfig = config != null;
 
             var hasMaxDepth = hasConfig && config.MaxDepth > 0;
 
             if (hasMaxDepth)
             {
-                if (CheckMaxDepth(ref parameterIndexs, config)) return default(TDestination);;
+                if (CheckMaxDepth(ref parameterIndexs, config)) return default(TDestination);
             }
 
             if (destination == null)
@@ -70,7 +67,6 @@ namespace Fpr.Adapters
 
             bool ignoreNullValues = isNew || (hasConfig && config.IgnoreNullValues.HasValue && config.IgnoreNullValues.Value);
 
-            bool hasDestinationTransforms = _destinationTransforms.Count > 0;
             PropertyModel<TSource, TDestination> propertyModel = null;
             try
             {
@@ -144,15 +140,15 @@ namespace Fpr.Adapters
                             
                     }
 
-                    if (hasDestinationTransforms && _destinationTransforms.ContainsKey(propertyModel.DestinationType))
+                    if (propertyModel.DestinationTransform != null)
                     {
-                        Func<object, object> destinationTransform = _destinationTransforms[propertyModel.DestinationType];
-                        propertyModel.Setter.Invoke(destination, destinationTransform(destinationValue));
+                        propertyModel.Setter.Invoke(destination, propertyModel.DestinationTransform(destinationValue));
                     }
                     else
                     {
                         propertyModel.Setter.Invoke(destination, destinationValue);
                     }
+      
                 }
             }
             catch (ArgumentOutOfRangeException)
@@ -206,20 +202,11 @@ namespace Fpr.Adapters
         public static void Reset()
         {
             _adapterModel = null;
-            _destinationTransforms = null;
         }
 
         public static AdapterModel<TSource, TDestination> GetAdapterModel()
         {
             return _adapterModel ?? (_adapterModel = CreateAdapterModel());
-        }
-
-        private static void LoadDestinationTransforms(TypeAdapterConfigSettings<TSource> config)
-        {
-            if (_destinationTransforms == null)
-            {
-                _destinationTransforms = config != null ? config.DestinationTransforms.Transforms : TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
-            }
         }
 
         private static AdapterModel<TSource, TDestination> CreateAdapterModel()
@@ -240,12 +227,16 @@ namespace Fpr.Adapters
             int length = destinationMembers.Length;
 
             var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
+
             bool hasConfig = config != null;
 
             if (!hasConfig && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
             {
                 throw new ArgumentOutOfRangeException(_noExplicitMappingMessage);
             }
+
+            IDictionary<Type, Func<object, object>> destinationTransforms = hasConfig 
+                ? config.DestinationTransforms.Transforms : TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
 
             for (int i = 0; i < length; i++)
             {
@@ -256,15 +247,15 @@ namespace Fpr.Adapters
                 {
                     if (ProcessIgnores(config, destinationMember)) continue;
 
-                    if (ProcessCustomResolvers(config, destinationMember, propertyModelFactory, properties)) continue;
+                    if (ProcessCustomResolvers(config, destinationMember, propertyModelFactory, properties, destinationTransforms)) continue;
                 }
 
                 MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty, destinationMember.Name);
                 if (sourceMember == null)
                 {
-                    if (FlattenMethod(sourceType, destinationMember, propertyModelFactory, properties)) continue;
+                    if (FlattenMethod(sourceType, destinationMember, propertyModelFactory, properties, destinationTransforms)) continue;
 
-                    if (FlattenClass(sourceType, destinationMember, propertyModelFactory, properties)) continue;
+                    if (FlattenClass(sourceType, destinationMember, propertyModelFactory, properties, destinationTransforms)) continue;
 
                     unmappedDestinationMembers.Add(destinationMember.Name);
 
@@ -288,9 +279,10 @@ namespace Fpr.Adapters
                     Type destinationPropertyType = destinationProperty.PropertyType;
 
                     var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
-                    propertyModel.DestinationType = destinationPropertyType;
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
+                    if (destinationTransforms.ContainsKey(destinationPropertyType))
+                        propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
 
                     //if (!ReflectionUtils.IsNullable(destinationPropertyType) && destinationPropertyType != typeof(string) && ReflectionUtils.IsPrimitive(destinationPropertyType))
                     //    propertyModel.DefaultDestinationValue = new TDestination();
@@ -388,7 +380,7 @@ namespace Fpr.Adapters
         }
 
         private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
-            List<PropertyModel<TSource, TDestination>> properties)
+            List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var delegates = new List<GenericGetter>();
             GetDeepFlattening(sourceType, destinationMember.Name, delegates);
@@ -400,7 +392,10 @@ namespace Fpr.Adapters
                     var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                     propertyModel.ConvertType = 3;
                     propertyModel.Setter = setter;
-                    propertyModel.DestinationType = typeof (TDestination);
+                    var destinationPropertyType = typeof (TDestination);
+                    if (destinationTransforms.ContainsKey(destinationPropertyType))
+                        propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
+
                     propertyModel.FlatteningInvokers = delegates.ToArray();
 
                     properties.Add(propertyModel);
@@ -413,7 +408,7 @@ namespace Fpr.Adapters
         }
 
         private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
-            List<PropertyModel<TSource, TDestination>> properties)
+            List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var getMethod = sourceType.GetMethod(string.Concat("Get", destinationMember.Name));
             if (getMethod != null)
@@ -425,7 +420,9 @@ namespace Fpr.Adapters
                 var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                 propertyModel.ConvertType = 2;
                 propertyModel.Setter = setter;
-                propertyModel.DestinationType = typeof(TDestination);
+                var destinationPropertyType = typeof(TDestination);
+                if (destinationTransforms.ContainsKey(destinationPropertyType))
+                    propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
                 propertyModel.AdaptInvoker = FastInvoker.GetMethodInvoker(getMethod);
 
                 properties.Add(propertyModel);
@@ -436,7 +433,8 @@ namespace Fpr.Adapters
         }
 
         private static bool ProcessCustomResolvers(TypeAdapterConfigSettings<TSource> config, MemberInfo destinationMember,
-            FastObjectFactory.CreateObject propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties)
+            FastObjectFactory.CreateObject propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties,
+            IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var resolvers = config.Resolvers;
             if (resolvers != null && resolvers.Count > 0)
@@ -456,10 +454,12 @@ namespace Fpr.Adapters
 
                         var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                         propertyModel.ConvertType = 5;
-                        propertyModel.DestinationType = typeof (TDestination);
                         propertyModel.Setter = setter;
                         propertyModel.CustomResolver = resolver.Invoker;
                         propertyModel.Condition = resolver.Condition;
+                        var destinationPropertyType = typeof(TDestination);
+                        if (destinationTransforms.ContainsKey(destinationPropertyType))
+                            propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
 
                         properties.Add(propertyModel);
 
