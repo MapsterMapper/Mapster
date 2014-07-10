@@ -138,9 +138,10 @@ namespace Fpr.Adapters
                             if (propertyModel.Condition == null || propertyModel.Condition(source))
                             {
                                 destinationValue = propertyModel.CustomResolver(source);
+                                break;
                             }
-
-                            break;
+                            continue;
+                            
                     }
 
                     if (hasDestinationTransforms && _destinationTransforms.ContainsKey(propertyModel.DestinationType))
