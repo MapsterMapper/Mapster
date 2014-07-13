@@ -13,13 +13,17 @@ namespace Benchmark
     {
         static void Main(string[] args)
         {
-            TestSimpleTypes();
+            try
+            {
+                TestSimpleTypes();
+                TestComplexTypes();
+            }
 
-            TestComplexTypes();
-
-            Console.WriteLine("Finish");
-
-            Console.ReadLine();
+            finally
+            {
+                Console.WriteLine("Finish");
+                Console.ReadLine();
+            }
         }
 
         private static void TestSimpleTypes()
@@ -64,6 +68,8 @@ namespace Benchmark
             //TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<Guid>(x => x);
             TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
 
+            //ObjectMapperManager.DefaultInstance.GetMapper<Customer, CustomerDTO>().Map(customer);
+
 
             Test(customer, 100);
 
@@ -81,6 +87,8 @@ namespace Benchmark
             Console.WriteLine("Iterations : {0}", iterations);
 
             TestCustomerNative(item, iterations);
+
+            //TestEmitMapper<Customer, CustomerDTO>(item, iterations);
 
             TestFmTypeAdapter<Customer, CustomerDTO>(item, iterations);
 
@@ -114,7 +122,7 @@ namespace Benchmark
                 dto.Id = get.Id;
                 dto.Name = get.Name;
                 dto.AddressCity = get.Address.City;
-                
+
                 dto.Address = new Address() { Id = get.Address.Id, Street = get.Address.Street, Country = get.Address.Country, City = get.Address.City };
              
                 dto.HomeAddress = new AddressDTO() { Id = get.HomeAddress.Id, Country = get.HomeAddress.Country, City = get.HomeAddress.City };
@@ -147,6 +155,7 @@ namespace Benchmark
         {
             Console.WriteLine("FastMapper:\t\t" + Loop<TSrc>(item, get => Fm.TypeAdapter.Adapt<TSrc, TDest>(get), iterations));
         }
+
 
         private static void TestValueInjecter<TSrc, TDest>(TSrc item, int iterations)
             where TSrc : class

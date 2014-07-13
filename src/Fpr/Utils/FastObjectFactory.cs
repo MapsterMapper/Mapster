@@ -6,13 +6,12 @@ namespace Fpr.Utils
 {
     public static class FastObjectFactory
     {
-        private static readonly ConcurrentDictionary<Type, CreateObject> _creatorCache = new ConcurrentDictionary<Type, CreateObject>();
-        private readonly static Type _coType = typeof(CreateObject);
-        public delegate object CreateObject();
+        private static readonly ConcurrentDictionary<Type, Func<Object>> _creatorCache = new ConcurrentDictionary<Type, Func<Object>>();
+        private readonly static Type _coType = typeof(Func<Object>);
 
         public static void ClearObjectFactory<T>() where T : class
         {
-            CreateObject removed;
+            Func<Object> removed;
             _creatorCache.TryRemove(typeof (T), out removed);
         }
 
@@ -20,10 +19,10 @@ namespace Fpr.Utils
         /// Create a new instance of the specified type
         /// </summary>
         /// <returns></returns>
-        public static CreateObject CreateObjectFactory<T>() 
+        public static Func<Object> CreateObjectFactory<T>() 
         {
             Type type = typeof(T);
-            CreateObject createDelegate;
+            Func<Object> createDelegate;
             if (!_creatorCache.TryGetValue(type, out createDelegate))
             {
                     var dynMethod = new DynamicMethod("DM$OBJ_FACTORY_" + type.Name, typeof(object), null, type);
@@ -31,7 +30,7 @@ namespace Fpr.Utils
 
                     ilGen.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
                     ilGen.Emit(OpCodes.Ret);
-                    createDelegate = (CreateObject)dynMethod.CreateDelegate(_coType);
+                    createDelegate = (Func<Object>)dynMethod.CreateDelegate(_coType);
                     _creatorCache.TryAdd(type, createDelegate);
             }
             return createDelegate;

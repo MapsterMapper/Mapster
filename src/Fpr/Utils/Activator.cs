@@ -52,7 +52,7 @@ namespace Fpr.Utils
                     type.Name));
             }
 
-            DynamicMethod dynamicMethod = new DynamicMethod("DM$_" + type.Name, type, argTypes, type);
+            var dynamicMethod = new DynamicMethod("DM$_" + type.Name, type, argTypes, type);
             ILGenerator ilGen = dynamicMethod.GetILGenerator();
             for (int i = 0; i < argTypes.Length; i++)
             {

@@ -69,8 +69,7 @@ namespace Fpr.Utils
             }
 
             il.Emit(OpCodes.Ret);
-            FastInvokeHandler invoder = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
-            return invoder;
+            return (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
         }
 
         public static void EmitCastToReference(ILGenerator il, Type type)

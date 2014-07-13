@@ -9,7 +9,7 @@ namespace Fpr.Adapters
     public sealed class ClassAdapter<TSource, TDestination>
     {
 
-        private static readonly FastObjectFactory.CreateObject _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
+        private static readonly Func<Object> _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
         private static AdapterModel<TSource, TDestination> _adapterModel;
 
         private static readonly string _nonInitializedAdapterMessage =
@@ -151,10 +151,6 @@ namespace Fpr.Adapters
       
                 }
             }
-            catch (ArgumentOutOfRangeException)
-            {
-                throw;
-            }
             catch (Exception ex)
             {
                 if (ex is ArgumentOutOfRangeException)
@@ -174,18 +170,18 @@ namespace Fpr.Adapters
             return destination;
         }
 
-        private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexs, TypeAdapterConfigSettings<TSource> config)
+        private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexes, TypeAdapterConfigSettings<TSource> config)
         {
-            if (parameterIndexs == null)
-                parameterIndexs = new Dictionary<int, int>();
+            if (parameterIndexes == null)
+                parameterIndexes = new Dictionary<int, int>();
 
             int hashCode = typeof (TSource).GetHashCode() + typeof (TDestination).GetHashCode();
 
-            if (parameterIndexs.ContainsKey(hashCode))
+            if (parameterIndexes.ContainsKey(hashCode))
             {
-                int index = parameterIndexs[hashCode] + 1;
+                int index = parameterIndexes[hashCode] + 1;
 
-                parameterIndexs[hashCode] = index;
+                parameterIndexes[hashCode] = index;
 
                 if (index >= config.MaxDepth)
                 {
@@ -194,7 +190,7 @@ namespace Fpr.Adapters
             }
             else
             {
-                parameterIndexs.Add(hashCode, 1);
+                parameterIndexes.Add(hashCode, 1);
             }
             return false;
         }
@@ -211,9 +207,9 @@ namespace Fpr.Adapters
 
         private static AdapterModel<TSource, TDestination> CreateAdapterModel()
         {
-            FastObjectFactory.CreateObject fieldModelFactory = FastObjectFactory.CreateObjectFactory<FieldModel>();
-            FastObjectFactory.CreateObject propertyModelFactory = FastObjectFactory.CreateObjectFactory<PropertyModel<TSource, TDestination>>();
-            FastObjectFactory.CreateObject adapterModelFactory = FastObjectFactory.CreateObjectFactory<AdapterModel<TSource, TDestination>>();
+            Func<Object> fieldModelFactory = FastObjectFactory.CreateObjectFactory<FieldModel>();
+            Func<Object> propertyModelFactory = FastObjectFactory.CreateObjectFactory<PropertyModel<TSource, TDestination>>();
+            Func<Object> adapterModelFactory = FastObjectFactory.CreateObjectFactory<AdapterModel<TSource, TDestination>>();
 
             Type destinationType = typeof (TDestination);
             Type sourceType = typeof (TSource);
@@ -281,6 +277,7 @@ namespace Fpr.Adapters
                     var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
+                    propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                     if (destinationTransforms.ContainsKey(destinationPropertyType))
                         propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
 
@@ -379,7 +376,7 @@ namespace Fpr.Adapters
             return adapterModel;
         }
 
-        private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
+        private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, Func<Object> propertyModelFactory,
             List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var delegates = new List<GenericGetter>();
@@ -392,6 +389,7 @@ namespace Fpr.Adapters
                     var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                     propertyModel.ConvertType = 3;
                     propertyModel.Setter = setter;
+                    propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                     var destinationPropertyType = typeof (TDestination);
                     if (destinationTransforms.ContainsKey(destinationPropertyType))
                         propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
@@ -407,7 +405,7 @@ namespace Fpr.Adapters
             return false;
         }
 
-        private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, FastObjectFactory.CreateObject propertyModelFactory,
+        private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, Func<Object> propertyModelFactory,
             List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var getMethod = sourceType.GetMethod(string.Concat("Get", destinationMember.Name));
@@ -420,6 +418,7 @@ namespace Fpr.Adapters
                 var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                 propertyModel.ConvertType = 2;
                 propertyModel.Setter = setter;
+                propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                 var destinationPropertyType = typeof(TDestination);
                 if (destinationTransforms.ContainsKey(destinationPropertyType))
                     propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
@@ -433,7 +432,7 @@ namespace Fpr.Adapters
         }
 
         private static bool ProcessCustomResolvers(TypeAdapterConfigSettings<TSource> config, MemberInfo destinationMember,
-            FastObjectFactory.CreateObject propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties,
+            Func<Object> propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties,
             IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var resolvers = config.Resolvers;
@@ -455,6 +454,7 @@ namespace Fpr.Adapters
                         var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
                         propertyModel.ConvertType = 5;
                         propertyModel.Setter = setter;
+                        propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                         propertyModel.CustomResolver = resolver.Invoker;
                         propertyModel.Condition = resolver.Condition;
                         var destinationPropertyType = typeof(TDestination);
@@ -512,6 +512,20 @@ namespace Fpr.Adapters
                     invokers.Add(PropertyCaller.CreateGetMethod(property));
                 }
             }
+        }
+
+        private static string ExtractPropertyName(Delegate caller, string prefix)
+        {
+            if (caller == null || caller.Method == null)
+                return "";
+
+            var name = caller.Method.Name.Trim('_');
+            if (name.StartsWith(prefix))
+            {
+                name = name.Substring(prefix.Length);
+            }
+
+            return name;
         }
 
     }
