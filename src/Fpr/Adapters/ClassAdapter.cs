@@ -218,9 +218,9 @@ namespace Fpr.Adapters
 
         private static AdapterModel<TSource, TDestination> CreateAdapterModel()
         {
-            Func<Object> fieldModelFactory = FastObjectFactory.CreateObjectFactory<FieldModel>();
-            Func<Object> propertyModelFactory = FastObjectFactory.CreateObjectFactory<PropertyModel<TSource, TDestination>>();
-            Func<Object> adapterModelFactory = FastObjectFactory.CreateObjectFactory<AdapterModel<TSource, TDestination>>();
+            Func<FieldModel> fieldModelFactory = FastObjectFactory.CreateObjectFactory<FieldModel>();
+            Func<PropertyModel<TSource, TDestination>> propertyModelFactory = FastObjectFactory.CreateObjectFactory<PropertyModel<TSource, TDestination>>();
+            Func<AdapterModel<TSource, TDestination>> adapterModelFactory = FastObjectFactory.CreateObjectFactory<AdapterModel<TSource, TDestination>>();
 
             Type destinationType = typeof (TDestination);
             Type sourceType = typeof (TSource);
@@ -285,7 +285,7 @@ namespace Fpr.Adapters
 
                     Type destinationPropertyType = destinationProperty.PropertyType;
 
-                    var propertyModel = (PropertyModel<TSource, TDestination>) propertyModelFactory();
+                    var propertyModel = propertyModelFactory();
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
                     propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
@@ -365,7 +365,7 @@ namespace Fpr.Adapters
                 }
                 else // Fields
                 {
-                    var fieldModel = (FieldModel) fieldModelFactory();
+                    var fieldModel = fieldModelFactory();
                     var fieldInfoType = typeof (FieldInfo);
 
                     fieldModel.Getter = FastInvoker.GetMethodInvoker(fieldInfoType.GetMethod("GetValue"));
@@ -380,7 +380,7 @@ namespace Fpr.Adapters
                 throw new ArgumentOutOfRangeException(_unmappedMembers + string.Join(",", unmappedDestinationMembers));
             }
 
-            var adapterModel = (AdapterModel<TSource, TDestination>) adapterModelFactory();
+            var adapterModel = adapterModelFactory();
             adapterModel.Fields = fields.ToArray();
             adapterModel.Properties = properties.ToArray();
 

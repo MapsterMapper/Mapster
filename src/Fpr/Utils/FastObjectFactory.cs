@@ -34,7 +34,6 @@ namespace Fpr.Utils
                         }
                         else
                         {
-                            //createDelegate = type.GetConstructorDelegate<T>();
                             var dynMethod = new DynamicMethod("DM$OBJ_FACTORY_" + type.Name, type, null, type);
                             ILGenerator ilGen = dynMethod.GetILGenerator();
 
