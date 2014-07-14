@@ -23,11 +23,12 @@ namespace Fpr
         }
     }
 
-    internal class TypeAdapterConfigSettings<TSource>
+    internal class TypeAdapterConfigSettings<TSource, TDestination>
     {
         public readonly List<string> IgnoreMembers = new List<string>();
         public readonly List<InvokerModel<TSource>> Resolvers = new List<InvokerModel<TSource>>();
         public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
+        public Func<TDestination> ConstructUsing;
 
         public TypeAdapterConfigSettings()
         {
@@ -42,6 +43,7 @@ namespace Fpr
             IgnoreMembers.Clear();
             Resolvers.Clear();
             DestinationTransforms.Clear();
+            ConstructUsing = null;
         }
 
         public int MaxDepth { get; set; }

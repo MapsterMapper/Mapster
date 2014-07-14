@@ -42,7 +42,7 @@ namespace Fpr
 
     public class TypeAdapterConfig<TSource, TDestination>
     {
-        internal static TypeAdapterConfigSettings<TSource> Configuration;
+        internal static TypeAdapterConfigSettings<TSource, TDestination> Configuration;
 
         private readonly ProjectionConfig<TSource, TDestination> _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
 
@@ -55,7 +55,7 @@ namespace Fpr
         {
             if (Configuration == null)
             {
-                Configuration = new TypeAdapterConfigSettings<TSource>();
+                Configuration = new TypeAdapterConfigSettings<TSource, TDestination>();
             }
             else
             {
@@ -142,6 +142,13 @@ namespace Fpr
         public TypeAdapterConfig<TSource, TDestination> IgnoreNullValues(bool ignoreNullValues)
         {
             Configuration.IgnoreNullValues = ignoreNullValues;
+
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Func<TDestination> constructUsing)
+        {
+            Configuration.ConstructUsing = constructUsing;
 
             return this;
         }

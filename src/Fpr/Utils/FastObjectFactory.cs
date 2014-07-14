@@ -1,39 +1,52 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace Fpr.Utils
 {
     public static class FastObjectFactory
     {
-        private static readonly ConcurrentDictionary<Type, Func<Object>> _creatorCache = new ConcurrentDictionary<Type, Func<Object>>();
-        private readonly static Type _coType = typeof(Func<Object>);
+        private static readonly object _syncLock = new object();
+        private static readonly Dictionary<Type, object> _creatorCache = new Dictionary<Type, object>();
 
         public static void ClearObjectFactory<T>() where T : class
         {
-            Func<Object> removed;
-            _creatorCache.TryRemove(typeof (T), out removed);
+            _creatorCache.Remove(typeof (T));
         }
 
         /// <summary>
         /// Create a new instance of the specified type
         /// </summary>
         /// <returns></returns>
-        public static Func<Object> CreateObjectFactory<T>() 
+        public static Func<T> CreateObjectFactory<T>(Func<T> factory = null) 
         {
             Type type = typeof(T);
-            Func<Object> createDelegate;
+            object createDelegate;
             if (!_creatorCache.TryGetValue(type, out createDelegate))
             {
-                    var dynMethod = new DynamicMethod("DM$OBJ_FACTORY_" + type.Name, typeof(object), null, type);
-                    ILGenerator ilGen = dynMethod.GetILGenerator();
+                lock (_syncLock)
+                {
+                    if (!_creatorCache.TryGetValue(type, out createDelegate))
+                    {
+                        if (factory != null)
+                        {
+                            createDelegate = factory;
+                        }
+                        else
+                        {
+                            //createDelegate = type.GetConstructorDelegate<T>();
+                            var dynMethod = new DynamicMethod("DM$OBJ_FACTORY_" + type.Name, type, null, type);
+                            ILGenerator ilGen = dynMethod.GetILGenerator();
 
-                    ilGen.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
-                    ilGen.Emit(OpCodes.Ret);
-                    createDelegate = (Func<Object>)dynMethod.CreateDelegate(_coType);
-                    _creatorCache.TryAdd(type, createDelegate);
+                            ilGen.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
+                            ilGen.Emit(OpCodes.Ret);
+                            createDelegate = dynMethod.CreateDelegate(typeof(Func<T>));
+                        }
+                        _creatorCache.Add(type, createDelegate);
+                    }
+                }
             }
-            return createDelegate;
+            return (Func<T>)createDelegate;
         }
     }
 }

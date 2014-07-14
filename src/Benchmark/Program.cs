@@ -35,7 +35,7 @@ namespace Benchmark
 
             Mapper.CreateMap<Foo, Foo>();
 
-            Fm.TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
+            //Fm.TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
 
             TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
 
@@ -63,7 +63,7 @@ namespace Benchmark
             Mapper.CreateMap<Address, AddressDTO>();
             Mapper.CreateMap<Customer, CustomerDTO>();
 
-            Fm.TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
+            //Fm.TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
 
             //TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<Guid>(x => x);
             TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
@@ -90,7 +90,7 @@ namespace Benchmark
 
             //TestEmitMapper<Customer, CustomerDTO>(item, iterations);
 
-            TestFmTypeAdapter<Customer, CustomerDTO>(item, iterations);
+            //TestFmTypeAdapter<Customer, CustomerDTO>(item, iterations);
 
             TestFprAdapter<Customer, CustomerDTO>(item, iterations);
 
@@ -103,7 +103,7 @@ namespace Benchmark
 
             Console.WriteLine("Iterations : {0}", iterations);
 
-            TestFmTypeAdapter<Foo, Foo>(item, iterations);
+            //TestFmTypeAdapter<Foo, Foo>(item, iterations);
 
             TestFprAdapter<Foo, Foo>(item, iterations);
 

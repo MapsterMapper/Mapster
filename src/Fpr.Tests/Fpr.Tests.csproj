@@ -74,6 +74,7 @@
     <Compile Include="WhenConfiguringMapping.cs" />
     <Compile Include="WhenPerformingDestinationTransforms.cs" />
     <Compile Include="WhenProjecting.cs" />
+    <Compile Include="WhenUsingNonDefaultConstructor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

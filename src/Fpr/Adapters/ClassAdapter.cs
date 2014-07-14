@@ -8,8 +8,7 @@ namespace Fpr.Adapters
 {
     public sealed class ClassAdapter<TSource, TDestination>
     {
-
-        private static readonly Func<Object> _destinationFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
+        private static Func<TDestination> _destinationFactory;
         private static AdapterModel<TSource, TDestination> _adapterModel;
 
         private static readonly string _nonInitializedAdapterMessage =
@@ -27,6 +26,18 @@ namespace Fpr.Adapters
         private static readonly string _unmappedMembers =
             String.Format("The following members of destination class {0} do not have a corresponding source member mapped or ignored:", typeof(TDestination));
 
+        private static Func<TDestination> DestinationFactory
+        {
+            get
+            {
+                return _destinationFactory ?? (_destinationFactory = FastObjectFactory.CreateObjectFactory(
+                    TypeAdapterConfig<TSource, TDestination>.Configuration != null
+                        ? TypeAdapterConfig<TSource, TDestination>.Configuration.ConstructUsing
+                        : null));
+            }
+        }
+
+
         public static TDestination Adapt(TSource source)
         {
             return Adapt(source, new Dictionary<int, int>());
@@ -42,7 +53,7 @@ namespace Fpr.Adapters
             if (parameterIndexs == null)
                 parameterIndexs = new Dictionary<int, int>();
 
-            return Adapt(source, (TDestination)_destinationFactory(), true, parameterIndexs);
+            return Adapt(source, DestinationFactory(), true, parameterIndexs);
         }
 
         public static TDestination Adapt(TSource source, TDestination destination, bool isNew,
@@ -63,7 +74,7 @@ namespace Fpr.Adapters
             }
 
             if (destination == null)
-                destination = (TDestination) _destinationFactory();
+                destination = DestinationFactory();
 
             bool ignoreNullValues = isNew || (hasConfig && config.IgnoreNullValues.HasValue && config.IgnoreNullValues.Value);
 
@@ -170,7 +181,7 @@ namespace Fpr.Adapters
             return destination;
         }
 
-        private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexes, TypeAdapterConfigSettings<TSource> config)
+        private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexes, TypeAdapterConfigSettings<TSource, TDestination> config)
         {
             if (parameterIndexes == null)
                 parameterIndexes = new Dictionary<int, int>();
@@ -431,7 +442,7 @@ namespace Fpr.Adapters
             return false;
         }
 
-        private static bool ProcessCustomResolvers(TypeAdapterConfigSettings<TSource> config, MemberInfo destinationMember,
+        private static bool ProcessCustomResolvers(TypeAdapterConfigSettings<TSource, TDestination> config, MemberInfo destinationMember,
             Func<Object> propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties,
             IDictionary<Type, Func<object, object>> destinationTransforms)
         {
@@ -474,7 +485,7 @@ namespace Fpr.Adapters
         }
 
 
-        private static bool ProcessIgnores(TypeAdapterConfigSettings<TSource> config, MemberInfo destinationMember)
+        private static bool ProcessIgnores(TypeAdapterConfigSettings<TSource, TDestination> config, MemberInfo destinationMember)
         {
             var ignoreMembers = config.IgnoreMembers;
             if (ignoreMembers != null && ignoreMembers.Count > 0)
