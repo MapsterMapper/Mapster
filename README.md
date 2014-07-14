@@ -61,6 +61,20 @@ When the default convention mappings aren't enough to do the job, you can specif
     .MapFrom(dest => dest.FullName, 
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
+####Custom Destination Object Creation
+You can provide a function call to create your destination objects instead of using the default object creation 
+(which expects an empty constructor).  To do so, use the "ConstructUsing()" method when configuring.  This method expects
+a function that will provide the destination instance. You can call your own constructor, a factory method, 
+or anything else that provides an object of the expected type.
+
+    //Example using a non-default constructor
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .ConstructUsing(() => new TDestination("constructorValue"));
+
+    //Example using an object initializer
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .ConstructUsing(() => new TDestination{Unmapped = "unmapped"});
+
 ####Type-Specific Destination Transforms
 This allows transforms for all items of a type, such as trimming all strings.  But really any operation 
 can be performed on the destination value before assignment.  This can be set up at either a global
