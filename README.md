@@ -38,8 +38,8 @@ This includes lists, arrays, collections, enumerables etc...
 ####Mapping Enums Included
 Fpr maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
 The default Enum.ToString() in .Net is quite slow.  The implementation in Fpr is double the speed.  
-Likewise, a fast conversion from strings to enums is also included.  If the string is empty, by default the mapper will err, 
-if the string is null, the enum will initialize to 0 which typically represents the default enum value.
+Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty, 
+the enum will initialize to the first enum value.
 
 In addition, fast Enum mapper extension methods are included for convenience.
 

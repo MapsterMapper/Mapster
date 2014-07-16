@@ -74,7 +74,7 @@ namespace Fpr.Tests
         }
 
         [Test]
-        public void Null_String_Is_Mapped_To_Enum()
+        public void Null_String_Is_Mapped_To_Enum_Default()
         {
             TypeAdapterConfig<EmployeeWithStringEnum, EmployeeDTO>
                 .NewConfig();
@@ -91,11 +91,20 @@ namespace Fpr.Tests
         }
 
         [Test]
-        public void Empty_String_Mapped_To_Enum_Throws()
+        public void Empty_String_Is_Mapped_To_Enum_Default()
         {
+            TypeAdapterConfig<EmployeeWithStringEnum, EmployeeDTO>
+                .NewConfig();
+
             var employee = new EmployeeWithStringEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = "" };
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => ClassAdapter<EmployeeWithStringEnum, EmployeeDTO>.Adapt(employee));
+            var dto = TypeAdapter.Adapt<EmployeeWithStringEnum, EmployeeDTO>(employee);
+
+            dto.ShouldNotBeNull();
+
+            dto.Id.ShouldEqual(employee.Id);
+            dto.Name.ShouldEqual(employee.Name);
+            dto.Department.ShouldEqual(Departments.Finance);
 
         }
 

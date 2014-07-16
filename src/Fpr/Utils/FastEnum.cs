@@ -64,12 +64,12 @@ namespace Fpr.Utils
         {
             TEnum match;
 
-            if (val == null)
+            if (string.IsNullOrEmpty(val))
             {
                 return _lookup.First().Value;
             }
             
-            if (val == string.Empty || !_lookup.TryGetValue(val.ToLowerInvariant(), out match))
+            if (!_lookup.TryGetValue(val.ToLowerInvariant(), out match))
             {
                 throw new ArgumentOutOfRangeException(string.Format("'{0}' is invalid. Please choose from {1}", val, ValidChoices()));
             }
