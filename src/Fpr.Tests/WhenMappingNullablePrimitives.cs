@@ -12,11 +12,11 @@ namespace Fpr.Tests
         {
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
 
-            var dto = new NullablePrimitivesDto();
+            var dto = new NonNullablePrimitivesDto();
 
             TypeAdapter.Adapt(poco, dto);
 
-            dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NullablePrimitivesDto>(poco);
+            dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
             dto.Id.ShouldEqual(poco.Id);
             dto.Name.ShouldEqual(poco.Name);
@@ -28,7 +28,7 @@ namespace Fpr.Tests
         {
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
 
-            NullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NullablePrimitivesDto>(poco);
+            NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
             dto.Id.ShouldEqual(poco.Id);
             dto.Name.ShouldEqual(poco.Name);
@@ -45,18 +45,67 @@ namespace Fpr.Tests
             dto.Id.ShouldEqual(poco.Id);
             dto.Name.ShouldEqual(poco.Name);
             dto.IsImport.ShouldBeNull();
+            dto.Amount.ShouldBeNull();
+        }
+
+
+        [Test]
+        public void Can_Map_From_Nullable_Source_With_Values_To_Non_Nullable_Target()
+        {
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig();
+            var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName", IsImport = true, Amount = 10};
+
+            NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
+
+            dto.Id.ShouldEqual(poco.Id);
+            dto.Name.ShouldEqual(poco.Name);
+            dto.IsImport.ShouldBeTrue();
+            dto.Amount.ShouldEqual(10);
+        }
+
+        [Test]
+        public void Can_Map_From_Nullable_Source_Without_Values_To_Non_Nullable_Target()
+        {
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig();
+            var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName"};
+
+            NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
+
+            dto.Id.ShouldEqual(poco.Id);
+            dto.Name.ShouldEqual(poco.Name);
+            dto.IsImport.ShouldBeFalse();
+            dto.Amount.ShouldEqual(0);
+        }
+
+        [Test]
+        public void Can_Map_From_Nullable_Source_With_Values_To_Explicitly_Mapped_Non_Nullable_Target()
+        {
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
+                .MapFrom(dest => dest.Amount, src => src.Amount)
+                .MapFrom(dest => dest.IsImport, src => src.IsImport)
+                .MapFrom(dest => dest.MyFee, src => src.Fee);
+
+            var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName", Fee = 20, IsImport = true, Amount = 10};
+
+            NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
+
+            dto.Id.ShouldEqual(poco.Id);
+            dto.Name.ShouldEqual(poco.Name);
+            dto.IsImport.ShouldBeTrue();
+            dto.Amount.ShouldEqual(10);
+            dto.MyFee.ShouldEqual(20);
         }
 
         [Test]
         public void Can_Map_From_Non_Nullable_Source_To_Nullable_Target()
         {
-            var dto = new NullablePrimitivesDto { Id = Guid.NewGuid(), Name = "TestName", IsImport = true};
+            var dto = new NonNullablePrimitivesDto { Id = Guid.NewGuid(), Name = "TestName", IsImport = true};
 
-            NullablePrimitivesPoco poco = TypeAdapter.Adapt<NullablePrimitivesDto, NullablePrimitivesPoco>(dto);
+            NullablePrimitivesPoco poco = TypeAdapter.Adapt<NonNullablePrimitivesDto, NullablePrimitivesPoco>(dto);
 
             poco.Id.ShouldEqual(dto.Id);
             poco.Name.ShouldEqual(dto.Name);
-            poco.IsImport.Value.ShouldBeTrue();
+            poco.IsImport.GetValueOrDefault().ShouldBeTrue();
         }
 
         #region TestClasses
@@ -67,6 +116,10 @@ namespace Fpr.Tests
             public string Name { get; set; }
 
             public bool? IsImport { get; set; }
+
+            public decimal? Amount { get; set; }
+
+            public decimal? Fee { get; set; }
         }
 
         public class NullablePrimitivesPoco2
@@ -75,14 +128,22 @@ namespace Fpr.Tests
             public string Name { get; set; }
 
             public bool? IsImport { get; set; }
+
+            public decimal? Amount { get; set; }
+
+            public decimal? Fee { get; set; }
         }
 
-        public class NullablePrimitivesDto
+        public class NonNullablePrimitivesDto
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
 
             public bool IsImport { get; set; }
+
+            public decimal Amount { get; set; }
+
+            public decimal MyFee { get; set; }
         }
 
         #endregion 

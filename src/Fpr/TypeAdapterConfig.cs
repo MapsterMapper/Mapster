@@ -119,6 +119,13 @@ namespace Fpr
                 return this;
 
             var memberExp = member.Body as MemberExpression;
+
+            if (memberExp == null)
+            {
+                var ubody = (UnaryExpression)member.Body;
+                memberExp = ubody.Operand as MemberExpression;
+            }
+
             if (memberExp == null)
                 return this;
 
@@ -135,6 +142,13 @@ namespace Fpr
         public TypeAdapterConfig<TSource, TDestination> NewInstanceForSameType(bool newInstanceForSameType)
         {
             Configuration.NewInstanceForSameType = newInstanceForSameType;
+
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> ApplyToDescendents(bool applyToDescendents)
+        {
+            Configuration.ApplyToDescendents = applyToDescendents;
 
             return this;
         }

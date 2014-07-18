@@ -63,6 +63,9 @@ namespace Fpr
         /// </summary>
         public bool? DefaultEnumsOnNullOrEmptyString { get; set; }
 
-
+        /// <summary>
+        /// Does this mapping apply to descendent classes of the destination class 
+        /// </summary>
+        public bool? ApplyToDescendents { get; set; }
     }
 }

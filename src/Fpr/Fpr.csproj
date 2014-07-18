@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Adapter.cs" />
     <Compile Include="TransformsCollection.cs" />
     <Compile Include="Registration\Registrar.cs" />
     <Compile Include="Registration\Registry.cs">

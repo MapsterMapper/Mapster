@@ -36,6 +36,11 @@ namespace Fpr
             return GetAdapter(sourceType, destinationType, true)(null, new[] { source, destination });
         }
 
+        public static IAdapter GetInstance()
+        {
+            return new Adapter();
+        }
+
         private static FastInvokeHandler GetAdapter(Type sourceType, Type destinationType, bool hasDestination = false)
         {
             int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType, hasDestination);

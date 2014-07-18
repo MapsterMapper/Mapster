@@ -16,7 +16,10 @@ This fork fixes some issues and includes some additions to make the mapper more 
 * Assembly scanning for custom mappers
 * Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).\
 * Type specific destination transforms (typically such as trim or lowercase all strings).  Can be used on any destination type.
-
+* Custom destination creation (not just default constructor)
+* Automatic Enum <=> String mapping
+* Mapper instance creation for injection situations
+* Lots more stuff below...
 
 ###Examples
 ####Mapping to a new object
@@ -136,6 +139,12 @@ Forcing all classes to be explicitly mapped:
     TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
     //This means you have to have an explicit configuration for each class, even if it's just:
     TypeAdapterConfig<Source, Destination>.NewConfig();
+
+####Mapper Instance Creation
+In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container.  Fpr has
+the IAdapter and Adapter to fill this need:
+
+    IAdapter instance = TypeAdapter.GetInstance();
 
 
 ###Assembly Scanning for Custom Mappings

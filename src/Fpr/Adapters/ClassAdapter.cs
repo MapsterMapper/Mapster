@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Remoting;
 using Fpr.Models;
 using Fpr.Utils;
 
@@ -63,6 +64,38 @@ namespace Fpr.Adapters
                 return default(TDestination);
 
             var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
+
+            //if (config == null)
+            //{
+            //    //find a predecessor adapter if one is present
+            //    Type sourceType = typeof (TSource);
+            //    Type destinationType = typeof (TDestination);
+            //    var objectType = typeof (object);
+
+                
+            //    while (config == null)
+            //    {
+            //        var baseSourceType = sourceType.BaseType;
+            //        if (baseSourceType != null && baseSourceType != objectType)
+            //        {
+            //            sourceType = baseSourceType;
+
+            //            Type type = typeof(TypeAdapterConfig<,>).MakeGenericType(sourceType, destinationType);
+            //            config = Activator.CreateInstance(type);
+
+
+            //            config = TypeAdapterConfig<TSource, TDestination>.Configuration;
+            //        }
+            //        else
+            //        {
+            //            destinationType = destinationType.BaseType;
+            //            if (destinationType == null || destinationType == objectType)
+            //            {
+            //                break;
+            //            }
+            //        }
+            //    }
+            //}
 
             var hasConfig = config != null;
 
