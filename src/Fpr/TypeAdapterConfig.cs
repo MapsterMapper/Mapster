@@ -146,13 +146,6 @@ namespace Fpr
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> ApplyToDescendents(bool applyToDescendents)
-        {
-            Configuration.ApplyToDescendents = applyToDescendents;
-
-            return this;
-        }
-
         public TypeAdapterConfig<TSource, TDestination> IgnoreNullValues(bool ignoreNullValues)
         {
             Configuration.IgnoreNullValues = ignoreNullValues;
@@ -163,13 +156,6 @@ namespace Fpr
         public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Func<TDestination> constructUsing)
         {
             Configuration.ConstructUsing = constructUsing;
-
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> DefaultEnumsOnNullOrEmptyString(bool defaultEnumsOnNullOrEmptyString)
-        {
-            Configuration.DefaultEnumsOnNullOrEmptyString = defaultEnumsOnNullOrEmptyString;
 
             return this;
         }

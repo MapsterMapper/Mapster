@@ -9,8 +9,6 @@ namespace Fpr
 
         public bool RequireExplicitMapping { get; set; }
 
-        public bool ApplyMappingToDescendents { get; set; }
-
         public TransformsCollection DestinationTransforms
         {
             get { return _destinationTransforms; }

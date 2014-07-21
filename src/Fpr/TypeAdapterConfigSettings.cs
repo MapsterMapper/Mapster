@@ -58,14 +58,5 @@ namespace Fpr
         /// </summary>
         public bool? IgnoreNullValues { get; set; }
 
-        /// <summary>
-        /// Determine whether or not to convert a null or empty string to the default enumeration value
-        /// </summary>
-        public bool? DefaultEnumsOnNullOrEmptyString { get; set; }
-
-        /// <summary>
-        /// Does this mapping apply to descendent classes of the destination class 
-        /// </summary>
-        public bool? ApplyToDescendents { get; set; }
     }
 }
