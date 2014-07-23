@@ -37,7 +37,7 @@ namespace Fpr.Adapters
          
             #region Check MaxDepth
 
-            var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
             var hasConfig = config != null;
 
             var hasMaxDepth = hasConfig && config.MaxDepth > 0;

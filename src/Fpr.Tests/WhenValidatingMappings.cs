@@ -1,0 +1,198 @@
+﻿using System;
+using System.Collections.Generic;
+using NUnit.Framework;
+using Should;
+
+namespace Fpr.Tests
+{
+    [TestFixture]
+    public class WhenValidatingMappings
+    {
+        [Test]
+        public void Simple_Poco_With_Missing_Member_Throws_On_Mapping_Validate()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
+
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(config.Validate);
+
+            exception.Message.ShouldContain("SimplePoco");
+            exception.Message.ShouldContain("SimpleDto");
+            exception.Message.ShouldContain("UnmappedMember");
+            exception.Message.ShouldContain("UnmappedMember2");
+
+            Console.WriteLine(exception.Message);
+       }
+
+        [Test]
+        public void Poco_Without_Missing_Members_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDtoWithoutMissingMembers>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Flattened_Members_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimpleFlattenedPoco, SimpleDto>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Deep_Flattened_Members_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<CFlat, DFlat>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Ignored_Missing_Members_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .IgnoreMember(dest => dest.UnmappedMember)
+                .IgnoreMember(dest => dest.UnmappedMember2);
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Resolved_Missing_Members_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .MapFrom(dest => dest.UnmappedMember, src => src.Name)
+                .MapFrom(dest => dest.UnmappedMember2, src => src.Name);
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Unmapped_Child_Collection_Throws()
+        {
+            var config = TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig();
+
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(config.Validate);
+
+            exception.Message.ShouldContain("ParentPoco");
+            exception.Message.ShouldContain("ParentDto");
+            exception.Message.ShouldContain("UnmappedChildren");
+
+            Console.WriteLine(exception.Message);
+
+        }
+
+        [Test]
+        public void Global_Validate_With_Unmapped_Members_Throws()
+        {
+            TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig();
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
+
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(TypeAdapterConfig.Validate);
+
+            exception.Message.ShouldContain("SimplePoco");
+            exception.Message.ShouldContain("SimpleDto");
+            exception.Message.ShouldContain("UnmappedMember");
+            exception.Message.ShouldContain("UnmappedMember2");
+
+            exception.Message.ShouldContain("ParentPoco");
+            exception.Message.ShouldContain("ParentDto");
+            exception.Message.ShouldContain("UnmappedChildren");
+
+            Console.WriteLine(exception.Message);
+
+        }
+
+
+        #region TestClasses
+
+        public class SimplePoco
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class SimpleFlattenedPoco
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public string GetUnmappedMember()
+            {
+                return null;
+            }
+
+            public string GetUnmappedMember2()
+            {
+                return null;
+            }
+        }
+
+        public class SimpleDtoWithoutMissingMembers
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class SimpleDto
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public string UnmappedMember { get; set; }
+
+            public string UnmappedMember2 { get; set; }
+        }
+
+        public class ChildPoco
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class ChildDto
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public string UnmappedChildMember { get; set; }
+        }
+
+        public class ParentPoco
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public List<ChildPoco> Children { get; set; }
+        }
+
+        public class ParentDto
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public List<ChildDto> Children { get; set; }
+
+            public List<ChildDto> UnmappedChildren { get; set; }
+        }
+
+        public class BFlat
+        {
+            public decimal Total { get; set; }
+        }
+
+        public class CFlat
+        {
+            public B BClass { get; set; }
+        }
+
+        public class DFlat
+        {
+            public decimal BClassTotal { get; set; }
+        }
+
+        #endregion
+
+         
+    }
+}

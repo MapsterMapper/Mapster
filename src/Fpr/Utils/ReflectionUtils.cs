@@ -210,6 +210,25 @@ namespace Fpr.Utils
             return memberExpr;
         }
 
+        public static void GetDeepFlattening(Type type, string propertyName, List<GenericGetter> invokers)
+        {
+            var properties = type.GetProperties();
+            for (int j = 0; j < properties.Length; j++)
+            {
+                var property = properties[j];
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string)
+                    && propertyName.StartsWith(property.Name))
+                {
+                    invokers.Add(PropertyCaller.CreateGetMethod(property));
+                    GetDeepFlattening(property.PropertyType, propertyName.Substring(property.Name.Length), invokers);
+                }
+                else if (string.Equals(propertyName, property.Name))
+                {
+                    invokers.Add(PropertyCaller.CreateGetMethod(property));
+                }
+            }
+        }
+
 
         public static Dictionary<int, int> Clone(Dictionary<int, int> values)
         {

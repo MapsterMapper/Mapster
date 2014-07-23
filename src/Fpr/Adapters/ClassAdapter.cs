@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Remoting;
 using Fpr.Models;
 using Fpr.Utils;
 
@@ -32,8 +31,8 @@ namespace Fpr.Adapters
             get
             {
                 return _destinationFactory ?? (_destinationFactory = FastObjectFactory.CreateObjectFactory(
-                    TypeAdapterConfig<TSource, TDestination>.Configuration != null
-                        ? TypeAdapterConfig<TSource, TDestination>.Configuration.ConstructUsing
+                    TypeAdapterConfig<TSource, TDestination>.ConfigSettings != null
+                        ? TypeAdapterConfig<TSource, TDestination>.ConfigSettings.ConstructUsing
                         : null));
             }
         }
@@ -63,39 +62,7 @@ namespace Fpr.Adapters
             if (source == null)
                 return default(TDestination);
 
-            var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
-
-            //if (config == null)
-            //{
-            //    //find a predecessor adapter if one is present
-            //    Type sourceType = typeof (TSource);
-            //    Type destinationType = typeof (TDestination);
-            //    var objectType = typeof (object);
-
-                
-            //    while (config == null)
-            //    {
-            //        var baseSourceType = sourceType.BaseType;
-            //        if (baseSourceType != null && baseSourceType != objectType)
-            //        {
-            //            sourceType = baseSourceType;
-
-            //            Type type = typeof(TypeAdapterConfig<,>).MakeGenericType(sourceType, destinationType);
-            //            config = Activator.CreateInstance(type);
-
-
-            //            config = TypeAdapterConfig<TSource, TDestination>.Configuration;
-            //        }
-            //        else
-            //        {
-            //            destinationType = destinationType.BaseType;
-            //            if (destinationType == null || destinationType == objectType)
-            //            {
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
             var hasConfig = config != null;
 
@@ -264,9 +231,8 @@ namespace Fpr.Adapters
             var properties = new List<PropertyModel<TSource, TDestination>>();
 
             MemberInfo[] destinationMembers = ReflectionUtils.GetPublicFieldsAndProperties(destinationType);
-            int length = destinationMembers.Length;
 
-            var config = TypeAdapterConfig<TSource, TDestination>.Configuration;
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
             bool hasConfig = config != null;
 
@@ -278,7 +244,7 @@ namespace Fpr.Adapters
             IDictionary<Type, Func<object, object>> destinationTransforms = hasConfig 
                 ? config.DestinationTransforms.Transforms : TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
 
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < destinationMembers.Length; i++)
             {
                 MemberInfo destinationMember = destinationMembers[i];
                 bool isProperty = destinationMember is PropertyInfo;
@@ -424,7 +390,7 @@ namespace Fpr.Adapters
             List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var delegates = new List<GenericGetter>();
-            GetDeepFlattening(sourceType, destinationMember.Name, delegates);
+            ReflectionUtils.GetDeepFlattening(sourceType, destinationMember.Name, delegates);
             if (delegates.Count > 0)
             {
                 var setter = PropertyCaller<TDestination>.CreateSetMethod((PropertyInfo) destinationMember);
@@ -538,25 +504,6 @@ namespace Fpr.Adapters
             return false;
         }
 
-
-        private static void GetDeepFlattening(Type type, string propertyName, List<GenericGetter> invokers)
-        {
-            var properties = type.GetProperties();
-            for (int j = 0; j < properties.Length; j++)
-            {
-                var property = properties[j];
-                if (property.PropertyType.IsClass && property.PropertyType != typeof (string) 
-                    && propertyName.StartsWith(property.Name))
-                {
-                    invokers.Add(PropertyCaller.CreateGetMethod(property));
-                    GetDeepFlattening(property.PropertyType, propertyName.Substring(property.Name.Length), invokers);
-                }
-                else if (string.Equals(propertyName, property.Name))
-                {
-                    invokers.Add(PropertyCaller.CreateGetMethod(property));
-                }
-            }
-        }
 
         private static string ExtractPropertyName(Delegate caller, string prefix)
         {

@@ -10,7 +10,6 @@ namespace Fpr
     internal class BaseProjectionConfig
     {
         internal List<string> IgnoreMembers = new List<string>();
-
         internal List<ExpressionModel> Expressions = new List<ExpressionModel>();
 
         public int MaxDepth { get; set; }
@@ -42,7 +41,6 @@ namespace Fpr
                         ignoreMembers.Add(memberExp.Member.Name);
                     }
                 }
-
                 SetCache(ignoreMembers.ToArray());
             }
 
@@ -60,7 +58,6 @@ namespace Fpr
                     SetCache(members);
                 }
             }
-
             return this;
         }
 
