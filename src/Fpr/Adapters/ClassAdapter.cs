@@ -294,12 +294,11 @@ namespace Fpr.Adapters
                     //if (!ReflectionUtils.IsNullable(destinationPropertyType) && destinationPropertyType != typeof(string) && ReflectionUtils.IsPrimitive(destinationPropertyType))
                     //    propertyModel.DefaultDestinationValue = new TDestination();
 
-                    if (ReflectionUtils.IsPrimitive(destinationPropertyType))
+                    if (destinationPropertyType.IsPrimitiveRoot())
                     {
                         propertyModel.ConvertType = 1;
 
-                        var converter = ReflectionUtils.CreatePrimitiveConverter(sourceProperty.PropertyType,
-                            destinationPropertyType);
+                        var converter = sourceProperty.PropertyType.CreatePrimitiveConverter(destinationPropertyType);
                         if (converter != null)
                             propertyModel.AdaptInvoker = converter;
                     }
@@ -312,7 +311,7 @@ namespace Fpr.Adapters
                             propertyModel.AdaptInvoker =
                                 FastInvoker.GetMethodInvoker(
                                     typeof (CollectionAdapter<,,>).MakeGenericType(sourceProperty.PropertyType,
-                                        ReflectionUtils.ExtractElementType(destinationPropertyType),
+                                        destinationPropertyType.ExtractCollectionType(),
                                         destinationPropertyType)
                                         .GetMethod("Adapt",
                                             new[]

@@ -63,12 +63,12 @@ namespace Fpr.Utils
             return dynamicMethod.CreateDelegate(delegateType);
         }
 
-        public static object CreateInstance(this Type type)
+        public static object CreateInstance(Type type)
         {
             Func<object> constructor;
             if (!_constructors.TryGetValue(type, out constructor))
             {
-                constructor = type.GetConstructorDelegate();
+                constructor = GetConstructorDelegate(type);
                 _constructors.TryAdd(type, constructor);
             }
             return constructor();

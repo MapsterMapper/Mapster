@@ -177,10 +177,10 @@ namespace Fpr.Adapters
         {
             var cam = new CollectionAdapterModel();
 
-            var sourceElementType = ReflectionUtils.ExtractElementType(typeof(TSource));
+            var sourceElementType = ReflectionUtils.ExtractCollectionType(typeof(TSource));
             var destinationElementType = typeof(TDestinationElementType);
 
-            if (ReflectionUtils.IsPrimitive(destinationElementType) || destinationElementType == typeof(object))
+            if (ReflectionUtils.IsPrimitiveRoot(destinationElementType) || destinationElementType == typeof(object))
             {
                 cam.IsPrimitive = true;
 
@@ -191,7 +191,7 @@ namespace Fpr.Adapters
             else if (ReflectionUtils.IsCollection(destinationElementType))
             {
                 var methodInfo = typeof(CollectionAdapter<,,>)
-                    .MakeGenericType(sourceElementType, ReflectionUtils.ExtractElementType(destinationElementType), destinationElementType)
+                    .MakeGenericType(sourceElementType, ReflectionUtils.ExtractCollectionType(destinationElementType), destinationElementType)
                     .GetMethod("Adapt", new[] { sourceElementType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }

@@ -61,7 +61,7 @@ namespace Fpr
 
                 FastInvokeHandler invoker;
 
-                if (ReflectionUtils.IsPrimitive(sourceType) && ReflectionUtils.IsPrimitive(destinationType))
+                if (ReflectionUtils.IsPrimitiveRoot(sourceType) && ReflectionUtils.IsPrimitiveRoot(destinationType))
                 {
                     invoker = FastInvoker.GetMethodInvoker(
                                 typeof (PrimitiveAdapter<,>).MakeGenericType(sourceType, destinationType)
@@ -71,7 +71,7 @@ namespace Fpr
                 {
                     invoker = FastInvoker.GetMethodInvoker(
                             typeof (CollectionAdapter<,,>).MakeGenericType(sourceType,
-                                ReflectionUtils.ExtractElementType(destinationType), destinationType)
+                                ReflectionUtils.ExtractCollectionType(destinationType), destinationType)
                                 .GetMethod("Adapt", arguments));
                 }
                 else

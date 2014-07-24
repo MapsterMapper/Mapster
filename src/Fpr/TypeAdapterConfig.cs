@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Fpr.Adapters;
 using Fpr.Models;
 using Fpr.Utils;
@@ -88,6 +89,13 @@ namespace Fpr
             }
         }
 
+        internal static bool ExistsInConfigurationCache(Type sourceType, Type destinationType)
+        {
+            var key = ReflectionUtils.GetHashKey(sourceType, destinationType);
+
+            return _configurationCache.ContainsKey(key);
+        }
+
     }
 
 
@@ -95,7 +103,8 @@ namespace Fpr
     {
         internal static TypeAdapterConfigSettings<TSource, TDestination> ConfigSettings;
 
-        private readonly ProjectionConfig<TSource, TDestination> _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
+        private readonly ProjectionConfig<TSource, TDestination> _projection =
+            ProjectionConfig<TSource, TDestination>.NewConfig();
 
         private TypeAdapterConfig()
         {
@@ -111,7 +120,7 @@ namespace Fpr
             {
                 ConfigSettings.Reset();
             }
-            ClassAdapter<TSource,TDestination>.Reset();
+            ClassAdapter<TSource, TDestination>.Reset();
 
             var config = new TypeAdapterConfig<TSource, TDestination>();
             TypeAdapterConfig.UpsertConfigurationCache(config);
@@ -125,7 +134,8 @@ namespace Fpr
             ClassAdapter<TSource, TDestination>.Reset();
         }
 
-        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params Expression<Func<TDestination, object>>[] members)
+        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(
+            params Expression<Func<TDestination, object>>[] members)
         {
             _projection.IgnoreMember(members);
 
@@ -150,7 +160,11 @@ namespace Fpr
 
             if (members != null && members.Length > 0)
             {
-                members = typeof(TDestination).GetProperties().Where(p => members.Contains(p.Name)).Select(p => p.Name).ToArray();
+                members =
+                    typeof (TDestination).GetProperties()
+                        .Where(p => members.Contains(p.Name))
+                        .Select(p => p.Name)
+                        .ToArray();
 
                 if (members.Length > 0)
                 {
@@ -164,8 +178,9 @@ namespace Fpr
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> MapFrom<TKey>(Expression<Func<TDestination, TKey>> member, Expression<Func<TSource, TKey>> source,
-           Expression<Func<TSource, bool>> shouldMap = null)
+        public TypeAdapterConfig<TSource, TDestination> MapFrom<TKey>(Expression<Func<TDestination, TKey>> member,
+            Expression<Func<TSource, TKey>> source,
+            Expression<Func<TSource, bool>> shouldMap = null)
         {
             _projection.MapFrom(member, source);
 
@@ -176,7 +191,7 @@ namespace Fpr
 
             if (memberExp == null)
             {
-                var ubody = (UnaryExpression)member.Body;
+                var ubody = (UnaryExpression) member.Body;
                 memberExp = ubody.Operand as MemberExpression;
             }
 
@@ -188,7 +203,12 @@ namespace Fpr
 
             Func<TSource, bool> condition = shouldMap != null ? shouldMap.Compile() : null;
 
-            ConfigSettings.Resolvers.Add(new InvokerModel<TSource> { MemberName = memberExp.Member.Name, Invoker = resolver, Condition = condition });
+            ConfigSettings.Resolvers.Add(new InvokerModel<TSource>
+            {
+                MemberName = memberExp.Member.Name,
+                Invoker = resolver,
+                Condition = condition
+            });
 
             return this;
         }
@@ -261,17 +281,23 @@ namespace Fpr
                 }
                 return false;
             }
+
+            if (TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
+            {
+                errorList.AddRange(GetMissingExplicitMappings());
+            }
+
             return true;
         }
 
         private List<string> GetUnmappedMembers()
         {
-            var destType = typeof(TDestination);
+            var destType = typeof (TDestination);
 
             List<string> unmappedMembers = destType.GetProperties().Select(x => x.Name)
                 .Concat(destType.GetFields().Select(x => x.Name)).ToList();
 
-            var sourceType = typeof(TSource);
+            var sourceType = typeof (TSource);
             List<string> sourceMembers = sourceType.GetProperties().Select(x => x.Name).ToList();
             sourceMembers.AddRange(sourceType.GetFields().Select(x => x.Name).ToList());
             //Remove items that have resolvers or are ignored
@@ -289,6 +315,62 @@ namespace Fpr
             });
 
             return unmappedMembers;
+        }
+
+
+        private List<string> GetMissingExplicitMappings()
+        {
+            var errorList = new List<string>();
+
+            var destType = typeof (TDestination);
+
+            var unmappedMembers = new List<MemberInfo>(destType.GetProperties());
+            unmappedMembers.AddRange(destType.GetFields());
+
+            unmappedMembers.RemoveAll(x => ConfigSettings.IgnoreMembers.Contains(x.Name));
+            unmappedMembers.RemoveAll(x => ConfigSettings.Resolvers.Any(r => r.MemberName == x.Name));
+
+            var sourceType = typeof (TSource);
+
+            //Remove items that have resolvers or are ignored
+            var sourceMembers = new List<MemberInfo>(sourceType.GetProperties());
+            sourceMembers.AddRange(sourceType.GetFields());
+
+            foreach (var sourceMember in sourceMembers)
+            {
+                var destMemberInfo = unmappedMembers.FirstOrDefault(x => x.Name == sourceMember.Name);
+
+                if (destMemberInfo == null)
+                    continue;
+
+                unmappedMembers.Remove(destMemberInfo);
+
+                Type destMemberType = sourceMember.GetMemberType();
+                if (destMemberType.IsCollection())
+                {
+                    destMemberType = destMemberType.ExtractCollectionType();
+                }
+
+                if (destMemberType.IsPrimitive)
+                    continue;
+
+                Type sourceMemberType = sourceMember.GetMemberType();
+                if (sourceMemberType.IsCollection())
+                {
+                    sourceMemberType = sourceMemberType.ExtractCollectionType();
+                }
+
+                //See if the destination member has a mapping if needed
+                if (!TypeAdapterConfig.ExistsInConfigurationCache(sourceMemberType, destMemberType))
+                {
+                    errorList.Add(
+                        string.Format(
+                            "Explicit Mapping is turned on and the following source({0}) and destination({1}) types do not have a mapping defined.",
+                            sourceMemberType.Name, destMemberType.Name));
+                }
+            }
+
+            return errorList;
         }
 
     }
