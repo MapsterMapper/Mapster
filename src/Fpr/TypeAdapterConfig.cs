@@ -309,12 +309,11 @@ namespace Fpr
         {
             var destType = typeof (TDestination);
 
-            List<string> unmappedMembers = destType.GetProperties().Where(x => x.GetSetMethod() != null).Select(x => x.Name)
-                .Concat(destType.GetFields().Select(x => x.Name)).ToList();
+            List<string> unmappedMembers = destType.GetPublicFieldsAndProperties().Select(x => x.Name).ToList();
 
             var sourceType = typeof (TSource);
-            List<string> sourceMembers = sourceType.GetProperties().Select(x => x.Name).ToList();
-            sourceMembers.AddRange(sourceType.GetFields().Select(x => x.Name).ToList());
+            List<string> sourceMembers = sourceType.GetPublicFieldsAndProperties().Select(x => x.Name).ToList();
+
             //Remove items that have resolvers or are ignored
             unmappedMembers.RemoveAll(sourceMembers.Contains);
             unmappedMembers.RemoveAll(ConfigSettings.IgnoreMembers.Contains);
@@ -339,8 +338,7 @@ namespace Fpr
 
             var destType = typeof (TDestination);
 
-            var unmappedMembers = new List<MemberInfo>(destType.GetProperties().Where(x => x.GetSetMethod() != null));
-            unmappedMembers.AddRange(destType.GetFields());
+            var unmappedMembers = destType.GetPublicFieldsAndProperties().ToList();
 
             unmappedMembers.RemoveAll(x => ConfigSettings.IgnoreMembers.Contains(x.Name));
             unmappedMembers.RemoveAll(x => ConfigSettings.Resolvers.Any(r => r.MemberName == x.Name));
@@ -348,8 +346,7 @@ namespace Fpr
             var sourceType = typeof (TSource);
 
             //Remove items that have resolvers or are ignored
-            var sourceMembers = new List<MemberInfo>(sourceType.GetProperties());
-            sourceMembers.AddRange(sourceType.GetFields());
+            var sourceMembers = sourceType.GetPublicFieldsAndProperties().ToList();
 
             foreach (var sourceMember in sourceMembers)
             {

@@ -39,7 +39,7 @@ namespace Fpr.Utils
             return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
         }
 
-        public static MemberInfo[] GetPublicFieldsAndProperties(Type type)
+        public static MemberInfo[] GetPublicFieldsAndProperties(this Type type)
         {
             return type
                 .GetMembers(BindingFlags.Instance | BindingFlags.Public)
