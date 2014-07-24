@@ -230,7 +230,7 @@ namespace Fpr.Adapters
             var fields = new List<FieldModel>();
             var properties = new List<PropertyModel<TSource, TDestination>>();
 
-            MemberInfo[] destinationMembers = ReflectionUtils.GetPublicFieldsAndProperties(destinationType);
+            List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties();
 
             var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
@@ -244,7 +244,7 @@ namespace Fpr.Adapters
             IDictionary<Type, Func<object, object>> destinationTransforms = hasConfig 
                 ? config.DestinationTransforms.Transforms : TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
 
-            for (int i = 0; i < destinationMembers.Length; i++)
+            for (int i = 0; i < destinationMembers.Count; i++)
             {
                 MemberInfo destinationMember = destinationMembers[i];
                 bool isProperty = destinationMember is PropertyInfo;
@@ -306,7 +306,7 @@ namespace Fpr.Adapters
                     {
                         propertyModel.ConvertType = 4;
 
-                        if (ReflectionUtils.IsCollection(destinationPropertyType)) //collections
+                        if (destinationPropertyType.IsCollection()) //collections
                         {
                             propertyModel.AdaptInvoker =
                                 FastInvoker.GetMethodInvoker(

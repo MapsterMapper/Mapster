@@ -39,12 +39,16 @@ namespace Fpr.Utils
             return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
         }
 
-        public static MemberInfo[] GetPublicFieldsAndProperties(this Type type)
+        public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetters = true)
         {
-            return type
-                .GetMembers(BindingFlags.Instance | BindingFlags.Public)
-                .Where(mi => mi.MemberType == MemberTypes.Property || mi.MemberType == MemberTypes.Field)
-                .ToArray();
+            var results = new List<MemberInfo>();
+
+            results.AddRange(type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .Where(x => allowNonPublicSetters || x.GetSetMethod() != null));
+
+            results.AddRange(type.GetFields(BindingFlags.Instance | BindingFlags.Public));
+
+            return results;
         }
 
         public static MemberInfo GetPublicFieldOrProperty(Type type, bool isProperty, string name)
