@@ -143,7 +143,7 @@ Forcing all classes to be explicitly mapped:
 ####Validating Mappings
 Both a specific TypeAdapterConfig<Source, Destination> or all current configurations can be validated.  This will throw
 and ArgumentOutOfRangeException that contains all of the existing missing destination mappings.  In addition, if Explicit Mappings (above)
-are enabled, it will also include errors for classes that are not registered at all with the container.
+are enabled, it will also include errors for classes that are not registered at all with the mapper.
 
     //Validate a specific config
     var config = TypeAdapterConfig<Source, Destination>.NewConfig();
