@@ -100,9 +100,41 @@ namespace Fpr.Tests
             exception.Message.ShouldContain("UnmappedChildren");
 
             Console.WriteLine(exception.Message);
-
         }
 
+
+        [Test]
+        public void Validate_With_Unmapped_Classes_Throws_If_Explicit_Mapping_Enabled()
+        {
+            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+            var config = TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig();
+
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(config.Validate);
+
+            exception.Message.ShouldContain("ParentPoco");
+            exception.Message.ShouldContain("ParentDto");
+            exception.Message.ShouldContain("ChildPoco");
+            exception.Message.ShouldContain("ChildDto");
+
+            Console.WriteLine(exception.Message);
+        }
+
+        [Test]
+        public void Global_Validate_With_Unmapped_Classes_Throws_If_Explicit_Mapping_Enabled()
+        {
+            TypeAdapterConfig.ClearConfigurationCache();
+            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+            TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig();
+
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(TypeAdapterConfig.Validate);
+
+            Console.WriteLine(exception.Message);
+
+            exception.Message.ShouldContain("ParentPoco");
+            exception.Message.ShouldContain("ParentDto");
+            exception.Message.ShouldContain("ChildPoco");
+            exception.Message.ShouldContain("ChildDto");
+        }
 
         #region TestClasses
 

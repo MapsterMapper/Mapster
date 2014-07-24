@@ -140,6 +140,20 @@ Forcing all classes to be explicitly mapped:
     //This means you have to have an explicit configuration for each class, even if it's just:
     TypeAdapterConfig<Source, Destination>.NewConfig();
 
+####Validating Mappings
+Both a specific TypeAdapterConfig<Source, Destination> or all current configurations can be validated.  This will throw
+and ArgumentOutOfRangeException that contains all of the existing missing destination mappings.  In addition, if Explicit Mappings (above)
+are enabled, it will also include errors for classes that are not registered at all with the container.
+
+    //Validate a specific config
+    var config = TypeAdapterConfig<Source, Destination>.NewConfig();
+    config.Validate();
+
+    //Validate globally
+    TypeAdapterConfig<Source, Destination>.NewConfig();
+    TypeAdapterConfig<Source2, Destination2>.NewConfig();
+    TypeAdapterConfig.Validate();
+
 ####Mapper Instance Creation
 In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container.  Fpr has
 the IAdapter and Adapter to fill this need:

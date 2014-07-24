@@ -96,6 +96,11 @@ namespace Fpr
             return _configurationCache.ContainsKey(key);
         }
 
+        internal static void ClearConfigurationCache()
+        {
+            _configurationCache.Clear();
+        }
+
     }
 
 
@@ -258,14 +263,20 @@ namespace Fpr
         {
             var errorList = new List<string>();
 
-            if (!Validate(errorList))
+            Validate(errorList);
+
+            if (TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
             {
-                throw new ArgumentOutOfRangeException(errorList[0]);
+                errorList.AddRange(GetMissingExplicitMappings());
             }
+
+            if(errorList.Count > 0)
+                throw new ArgumentOutOfRangeException(string.Join(Environment.NewLine, errorList));
         }
 
         public bool Validate(List<string> errorList)
         {
+            bool isValid = true;
             var unmappedMembers = GetUnmappedMembers();
 
             if (unmappedMembers.Count > 0)
@@ -279,15 +290,19 @@ namespace Fpr
                 {
                     errorList.Add(message);
                 }
-                return false;
+                isValid = false;
             }
 
             if (TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
             {
-                errorList.AddRange(GetMissingExplicitMappings());
+                if (errorList != null)
+                {
+                    errorList.AddRange(GetMissingExplicitMappings());
+                }
+                isValid = false;
             }
 
-            return true;
+            return isValid;
         }
 
         private List<string> GetUnmappedMembers()
@@ -345,13 +360,13 @@ namespace Fpr
 
                 unmappedMembers.Remove(destMemberInfo);
 
-                Type destMemberType = sourceMember.GetMemberType();
+                Type destMemberType = destMemberInfo.GetMemberType();
                 if (destMemberType.IsCollection())
                 {
                     destMemberType = destMemberType.ExtractCollectionType();
                 }
 
-                if (destMemberType.IsPrimitive)
+                if (destMemberType.IsPrimitiveRoot())
                     continue;
 
                 Type sourceMemberType = sourceMember.GetMemberType();
