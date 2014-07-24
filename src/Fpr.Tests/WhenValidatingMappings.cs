@@ -68,6 +68,22 @@ namespace Fpr.Tests
         }
 
         [Test]
+        public void Poco_With_Missing_Const_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDtoWithConst>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Missing_Member_With_Protected_Setter_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDtoWithProtectedSetter>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
         public void Poco_With_Unmapped_Child_Collection_Throws()
         {
             var config = TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig();
@@ -175,6 +191,21 @@ namespace Fpr.Tests
 
             public string UnmappedMember2 { get; set; }
         }
+
+        public class SimpleDtoWithConst
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class SimpleDtoWithProtectedSetter
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public string UnmappedMember { get; protected set; }
+        }
+
 
         public class ChildPoco
         {
