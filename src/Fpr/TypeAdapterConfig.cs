@@ -309,7 +309,7 @@ namespace Fpr
         {
             var destType = typeof (TDestination);
 
-            List<string> unmappedMembers = destType.GetProperties().Select(x => x.Name)
+            List<string> unmappedMembers = destType.GetProperties().Where(x => x.GetSetMethod() != null).Select(x => x.Name)
                 .Concat(destType.GetFields().Select(x => x.Name)).ToList();
 
             var sourceType = typeof (TSource);
@@ -339,7 +339,7 @@ namespace Fpr
 
             var destType = typeof (TDestination);
 
-            var unmappedMembers = new List<MemberInfo>(destType.GetProperties());
+            var unmappedMembers = new List<MemberInfo>(destType.GetProperties().Where(x => x.GetSetMethod() != null));
             unmappedMembers.AddRange(destType.GetFields());
 
             unmappedMembers.RemoveAll(x => ConfigSettings.IgnoreMembers.Contains(x.Name));
