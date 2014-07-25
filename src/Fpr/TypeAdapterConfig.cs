@@ -339,12 +339,12 @@ namespace Fpr
 
             var unmappedMembers = destType.GetPublicFieldsAndProperties(false).ToList();
 
+            //Remove items that have resolvers or are ignored
             unmappedMembers.RemoveAll(x => ConfigSettings.IgnoreMembers.Contains(x.Name));
             unmappedMembers.RemoveAll(x => ConfigSettings.Resolvers.Any(r => r.MemberName == x.Name));
 
             var sourceType = typeof (TSource);
 
-            //Remove items that have resolvers or are ignored
             var sourceMembers = sourceType.GetPublicFieldsAndProperties().ToList();
 
             foreach (var sourceMember in sourceMembers)
@@ -370,6 +370,9 @@ namespace Fpr
                 {
                     sourceMemberType = sourceMemberType.ExtractCollectionType();
                 }
+
+                if (destMemberType == sourceMemberType)
+                    continue;
 
                 //See if the destination member has a mapping if needed
                 if (!TypeAdapterConfig.ExistsInConfigurationCache(sourceMemberType, destMemberType))

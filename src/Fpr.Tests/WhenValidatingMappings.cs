@@ -84,6 +84,14 @@ namespace Fpr.Tests
         }
 
         [Test]
+        public void Poco_With_Unmapped_Child_With_Same_Destination_Type_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<ParentPoco, ParentPoco2>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
         public void Poco_With_Unmapped_Child_Collection_Throws()
         {
             var config = TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig();
@@ -222,6 +230,14 @@ namespace Fpr.Tests
         }
 
         public class ParentPoco
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+
+            public List<ChildPoco> Children { get; set; }
+        }
+
+        public class ParentPoco2
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
