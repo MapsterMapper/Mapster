@@ -268,25 +268,18 @@ namespace Fpr.Utils
             if (values == null)
                 return null;
 
-            var collection = new Dictionary<int, int>();
-
-            foreach (var item in values)
-            {
-                collection.Add(item.Key, item.Value);
-            }
-
-            return collection;
+            return values.ToDictionary(item => item.Key, item => item.Value);
           
         }
 
-        public static int GetHashKey<TSource, TDestination>(bool hasDestination = false)
+        public static int GetHashKey<TSource, TDestination>()
         {
-            return GetHashKey(typeof(TSource), typeof(TDestination), hasDestination);
+            return (typeof(TSource).GetHashCode() / 2) + typeof(TDestination).GetHashCode();
         }
 
-        public static int GetHashKey(Type source, Type destination, bool hasDestination = false)
+        public static int GetHashKey(Type source, Type destination)
         {
-            return (source.GetHashCode()/2) + destination.GetHashCode() + (hasDestination ? 1: 0);
+            return (source.GetHashCode() / 2) + destination.GetHashCode();
         }
 
     }

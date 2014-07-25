@@ -10,7 +10,7 @@ namespace Fpr.Adapters
         where TDestination : IEnumerable
     {
 
-        private static CollectionAdapterModel _collectionAdapterModel = CreateCollectionAdapterModel();
+        private static readonly CollectionAdapterModel _collectionAdapterModel = CreateCollectionAdapterModel();
 
         public static object Adapt(TSource source)
         {
@@ -37,31 +37,14 @@ namespace Fpr.Adapters
          
             #region Check MaxDepth
 
-            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var hasConfig = config != null;
+            var configSettings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            var hasConfig = configSettings != null;
 
-            var hasMaxDepth = hasConfig && config.MaxDepth > 0;
+            var hasMaxDepth = hasConfig && configSettings.MaxDepth > 0;
 
-            if (hasMaxDepth)
+            if (hasMaxDepth && CheckMaxDepth(ref parameterIndexs, configSettings.MaxDepth))
             {
-                if (parameterIndexs == null)
-                    parameterIndexs = new Dictionary<int, int>();
-
-                int hashCode = typeof(TSource).GetHashCode() + typeof(TDestination).GetHashCode();
-
-                if (parameterIndexs.ContainsKey(hashCode))
-                {
-                    parameterIndexs[hashCode] = parameterIndexs[hashCode] + 1;
-
-                    if (parameterIndexs[hashCode] >= config.MaxDepth)
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    parameterIndexs.Add(hashCode, 1);
-                }
+                return null;
             }
 
             #endregion
@@ -172,26 +155,49 @@ namespace Fpr.Adapters
             return (TDestination)destination;
         }
 
+        private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexs, int maxDepth)
+        {
+            if (parameterIndexs == null)
+                parameterIndexs = new Dictionary<int, int>();
+
+            int hashCode = typeof (TSource).GetHashCode() + typeof (TDestination).GetHashCode();
+
+            if (parameterIndexs.ContainsKey(hashCode))
+            {
+                parameterIndexs[hashCode] = parameterIndexs[hashCode] + 1;
+
+                if (parameterIndexs[hashCode] >= maxDepth)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                parameterIndexs.Add(hashCode, 1);
+            }
+            return false;
+        }
+
 
         private static CollectionAdapterModel CreateCollectionAdapterModel()
         {
             var cam = new CollectionAdapterModel();
 
-            var sourceElementType = ReflectionUtils.ExtractCollectionType(typeof(TSource));
+            var sourceElementType = typeof(TSource).ExtractCollectionType();
             var destinationElementType = typeof(TDestinationElementType);
 
-            if (ReflectionUtils.IsPrimitiveRoot(destinationElementType) || destinationElementType == typeof(object))
+            if (destinationElementType.IsPrimitiveRoot() || destinationElementType == typeof(object))
             {
                 cam.IsPrimitive = true;
 
-                var converter = ReflectionUtils.CreatePrimitiveConverter(sourceElementType, destinationElementType);
+                var converter = sourceElementType.CreatePrimitiveConverter(destinationElementType);
                 if (converter != null)
                     cam.AdaptInvoker = converter;
             }
-            else if (ReflectionUtils.IsCollection(destinationElementType))
+            else if (destinationElementType.IsCollection())
             {
                 var methodInfo = typeof(CollectionAdapter<,,>)
-                    .MakeGenericType(sourceElementType, ReflectionUtils.ExtractCollectionType(destinationElementType), destinationElementType)
+                    .MakeGenericType(sourceElementType, destinationElementType.ExtractCollectionType(), destinationElementType)
                     .GetMethod("Adapt", new[] { sourceElementType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }

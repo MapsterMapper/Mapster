@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Fpr.Utils;
 
 namespace Fpr.Adapters
@@ -39,7 +38,7 @@ namespace Fpr.Adapters
                 _transform = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms[destinationType];
             }
 
-            return ReflectionUtils.CreatePrimitiveConverter(typeof(TSource), typeof(TDestination));
+            return typeof(TSource).CreatePrimitiveConverter(typeof(TDestination));
         }
 
     }
