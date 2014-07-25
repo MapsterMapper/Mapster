@@ -230,7 +230,7 @@ namespace Fpr.Adapters
             var fields = new List<FieldModel>();
             var properties = new List<PropertyModel<TSource, TDestination>>();
 
-            List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties();
+            List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties(allowNoSetter:false);
 
             var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
@@ -263,7 +263,10 @@ namespace Fpr.Adapters
 
                     if (FlattenClass(sourceType, destinationMember, propertyModelFactory, properties, destinationTransforms)) continue;
 
-                    unmappedDestinationMembers.Add(destinationMember.Name);
+                    if (destinationMember.HasPublicSetter())
+                    {
+                        unmappedDestinationMembers.Add(destinationMember.Name);
+                    }
 
                     continue;
                 }

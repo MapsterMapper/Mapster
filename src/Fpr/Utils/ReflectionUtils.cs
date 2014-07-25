@@ -39,12 +39,12 @@ namespace Fpr.Utils
             return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
         }
 
-        public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetters = true)
+        public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
         {
             var results = new List<MemberInfo>();
 
             results.AddRange(type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(x => x.CanWrite && (allowNonPublicSetters || x.GetSetMethod() != null)));
+                    .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null)));
 
             results.AddRange(type.GetFields(BindingFlags.Instance | BindingFlags.Public));
 
@@ -74,6 +74,19 @@ namespace Fpr.Utils
                 return ((MethodInfo)mi).ReturnType;
             }
             return null;
+        }
+
+        public static bool HasPublicSetter(this MemberInfo mi)
+        {
+            if (mi is PropertyInfo)
+            {
+                return ((PropertyInfo)mi).GetSetMethod() != null;
+            }
+            if (mi is FieldInfo)
+            {
+                return ((FieldInfo)mi).IsPublic;
+            }
+            return false;
         }
 
         public static bool IsCollection(this Type type)
