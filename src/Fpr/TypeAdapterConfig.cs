@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using Fpr.Adapters;
 using Fpr.Models;
 using Fpr.Utils;
@@ -284,7 +283,7 @@ namespace Fpr
                 string message =
                     string.Format(
                         "The following members on destination({0}) are not represented in either mappings or in the source({1}):{2}",
-                        typeof (TDestination).Name, typeof (TSource).Name, string.Join(", ", unmappedMembers));
+                        typeof (TDestination).FullName, typeof (TSource).FullName, string.Join(", ", unmappedMembers));
 
                 if (errorList != null)
                 {
@@ -378,7 +377,7 @@ namespace Fpr
                     errorList.Add(
                         string.Format(
                             "Explicit Mapping is turned on and the following source({0}) and destination({1}) types do not have a mapping defined.",
-                            sourceMemberType.Name, destMemberType.Name));
+                            sourceMemberType.FullName, destMemberType.FullName));
                 }
             }
 
