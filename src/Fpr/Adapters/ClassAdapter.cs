@@ -236,7 +236,7 @@ namespace Fpr.Adapters
 
             bool hasConfig = config != null;
 
-            if (!hasConfig && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
+            if (!hasConfig && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
             {
                 throw new ArgumentOutOfRangeException(_noExplicitMappingMessage);
             }
