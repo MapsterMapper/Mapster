@@ -44,7 +44,7 @@ namespace Fpr.Utils
             var results = new List<MemberInfo>();
 
             results.AddRange(type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(x => allowNonPublicSetters || x.GetSetMethod() != null));
+                    .Where(x => x.CanWrite && (allowNonPublicSetters || x.GetSetMethod() != null)));
 
             results.AddRange(type.GetFields(BindingFlags.Instance | BindingFlags.Public));
 
