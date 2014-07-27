@@ -218,7 +218,8 @@ namespace Fpr
         }
 
         public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
-            Func<IValueResolver<TSource, TDestinationMember>> resolverFactory, Expression<Func<TSource, bool>> shouldMap = null) 
+            Func<IValueResolver<TSource, TDestinationMember>> resolverFactory, 
+            Expression<Func<TSource, bool>> shouldMap = null) 
         {
             return Map(member, src => resolverFactory().Resolve(src), shouldMap);
         }

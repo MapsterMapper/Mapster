@@ -61,7 +61,7 @@ When the default convention mappings aren't enough to do the job, you can specif
     TypeAdapterConfig<TSource, TDestination>()
     .NewConfig()
     .IgnoreMember(dest => dest.Property)
-    .MapFrom(dest => dest.FullName, 
+    .Map(dest => dest.FullName, 
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 ####Custom Destination Object Creation
@@ -78,6 +78,41 @@ or anything else that provides an object of the expected type.
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
                 .ConstructUsing(() => new TDestination{Unmapped = "unmapped"});
 
+####Custom Type Resolvers
+In some cases, you may want to have complete control over how an object is mapped.  In this case, you can
+register a custom type resolver.  It's important to note that when using a custom type resolver, that 
+all other mapping associated with the type is ignored.  So all mapping must take place within the resolver.
+The custom type resolver must implement the ITypeResolver interface and register it using MapWith().
+
+    //Example using MapWith resolver generic call.
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .MapWith<TCustomTypeResolver>();
+
+    //Example using MapWith resolver factory function
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .MapWith(() => new TCustomTypeResolver());
+
+    //Example using MapWith resolver instance
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .MapWith(customResolverInstance);
+
+####Custom Value Resolvers
+In some cases, you may want to encapsulate a value conversion into a separate class.  In this case, you can 
+use a custom value resolver by registering it using Resolve().  The value resolver must implement the 
+IValueResolver interface.
+
+    //Example using MapWith resolver generic call.
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .Resolve<TCustomValueResolver, string>(dest => dest.Name);
+
+    //Example using value resolver factory function
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .Resolve(dest => dest.Name, () => new TCustomValueResolver());
+
+    //Example using value resolver instance
+    TypeAdapterConfig<TSource, TDestination>.NewConfig()
+                .Resolve(dest => dest.Name, customValueResolver);
+
 ####Type-Specific Destination Transforms
 This allows transforms for all items of a type, such as trimming all strings.  But really any operation 
 can be performed on the destination value before assignment.  This can be set up at either a global
@@ -92,13 +127,13 @@ or a mapping level.
     
 
 ####Conditional Mapping
-The MapFrom configuration can accept a third parameter that provides a condition based on the source.
+The Map configuration can accept a third parameter that provides a condition based on the source.
 If the condition is not met, the mapping is skipped altogether.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .IgnoreMember(dest => dest.Property)
-        .MapFrom(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
+        .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
 
 ####Max Depth
 When mapping nested or tree-type structures, it's often necessary to specify a max nesting depth to prevent overflows.

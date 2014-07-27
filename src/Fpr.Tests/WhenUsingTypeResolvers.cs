@@ -27,6 +27,44 @@ namespace Fpr.Tests
             dest.Name.ShouldEqual("I got converted!");
         }
 
+        [Test]
+        public void Simple_Type_Is_Converted_With_Adapter_Instance()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .MapWith(new SimplePocoResolver());
+
+
+            var source = new SimplePoco
+            {
+                Id = Guid.NewGuid(),
+                Name = "SimplePoco"
+            };
+
+            var dest = TypeAdapter.Adapt<SimpleDto>(source);
+
+            dest.Id.ShouldEqual(source.Id);
+            dest.Name.ShouldEqual("I got converted!");
+        }
+
+        [Test]
+        public void Simple_Type_Is_Converted_With_Adapter_Function()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .MapWith(() => new SimplePocoResolver());
+
+
+            var source = new SimplePoco
+            {
+                Id = Guid.NewGuid(),
+                Name = "SimplePoco"
+            };
+
+            var dest = TypeAdapter.Adapt<SimpleDto>(source);
+
+            dest.Id.ShouldEqual(source.Id);
+            dest.Name.ShouldEqual("I got converted!");
+        }
+
         #region TestClasses
 
         public class SimplePocoResolver : ITypeResolver<SimplePoco, SimpleDto>
