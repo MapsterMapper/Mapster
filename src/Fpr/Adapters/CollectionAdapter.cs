@@ -5,7 +5,7 @@ using Fpr.Utils;
 
 namespace Fpr.Adapters
 {
-    public class CollectionAdapter<TSource, TDestinationElementType, TDestination>
+    public static class CollectionAdapter<TSource, TDestinationElementType, TDestination>
         where TSource : IEnumerable
         where TDestination : IEnumerable
     {
@@ -38,18 +38,20 @@ namespace Fpr.Adapters
             #region Check MaxDepth
 
             var configSettings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var hasConfig = configSettings != null;
 
-            var hasMaxDepth = hasConfig && configSettings.MaxDepth > 0;
+            var hasMaxDepth = false;
 
-            if (hasMaxDepth && CheckMaxDepth(ref parameterIndexs, configSettings.MaxDepth))
+            if (configSettings != null)
             {
-                return null;
+                if (configSettings.MaxDepth > 0)
+                {
+                    hasMaxDepth = true;
+                    if (MaxDepthExceeded(ref parameterIndexs, configSettings.MaxDepth))
+                        return null;
+                }
             }
 
             #endregion
-            
-            var collectionAdapterModel = _collectionAdapterModel;
 
             var destinationType = typeof(TDestination);
 
@@ -58,9 +60,9 @@ namespace Fpr.Adapters
                 #region CopyToArray
 
                 byte i = 0;
-                var adapterInvoker = collectionAdapterModel.AdaptInvoker;
+                var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
                 var array = destination == null ? new TDestinationElementType[((ICollection)source).Count] : (TDestinationElementType[])destination;
-                if (collectionAdapterModel.IsPrimitive)
+                if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;
                     foreach (var item in source)
@@ -92,9 +94,9 @@ namespace Fpr.Adapters
             {
                 #region CopyToList
 
-                var adapterInvoker = collectionAdapterModel.AdaptInvoker;
+                var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
                 var list = destination == null ? new List<TDestinationElementType>() : (List<TDestinationElementType>)destination;
-                if (collectionAdapterModel.IsPrimitive)
+                if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;
                     foreach (var item in source)
@@ -124,9 +126,9 @@ namespace Fpr.Adapters
             {
                 #region CopyToArrayList
 
-                var adapterInvoker = collectionAdapterModel.AdaptInvoker;
+                var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
                 var array = destination == null ? new ArrayList() : (ArrayList)destination;
-                if (collectionAdapterModel.IsPrimitive)
+                if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;
                     foreach (var item in source)
@@ -155,7 +157,7 @@ namespace Fpr.Adapters
             return (TDestination)destination;
         }
 
-        private static bool CheckMaxDepth(ref Dictionary<int, int> parameterIndexs, int maxDepth)
+        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexs, int maxDepth)
         {
             if (parameterIndexs == null)
                 parameterIndexs = new Dictionary<int, int>();
@@ -206,6 +208,7 @@ namespace Fpr.Adapters
                 var methodInfo = typeof(ClassAdapter<,>)
                     .MakeGenericType(sourceElementType, destinationElementType)
                     .GetMethod("Adapt", new[] { sourceElementType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
+
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }
 

@@ -33,6 +33,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <DebugSymbols>true</DebugSymbols>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,7 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapter.cs" />
-    <Compile Include="Adapters\ClassAdapterBuilder.cs" />
+    <Compile Include="ITypeResolver.cs" />
+    <Compile Include="IValueResolver.cs" />
     <Compile Include="TransformsCollection.cs" />
     <Compile Include="Registration\Registrar.cs" />
     <Compile Include="Registration\Registry.cs">
@@ -82,7 +84,6 @@
     <Compile Include="TypeAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
-    <Compile Include="Utils\ThreadSafeCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Fpr.nuspec" />

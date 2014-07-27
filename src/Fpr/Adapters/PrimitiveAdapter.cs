@@ -3,7 +3,7 @@ using Fpr.Utils;
 
 namespace Fpr.Adapters
 {
-    public class PrimitiveAdapter<TSource, TDestination>
+    public static class PrimitiveAdapter<TSource, TDestination>
     {
         public static readonly FastInvokeHandler _converter = CreateConverter();
         public static Func<object, object> _transform;

@@ -77,6 +77,8 @@
     <Compile Include="WhenPerformingDestinationTransforms.cs" />
     <Compile Include="WhenProjecting.cs" />
     <Compile Include="WhenUsingNonDefaultConstructor.cs" />
+    <Compile Include="WhenUsingTypeResolvers.cs" />
+    <Compile Include="WhenUsingValueResolvers.cs" />
     <Compile Include="WhenValidatingMappings.cs" />
   </ItemGroup>
   <ItemGroup>

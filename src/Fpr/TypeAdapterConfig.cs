@@ -26,18 +26,18 @@ namespace Fpr
             set { _globalSettings = value; }
         }
 
-        internal static readonly TypeAdapterConfigSettings Configuration = new TypeAdapterConfigSettings();
+        internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 
         public static TypeAdapterConfig NewConfig()
         {
-            Configuration.NewInstanceForSameType = true;
+            ConfigSettings.NewInstanceForSameType = true;
 
             return new TypeAdapterConfig();
         }
 
         public TypeAdapterConfig NewInstanceForSameType(bool newInstanceForSameType)
         {
-            Configuration.NewInstanceForSameType = newInstanceForSameType;
+            ConfigSettings.NewInstanceForSameType = newInstanceForSameType;
 
             return this;
         }
@@ -138,27 +138,37 @@ namespace Fpr
             ClassAdapter<TSource, TDestination>.Reset();
         }
 
-        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(
-            params Expression<Func<TDestination, object>>[] members)
+        [Obsolete("Use Ignore instead.")]
+        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params Expression<Func<TDestination, object>>[] members)
+        {
+            return Ignore(members);
+        }
+
+        [Obsolete("Use Ignore instead.")]
+        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params string[] members)
+        {
+            return Ignore(members);
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
         {
             _projection.IgnoreMember(members);
 
             if (members != null && members.Length > 0)
             {
-                var config = ConfigSettings;
                 for (int i = 0; i < members.Length; i++)
                 {
                     var memberExp = ReflectionUtils.GetMemberInfo(members[i]);
                     if (memberExp != null)
                     {
-                        config.IgnoreMembers.Add(memberExp.Member.Name);
+                        ConfigSettings.IgnoreMembers.Add(memberExp.Member.Name);
                     }
                 }
             }
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params string[] members)
+        public TypeAdapterConfig<TSource, TDestination> Ignore(params string[] members)
         {
             _projection.IgnoreMember(members);
 
@@ -182,9 +192,53 @@ namespace Fpr
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> MapFrom<TKey>(Expression<Func<TDestination, TKey>> member,
-            Expression<Func<TSource, TKey>> source,
+        public TypeAdapterConfig<TSource, TDestination> MapWith<TConverter>() where TConverter : ITypeResolver<TSource, TDestination>, new()
+        {
+            ConfigSettings.ConverterFactory = () => new TConverter();
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> MapWith(ITypeResolver<TSource, TDestination> resolver)
+        {
+            ConfigSettings.ConverterFactory = () => resolver;
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> MapWith(Func<ITypeResolver<TSource, TDestination>> converterFactoryFunc)
+        {
+            ConfigSettings.ConverterFactory = converterFactoryFunc;
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> Resolve<TValueResolver, TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, bool>> shouldMap = null) 
+            where TValueResolver : IValueResolver<TSource, TDestinationMember>, new()
+        {
+            return Map(member, src => new TValueResolver().Resolve(src), shouldMap);
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
+            Func<IValueResolver<TSource, TDestinationMember>> resolverFactory, Expression<Func<TSource, bool>> shouldMap = null) 
+        {
+            return Map(member, src => resolverFactory().Resolve(src), shouldMap);
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember>(
+            Expression<Func<TDestination, TDestinationMember>> member, IValueResolver<TSource, TDestinationMember> resolver, 
             Expression<Func<TSource, bool>> shouldMap = null)
+        {
+            return Map(member, src => resolver.Resolve(src), shouldMap);
+        }
+
+        [Obsolete("Use Map instead.")]
+        public TypeAdapterConfig<TSource, TDestination> MapFrom<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TDestinationMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+        {
+            return Map(member, source, shouldMap);
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> Map<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TDestinationMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
         {
             _projection.MapFrom(member, source);
 
@@ -264,18 +318,18 @@ namespace Fpr
 
             Validate(errorList);
 
-            if (TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
-            {
-                errorList.AddRange(GetMissingExplicitMappings());
-            }
-
             if(errorList.Count > 0)
                 throw new ArgumentOutOfRangeException(string.Join(Environment.NewLine, errorList));
         }
 
         public bool Validate(List<string> errorList)
         {
+            //Skip things that have a custom converter
+            if (ConfigSettings.ConverterFactory != null)
+                return true;
+
             bool isValid = true;
+
             var unmappedMembers = GetUnmappedMembers();
 
             if (unmappedMembers.Count > 0)

@@ -12,7 +12,7 @@ namespace Fpr.Tests
         public void False_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .MapFrom(dest => dest.Name, src => src.Name, cond => false);
+                .Map(dest => dest.Name, src => src.Name, cond => false);
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
@@ -26,7 +26,7 @@ namespace Fpr.Tests
         public void Failed_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .MapFrom(dest => dest.Name, src => src.Name, cond => cond.Name != "TestName");
+                .Map(dest => dest.Name, src => src.Name, cond => cond.Name != "TestName");
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
@@ -41,7 +41,7 @@ namespace Fpr.Tests
         {
             
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .MapFrom(dest => dest.Name, src => src.Name, cond => cond.Name == "TestName");
+                .Map(dest => dest.Name, src => src.Name, cond => cond.Name == "TestName");
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 

@@ -127,7 +127,7 @@ namespace Fpr.Tests
         {
             TypeAdapterConfig<EmployeeDTO, EmployeeWithStringEnum>
                 .NewConfig();
-                //.MapFrom(dest => dest.Department, src => src.Department.ToFastString());
+                //.Map(dest => dest.Department, src => src.Department.ToFastString());
 
             var employeeDto = new EmployeeDTO { Id = Guid.NewGuid(), Name = "Timuçin", Department = Departments.IT };
 

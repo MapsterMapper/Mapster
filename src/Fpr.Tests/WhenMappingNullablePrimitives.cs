@@ -81,9 +81,9 @@ namespace Fpr.Tests
         public void Can_Map_From_Nullable_Source_With_Values_To_Explicitly_Mapped_Non_Nullable_Target()
         {
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
-                .MapFrom(dest => dest.Amount, src => src.Amount)
-                .MapFrom(dest => dest.IsImport, src => src.IsImport)
-                .MapFrom(dest => dest.MyFee, src => src.Fee);
+                .Map(dest => dest.Amount, src => src.Amount)
+                .Map(dest => dest.IsImport, src => src.IsImport)
+                .Map(dest => dest.MyFee, src => src.Fee);
 
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName", Fee = 20, IsImport = true, Amount = 10};
 

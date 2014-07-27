@@ -61,8 +61,8 @@ namespace Fpr.Tests
         public void Poco_With_Resolved_Missing_Members_Doesnt_Throw()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .MapFrom(dest => dest.UnmappedMember, src => src.Name)
-                .MapFrom(dest => dest.UnmappedMember2, src => src.Name);
+                .Map(dest => dest.UnmappedMember, src => src.Name)
+                .Map(dest => dest.UnmappedMember2, src => src.Name);
 
             config.Validate();
         }
@@ -87,6 +87,15 @@ namespace Fpr.Tests
         public void Poco_With_Unmapped_Child_With_Same_Destination_Type_Doesnt_Throw()
         {
             var config = TypeAdapterConfig<ParentPoco, ParentPoco2>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Type_Converter_Doesnt_Throw()
+        {
+            var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .MapWith(() => new SimplePocoResolver());
 
             config.Validate();
         }
@@ -161,6 +170,18 @@ namespace Fpr.Tests
         }
 
         #region TestClasses
+
+        public class SimplePocoResolver : ITypeResolver<SimplePoco, SimpleDto>
+        {
+            public SimpleDto Resolve(SimplePoco source)
+            {
+                return new SimpleDto
+                {
+                    Id = source.Id,
+                    Name = "I got converted!",
+                };
+            }
+        }
 
         public class SimplePoco
         {

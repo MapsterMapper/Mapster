@@ -8,8 +8,8 @@ namespace Fpr
     public static class TypeAdapter
     {
 
-        static readonly Dictionary<int, FastInvokeHandler> _cache = new Dictionary<int, FastInvokeHandler>();
-        static readonly object _cacheLock = new object();
+        private static readonly Dictionary<int, FastInvokeHandler> _cache = new Dictionary<int, FastInvokeHandler>();
+        private static readonly object _cacheLock = new object();
 
         public static TDestination Adapt<TDestination>(object source)
         {
@@ -43,35 +43,37 @@ namespace Fpr
 
         private static FastInvokeHandler GetAdapter(Type sourceType, Type destinationType, bool hasDestination = false)
         {
-            int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType) + (hasDestination ? 1 : 0);
+            FastInvokeHandler adapter;
 
-            if (_cache.ContainsKey(hashCode))
+            if (_cache.TryGetValue(ReflectionUtils.GetHashKey(sourceType, destinationType) + (hasDestination ? 1 : 0), out adapter))
             {
-                return _cache[hashCode];
+                return adapter;
             }
 
             lock (_cacheLock)
             {
-                if (_cache.ContainsKey(hashCode))
+                int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType) + (hasDestination ? 1 : 0);
+
+                if (_cache.TryGetValue(hashCode, out adapter))
                 {
-                    return _cache[hashCode];
+                    return adapter;
                 }
 
                 Type[] arguments = hasDestination ? new[] { sourceType, destinationType } : new[] { sourceType };
 
                 FastInvokeHandler invoker;
 
-                if (ReflectionUtils.IsPrimitiveRoot(sourceType) && ReflectionUtils.IsPrimitiveRoot(destinationType))
+                if (sourceType.IsPrimitiveRoot() && destinationType.IsPrimitiveRoot())
                 {
                     invoker = FastInvoker.GetMethodInvoker(
                                 typeof (PrimitiveAdapter<,>).MakeGenericType(sourceType, destinationType)
                                     .GetMethod("Adapt", arguments));
                 }
-                else if (ReflectionUtils.IsCollection(sourceType) && ReflectionUtils.IsCollection(destinationType))
+                else if (sourceType.IsCollection() && destinationType.IsCollection())
                 {
                     invoker = FastInvoker.GetMethodInvoker(
                             typeof (CollectionAdapter<,,>).MakeGenericType(sourceType,
-                                ReflectionUtils.ExtractCollectionType(destinationType), destinationType)
+                                destinationType.ExtractCollectionType(), destinationType)
                                 .GetMethod("Adapt", arguments));
                 }
                 else

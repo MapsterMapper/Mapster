@@ -12,7 +12,7 @@ namespace Fpr.Tests
         public void Property_Is_Mapped_To_Different_Property_Successfully()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .MapFrom(dest => dest.AnotherName, src => src.Name);
+                .Map(dest => dest.AnotherName, src => src.Name);
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 

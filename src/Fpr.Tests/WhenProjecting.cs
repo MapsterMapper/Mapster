@@ -168,8 +168,8 @@ namespace Fpr.Tests
             TypeAdapterConfig<ConfigTestClassA, ConfigTestClassB>
                 .NewConfig()
                 .IgnoreMember(dest => dest.A)
-                .MapFrom(dest => dest.B, src => Convert.ToInt32(src.B))
-                .MapFrom(dest => dest.C, src => src.C.ToString());
+                .Map(dest => dest.B, src => Convert.ToInt32(src.B))
+                .Map(dest => dest.C, src => src.C.ToString());
 
             var bList = list.AsQueryable().Project().To<ConfigTestClassB>().ToList();
 

@@ -108,8 +108,8 @@ namespace Fpr.Tests
             };
 
             TypeAdapterConfig<ConfigC, ConfigD>.NewConfig()
-                //.MapFrom(dest => dest.FullName, (src) => string.Concat(src.Name, " ", src.Surname));
-                .MapFrom(dest => dest.FullName, src => string.Concat(src.Name, " ", src.Surname));
+                //.Map(dest => dest.FullName, (src) => string.Concat(src.Name, " ", src.Surname));
+                .Map(dest => dest.FullName, src => string.Concat(src.Name, " ", src.Surname));
 
             var objD = ClassAdapter<ConfigC, ConfigD>.Adapt(objC);
 

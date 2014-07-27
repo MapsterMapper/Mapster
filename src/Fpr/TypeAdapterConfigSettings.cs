@@ -29,6 +29,7 @@ namespace Fpr
         public readonly List<InvokerModel<TSource>> Resolvers = new List<InvokerModel<TSource>>();
         public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
         public Func<TDestination> ConstructUsing;
+        public Func<ITypeResolver<TSource, TDestination>> ConverterFactory; 
 
         public TypeAdapterConfigSettings()
         {
@@ -44,6 +45,7 @@ namespace Fpr
             Resolvers.Clear();
             DestinationTransforms.Clear();
             ConstructUsing = null;
+            ConverterFactory = null;
         }
 
         public int MaxDepth { get; set; }
