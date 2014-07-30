@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Fpr.Adapters;
 using Fpr.Models;
 using Fpr.Utils;
@@ -14,7 +15,9 @@ namespace Fpr
         private static TypeAdapterGlobalSettings _globalSettings = new TypeAdapterGlobalSettings();
 
         private static readonly object _syncLock = new object(); 
-        private static readonly Dictionary<int, object> _configurationCache = new Dictionary<int, object>(); 
+        private static readonly Dictionary<int, object> _configurationCache = new Dictionary<int, object>();
+
+        internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 
         private TypeAdapterConfig()
         {
@@ -25,8 +28,6 @@ namespace Fpr
             get { return _globalSettings; }
             set { _globalSettings = value; }
         }
-
-        internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 
         public static TypeAdapterConfig NewConfig()
         {
@@ -95,6 +96,16 @@ namespace Fpr
             return _configurationCache.ContainsKey(key);
         }
 
+        internal static object GetFromConfigurationCache(Type sourceType, Type destinationType)
+        {
+            var key = ReflectionUtils.GetHashKey(sourceType, destinationType);
+            object returnValue;
+
+            _configurationCache.TryGetValue(key, out returnValue);
+
+            return returnValue;
+        }
+
         internal static void ClearConfigurationCache()
         {
             _configurationCache.Clear();
@@ -105,7 +116,8 @@ namespace Fpr
 
     public class TypeAdapterConfig<TSource, TDestination> : IValidatableConfig
     {
-        internal static TypeAdapterConfigSettings<TSource, TDestination> ConfigSettings;
+        private static TypeAdapterConfigSettings<TSource, TDestination> _configSettings;
+        private static bool _configSettingsSet;
 
         private readonly ProjectionConfig<TSource, TDestination> _projection =
             ProjectionConfig<TSource, TDestination>.NewConfig();
@@ -116,25 +128,42 @@ namespace Fpr
 
         public static TypeAdapterConfig<TSource, TDestination> NewConfig()
         {
-            if (ConfigSettings == null)
+            if (_configSettings == null)
             {
-                ConfigSettings = new TypeAdapterConfigSettings<TSource, TDestination>();
+                _configSettings = new TypeAdapterConfigSettings<TSource, TDestination>();
             }
             else
             {
-                ConfigSettings.Reset();
+                _configSettings.Reset();
             }
+
             ClassAdapter<TSource, TDestination>.Reset();
 
             var config = new TypeAdapterConfig<TSource, TDestination>();
             TypeAdapterConfig.UpsertConfigurationCache(config);
+            _configSettingsSet = true;
+
             return config;
+        }
+
+        internal static TypeAdapterConfigSettings<TSource, TDestination> ConfigSettings
+        {
+            get
+            {
+                if (_configSettingsSet)
+                    return _configSettings;
+
+                _configSettingsSet = true;
+
+                return _configSettings ?? (_configSettings = DeriveConfigSettings());
+            }
         }
 
         public static void Clear()
         {
             TypeAdapterConfig.RemoveFromConfigurationCache<TSource, TDestination>();
-            ConfigSettings = null;
+            _configSettings = null;
+            _configSettingsSet = false;
             ClassAdapter<TSource, TDestination>.Reset();
         }
 
@@ -161,7 +190,7 @@ namespace Fpr
                     var memberExp = ReflectionUtils.GetMemberInfo(members[i]);
                     if (memberExp != null)
                     {
-                        ConfigSettings.IgnoreMembers.Add(memberExp.Member.Name);
+                        _configSettings.IgnoreMembers.Add(memberExp.Member.Name);
                     }
                 }
             }
@@ -182,10 +211,9 @@ namespace Fpr
 
                 if (members.Length > 0)
                 {
-                    var config = ConfigSettings;
                     for (int i = 0; i < members.Length; i++)
                     {
-                        config.IgnoreMembers.Add(members[i]);
+                        _configSettings.IgnoreMembers.Add(members[i]);
                     }
                 }
             }
@@ -194,19 +222,19 @@ namespace Fpr
 
         public TypeAdapterConfig<TSource, TDestination> MapWith<TConverter>() where TConverter : ITypeResolver<TSource, TDestination>, new()
         {
-            ConfigSettings.ConverterFactory = () => new TConverter();
+            _configSettings.ConverterFactory = () => new TConverter();
             return this;
         }
 
         public TypeAdapterConfig<TSource, TDestination> MapWith(ITypeResolver<TSource, TDestination> resolver)
         {
-            ConfigSettings.ConverterFactory = () => resolver;
+            _configSettings.ConverterFactory = () => resolver;
             return this;
         }
 
         public TypeAdapterConfig<TSource, TDestination> MapWith(Func<ITypeResolver<TSource, TDestination>> converterFactoryFunc)
         {
-            ConfigSettings.ConverterFactory = converterFactoryFunc;
+            _configSettings.ConverterFactory = converterFactoryFunc;
             return this;
         }
 
@@ -262,7 +290,7 @@ namespace Fpr
 
             Func<TSource, bool> condition = shouldMap != null ? shouldMap.Compile() : null;
 
-            ConfigSettings.Resolvers.Add(new InvokerModel<TSource>
+            _configSettings.Resolvers.Add(new InvokerModel<TSource>
             {
                 MemberName = memberExp.Member.Name,
                 Invoker = resolver,
@@ -274,28 +302,28 @@ namespace Fpr
 
         public TypeAdapterConfig<TSource, TDestination> NewInstanceForSameType(bool newInstanceForSameType)
         {
-            ConfigSettings.NewInstanceForSameType = newInstanceForSameType;
+            _configSettings.NewInstanceForSameType = newInstanceForSameType;
 
             return this;
         }
 
         public TypeAdapterConfig<TSource, TDestination> IgnoreNullValues(bool ignoreNullValues)
         {
-            ConfigSettings.IgnoreNullValues = ignoreNullValues;
+            _configSettings.IgnoreNullValues = ignoreNullValues;
 
             return this;
         }
 
         public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Func<TDestination> constructUsing)
         {
-            ConfigSettings.ConstructUsing = constructUsing;
+            _configSettings.ConstructUsing = constructUsing;
 
             return this;
         }
 
         public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
         {
-            ConfigSettings.MaxDepth = maxDepth;
+            _configSettings.MaxDepth = maxDepth;
 
             _projection.MaxDepth(maxDepth);
 
@@ -306,10 +334,10 @@ namespace Fpr
         {
             get
             {
-                if (ConfigSettings == null)
+                if (_configSettings == null)
                     return null;
 
-                return ConfigSettings.DestinationTransforms;
+                return _configSettings.DestinationTransforms;
             }
         }
 
@@ -326,7 +354,7 @@ namespace Fpr
         public bool Validate(List<string> errorList)
         {
             //Skip things that have a custom converter
-            if (ConfigSettings.ConverterFactory != null)
+            if (_configSettings.ConverterFactory != null)
                 return true;
 
             bool isValid = true;
@@ -370,8 +398,8 @@ namespace Fpr
 
             //Remove items that have resolvers or are ignored
             unmappedMembers.RemoveAll(sourceMembers.Contains);
-            unmappedMembers.RemoveAll(ConfigSettings.IgnoreMembers.Contains);
-            unmappedMembers.RemoveAll(x => ConfigSettings.Resolvers.Any(r => r.MemberName == x));
+            unmappedMembers.RemoveAll(_configSettings.IgnoreMembers.Contains);
+            unmappedMembers.RemoveAll(x => _configSettings.Resolvers.Any(r => r.MemberName == x));
 
             unmappedMembers.RemoveAll(x => sourceType.GetMethod("Get" + x) != null);
 
@@ -395,8 +423,8 @@ namespace Fpr
             var unmappedMembers = destType.GetPublicFieldsAndProperties(false).ToList();
 
             //Remove items that have resolvers or are ignored
-            unmappedMembers.RemoveAll(x => ConfigSettings.IgnoreMembers.Contains(x.Name));
-            unmappedMembers.RemoveAll(x => ConfigSettings.Resolvers.Any(r => r.MemberName == x.Name));
+            unmappedMembers.RemoveAll(x => _configSettings.IgnoreMembers.Contains(x.Name));
+            unmappedMembers.RemoveAll(x => _configSettings.Resolvers.Any(r => r.MemberName == x.Name));
 
             var sourceType = typeof (TSource);
 
@@ -440,6 +468,56 @@ namespace Fpr
             }
 
             return errorList;
+        }
+
+        private static TypeAdapterConfigSettings<TSource, TDestination> DeriveConfigSettings()
+        {
+            TypeAdapterConfigSettings<TSource, TDestination> configSettings = null;
+
+            //See if we can convert inherited config settings.
+            Type destType = typeof(TDestination);
+            Type baseSourceType = typeof(TSource).BaseType;
+
+            while (baseSourceType != null && !baseSourceType.IsPrimitiveRoot())
+            {
+                var baseConfig = TypeAdapterConfig.GetFromConfigurationCache(baseSourceType, destType);
+                if (baseConfig != null)
+                {
+                    Type configType = typeof(TypeAdapterConfig<,>).MakeGenericType(baseSourceType, destType);
+                    var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
+
+                    var baseConfigSettings = (TypeAdapterConfigSettingsBase)property.GetValue(baseConfig);
+
+                    configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
+                    {
+                        MaxDepth = baseConfigSettings.MaxDepth,
+                        IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
+                        NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType,
+                    };
+                    configSettings.IgnoreMembers.AddRange(baseConfigSettings.IgnoreMembers);
+                    configSettings.DestinationTransforms.Upsert(baseConfigSettings.DestinationTransforms.Transforms);
+
+                    List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
+
+                    Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(baseSourceType);
+
+                    foreach (var baseResolver in resolvers)
+                    {
+                        var convertedResolver = new InvokerModel<TSource>();
+                        convertedResolver.MemberName = (string)baseInvokerType.GetField("MemberName").GetValue(baseResolver);
+                        convertedResolver.Invoker = (Func<TSource, object>)baseInvokerType.GetField("Invoker").GetValue(baseResolver);
+                        convertedResolver.Condition = (Func<TSource, bool>)baseInvokerType.GetField("Condition").GetValue(baseResolver);
+
+                        configSettings.Resolvers.Add(convertedResolver);
+                    }
+
+                    break;
+                }
+
+                baseSourceType = baseSourceType.BaseType;
+            }
+
+            return configSettings;
         }
 
     }

@@ -23,21 +23,13 @@ namespace Fpr
         }
     }
 
-    internal class TypeAdapterConfigSettings<TSource, TDestination>
+    internal class TypeAdapterConfigSettings<TSource, TDestination> : TypeAdapterConfigSettingsBase
     {
-        public readonly List<string> IgnoreMembers = new List<string>();
         public readonly List<InvokerModel<TSource>> Resolvers = new List<InvokerModel<TSource>>();
-        public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
+        
+
         public Func<TDestination> ConstructUsing;
         public Func<ITypeResolver<TSource, TDestination>> ConverterFactory; 
-
-        public TypeAdapterConfigSettings()
-        {
-            foreach (var transform in TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms)
-            {
-                DestinationTransforms.Transforms.Add(transform.Key, transform.Value);
-            }
-        }
 
         public void Reset()
         {
@@ -46,6 +38,25 @@ namespace Fpr
             DestinationTransforms.Clear();
             ConstructUsing = null;
             ConverterFactory = null;
+        }
+
+        public override List<object> GetResolversAsObjects()
+        {
+            return new List<object>(Resolvers);
+        }
+    }
+
+    internal abstract class TypeAdapterConfigSettingsBase
+    {
+        public readonly List<string> IgnoreMembers = new List<string>();
+        public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
+
+        protected TypeAdapterConfigSettingsBase()
+        {
+            foreach (var transform in TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms)
+            {
+                DestinationTransforms.Transforms.Add(transform.Key, transform.Value);
+            }
         }
 
         public int MaxDepth { get; set; }
@@ -59,6 +70,8 @@ namespace Fpr
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: false
         /// </summary>
         public bool? IgnoreNullValues { get; set; }
+
+        public abstract List<object> GetResolversAsObjects();
 
     }
 }

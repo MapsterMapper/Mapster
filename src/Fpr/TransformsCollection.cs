@@ -50,6 +50,21 @@ namespace Fpr
             _transforms.Clear();
         }
 
+        public void Upsert(IDictionary<Type, Func<object, object>> sourceTransforms)
+        {
+            foreach (var sourceTransform in sourceTransforms)
+            {
+                if (_transforms.ContainsKey(sourceTransform.Key))
+                {
+                    _transforms[sourceTransform.Key] = sourceTransform.Value;
+                }
+                else
+                {
+                    _transforms.Add(sourceTransform.Key, sourceTransform.Value);
+                }
+            }
+        }
+
         internal IDictionary<Type, Func<object, object>> Transforms
         {
             get { return _transforms; }

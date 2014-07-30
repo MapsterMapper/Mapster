@@ -14,7 +14,7 @@ namespace Fpr.Adapters
     /// </remarks>
     /// <typeparam name="TSource">The source type.</typeparam>
     /// <typeparam name="TDestination">The destination type</typeparam>
-    public sealed class ClassAdapter<TSource, TDestination>
+    public static class ClassAdapter<TSource, TDestination>
     {
         private static Func<TDestination> _destinationFactory;
         private static AdapterModel<TSource, TDestination> _adapterModel;
@@ -242,6 +242,7 @@ namespace Fpr.Adapters
         public static void Reset()
         {
             _adapterModel = null;
+            _destinationFactory = null;
         }
 
 
