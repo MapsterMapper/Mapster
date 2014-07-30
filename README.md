@@ -64,7 +64,7 @@ When the default convention mappings aren't enough to do the job, you can specif
     .Map(dest => dest.FullName, 
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-####Implicit Mapping Inheritance
+####Implicit TSource Mapping Inheritance
 If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
 to the destination, that mapping will be used.  This allows mappings for less derived source types to be used to 
 satisfy multiple derived mappings.  FPR will search downward the source class hierarchy until it finds a matching configuration.   
