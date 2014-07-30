@@ -64,6 +64,42 @@ When the default convention mappings aren't enough to do the job, you can specif
     .Map(dest => dest.FullName, 
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
+####Implicit Mapping Inheritance
+If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
+to the destination, that mapping will be used.  This allows mappings for less derived source types to be used to 
+satisfy multiple derived mappings.  FPR will search downward the source class hierarchy until it finds a matching configuration.   
+If no match exists, it will create a default configuration (the same behavior if no mapping was present).
+It **doesn't** combine derived configs, it will stop at the first match.  
+For example, if you have:
+
+    public class SimplePoco
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DerivedPoco : SimplePoco
+    {...}
+
+    public class DerivedPoco2 : SimplePoco
+    {...}
+
+    public class SimpleDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+The following mapping will be used when mapping the SimplePoco or either of the derived POCOs to the Simple DTO.
+
+    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+        .Map(dest => dest.Name, src => src.Name + "_Suffix");
+
+If you don't wish for a derived type to use the base mapping, just define a new configuration for that type.
+
+    TypeAdapterConfig<DerivedPoco2, SimpleDto>.NewConfig();
+
+
 ####Custom Destination Object Creation
 You can provide a function call to create your destination objects instead of using the default object creation 
 (which expects an empty constructor).  To do so, use the "ConstructUsing()" method when configuring.  This method expects
