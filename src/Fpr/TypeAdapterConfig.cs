@@ -118,9 +118,7 @@ namespace Fpr
     {
         private static TypeAdapterConfigSettings<TSource, TDestination> _configSettings;
         private static bool _configSettingsSet;
-
-        private readonly ProjectionConfig<TSource, TDestination> _projection =
-            ProjectionConfig<TSource, TDestination>.NewConfig();
+        private static ProjectionConfig<TSource, TDestination> _projection;
 
         private TypeAdapterConfig()
         {
@@ -138,6 +136,7 @@ namespace Fpr
             }
 
             ClassAdapter<TSource, TDestination>.Reset();
+            _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
 
             var config = new TypeAdapterConfig<TSource, TDestination>();
             TypeAdapterConfig.UpsertConfigurationCache(config);
@@ -165,6 +164,7 @@ namespace Fpr
             _configSettings = null;
             _configSettingsSet = false;
             ClassAdapter<TSource, TDestination>.Reset();
+            _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
         }
 
         [Obsolete("Use Ignore instead.")]
