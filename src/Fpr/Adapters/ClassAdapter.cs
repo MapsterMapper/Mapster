@@ -192,7 +192,6 @@ namespace Fpr.Adapters
                     {
                         propertyModel.Setter.Invoke(destination, destinationValue);
                     }
-      
                 }
             }
             catch (Exception ex)
