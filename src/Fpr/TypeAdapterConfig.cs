@@ -387,7 +387,7 @@ namespace Fpr
             return isValid;
         }
 
-        private List<string> GetUnmappedMembers()
+        private static List<string> GetUnmappedMembers()
         {
             var destType = typeof (TDestination);
 
@@ -414,7 +414,7 @@ namespace Fpr
         }
 
 
-        private List<string> GetMissingExplicitMappings()
+        private static List<string> GetMissingExplicitMappings()
         {
             var errorList = new List<string>();
 
@@ -476,45 +476,62 @@ namespace Fpr
 
             //See if we can convert inherited config settings.
             Type destType = typeof(TDestination);
-            Type baseSourceType = typeof(TSource).BaseType;
+            Type sourceType = typeof(TSource).BaseType;
+            bool matchFound = false;
 
-            while (baseSourceType != null && !baseSourceType.IsPrimitiveRoot())
+            while (destType != null && !destType.IsPrimitiveRoot())
             {
-                var baseConfig = TypeAdapterConfig.GetFromConfigurationCache(baseSourceType, destType);
-                if (baseConfig != null)
+                while (sourceType != null && !sourceType.IsPrimitiveRoot())
                 {
-                    Type configType = typeof(TypeAdapterConfig<,>).MakeGenericType(baseSourceType, destType);
-                    var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
-
-                    var baseConfigSettings = (TypeAdapterConfigSettingsBase)property.GetValue(baseConfig);
-
-                    configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
+                    var baseConfig = TypeAdapterConfig.GetFromConfigurationCache(sourceType, destType);
+                    if (baseConfig != null)
                     {
-                        MaxDepth = baseConfigSettings.MaxDepth,
-                        IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
-                        NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType,
-                    };
-                    configSettings.IgnoreMembers.AddRange(baseConfigSettings.IgnoreMembers);
-                    configSettings.DestinationTransforms.Upsert(baseConfigSettings.DestinationTransforms.Transforms);
+                        Type configType = typeof(TypeAdapterConfig<,>).MakeGenericType(sourceType, destType);
+                        var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
 
-                    List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
+                        var baseConfigSettings = (TypeAdapterConfigSettingsBase)property.GetValue(baseConfig);
 
-                    Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(baseSourceType);
+                        configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
+                        {
+                            MaxDepth = baseConfigSettings.MaxDepth,
+                            IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
+                            NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType,
+                        };
+                        configSettings.IgnoreMembers.AddRange(baseConfigSettings.IgnoreMembers);
+                        configSettings.DestinationTransforms.Upsert(baseConfigSettings.DestinationTransforms.Transforms);
 
-                    foreach (var baseResolver in resolvers)
-                    {
-                        var convertedResolver = new InvokerModel<TSource>();
-                        convertedResolver.MemberName = (string)baseInvokerType.GetField("MemberName").GetValue(baseResolver);
-                        convertedResolver.Invoker = (Func<TSource, object>)baseInvokerType.GetField("Invoker").GetValue(baseResolver);
-                        convertedResolver.Condition = (Func<TSource, bool>)baseInvokerType.GetField("Condition").GetValue(baseResolver);
+                        List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
 
-                        configSettings.Resolvers.Add(convertedResolver);
+                        Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(sourceType);
+
+                        foreach (var baseResolver in resolvers)
+                        {
+                            var convertedResolver = new InvokerModel<TSource>();
+                            convertedResolver.MemberName =
+                                (string)baseInvokerType.GetField("MemberName").GetValue(baseResolver);
+                            convertedResolver.Invoker =
+                                (Func<TSource, object>)baseInvokerType.GetField("Invoker").GetValue(baseResolver);
+                            convertedResolver.Condition =
+                                (Func<TSource, bool>)baseInvokerType.GetField("Condition").GetValue(baseResolver);
+
+                            configSettings.Resolvers.Add(convertedResolver);
+                        }
+                        matchFound = true;
+                        break;
                     }
-
-                    break;
+                    sourceType = sourceType.BaseType;
                 }
 
-                baseSourceType = baseSourceType.BaseType;
+                if (!matchFound && TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance)
+                {
+                    destType = destType.BaseType;
+                    sourceType = typeof(TSource);
+                }
+                else
+                {
+                    destType = null;
+                }
+
             }
 
             return configSettings;

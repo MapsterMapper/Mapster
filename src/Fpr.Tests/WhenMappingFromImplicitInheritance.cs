@@ -5,7 +5,7 @@ using Should;
 namespace Fpr.Tests
 {
     [TestFixture]
-    public class WhenMappingFromImplicitSourceInheritance
+    public class WhenMappingFromImplicitInheritance
     {
         [SetUp]
         public void Setup()
@@ -13,6 +13,8 @@ namespace Fpr.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear();
             TypeAdapterConfig<DoubleDerivedPoco, SimpleDto>.Clear();
+            TypeAdapterConfig<DerivedPoco, DerivedDto>.Clear();
+            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
         [Test]
@@ -173,6 +175,54 @@ namespace Fpr.Tests
             derivedConfig.MaxDepth.ShouldEqual(5);
         }
 
+        [Test]
+        public void Derived_Config_Shares_Base_Dest_Config_Properties()
+        {
+            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .IgnoreNullValues(true)
+                .NewInstanceForSameType(true)
+                .MaxDepth(5);
+
+            var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;
+
+            derivedConfig.IgnoreNullValues.ShouldEqual(true);
+            derivedConfig.NewInstanceForSameType.ShouldEqual(true);
+            derivedConfig.MaxDepth.ShouldEqual(5);
+        }
+
+        [Test]
+        public void Derived_Config_Doesnt_Share_Base_Dest_Config_Properties_If_Disabled()
+        {
+            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .IgnoreNullValues(true)
+                .NewInstanceForSameType(true)
+                .MaxDepth(5);
+
+            var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;
+
+            derivedConfig.ShouldBeNull();
+        }
+
+        [Test]
+        public void Ignores_Are_Derived_From_Base_Dest_Configurations()
+        {
+            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Map(dest => dest.Name, src => src.Name + "_Suffix");
+
+            var source = new DerivedPoco
+            {
+                Id = new Guid(),
+                Name = "SourceName"
+            };
+
+            var dto = TypeAdapter.Adapt<DerivedDto>(source);
+
+            dto.Id.ShouldEqual(source.Id);
+            dto.Name.ShouldEqual(source.Name + "_Suffix");
+        }
 
         #region Test Classes
 
@@ -193,6 +243,10 @@ namespace Fpr.Tests
         }
 
         public class DoubleDerivedPoco : DerivedPoco
+        {
+        }
+
+        public class DerivedDto : SimpleDto
         {
         }
 

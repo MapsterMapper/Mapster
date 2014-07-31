@@ -95,10 +95,45 @@ The following mapping will be used when mapping the SimplePoco or either of the 
     TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
         .Map(dest => dest.Name, src => src.Name + "_Suffix");
 
-If you don't wish for a derived type to use the base mapping, just define a new configuration for that type.
+If you don't wish a derived type to use the base mapping, just define a new configuration for that type.
 
     TypeAdapterConfig<DerivedPoco2, SimpleDto>.NewConfig();
 
+
+####Implicit TSource and TDestination Mapping Inheritance
+In some cases you may wish to derive a mapping based on both the source and destination types.  In such a case,
+setting the global configuration AllowImplicitDestinationInheritance setting to true will allow inheritance of a mapping
+based on both the source and destination types.  The source class hierarchy is traversed in an inside loop and the 
+destination class hierarchy is traversed in an outside loop until a match is found. 
+
+    public class SimplePoco
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DerivedPoco : SimplePoco
+    {...}
+
+    public class SimpleDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DerivedDto : DerivedDto
+    {...}
+
+The following mapping will be used for any permutation of Simple/Derived Poco to Simple/Derived Dto
+unless overridden by a specific configuration. 
+
+    TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
+    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+        .Map(dest => dest.Name, src => src.Name + "_Suffix");
+
+If you don't wish a specific permutation to use the base mapping, just define a new configuration for that permutation.
+
+    TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig();
 
 ####Custom Destination Object Creation
 You can provide a function call to create your destination objects instead of using the default object creation 

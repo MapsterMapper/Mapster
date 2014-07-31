@@ -26,8 +26,6 @@ namespace Fpr
     internal class TypeAdapterConfigSettings<TSource, TDestination> : TypeAdapterConfigSettingsBase
     {
         public readonly List<InvokerModel<TSource>> Resolvers = new List<InvokerModel<TSource>>();
-        
-
         public Func<TDestination> ConstructUsing;
         public Func<ITypeResolver<TSource, TDestination>> ConverterFactory; 
 
