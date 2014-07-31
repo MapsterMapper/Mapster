@@ -64,7 +64,8 @@
     <Compile Include="WhenHandlingUnmappedMembers.cs" />
     <Compile Include="WhenExplicitMappingRequired.cs" />
     <Compile Include="WhenMappingConditionally.cs" />
-    <Compile Include="WhenMappingFromImplicitInheritance.cs" />
+    <Compile Include="WhenMappingWithExplicitInheritance.cs" />
+    <Compile Include="WhenMappingWithImplicitInheritance.cs" />
     <Compile Include="WhenMappingNonPublicSetters.cs" />
     <Compile Include="WhenMappingEntityWithOnlyPrimitives.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -96,6 +96,11 @@ namespace Fpr
             return _configurationCache.ContainsKey(key);
         }
 
+        internal static TypeAdapterConfig<TSource, TDestination> GetFromConfigurationCache<TSource, TDestination>()
+        {
+            return (TypeAdapterConfig<TSource, TDestination>)GetFromConfigurationCache(typeof(TSource), typeof(TDestination));
+        }
+
         internal static object GetFromConfigurationCache(Type sourceType, Type destinationType)
         {
             var key = ReflectionUtils.GetHashKey(sourceType, destinationType);
@@ -140,7 +145,7 @@ namespace Fpr
 
             var config = new TypeAdapterConfig<TSource, TDestination>();
             TypeAdapterConfig.UpsertConfigurationCache(config);
-            _configSettingsSet = true;
+            _configSettingsSet = false;
 
             return config;
         }
@@ -154,7 +159,12 @@ namespace Fpr
 
                 _configSettingsSet = true;
 
-                return _configSettings ?? (_configSettings = DeriveConfigSettings());
+                if (_configSettings == null)
+                    return _configSettings = DeriveConfigSettings();
+
+                ApplyInheritedConfigSettings();
+
+                return _configSettings;
             }
         }
 
@@ -300,6 +310,29 @@ namespace Fpr
             return this;
         }
 
+        public TypeAdapterConfig<TSource, TDestination> Inherits<TBaseSource, TBaseDestination>()
+        {
+            Type baseSourceType = typeof (TBaseSource);
+            Type baseDestinationType = typeof (TBaseDestination);
+
+            if (!baseSourceType.IsAssignableFrom(typeof(TSource)))
+                throw new InvalidCastException("In order to use inherits, TSource must inherit directly or indirectly from TBaseSource.");
+
+            if (!baseDestinationType.IsAssignableFrom(typeof(TDestination)))
+                throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
+
+            _configSettings.InheritedSourceType = baseSourceType;
+            _configSettings.InheritedDestinationType = baseDestinationType;
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Func<TDestination> constructUsing)
+        {
+            _configSettings.ConstructUsing = constructUsing;
+
+            return this;
+        }
+
         public TypeAdapterConfig<TSource, TDestination> NewInstanceForSameType(bool newInstanceForSameType)
         {
             _configSettings.NewInstanceForSameType = newInstanceForSameType;
@@ -310,13 +343,6 @@ namespace Fpr
         public TypeAdapterConfig<TSource, TDestination> IgnoreNullValues(bool ignoreNullValues)
         {
             _configSettings.IgnoreNullValues = ignoreNullValues;
-
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Func<TDestination> constructUsing)
-        {
-            _configSettings.ConstructUsing = constructUsing;
 
             return this;
         }
@@ -535,6 +561,67 @@ namespace Fpr
             }
 
             return configSettings;
+        }
+
+        private static void ApplyInheritedConfigSettings()
+        {
+            if (_configSettings.InheritedSourceType == null || _configSettings.InheritedDestinationType == null)
+                return;
+
+            var baseConfig = TypeAdapterConfig.GetFromConfigurationCache(_configSettings.InheritedSourceType, _configSettings.InheritedDestinationType);
+            if (baseConfig != null)
+            {
+                Type configType = typeof (TypeAdapterConfig<,>).MakeGenericType(_configSettings.InheritedSourceType, _configSettings.InheritedDestinationType);
+                var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
+
+                var baseConfigSettings = (TypeAdapterConfigSettingsBase) property.GetValue(baseConfig);
+
+                if (_configSettings.IgnoreNullValues == null)
+                    _configSettings.IgnoreNullValues = baseConfigSettings.IgnoreNullValues;
+                if (_configSettings.MaxDepth == null)
+                    _configSettings.MaxDepth = baseConfigSettings.MaxDepth;
+                if (_configSettings.NewInstanceForSameType == null)
+                    _configSettings.NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType;
+
+                foreach (var ignoreMember in baseConfigSettings.IgnoreMembers)
+                {
+                    if(!_configSettings.IgnoreMembers.Contains(ignoreMember))
+                        _configSettings.IgnoreMembers.Add(ignoreMember);
+                }
+
+                _configSettings.DestinationTransforms.TryAdd(baseConfigSettings.DestinationTransforms.Transforms);
+
+                List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
+
+                Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(_configSettings.InheritedSourceType);
+
+                foreach (var baseResolver in resolvers)
+                {
+                    string memberName = (string)baseInvokerType.GetField("MemberName").GetValue(baseResolver);
+
+                    if (_configSettings.Resolvers.All(x => x.MemberName != memberName))
+                    {
+                        var convertedResolver = new InvokerModel<TSource>();
+                        convertedResolver.MemberName = memberName;
+
+                        convertedResolver.Invoker =
+                            (Func<TSource, object>)baseInvokerType.GetField("Invoker").GetValue(baseResolver);
+                        convertedResolver.Condition =
+                            (Func<TSource, bool>)baseInvokerType.GetField("Condition").GetValue(baseResolver);
+
+                        _configSettings.Resolvers.Add(convertedResolver);    
+                    }
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(
+                    string.Format("The configuration of source {0} to destination {1} relies on explicit inheritance from a configuration with source {2}" +
+                                                      "and destination {3}, which does not exist.", typeof(TSource).FullName, typeof(TDestination).FullName, 
+                                                      _configSettings.InheritedSourceType.FullName, _configSettings.InheritedDestinationType.FullName));
+            }
+
+            //See if this config exists
         }
 
     }

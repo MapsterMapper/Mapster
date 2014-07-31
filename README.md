@@ -135,6 +135,44 @@ If you don't wish a specific permutation to use the base mapping, just define a 
 
     TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig();
 
+
+#### Explicit Mapping Inheritance
+In some cases, you may wish to have one mapping inherit from another mapping.  In this case, anything set on the derived mapping
+will override settings on the base mapping.  So unlike implicit mapping inheritance, where the goal is to find an applicable mapping
+configuration and configurations are not combined, with Explicit Inheritance, each derived mapping overrides the settings of the 
+inherited mapping.  Use the Inherits<TBaseSource, TBaseDestination> configuration method to accomplish this where TBaseSource and 
+TBaseDestination must be assignable from the derived configuration's TSource and TDestination respectively. 
+For example, if you have:
+
+    public class SimplePoco
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DerivedPoco : SimplePoco
+    {...}
+
+    public class SimpleDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DerivedDto : SimpleDto
+    {...}
+
+And you have the following base mapping:
+
+    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+        .Map(dest => dest.Name, src => src.Name + "_Suffix");
+
+You can base the mapping of the derived classes on this base mapping:
+    
+    TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+        .Inherits<SimplePoco, SimpleDto>();
+
+
 ####Custom Destination Object Creation
 You can provide a function call to create your destination objects instead of using the default object creation 
 (which expects an empty constructor).  To do so, use the "ConstructUsing()" method when configuring.  This method expects

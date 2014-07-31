@@ -43,10 +43,10 @@ namespace Fpr.Adapters
 
             if (configSettings != null)
             {
-                if (configSettings.MaxDepth > 0)
+                if (configSettings.MaxDepth.GetValueOrDefault() > 0)
                 {
                     hasMaxDepth = true;
-                    if (MaxDepthExceeded(ref parameterIndexs, configSettings.MaxDepth))
+                    if (MaxDepthExceeded(ref parameterIndexs, configSettings.MaxDepth.GetValueOrDefault()))
                         return null;
                 }
             }

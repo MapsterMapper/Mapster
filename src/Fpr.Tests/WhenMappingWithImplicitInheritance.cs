@@ -5,7 +5,7 @@ using Should;
 namespace Fpr.Tests
 {
     [TestFixture]
-    public class WhenMappingFromImplicitInheritance
+    public class WhenMappingWithImplicitInheritance
     {
         [SetUp]
         public void Setup()

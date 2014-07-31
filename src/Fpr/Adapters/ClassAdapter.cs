@@ -98,10 +98,10 @@ namespace Fpr.Adapters
                     var converter = configSettings.ConverterFactory();
                     return converter.Resolve(source);
                 }
-                if (configSettings.MaxDepth > 0)
+                if (configSettings.MaxDepth.GetValueOrDefault() > 0)
                 {
                     hasMaxDepth = true;
-                    if(MaxDepthExceeded(ref parameterIndexes, configSettings.MaxDepth))
+                    if(MaxDepthExceeded(ref parameterIndexes, configSettings.MaxDepth.GetValueOrDefault()))
                         return default(TDestination);
                 }
             }

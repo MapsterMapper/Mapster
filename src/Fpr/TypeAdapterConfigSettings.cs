@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Fpr.Models;
 
 namespace Fpr
@@ -27,8 +28,8 @@ namespace Fpr
     {
         public readonly List<InvokerModel<TSource>> Resolvers = new List<InvokerModel<TSource>>();
         public Func<TDestination> ConstructUsing;
-        public Func<ITypeResolver<TSource, TDestination>> ConverterFactory; 
-
+        public Func<ITypeResolver<TSource, TDestination>> ConverterFactory;
+        
         public void Reset()
         {
             IgnoreMembers.Clear();
@@ -46,8 +47,6 @@ namespace Fpr
 
     internal abstract class TypeAdapterConfigSettingsBase
     {
-        public readonly List<string> IgnoreMembers = new List<string>();
-        public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
 
         protected TypeAdapterConfigSettingsBase()
         {
@@ -57,19 +56,34 @@ namespace Fpr
             }
         }
 
-        public int MaxDepth { get; set; }
+        public readonly List<string> IgnoreMembers = new List<string>();
+
+        public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
+
+        public int? MaxDepth;
 
         /// <summary>
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: true
         /// </summary>
-        public bool? NewInstanceForSameType { get; set; }
+        public bool? NewInstanceForSameType;
 
         /// <summary>
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: false
         /// </summary>
-        public bool? IgnoreNullValues { get; set; }
+        public bool? IgnoreNullValues;
 
+        /// <summary>
+        /// Source type of the inherited config
+        /// </summary>
+        public Type InheritedSourceType;
+
+        /// <summary>
+        /// Destination type of the inherited config
+        /// </summary>
+        public Type InheritedDestinationType;
+        
         public abstract List<object> GetResolversAsObjects();
+
 
     }
 }

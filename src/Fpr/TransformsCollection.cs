@@ -37,19 +37,6 @@ namespace Fpr
             }
         }
 
-        public void Remove<T>()
-        {
-            var type = typeof (T);
-
-            if (_transforms.ContainsKey(type))
-                _transforms.Remove(type);
-        }
-
-        public void Clear()
-        {
-            _transforms.Clear();
-        }
-
         public void Upsert(IDictionary<Type, Func<object, object>> sourceTransforms)
         {
             foreach (var sourceTransform in sourceTransforms)
@@ -63,6 +50,30 @@ namespace Fpr
                     _transforms.Add(sourceTransform.Key, sourceTransform.Value);
                 }
             }
+        }
+
+        public void TryAdd(IDictionary<Type, Func<object, object>> sourceTransforms)
+        {
+            foreach (var sourceTransform in sourceTransforms)
+            {
+                if (!_transforms.ContainsKey(sourceTransform.Key))
+                {
+                    _transforms.Add(sourceTransform.Key, sourceTransform.Value);
+                }
+            }
+        }
+
+        public void Remove<T>()
+        {
+            var type = typeof (T);
+
+            if (_transforms.ContainsKey(type))
+                _transforms.Remove(type);
+        }
+
+        public void Clear()
+        {
+            _transforms.Clear();
         }
 
         internal IDictionary<Type, Func<object, object>> Transforms
