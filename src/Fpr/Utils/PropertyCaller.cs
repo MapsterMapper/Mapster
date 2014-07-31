@@ -7,6 +7,9 @@ namespace Fpr.Utils
 {
     public static class PropertyCaller<TClass, TReturn> where TClass : class
     {
+        private static readonly object _getterLock = new object();
+        private static readonly object _setterLock = new object();
+
         private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>> _getterCache =
             new Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>>();
 
@@ -58,31 +61,33 @@ namespace Fpr.Utils
             //Create the delegate and return it
             var genGetter = (GenGetter)getter.CreateDelegate(typeof(GenGetter));
 
-            //Cache the delegate for future use.
-            Dictionary<string, GenGetter> tempPropDict;
-
-            if (!_getterCache.ContainsKey(classType))
+            lock (_getterLock)
             {
-                tempPropDict = new Dictionary<string, GenGetter> {{propertyName, genGetter}};
+                //Cache the delegate for future use.
+                Dictionary<string, GenGetter> tempPropDict;
 
-                var tempDict = new Dictionary<Type, Dictionary<string, GenGetter>> {{returnType, tempPropDict}};
-
-                _getterCache.Add(classType, tempDict);
-            }
-            else
-            {
-                if (!_getterCache[classType].ContainsKey(returnType))
+                if (!_getterCache.ContainsKey(classType))
                 {
                     tempPropDict = new Dictionary<string, GenGetter> {{propertyName, genGetter}};
-                    _getterCache[classType].Add(returnType, tempPropDict);
+
+                    var tempDict = new Dictionary<Type, Dictionary<string, GenGetter>> {{returnType, tempPropDict}};
+
+                    _getterCache.Add(classType, tempDict);
                 }
                 else
                 {
-                    if (!_getterCache[classType][returnType].ContainsKey(propertyName))
-                        _getterCache[classType][returnType].Add(propertyName, genGetter);
+                    if (!_getterCache[classType].ContainsKey(returnType))
+                    {
+                        tempPropDict = new Dictionary<string, GenGetter> {{propertyName, genGetter}};
+                        _getterCache[classType].Add(returnType, tempPropDict);
+                    }
+                    else
+                    {
+                        if (!_getterCache[classType][returnType].ContainsKey(propertyName))
+                            _getterCache[classType][returnType].Add(propertyName, genGetter);
+                    }
                 }
             }
-
             //Return delegate to the caller.
             return genGetter;
 
@@ -139,29 +144,32 @@ namespace Fpr.Utils
             //Create the delegate
             var genSetter = (GenSetter)setter.CreateDelegate(typeof(GenSetter));
 
-            //Cache the delegate for future use.
-            Dictionary<string, GenSetter> tempPropDict;
-
-            if (!_setterCache.ContainsKey(classType))
+            lock (_setterLock)
             {
-                tempPropDict = new Dictionary<string, GenSetter> {{propertyName, genSetter}};
+                //Cache the delegate for future use.
+                Dictionary<string, GenSetter> tempPropDict;
 
-                var tempDict = new Dictionary<Type, Dictionary<string, GenSetter>> {{returnType, tempPropDict}};
-
-                _setterCache.Add(classType, tempDict);
-            }
-            else
-            {
-                if (!_setterCache[classType].ContainsKey(returnType))
+                if (!_setterCache.ContainsKey(classType))
                 {
                     tempPropDict = new Dictionary<string, GenSetter> {{propertyName, genSetter}};
 
-                    _setterCache[classType].Add(returnType, tempPropDict);
+                    var tempDict = new Dictionary<Type, Dictionary<string, GenSetter>> {{returnType, tempPropDict}};
+
+                    _setterCache.Add(classType, tempDict);
                 }
                 else
                 {
-                    if (!_setterCache[classType][returnType].ContainsKey(propertyName))
-                        _setterCache[classType][returnType].Add(propertyName, genSetter);
+                    if (!_setterCache[classType].ContainsKey(returnType))
+                    {
+                        tempPropDict = new Dictionary<string, GenSetter> {{propertyName, genSetter}};
+
+                        _setterCache[classType].Add(returnType, tempPropDict);
+                    }
+                    else
+                    {
+                        if (!_setterCache[classType][returnType].ContainsKey(propertyName))
+                            _setterCache[classType][returnType].Add(propertyName, genSetter);
+                    }
                 }
             }
             //Return delegate to the caller.
@@ -174,6 +182,9 @@ namespace Fpr.Utils
     {
         public delegate void GenSetter(T target, Object value);
         public delegate Object GenGetter(T target);
+
+        private static readonly object _getterLock = new object();
+        private static readonly object _setterLock = new object();
 
         private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>> _getterCache = new Dictionary<Type, Dictionary<Type, Dictionary<string, GenGetter>>>();
         private static readonly Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>> _setterCache = new Dictionary<Type, Dictionary<Type, Dictionary<string, GenSetter>>>();
@@ -218,25 +229,28 @@ namespace Fpr.Utils
             //Create the delegate and return it
             var genGetter = (GenGetter)getter.CreateDelegate(typeof(GenGetter));
 
-            Dictionary<string, GenGetter> tempPropDict;
-            if (!_getterCache.ContainsKey(classType))
+            lock (_getterLock)
             {
-                tempPropDict = new Dictionary<string, GenGetter> {{propName, genGetter}};
-                var tempDict = new Dictionary<Type, Dictionary<string, GenGetter>> {{propType, tempPropDict}};
-                _getterCache.Add(classType, tempDict);
-            }
-            else
-            {
-                if (!_getterCache[classType].ContainsKey(propType))
+                Dictionary<string, GenGetter> tempPropDict;
+                if (!_getterCache.ContainsKey(classType))
                 {
                     tempPropDict = new Dictionary<string, GenGetter> {{propName, genGetter}};
-                    _getterCache[classType].Add(propType, tempPropDict);
+                    var tempDict = new Dictionary<Type, Dictionary<string, GenGetter>> {{propType, tempPropDict}};
+                    _getterCache.Add(classType, tempDict);
                 }
                 else
                 {
-                    if (!_getterCache[classType][propType].ContainsKey(propName))
+                    if (!_getterCache[classType].ContainsKey(propType))
                     {
-                        _getterCache[classType][propType].Add(propName, genGetter);
+                        tempPropDict = new Dictionary<string, GenGetter> {{propName, genGetter}};
+                        _getterCache[classType].Add(propType, tempPropDict);
+                    }
+                    else
+                    {
+                        if (!_getterCache[classType][propType].ContainsKey(propName))
+                        {
+                            _getterCache[classType][propType].Add(propName, genGetter);
+                        }
                     }
                 }
             }
@@ -290,25 +304,28 @@ namespace Fpr.Utils
             //Create the delegate and return it
             var genSetter = (GenSetter)setter.CreateDelegate(typeof(GenSetter));
 
-            Dictionary<string, GenSetter> tempPropDict;
-            if (!_setterCache.ContainsKey(classType))
+            lock (_setterLock)
             {
-                tempPropDict = new Dictionary<string, GenSetter> {{propName, genSetter}};
-                var tempDict = new Dictionary<Type, Dictionary<string, GenSetter>> {{propType, tempPropDict}};
-                _setterCache.Add(classType, tempDict);
-            }
-            else
-            {
-                if (!_setterCache[classType].ContainsKey(propType))
+                Dictionary<string, GenSetter> tempPropDict;
+                if (!_setterCache.ContainsKey(classType))
                 {
                     tempPropDict = new Dictionary<string, GenSetter> {{propName, genSetter}};
-                    _setterCache[classType].Add(propType, tempPropDict);
+                    var tempDict = new Dictionary<Type, Dictionary<string, GenSetter>> {{propType, tempPropDict}};
+                    _setterCache.Add(classType, tempDict);
                 }
                 else
                 {
-                    if (!_setterCache[classType][propType].ContainsKey(propName))
+                    if (!_setterCache[classType].ContainsKey(propType))
                     {
-                        _setterCache[classType][propType].Add(propName, genSetter);
+                        tempPropDict = new Dictionary<string, GenSetter> {{propName, genSetter}};
+                        _setterCache[classType].Add(propType, tempPropDict);
+                    }
+                    else
+                    {
+                        if (!_setterCache[classType][propType].ContainsKey(propName))
+                        {
+                            _setterCache[classType][propType].Add(propName, genSetter);
+                        }
                     }
                 }
             }

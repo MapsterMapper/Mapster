@@ -78,6 +78,7 @@
     <Compile Include="WhenMappingWithInstance.cs" />
     <Compile Include="WhenPerformingDestinationTransforms.cs" />
     <Compile Include="WhenProjecting.cs" />
+    <Compile Include="WhenRunningOnMultipleThreads.cs" />
     <Compile Include="WhenUsingNonDefaultConstructor.cs" />
     <Compile Include="WhenUsingTypeResolvers.cs" />
     <Compile Include="WhenUsingValueResolvers.cs" />
