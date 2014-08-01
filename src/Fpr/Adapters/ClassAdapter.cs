@@ -27,12 +27,6 @@ namespace Fpr.Adapters
             String.Format("Error occurred mapping the following property.\nSource Type: {0}  Destination Type: {1}  Destination Property: ",
             typeof (TSource), typeof (TDestination));
 
-        private static readonly string _noExplicitMappingMessage =
-           String.Format("Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {0} TDestination: {1}",
-               typeof(TSource), typeof(TDestination));
-
-        private static readonly string _unmappedMembersMessage =
-            String.Format("The following members of destination class {0} do not have a corresponding source member mapped or ignored:", typeof(TDestination));
 
         private static Func<TDestination> DestinationFactory
         {
@@ -200,12 +194,12 @@ namespace Fpr.Adapters
                     throw;
 
                 if(_adapterModel == null)
-                    throw new InvalidOperationException(_nonInitializedAdapterMessage);
+                    throw new InvalidOperationException(_nonInitializedAdapterMessage + "\nException: " + ex);
                 
                 if (propertyModel != null)
                 {
                     //Todo: This slows things down with the try-catch but the information is critical in debugging
-                    throw new InvalidOperationException(_propertyMappingErrorMessage + propertyModel.SetterPropertyName + "\nException: " + ex);
+                    throw new InvalidOperationException(_propertyMappingErrorMessage + propertyModel.SetterPropertyName + "\nException: " + ex, ex);
                 }
                 throw;
             }
@@ -274,7 +268,9 @@ namespace Fpr.Adapters
 
             if (!hasConfig && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
             {
-                throw new ArgumentOutOfRangeException(_noExplicitMappingMessage);
+                throw new ArgumentOutOfRangeException(
+                    String.Format("Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {0} TDestination: {1}",
+                    typeof(TSource), typeof(TDestination)));
             }
 
             IDictionary<Type, Func<object, object>> destinationTransforms = hasConfig
@@ -414,7 +410,8 @@ namespace Fpr.Adapters
 
             if (TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
             {
-                throw new ArgumentOutOfRangeException(_unmappedMembersMessage + string.Join(",", unmappedDestinationMembers));
+                throw new ArgumentOutOfRangeException(String.Format("The following members of destination class {0} do not have a corresponding source member mapped or ignored:{1}", 
+                    typeof(TDestination), string.Join(",", unmappedDestinationMembers)));
             }
 
             var adapterModel = adapterModelFactory();
