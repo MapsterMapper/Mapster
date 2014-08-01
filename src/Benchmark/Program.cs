@@ -11,6 +11,9 @@ namespace Benchmark
 {
     class Program
     {
+        private static decimal AutomapperTime;
+        private static decimal FprTime;
+
         static void Main(string[] args)
         {
             try
@@ -76,6 +79,10 @@ namespace Benchmark
             Test(customer, 10000);
 
             Test(customer, 100000);
+
+            Console.WriteLine();
+            Console.WriteLine("Automapper to Fpr ratio: " + (AutomapperTime/FprTime).ToString("###.00") + " X slower");
+            Console.WriteLine();
 
             //Test(customer, 1000000);
         }
@@ -146,14 +153,8 @@ namespace Benchmark
             where TSrc : class
             where TDest : class, new()
         {
-            Console.WriteLine("Fpr:\t\t\t" + Loop<TSrc>(item, get => TypeAdapter.Adapt<TSrc, TDest>(get), iterations));
-        }
-
-        private static void TestFmTypeAdapter<TSrc, TDest>(TSrc item, int iterations)
-            where TSrc : class
-            where TDest : class, new()
-        {
-            Console.WriteLine("FastMapper:\t\t" + Loop<TSrc>(item, get => Fm.TypeAdapter.Adapt<TSrc, TDest>(get), iterations));
+            FprTime = Loop<TSrc>(item, get => TypeAdapter.Adapt<TSrc, TDest>(get), iterations);
+            Console.WriteLine("Fpr:\t\t\t" + FprTime);
         }
 
 
@@ -174,7 +175,8 @@ namespace Benchmark
             if(iterations > 500000)
                 Console.WriteLine("AutoMapper still working please wait...");
 
-            Console.WriteLine("AutoMapper:\t\t" + Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations));
+            AutomapperTime = Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
+            Console.WriteLine("AutoMapper:\t\t" + AutomapperTime);
         }
 
         private static long Loop<T>(T item, Action<T> action, int iterations = 1000000)
