@@ -10,29 +10,10 @@ namespace Fpr.Utils
     public static class ReflectionUtils
     {
         private static readonly Type _stringType = typeof(string);
-        private static readonly Type _dateTimeType = typeof(DateTime);
-        private static readonly Type _boolType = typeof(bool);
-        private static readonly Type _intType = typeof(int);
-        private static readonly Type _longType = typeof(long);
-        private static readonly Type _shortType = typeof(short);
-        private static readonly Type _byteType = typeof(byte);
-        private static readonly Type _sByteType = typeof(sbyte);
-        private static readonly Type _ulongType = typeof(ulong);
-        private static readonly Type _uIntType = typeof(uint);
-        private static readonly Type _uShortType = typeof(ushort);
-        private static readonly Type _floatType = typeof(float);
-        private static readonly Type _doubleType = typeof(double);
-        private static readonly Type _decimalType = typeof(decimal);
-        private static readonly Type _guidType = typeof(Guid);
-        private static readonly Type _objectType = typeof(object);
         private static readonly Type _nullableType = typeof (Nullable<>);
 
         private static readonly Type _iEnumerableType = typeof(IEnumerable);
         private static readonly Type _arrayListType = typeof(ArrayList);
-
-        private static readonly Type _convertType = typeof (Convert);
-        private static readonly Type _fastEnumType = typeof (FastEnum<>);
-        private static readonly Type _reflectionUtilsType = typeof(ReflectionUtils);
 
         public static bool IsNullable(Type type)
         {
@@ -99,13 +80,13 @@ namespace Fpr.Utils
         {
             return
                 type.IsPrimitive
-                || type == _stringType
-                || type == _decimalType
-                || type == _guidType
-                || type == _dateTimeType
+                || type == typeof(string)
+                || type == typeof(decimal)
+                || type == typeof(DateTime)
+                || type == typeof(Guid)
                 || type.IsEnum
                 || (IsNullable(type) && IsPrimitiveRoot(Nullable.GetUnderlyingType(type)))
-                || type == _objectType
+                || type == typeof(object)
                 ;
         }
 
@@ -127,7 +108,7 @@ namespace Fpr.Utils
             }
             if (collectionType == _arrayListType)
             {
-                return _objectType;
+                return typeof(object);
             }
             if (collectionType.IsGenericType)
             {
@@ -159,57 +140,57 @@ namespace Fpr.Utils
             {
                 if (IsEnum(srcType))
                 {
-                    return FastInvoker.GetMethodInvoker(_fastEnumType.MakeGenericType(srcType).GetMethod("ToString", new[] { srcType }));
+                    return FastInvoker.GetMethodInvoker(typeof(FastEnum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType }));
                 }
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToString", new[] { _objectType }));
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToString", new[] { typeof(object) }));
             }
 
-            if (destType == _boolType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToBoolean", new[] { _objectType }));
+            if (destType == typeof(bool))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToBoolean", new[] { typeof(object) }));
 
-            if (destType == _intType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToInt32", new[] { _objectType }));
+            if (destType == typeof(int))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToInt32", new[] { typeof(object) }));
 
-            if (destType == _longType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToInt64", new[] { _objectType }));
+            if (destType == typeof(long))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToInt64", new[] { typeof(object) }));
 
-            if (destType == _shortType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToInt16", new[] { _objectType }));
+            if (destType == typeof(short))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToInt16", new[] { typeof(object) }));
 
-            if (destType == _decimalType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToDecimal", new[] { _objectType }));
+            if (destType == typeof(decimal))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToDecimal", new[] { typeof(object) }));
 
-            if (destType == _doubleType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToDouble", new[] { _objectType }));
+            if (destType == typeof(double))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToDouble", new[] { typeof(object) }));
 
-            if (destType == _floatType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToSingle", new[] { _objectType }));
+            if (destType == typeof(float))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToSingle", new[] { typeof(object) }));
 
-            if (destType == _dateTimeType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToDateTime", new[] { _objectType }));
+            if (destType == typeof(DateTime))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToDateTime", new[] { typeof(object) }));
 
-            if (destType == _guidType)
-                return FastInvoker.GetMethodInvoker(_reflectionUtilsType.GetMethod("ConvertToGuid", new[] { _objectType }));
+            if (destType == typeof(Guid))
+                return FastInvoker.GetMethodInvoker(typeof(ReflectionUtils).GetMethod("ConvertToGuid", new[] { typeof(object) }));
 
             if (IsEnum(destType) && IsString(sourceType))
             {
-                return FastInvoker.GetMethodInvoker(_fastEnumType.MakeGenericType(destType).GetMethod("ToEnum", new[] { srcType }));
+                return FastInvoker.GetMethodInvoker(typeof (FastEnum<>).MakeGenericType(destType).GetMethod("ToEnum", new[] { srcType }));
             }
 
-            if (destType == _ulongType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToUInt64", new[] { _objectType }));
+            if (destType == typeof(ulong))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToUInt64", new[] { typeof(object) }));
 
-            if (destType == _uIntType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToUInt32", new[] { _objectType }));
+            if (destType == typeof(uint))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToUInt32", new[] { typeof(object) }));
 
-            if (destType == _uShortType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToUInt16", new[] { _objectType }));
+            if (destType == typeof(ushort))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToUInt16", new[] { typeof(object) }));
 
-            if (destType == _byteType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToByte", new[] { _objectType }));
+            if (destType == typeof(byte))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToByte", new[] { typeof(object) }));
 
-            if (destType == _sByteType)
-                return FastInvoker.GetMethodInvoker(_convertType.GetMethod("ToSByte", new[] { _objectType }));
+            if (destType == typeof(sbyte))
+                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToSByte", new[] { typeof(object) }));
 
             return null;
         }

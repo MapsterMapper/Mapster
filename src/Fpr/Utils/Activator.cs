@@ -6,23 +6,10 @@ using System.Reflection.Emit;
 
 namespace Fpr.Utils
 {
-    public static class Activator<T> where T : class, new()
-    {
-        public static Func<T> CreateInstance { get; private set; }
-        static Activator()
-        {
-            CreateInstance = typeof(T).GetConstructorDelegate<T>();
-        }
-    }
-
+ 
     public static class ActivatorExtensions
     {
         private static readonly ConcurrentDictionary<Type, Func<object>> _constructors = new ConcurrentDictionary<Type, Func<object>>();
-
-        public static Func<TBase> GetConstructorDelegate<TBase>(this Type type)
-        {
-            return (Func<TBase>)GetConstructorDelegate(type, typeof(Func<TBase>));
-        }
 
         public static Func<object> GetConstructorDelegate(this Type type)
         {
