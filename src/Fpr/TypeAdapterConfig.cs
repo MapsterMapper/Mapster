@@ -417,26 +417,64 @@ namespace Fpr
         {
             var destType = typeof (TDestination);
 
-            List<string> unmappedMembers = destType.GetPublicFieldsAndProperties(false).Select(x => x.Name).ToList();
+            List<MemberInfo> unmappedMembers = destType.GetPublicFieldsAndProperties(false).ToList();
 
             var sourceType = typeof (TSource);
             List<string> sourceMembers = sourceType.GetPublicFieldsAndProperties().Select(x => x.Name).ToList();
 
             //Remove items that have resolvers or are ignored
-            unmappedMembers.RemoveAll(sourceMembers.Contains);
-            unmappedMembers.RemoveAll(_configSettings.IgnoreMembers.Contains);
-            unmappedMembers.RemoveAll(x => _configSettings.Resolvers.Any(r => r.MemberName == x));
+            unmappedMembers.RemoveAll(x => sourceMembers.Contains(x.Name));
 
-            unmappedMembers.RemoveAll(x => sourceType.GetMethod("Get" + x) != null);
+            RemoveInheritedExplicitMappings<TSource>(unmappedMembers, sourceType, destType);
+
+            unmappedMembers.RemoveAll(x => sourceType.GetMethod("Get" + x.Name) != null);
 
             unmappedMembers.RemoveAll(x =>
             {
                 var delegates = new List<GenericGetter>();
-                ReflectionUtils.GetDeepFlattening(sourceType, x, delegates);
+                ReflectionUtils.GetDeepFlattening(sourceType, x.Name, delegates);
                 return (delegates.Count > 0);
             });
 
-            return unmappedMembers;
+            return unmappedMembers.Select(x => x.Name).ToList();
+        }
+
+
+        private static void RemoveInheritedExplicitMappings<TOriginalSource>(List<MemberInfo>unmappedMembers, Type sourceType, Type destType)
+        {
+            var config = TypeAdapterConfig.GetFromConfigurationCache(sourceType, destType);
+
+            Type configType = typeof(TypeAdapterConfig<,>).MakeGenericType(sourceType, destType);
+            var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
+
+            var configSettings = (TypeAdapterConfigSettingsBase)property.GetValue(config);
+
+            if (configSettings != null)
+            {
+
+                //Remove items that have resolvers or are ignored
+                unmappedMembers.RemoveAll(x => configSettings.IgnoreMembers.Contains(x.Name));
+
+                List<object> resolverObjects = configSettings.GetResolversAsObjects();
+
+                Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(sourceType);
+
+                foreach (var resolverObject in resolverObjects)
+                {
+                    var memberName = (string) baseInvokerType.GetField("MemberName").GetValue(resolverObject);
+                    unmappedMembers.RemoveAll(x => x.Name == memberName);
+                }
+
+                if (unmappedMembers.Count == 0)
+                    return;
+
+                if (configSettings.InheritedDestinationType != null &&
+                    configSettings.InheritedSourceType != null)
+                {
+                    RemoveInheritedExplicitMappings<TOriginalSource>(unmappedMembers, configSettings.InheritedSourceType,
+                        configSettings.InheritedDestinationType);
+                }
+            }
         }
 
 
@@ -445,14 +483,15 @@ namespace Fpr
             var errorList = new List<string>();
 
             var destType = typeof (TDestination);
+            var sourceType = typeof(TSource);
 
             var unmappedMembers = destType.GetPublicFieldsAndProperties(false).ToList();
+
+            RemoveInheritedExplicitMappings<TSource>(unmappedMembers, sourceType, destType);
 
             //Remove items that have resolvers or are ignored
             unmappedMembers.RemoveAll(x => _configSettings.IgnoreMembers.Contains(x.Name));
             unmappedMembers.RemoveAll(x => _configSettings.Resolvers.Any(r => r.MemberName == x.Name));
-
-            var sourceType = typeof (TSource);
 
             var sourceMembers = sourceType.GetPublicFieldsAndProperties().ToList();
 
@@ -521,9 +560,11 @@ namespace Fpr
                         {
                             MaxDepth = baseConfigSettings.MaxDepth,
                             IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
-                            NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType,
+                            NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType
                         };
+
                         configSettings.IgnoreMembers.AddRange(baseConfigSettings.IgnoreMembers);
+                        
                         configSettings.DestinationTransforms.Upsert(baseConfigSettings.DestinationTransforms.Transforms);
 
                         List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
@@ -532,13 +573,12 @@ namespace Fpr
 
                         foreach (var baseResolver in resolvers)
                         {
-                            var convertedResolver = new InvokerModel<TSource>();
-                            convertedResolver.MemberName =
-                                (string)baseInvokerType.GetField("MemberName").GetValue(baseResolver);
-                            convertedResolver.Invoker =
-                                (Func<TSource, object>)baseInvokerType.GetField("Invoker").GetValue(baseResolver);
-                            convertedResolver.Condition =
-                                (Func<TSource, bool>)baseInvokerType.GetField("Condition").GetValue(baseResolver);
+                            var convertedResolver = new InvokerModel<TSource>
+                            {
+                                MemberName = (string) baseInvokerType.GetField("MemberName").GetValue(baseResolver),
+                                Invoker = (Func<TSource, object>) baseInvokerType.GetField("Invoker").GetValue(baseResolver),
+                                Condition = (Func<TSource, bool>) baseInvokerType.GetField("Condition").GetValue(baseResolver)
+                            };
 
                             configSettings.Resolvers.Add(convertedResolver);
                         }
@@ -585,7 +625,8 @@ namespace Fpr
 
                 foreach (var ignoreMember in baseConfigSettings.IgnoreMembers)
                 {
-                    if(!_configSettings.IgnoreMembers.Contains(ignoreMember))
+                    if(!_configSettings.IgnoreMembers.Contains(ignoreMember)
+                        && _configSettings.Resolvers.All(x => x.MemberName != ignoreMember))
                         _configSettings.IgnoreMembers.Add(ignoreMember);
                 }
 

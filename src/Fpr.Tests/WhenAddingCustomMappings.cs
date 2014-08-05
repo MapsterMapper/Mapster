@@ -21,8 +21,21 @@ namespace Fpr.Tests
             dto.Id.ShouldEqual(poco.Id);
             dto.Name.ShouldEqual(poco.Name);
             dto.AnotherName.ShouldEqual(poco.Name);
+        }
 
+        [Test]
+        public void Property_Is_Mapped_From_Null_Value_Successfully()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Map(dest => dest.AnotherName, src => null);
 
+            var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            var dto = TypeAdapter.Adapt<SimplePoco, SimpleDto>(poco);
+
+            dto.Id.ShouldEqual(poco.Id);
+            dto.Name.ShouldEqual(poco.Name);
+            dto.AnotherName.ShouldBeNull();
         }
 
         #region TestClasses

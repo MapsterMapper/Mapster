@@ -8,6 +8,15 @@ namespace Fpr.Tests
     [TestFixture]
     public class WhenValidatingMappings
     {
+        [SetUp]
+        public void Setup()
+        {
+            TypeAdapterConfig<SimplePocoBase, SimpleDto>.Clear();
+            TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
+            TypeAdapterConfig<SimplePoco, SimpleDtoWithoutMissingMembers>.Clear();
+            TypeAdapterConfig<SimpleFlattenedPoco, SimpleDto>.Clear();
+        }
+
         [Test]
         public void Simple_Poco_With_Missing_Member_Throws_On_Mapping_Validate()
         {
@@ -27,6 +36,19 @@ namespace Fpr.Tests
         public void Poco_Without_Missing_Members_Doesnt_Throw()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDtoWithoutMissingMembers>.NewConfig();
+
+            config.Validate();
+        }
+
+        [Test]
+        public void Poco_With_Missing_Members_Represented_In_Inherited_Mapping_Doesnt_Throw()
+        {
+            TypeAdapterConfig<SimplePocoBase, SimpleDto>.NewConfig()
+                .Ignore(dest => dest.UnmappedMember)
+                .Ignore(dest => dest.UnmappedMember2);
+
+            var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Inherits<SimplePocoBase, SimpleDto>();
 
             config.Validate();
         }
@@ -183,9 +205,15 @@ namespace Fpr.Tests
             }
         }
 
-        public class SimplePoco
+
+        public class SimplePocoBase
+        {
+        }
+
+        public class SimplePoco : SimplePocoBase
         {
             public Guid Id { get; set; }
+
             public string Name { get; set; }
         }
 

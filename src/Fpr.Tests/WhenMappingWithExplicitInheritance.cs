@@ -16,7 +16,6 @@ namespace Fpr.Tests
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
-
         [Test]
         public void Base_Configuration_Map_Condition_Applies_To_Derived_Class()
         {
@@ -89,6 +88,28 @@ namespace Fpr.Tests
 
             dto.Id.ShouldEqual(source.Id);
             dto.Name.ShouldBeNull();
+        }
+
+        [Test]
+        public void Ignores_Are_Overridden_By_Derived_Configurations()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Ignore(dest => dest.Name);
+
+            TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+                .Inherits<SimplePoco, SimpleDto>()
+                .Map(dest => dest.Name, src => src.Name);
+
+            var source = new DerivedPoco
+            {
+                Id = new Guid(),
+                Name = "SourceName"
+            };
+
+            var dto = TypeAdapter.Adapt<DerivedDto>(source);
+
+            dto.Id.ShouldEqual(source.Id);
+            dto.Name.ShouldEqual(source.Name);
         }
 
 
