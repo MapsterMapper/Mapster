@@ -16,7 +16,7 @@ This fork fixes some issues and includes some additions to make the mapper more 
 * Improved error messages that help you find configuration errors
 * Conditional mapping
 * Assembly scanning for custom mappers
-* Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).\
+* Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).
 * Type specific destination transforms (typically such as trim or lowercase all strings).  Can be used on any destination type.
 * Custom destination creation (not just default constructor)
 * Automatic Enum <=> String mapping
