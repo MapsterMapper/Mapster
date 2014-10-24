@@ -169,7 +169,7 @@ namespace Fpr.Tests
 
             var persons = new List<Person>() { person };
 
-            var dtos = (Person[])CollectionAdapter<List<Person>, Person, Person[]>.Adapt(persons);
+            var dtos = (Person[])CollectionAdapter<Person, List<Person>, Person, Person[]>.Adapt(persons);
 
             Assert.IsNotNull(dtos);
             Assert.IsTrue(dtos.Length == 1);

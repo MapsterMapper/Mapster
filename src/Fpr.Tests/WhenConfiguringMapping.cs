@@ -118,20 +118,6 @@ namespace Fpr.Tests
             Assert.IsTrue(objD.Id == 1 && objD.FullName == "Timuçin KIVANÇ" && objD.BirthDate == currentDate);
         }
 
-        [Test]
-        public void MaxDepthTest()
-        {
-            Initializer();
-
-            TypeAdapterConfig<Source, Destination>.NewConfig().MaxDepth(3);
-
-            var newObj = TypeAdapter.Adapt<Source, Destination>(_source);
-
-            Assert.IsNotNull(newObj);
-            Assert.IsTrue(newObj.Children.Count == 3);
-            Assert.IsTrue(newObj.Parent == null);
-            Assert.IsTrue(newObj.Level == 1);
-        }
 
         [Test]
         public void NewInstanceTest()

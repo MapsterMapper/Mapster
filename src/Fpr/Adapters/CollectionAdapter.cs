@@ -5,16 +5,17 @@ using Fpr.Utils;
 
 namespace Fpr.Adapters
 {
-    public static class CollectionAdapter<TSource, TDestinationElementType, TDestination>
+    public static class CollectionAdapter<TSourceElement, TSource, TDestinationElement, TDestination>
         where TSource : IEnumerable
         where TDestination : IEnumerable
     {
 
         private static readonly CollectionAdapterModel _collectionAdapterModel = CreateCollectionAdapterModel();
+        private static readonly int _hashCode = ReflectionUtils.GetHashKey<TSourceElement, TDestinationElement>();
 
         public static object Adapt(TSource source)
         {
-            return Adapt(source, new Dictionary<int, int>());
+            return Adapt(source, true, new Dictionary<int, int>());
         }
 
         public static object Adapt(TSource source, object destination)
@@ -22,31 +23,32 @@ namespace Fpr.Adapters
             return Adapt(source, destination, new Dictionary<int, int>());
         }
 
-        public static object Adapt(TSource source, Dictionary<int, int> parameterIndexs)
+        public static object Adapt(TSource source, bool evaluateMaxDepth, Dictionary<int, int> parameterIndexes)
         {
-            if (parameterIndexs == null)
-                parameterIndexs = new Dictionary<int, int>();
+            if (parameterIndexes == null)
+                parameterIndexes = new Dictionary<int, int>();
 
-            return Adapt(source, null, parameterIndexs);
+            return Adapt(source, null, parameterIndexes);
         }
 
-        public static object Adapt(TSource source, object destination, Dictionary<int, int> parameterIndexs)
+        public static object Adapt(TSource source, object destination, Dictionary<int, int> parameterIndexes)
         {
             if (source == null)
                 return null;
          
             #region Check MaxDepth
 
-            var configSettings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            var configSettings = TypeAdapterConfig<TSourceElement, TDestinationElement>.ConfigSettings;
 
             var hasMaxDepth = false;
 
             if (configSettings != null)
             {
-                if (configSettings.MaxDepth.GetValueOrDefault() > 0)
+                int maxDepth = configSettings.MaxDepth.GetValueOrDefault();
+                if (maxDepth > 0)
                 {
                     hasMaxDepth = true;
-                    if (MaxDepthExceeded(ref parameterIndexs, configSettings.MaxDepth.GetValueOrDefault()))
+                    if (MaxDepthExceeded(ref parameterIndexes, maxDepth, true))
                         return null;
                 }
             }
@@ -61,14 +63,14 @@ namespace Fpr.Adapters
 
                 byte i = 0;
                 var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
-                var array = destination == null ? new TDestinationElementType[((ICollection)source).Count] : (TDestinationElementType[])destination;
+                var array = destination == null ? new TDestinationElement[((ICollection)source).Count] : (TDestinationElement[])destination;
                 if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;
                     foreach (var item in source)
                     {
                         if (item == null)
-                            array.SetValue(default(TDestinationElementType), i);
+                            array.SetValue(default(TDestinationElement), i);
                         if (hasInvoker)
                             array.SetValue(adapterInvoker(null, new[] { item }), i);
                         else
@@ -80,7 +82,7 @@ namespace Fpr.Adapters
                 {
                     foreach (var item in source)
                     {
-                        array.SetValue(adapterInvoker(null, new[] { item, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs) }), i);
+                        array.SetValue(adapterInvoker(null, new[] { item, false, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexes) : parameterIndexes) }), i);
                         i++;
                     }
                 }
@@ -95,25 +97,25 @@ namespace Fpr.Adapters
                 #region CopyToList
 
                 var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
-                var list = destination == null ? new List<TDestinationElementType>() : (List<TDestinationElementType>)destination;
+                var list = destination == null ? new List<TDestinationElement>() : (List<TDestinationElement>)destination;
                 if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;
                     foreach (var item in source)
                     {
                         if (item == null)
-                            list.Add(default(TDestinationElementType));
+                            list.Add(default(TDestinationElement));
                         else if(hasInvoker)
-                            list.Add((TDestinationElementType)adapterInvoker(null, new[] { item }));
+                            list.Add((TDestinationElement)adapterInvoker(null, new[] { item }));
                         else
-                            list.Add((TDestinationElementType)item);
+                            list.Add((TDestinationElement)item);
                     }
                 }
                 else
                 {
                     foreach (var item in source)
                     {
-                        list.Add((TDestinationElementType)adapterInvoker(null, new[] { item, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs) }));
+                        list.Add((TDestinationElement)adapterInvoker(null, new[] { item, false, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexes) : parameterIndexes) }));
                     }
                 }
 
@@ -134,7 +136,7 @@ namespace Fpr.Adapters
                     foreach (var item in source)
                     {
                         if (item == null)
-                            array.Add(default(TDestinationElementType));
+                            array.Add(default(TDestinationElement));
                         else if(hasInvoker)
                             array.Add(adapterInvoker(null, new[] { item }));
                         else
@@ -142,10 +144,10 @@ namespace Fpr.Adapters
                     }
                 }
                 else
-                {                    
+                {
                     foreach (var item in source)
                     {
-                        array.Add(adapterInvoker(null, new[] { item, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexs) : parameterIndexs) }));
+                        array.Add(adapterInvoker(null, new[] { item, true, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexes) : parameterIndexes) }));
                     }
                 }
 
@@ -157,36 +159,12 @@ namespace Fpr.Adapters
             return (TDestination)destination;
         }
 
-        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexs, int maxDepth)
-        {
-            if (parameterIndexs == null)
-                parameterIndexs = new Dictionary<int, int>();
-
-            int hashCode = typeof (TSource).GetHashCode() + typeof (TDestination).GetHashCode();
-
-            if (parameterIndexs.ContainsKey(hashCode))
-            {
-                parameterIndexs[hashCode] = parameterIndexs[hashCode] + 1;
-
-                if (parameterIndexs[hashCode] >= maxDepth)
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                parameterIndexs.Add(hashCode, 1);
-            }
-            return false;
-        }
-
-
         private static CollectionAdapterModel CreateCollectionAdapterModel()
         {
             var cam = new CollectionAdapterModel();
 
             var sourceElementType = typeof(TSource).ExtractCollectionType();
-            var destinationElementType = typeof(TDestinationElementType);
+            var destinationElementType = typeof(TDestinationElement);
 
             if (destinationElementType.IsPrimitiveRoot() || destinationElementType == typeof(object))
             {
@@ -198,21 +176,47 @@ namespace Fpr.Adapters
             }
             else if (destinationElementType.IsCollection())
             {
-                var methodInfo = typeof(CollectionAdapter<,,>)
-                    .MakeGenericType(sourceElementType, destinationElementType.ExtractCollectionType(), destinationElementType)
-                    .GetMethod("Adapt", new[] { sourceElementType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
+                var methodInfo = typeof(CollectionAdapter<,,,>)
+                    .MakeGenericType(sourceElementType.ExtractCollectionType(), sourceElementType, destinationElementType.ExtractCollectionType(), destinationElementType)
+                    .GetMethod("Adapt", new[] { sourceElementType, typeof(bool), typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }
             else
             {
                 var methodInfo = typeof(ClassAdapter<,>)
                     .MakeGenericType(sourceElementType, destinationElementType)
-                    .GetMethod("Adapt", new[] { sourceElementType, typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
+                    .GetMethod("Adapt", new[] { sourceElementType, typeof(bool), typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
 
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }
 
             return cam;
+        }
+
+        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexes, int maxDepth, bool evaluateMaxDepth)
+        {
+            if (parameterIndexes == null)
+                parameterIndexes = new Dictionary<int, int>();
+
+            if (parameterIndexes.ContainsKey(_hashCode))
+            {
+                int index = parameterIndexes[_hashCode];
+                if (evaluateMaxDepth)
+                {
+                    index++;
+                    parameterIndexes[_hashCode] = index;
+                }
+
+                if (index > maxDepth)
+                {
+                    return true;
+                }
+            }
+            else if (evaluateMaxDepth)
+            {
+                parameterIndexes.Add(_hashCode, 1);
+            }
+            return false;
         }
 
     }

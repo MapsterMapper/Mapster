@@ -112,7 +112,7 @@ namespace Fpr
                 else if (sourceType.IsCollection() && destinationType.IsCollection())
                 {
                     invoker = FastInvoker.GetMethodInvoker(
-                            typeof (CollectionAdapter<,,>).MakeGenericType(sourceType,
+                            typeof (CollectionAdapter<,,,>).MakeGenericType(sourceType.ExtractCollectionType(), sourceType,
                                 destinationType.ExtractCollectionType(), destinationType)
                                 .GetMethod("Adapt", arguments));
                 }

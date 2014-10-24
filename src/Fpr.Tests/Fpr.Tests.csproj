@@ -77,6 +77,7 @@
     <Compile Include="WhenMappingPrimitives.cs" />
     <Compile Include="WhenConfiguringMapping.cs" />
     <Compile Include="WhenMappingWithInstance.cs" />
+    <Compile Include="WhenMappingWithMaxDepth.cs" />
     <Compile Include="WhenPerformingDestinationTransforms.cs" />
     <Compile Include="WhenProjecting.cs" />
     <Compile Include="WhenRunningOnMultipleThreads.cs" />

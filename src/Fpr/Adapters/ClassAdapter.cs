@@ -19,6 +19,8 @@ namespace Fpr.Adapters
         private static Func<TDestination> _destinationFactory;
         private static AdapterModel<TSource, TDestination> _adapterModel;
 
+        private static readonly int _hashCode = ReflectionUtils.GetHashKey<TSource, TDestination>();
+
         private static readonly string _nonInitializedAdapterMessage =
             String.Format("This class adapter was not initialized properly. This typically happens if one of the classes does not have a default (empty) constructor.  SourceType: {0}, DestinationType{1}",
                 typeof (TSource), typeof (TDestination));
@@ -46,7 +48,7 @@ namespace Fpr.Adapters
         /// <returns>The resulting Destination object.</returns>
         public static TDestination Adapt(TSource source)
         {
-            return Adapt(source, DestinationFactory(), true, new Dictionary<int, int>());
+            return Adapt(source, DestinationFactory(), true, true, new Dictionary<int, int>());
         }
 
         /// <summary>
@@ -57,22 +59,22 @@ namespace Fpr.Adapters
         /// <returns>The resulting Destination object.</returns>
         public static TDestination Adapt(TSource source, TDestination destination)
         {
-            return Adapt(source, destination, false, new Dictionary<int, int>());
+            return Adapt(source, destination, false, true, new Dictionary<int, int>());
         }
 
         /// <summary>
         /// Maps the source to the destination based on parameter indexes - For internal use
         /// </summary>
         /// <param name="source">The Source object to map.</param>
+        /// <param name="evaluateMaxDepth">Indicates whether or not max depth should be evaluated.</param>
         /// <param name="parameterIndexes">The parameter indexes.</param>
         /// <returns>The destination object.</returns>
-        public static TDestination Adapt(TSource source, Dictionary<int, int> parameterIndexes)
+        public static TDestination Adapt(TSource source, bool evaluateMaxDepth, Dictionary<int, int> parameterIndexes)
         {
-            return Adapt(source, DestinationFactory(), true, parameterIndexes);
+            return Adapt(source, DestinationFactory(), true, evaluateMaxDepth, parameterIndexes);
         }
 
-        private static TDestination Adapt(TSource source, TDestination destination, bool isNew,
-            Dictionary<int, int> parameterIndexes)
+        private static TDestination Adapt(TSource source, TDestination destination, bool isNew, bool evaluateMaxDepth, Dictionary<int, int> parameterIndexes)
         {
             if (source == null)
             {
@@ -92,10 +94,11 @@ namespace Fpr.Adapters
                     var converter = configSettings.ConverterFactory();
                     return converter.Resolve(source);
                 }
-                if (configSettings.MaxDepth.GetValueOrDefault() > 0)
+                int maxDepth = configSettings.MaxDepth.GetValueOrDefault();
+                if (maxDepth > 0)
                 {
                     hasMaxDepth = true;
-                    if(MaxDepthExceeded(ref parameterIndexes, configSettings.MaxDepth.GetValueOrDefault()))
+                    if (MaxDepthExceeded(ref parameterIndexes, maxDepth, evaluateMaxDepth))
                         return default(TDestination);
                 }
             }
@@ -132,6 +135,7 @@ namespace Fpr.Adapters
                                     new[]
                                     {
                                         primitiveValue,
+                                        true,
                                         (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexes) : parameterIndexes)
                                     });
                             break;
@@ -164,7 +168,8 @@ namespace Fpr.Adapters
                             destinationValue = propertyModel.AdaptInvoker(null,
                                 new[]
                                 {
-                                    sourceValue,
+                                    sourceValue, 
+                                    true,
                                     (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexes) : parameterIndexes)
                                 });
                             break;
@@ -207,30 +212,6 @@ namespace Fpr.Adapters
             return destination;
         }
 
-        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexes, int maxDepth)
-        {
-            if (parameterIndexes == null)
-                parameterIndexes = new Dictionary<int, int>();
-
-            int hashCode = typeof (TSource).GetHashCode() + typeof (TDestination).GetHashCode();
-
-            if (parameterIndexes.ContainsKey(hashCode))
-            {
-                int index = parameterIndexes[hashCode] + 1;
-
-                parameterIndexes[hashCode] = index;
-
-                if (index >= maxDepth)
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                parameterIndexes.Add(hashCode, 1);
-            }
-            return false;
-        }
 
         public static void Reset()
         {
@@ -345,14 +326,15 @@ namespace Fpr.Adapters
                         {
                             propertyModel.AdaptInvoker =
                                 FastInvoker.GetMethodInvoker(
-                                    typeof(CollectionAdapter<,,>).MakeGenericType(sourceProperty.PropertyType,
-                                        destinationPropertyType.ExtractCollectionType(),
-                                        destinationPropertyType)
+                                    typeof(CollectionAdapter<,,,>).MakeGenericType(
+                                        sourceProperty.PropertyType.ExtractCollectionType(), sourceProperty.PropertyType,
+                                        destinationPropertyType.ExtractCollectionType(), destinationPropertyType)
                                         .GetMethod("Adapt",
                                             new[]
                                             {
-                                                sourceProperty.PropertyType,
-                                                typeof (Dictionary<,>).MakeGenericType(typeof (int), typeof (int))
+                                                sourceProperty.PropertyType, 
+                                                typeof(bool),
+                                                typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int))
                                             }));
                         }
                         else // class
@@ -376,8 +358,8 @@ namespace Fpr.Adapters
                                                 new[]
                                                 {
                                                     sourceProperty.PropertyType,
-                                                    typeof (Dictionary<,>).MakeGenericType(typeof (int),
-                                                        typeof (int))
+                                                    typeof(bool),
+                                                    typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int))
                                                 }));
                             }
                             else
@@ -388,7 +370,8 @@ namespace Fpr.Adapters
                                         new[]
                                         {
                                             sourceProperty.PropertyType,
-                                            typeof (Dictionary<,>).MakeGenericType(typeof (int), typeof (int))
+                                            typeof(bool),
+                                            typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int))
                                         }));
                             }
                         }
@@ -411,7 +394,7 @@ namespace Fpr.Adapters
             if (TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
             {
                 throw new ArgumentOutOfRangeException(String.Format("The following members of destination class {0} do not have a corresponding source member mapped or ignored:{1}", 
-                    typeof(TDestination), string.Join(",", unmappedDestinationMembers)));
+                    typeof(TDestination), String.Join(",", unmappedDestinationMembers)));
             }
 
             var adapterModel = adapterModelFactory();
@@ -421,7 +404,7 @@ namespace Fpr.Adapters
             return adapterModel;
         }
 
-        private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, Func<Object> propertyModelFactory,
+        private static bool FlattenClass(Type sourceType, MemberInfo destinationMember, Func<object> propertyModelFactory,
             List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var delegates = new List<GenericGetter>();
@@ -449,10 +432,10 @@ namespace Fpr.Adapters
             return false;
         }
 
-        private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, Func<Object> propertyModelFactory,
+        private static bool FlattenMethod(Type sourceType, MemberInfo destinationMember, Func<object> propertyModelFactory,
             List<PropertyModel<TSource, TDestination>> properties, IDictionary<Type, Func<object, object>> destinationTransforms)
         {
-            var getMethod = sourceType.GetMethod(string.Concat("Get", destinationMember.Name));
+            var getMethod = sourceType.GetMethod(String.Concat("Get", destinationMember.Name));
             if (getMethod != null)
             {
                 var setter = PropertyCaller<TDestination>.CreateSetMethod((PropertyInfo)destinationMember);
@@ -476,7 +459,7 @@ namespace Fpr.Adapters
         }
 
         private static bool ProcessCustomResolvers(TypeAdapterConfigSettings<TSource, TDestination> config, MemberInfo destinationMember,
-            Func<Object> propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties,
+            Func<object> propertyModelFactory, List<PropertyModel<TSource, TDestination>> properties,
             IDictionary<Type, Func<object, object>> destinationTransforms)
         {
             var resolvers = config.Resolvers;
@@ -539,6 +522,32 @@ namespace Fpr.Adapters
         }
 
 
+        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexes, int maxDepth, bool evaluateMaxDepth)
+        {
+            if (parameterIndexes == null)
+                parameterIndexes = new Dictionary<int, int>();
+
+            if (parameterIndexes.ContainsKey(_hashCode))
+            {
+                int index = parameterIndexes[_hashCode];
+                if (evaluateMaxDepth)
+                {
+                    index++;
+                    parameterIndexes[_hashCode] = index;
+                }
+
+                if (index > maxDepth)
+                {
+                    return true;
+                }
+            }
+            else if (evaluateMaxDepth)
+            {
+                parameterIndexes.Add(_hashCode, 1);
+            }
+            return false;
+        }
+
         private static string ExtractPropertyName(Delegate caller, string prefix)
         {
             if (caller == null || caller.Method == null)
@@ -554,6 +563,5 @@ namespace Fpr.Adapters
         }
 
         #endregion
-
     }
 }

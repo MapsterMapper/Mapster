@@ -17,12 +17,13 @@ namespace Fpr
 
     internal class ProjectionConfig<TSource, TDestination>
     {
+        private static int _cacheKey = ReflectionUtils.GetHashKey<TSource, TDestination>();
+
         public static ProjectionConfig<TSource, TDestination> NewConfig()
         {
-            int key = ReflectionUtils.GetHashKey<TSource, TDestination>();
             var cache = ProjectionExpression<TSource>.ConfigurationCache;
-            if (cache.ContainsKey(key))
-                cache.Remove(key);
+            if (cache.ContainsKey(_cacheKey))
+                cache.Remove(_cacheKey);
 
             return new ProjectionConfig<TSource, TDestination>();
         }
@@ -88,16 +89,15 @@ namespace Fpr
 
         private static void SetCache(int maxDepth)
         {
-            int key = ReflectionUtils.GetHashKey<TSource, TDestination>();
             var cache = ProjectionExpression<TSource>.ConfigurationCache;
-            if (cache.ContainsKey(key))
+            if (cache.ContainsKey(_cacheKey))
             {
-                cache[key].MaxDepth = maxDepth;
+                cache[_cacheKey].MaxDepth = maxDepth;
             }
             else
             {
                 var config = new BaseProjectionConfig {MaxDepth = maxDepth};
-                cache.Add(key, config);
+                cache.Add(_cacheKey, config);
             }
         }
 
@@ -106,17 +106,16 @@ namespace Fpr
             if (ignoreMembers == null || ignoreMembers.Length == 0)
                 return;
 
-            int key = ReflectionUtils.GetHashKey<TSource, TDestination>();
             var cache = ProjectionExpression<TSource>.ConfigurationCache;
-            if (cache.ContainsKey(key))
+            if (cache.ContainsKey(_cacheKey))
             {
-                cache[key].IgnoreMembers.AddRange(ignoreMembers);
+                cache[_cacheKey].IgnoreMembers.AddRange(ignoreMembers);
             }
             else
             {
                 var config = new BaseProjectionConfig();
                 config.IgnoreMembers.AddRange(ignoreMembers);
-                cache.Add(key, config);
+                cache.Add(_cacheKey, config);
             }
         }
 
@@ -125,17 +124,17 @@ namespace Fpr
             if (expressionModels == null || expressionModels.Length == 0)
                 return;
 
-            int key = ReflectionUtils.GetHashKey<TSource, TDestination>();
+            
             var cache = ProjectionExpression<TSource>.ConfigurationCache;
-            if (cache.ContainsKey(key))
+            if (cache.ContainsKey(_cacheKey))
             {
-                cache[key].Expressions.AddRange(expressionModels);
+                cache[_cacheKey].Expressions.AddRange(expressionModels);
             }
             else
             {
                 var config = new BaseProjectionConfig();
                 config.Expressions.AddRange(expressionModels);
-                cache.Add(key, config);
+                cache.Add(_cacheKey, config);
             }
         }
 
