@@ -86,6 +86,7 @@ namespace Fpr.Utils
                 || type == typeof(Guid)
                 || type.IsEnum
                 || (IsNullable(type) && IsPrimitiveRoot(Nullable.GetUnderlyingType(type)))
+                || TypeAdapterConfig.GlobalSettings.PrimitiveType.Contains(type)
                 || type == typeof(object)
                 ;
         }
