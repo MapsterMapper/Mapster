@@ -10,9 +10,9 @@ namespace Fpr.Utils
     {
         #region Members
 
-        private static readonly Dictionary<int, Expression> _expressionCache = new Dictionary<int, Expression>();
+        private static readonly Dictionary<long, Expression> _expressionCache = new Dictionary<long, Expression>();
 
-        internal static readonly Dictionary<int, BaseProjectionConfig> ConfigurationCache = new Dictionary<int, BaseProjectionConfig>();
+        internal static readonly Dictionary<long, BaseProjectionConfig> ConfigurationCache = new Dictionary<long, BaseProjectionConfig>();
 
         private readonly IQueryable<TSource> _source;
 
@@ -143,8 +143,7 @@ namespace Fpr.Utils
                     return Expression.Bind(destinationProperty, conditionExpression);
                 }
                 
-                if (sourceProperty.PropertyType.IsGenericType && destPropertyType.IsGenericType &&
-                    destPropertyType != typeof(string) && destPropertyType.GetInterfaces().Any(t => t.Name == "IEnumerable"))
+                if (sourceProperty.PropertyType.IsCollection() && destPropertyType.IsCollection())
                 {
                     var sourceGenericArgument = sourceProperty.PropertyType.GetGenericArguments()[0];
                     var destinationGenericArgument = destPropertyType.GetGenericArguments()[0];

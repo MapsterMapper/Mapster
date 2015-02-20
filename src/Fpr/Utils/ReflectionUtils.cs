@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Fpr.Utils
 {
-    public static class ReflectionUtils
+    internal static class ReflectionUtils
     {
         private static readonly Type _stringType = typeof(string);
         private static readonly Type _nullableType = typeof (Nullable<>);
@@ -42,30 +42,38 @@ namespace Fpr.Utils
 
         public static Type GetMemberType(this MemberInfo mi)
         {
-            if (mi is PropertyInfo)
+            var pi = mi as PropertyInfo;
+            if (pi != null)
             {
-                return ((PropertyInfo)mi).PropertyType;
+                return pi.PropertyType;
             }
-            if (mi is FieldInfo)
+
+            var fi = mi as FieldInfo;
+            if (fi != null)
             {
-                return ((FieldInfo)mi).FieldType;
+                return fi.FieldType;
             }
-            if (mi is MethodInfo)
+
+            var mti = mi as MethodInfo;
+            if (mti != null)
             {
-                return ((MethodInfo)mi).ReturnType;
+                return mti.ReturnType;
             }
             return null;
         }
 
         public static bool HasPublicSetter(this MemberInfo mi)
         {
-            if (mi is PropertyInfo)
+            var pi = mi as PropertyInfo;
+            if (pi != null)
             {
-                return ((PropertyInfo)mi).GetSetMethod() != null;
+                return pi.GetSetMethod() != null;
             }
-            if (mi is FieldInfo)
+
+            var fi = mi as FieldInfo;
+            if (fi != null)
             {
-                return ((FieldInfo)mi).IsPublic;
+                return fi.IsPublic;
             }
             return false;
         }
@@ -244,7 +252,7 @@ namespace Fpr.Utils
         }
 
 
-        public static Dictionary<int, int> Clone(Dictionary<int, int> values)
+        public static Dictionary<long, int> Clone(Dictionary<long, int> values)
         {
             if (values == null)
                 return null;
@@ -253,14 +261,14 @@ namespace Fpr.Utils
           
         }
 
-        public static int GetHashKey<TSource, TDestination>()
+        public static long GetHashKey<TSource, TDestination>()
         {
-            return (typeof(TSource).GetHashCode() / 2) + typeof(TDestination).GetHashCode();
+            return ((long)typeof(TSource).GetHashCode() << 32) | typeof(TDestination).GetHashCode();
         }
 
-        public static int GetHashKey(Type source, Type destination)
+        public static long GetHashKey(Type source, Type destination)
         {
-            return (source.GetHashCode() / 2) + destination.GetHashCode();
+            return ((long)source.GetHashCode() << 32) | destination.GetHashCode();
         }
 
     }

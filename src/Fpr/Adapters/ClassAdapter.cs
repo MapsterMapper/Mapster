@@ -19,7 +19,7 @@ namespace Fpr.Adapters
         private static Func<TDestination> _destinationFactory;
         private static AdapterModel<TSource, TDestination> _adapterModel;
 
-        private static readonly int _hashCode = ReflectionUtils.GetHashKey<TSource, TDestination>();
+        private static readonly long _hashCode = ReflectionUtils.GetHashKey<TSource, TDestination>();
 
         private static readonly string _nonInitializedAdapterMessage =
             String.Format("This class adapter was not initialized properly. This typically happens if one of the classes does not have a default (empty) constructor.  SourceType: {0}, DestinationType{1}",
@@ -48,7 +48,7 @@ namespace Fpr.Adapters
         /// <returns>The resulting Destination object.</returns>
         public static TDestination Adapt(TSource source)
         {
-            return Adapt(source, DestinationFactory(), true, true, new Dictionary<int, int>());
+            return Adapt(source, DestinationFactory(), true, true, new Dictionary<long, int>());
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Fpr.Adapters
         /// <returns>The resulting Destination object.</returns>
         public static TDestination Adapt(TSource source, TDestination destination)
         {
-            return Adapt(source, destination, false, true, new Dictionary<int, int>());
+            return Adapt(source, destination, false, true, new Dictionary<long, int>());
         }
 
         /// <summary>
@@ -69,12 +69,12 @@ namespace Fpr.Adapters
         /// <param name="evaluateMaxDepth">Indicates whether or not max depth should be evaluated.</param>
         /// <param name="parameterIndexes">The parameter indexes.</param>
         /// <returns>The destination object.</returns>
-        public static TDestination Adapt(TSource source, bool evaluateMaxDepth, Dictionary<int, int> parameterIndexes)
+        public static TDestination Adapt(TSource source, bool evaluateMaxDepth, Dictionary<long, int> parameterIndexes)
         {
             return Adapt(source, DestinationFactory(), true, evaluateMaxDepth, parameterIndexes);
         }
 
-        private static TDestination Adapt(TSource source, TDestination destination, bool isNew, bool evaluateMaxDepth, Dictionary<int, int> parameterIndexes)
+        private static TDestination Adapt(TSource source, TDestination destination, bool isNew, bool evaluateMaxDepth, Dictionary<long, int> parameterIndexes)
         {
             if (source == null)
             {
@@ -522,10 +522,10 @@ namespace Fpr.Adapters
         }
 
 
-        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexes, int maxDepth, bool evaluateMaxDepth)
+        private static bool MaxDepthExceeded(ref Dictionary<long, int> parameterIndexes, int maxDepth, bool evaluateMaxDepth)
         {
             if (parameterIndexes == null)
-                parameterIndexes = new Dictionary<int, int>();
+                parameterIndexes = new Dictionary<long, int>();
 
             if (parameterIndexes.ContainsKey(_hashCode))
             {

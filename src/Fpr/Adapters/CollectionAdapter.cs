@@ -11,27 +11,27 @@ namespace Fpr.Adapters
     {
 
         private static readonly CollectionAdapterModel _collectionAdapterModel = CreateCollectionAdapterModel();
-        private static readonly int _hashCode = ReflectionUtils.GetHashKey<TSourceElement, TDestinationElement>();
+        private static readonly long _hashCode = ReflectionUtils.GetHashKey<TSourceElement, TDestinationElement>();
 
         public static object Adapt(TSource source)
         {
-            return Adapt(source, true, new Dictionary<int, int>());
+            return Adapt(source, true, new Dictionary<long, int>());
         }
 
         public static object Adapt(TSource source, object destination)
         {
-            return Adapt(source, destination, new Dictionary<int, int>());
+            return Adapt(source, destination, new Dictionary<long, int>());
         }
 
-        public static object Adapt(TSource source, bool evaluateMaxDepth, Dictionary<int, int> parameterIndexes)
+        public static object Adapt(TSource source, bool evaluateMaxDepth, Dictionary<long, int> parameterIndexes)
         {
             if (parameterIndexes == null)
-                parameterIndexes = new Dictionary<int, int>();
+                parameterIndexes = new Dictionary<long, int>();
 
             return Adapt(source, null, parameterIndexes);
         }
 
-        public static object Adapt(TSource source, object destination, Dictionary<int, int> parameterIndexes)
+        public static object Adapt(TSource source, object destination, Dictionary<long, int> parameterIndexes)
         {
             if (source == null)
                 return null;
@@ -193,10 +193,10 @@ namespace Fpr.Adapters
             return cam;
         }
 
-        private static bool MaxDepthExceeded(ref Dictionary<int, int> parameterIndexes, int maxDepth, bool evaluateMaxDepth)
+        private static bool MaxDepthExceeded(ref Dictionary<long, int> parameterIndexes, int maxDepth, bool evaluateMaxDepth)
         {
             if (parameterIndexes == null)
-                parameterIndexes = new Dictionary<int, int>();
+                parameterIndexes = new Dictionary<long, int>();
 
             if (parameterIndexes.ContainsKey(_hashCode))
             {

@@ -17,7 +17,7 @@ namespace Fpr
 
     internal class ProjectionConfig<TSource, TDestination>
     {
-        private static int _cacheKey = ReflectionUtils.GetHashKey<TSource, TDestination>();
+        private static readonly long _cacheKey = ReflectionUtils.GetHashKey<TSource, TDestination>();
 
         public static ProjectionConfig<TSource, TDestination> NewConfig()
         {
