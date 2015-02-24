@@ -1,4 +1,7 @@
 ﻿
+using System;
+using System.Collections.Generic;
+
 namespace Fpr
 {
     public class TypeAdapterGlobalSettings
@@ -11,5 +14,6 @@ namespace Fpr
 
         public bool AllowImplicitDestinationInheritance;
 
+        public readonly HashSet<Type> PrimitiveType = new HashSet<Type>(); 
     }
 }
