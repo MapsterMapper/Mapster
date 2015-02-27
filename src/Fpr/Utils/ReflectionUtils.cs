@@ -15,7 +15,7 @@ namespace Fpr.Utils
         private static readonly Type _iEnumerableType = typeof(IEnumerable);
         private static readonly Type _arrayListType = typeof(ArrayList);
 
-        public static bool IsNullable(Type type)
+        public static bool IsNullable(this Type type)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
         }
@@ -243,7 +243,7 @@ namespace Fpr.Utils
                     && propertyName.StartsWith(property.Name))
                 {
                     invokers.Add(PropertyCaller.CreateGetMethod(property));
-                    GetDeepFlattening(property.PropertyType, propertyName.Substring(property.Name.Length), invokers);
+                    GetDeepFlattening(property.PropertyType, propertyName.Substring(property.Name.Length).TrimStart('_'), invokers);
                 }
                 else if (string.Equals(propertyName, property.Name))
                 {

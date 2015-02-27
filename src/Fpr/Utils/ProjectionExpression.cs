@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fpr.Utils
 {
@@ -133,6 +134,10 @@ namespace Fpr.Utils
                                         .Where(binding => binding != null);
 
                     var newMemberExpression = Expression.MemberInit(Expression.New(destPropertyType), bindings);
+                    if (sourceProperty.PropertyType.GetCustomAttribute<ComplexTypeAttribute>() != null)
+                    {
+                        return Expression.Bind(destinationProperty, newMemberExpression);
+                    }
 
                     var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null));
 
@@ -178,28 +183,26 @@ namespace Fpr.Utils
 
             if (sourceProperty != null)
             {
-                var sourceChildProperty = sourceProperty.PropertyType.GetProperties().FirstOrDefault(src => src.Name == destinationProperty.Name.Substring(sourceProperty.Name.Length));
+                var sourceChildProperty = sourceProperty.PropertyType.GetProperties().FirstOrDefault(src => src.Name == destinationProperty.Name.Substring(sourceProperty.Name.Length).TrimStart('_'));
 
                 if (sourceChildProperty != null)
                 {
                     Expression childExp = Expression.Property(Expression.Property(parameterExpression, sourceProperty), sourceChildProperty);
 
-                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null));
-
                     Type destinationPropertyType = ((PropertyInfo)destinationProperty).PropertyType;
+                    if (sourceChildProperty.PropertyType != destinationPropertyType)
+                        childExp = Expression.Convert(childExp, destinationPropertyType);
+                    if (sourceProperty.PropertyType.GetCustomAttribute<ComplexTypeAttribute>() != null)
+                    {
+                        return Expression.Bind(destinationProperty, childExp);
+                    }
 
-                    bool isNullable = destinationPropertyType.IsGenericType && destinationPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>);
-
+                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null));
                     Expression defaultValueExp;
-
-                    if (!isNullable && destinationPropertyType.IsValueType)
+                    if (destinationPropertyType.IsValueType && !destinationPropertyType.IsNullable())
                         defaultValueExp = Expression.Constant(ActivatorExtensions.CreateInstance(destinationPropertyType));
                     else
                         defaultValueExp = Expression.Convert(Expression.Constant(null), destinationPropertyType);
-
-                    if (sourceProperty.PropertyType != destinationPropertyType)
-                        childExp = Expression.Convert(childExp, destinationPropertyType);
-
                     var conditionExpression = Expression.Condition(nullCheck, defaultValueExp, childExp);
 
                     return Expression.Bind(destinationProperty, conditionExpression);
