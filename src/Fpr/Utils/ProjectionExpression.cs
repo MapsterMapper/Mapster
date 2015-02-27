@@ -88,7 +88,8 @@ namespace Fpr.Utils
             }
         }
 
-        private static MemberAssignment BuildBinding(Expression parameterExpression, MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties, BaseProjectionConfig config, Dictionary<int, int> parameterIndexs, int index, string sourcePropertyName = null)
+        private static MemberAssignment BuildBinding(Expression parameterExpression, MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties, 
+            BaseProjectionConfig config, Dictionary<int, int> parameterIndexs, int index, string sourcePropertyName = null)
         {
             var destPropertyType = ((PropertyInfo)destinationProperty).PropertyType;
 
@@ -199,7 +200,7 @@ namespace Fpr.Utils
 
                     var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null));
                     Expression defaultValueExp;
-                    if (destinationPropertyType.IsValueType && !destinationPropertyType.IsNullable())
+                    if (destinationPropertyType.IsValueType && !ReflectionUtils.IsNullable(destinationPropertyType))
                         defaultValueExp = Expression.Constant(ActivatorExtensions.CreateInstance(destinationPropertyType));
                     else
                         defaultValueExp = Expression.Convert(Expression.Constant(null), destinationPropertyType);

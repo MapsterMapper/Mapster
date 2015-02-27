@@ -178,14 +178,14 @@ namespace Fpr.Adapters
             {
                 var methodInfo = typeof(CollectionAdapter<,,,>)
                     .MakeGenericType(sourceElementType.ExtractCollectionType(), sourceElementType, destinationElementType.ExtractCollectionType(), destinationElementType)
-                    .GetMethod("Adapt", new[] { sourceElementType, typeof(bool), typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
+                    .GetMethod("Adapt", new[] { sourceElementType, typeof(bool), typeof(Dictionary<,>).MakeGenericType(typeof(long), typeof(int)) });
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }
             else
             {
                 var methodInfo = typeof(ClassAdapter<,>)
                     .MakeGenericType(sourceElementType, destinationElementType)
-                    .GetMethod("Adapt", new[] { sourceElementType, typeof(bool), typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int)) });
+                    .GetMethod("Adapt", new[] { sourceElementType, typeof(bool), typeof(Dictionary<,>).MakeGenericType(typeof(long), typeof(int)) });
 
                 cam.AdaptInvoker = FastInvoker.GetMethodInvoker(methodInfo);
             }

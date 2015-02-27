@@ -334,7 +334,7 @@ namespace Fpr.Adapters
                                             {
                                                 sourceProperty.PropertyType, 
                                                 typeof(bool),
-                                                typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int))
+                                                typeof(Dictionary<,>).MakeGenericType(typeof(long), typeof(int))
                                             }));
                         }
                         else // class
@@ -359,7 +359,7 @@ namespace Fpr.Adapters
                                                 {
                                                     sourceProperty.PropertyType,
                                                     typeof(bool),
-                                                    typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int))
+                                                    typeof(Dictionary<,>).MakeGenericType(typeof(long), typeof(int))
                                                 }));
                             }
                             else
@@ -371,7 +371,7 @@ namespace Fpr.Adapters
                                         {
                                             sourceProperty.PropertyType,
                                             typeof(bool),
-                                            typeof(Dictionary<,>).MakeGenericType(typeof(int), typeof(int))
+                                            typeof(Dictionary<,>).MakeGenericType(typeof(long), typeof(int))
                                         }));
                             }
                         }
