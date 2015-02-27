@@ -15,7 +15,7 @@ namespace Fpr
         private static TypeAdapterGlobalSettings _globalSettings = new TypeAdapterGlobalSettings();
 
         private static readonly object _syncLock = new object(); 
-        private static readonly Dictionary<int, object> _configurationCache = new Dictionary<int, object>();
+        private static readonly Dictionary<long, object> _configurationCache = new Dictionary<long, object>();
 
         internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 

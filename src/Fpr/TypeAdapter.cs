@@ -8,7 +8,7 @@ namespace Fpr
     public static class TypeAdapter
     {
 
-        private static readonly Dictionary<int, FastInvokeHandler> _cache = new Dictionary<int, FastInvokeHandler>();
+        private static readonly Dictionary<long, FastInvokeHandler> _cache = new Dictionary<long, FastInvokeHandler>();
         private static readonly object _cacheLock = new object();
 
         /// <summary>
@@ -85,14 +85,14 @@ namespace Fpr
         {
             FastInvokeHandler adapter;
 
-            if (_cache.TryGetValue(ReflectionUtils.GetHashKey(sourceType, destinationType) + (hasDestination ? 1 : 0), out adapter))
+            if (_cache.TryGetValue(ReflectionUtils.GetHashKey(sourceType, destinationType) * (hasDestination ? -1 : 1), out adapter))
             {
                 return adapter;
             }
 
             lock (_cacheLock)
             {
-                int hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType) + (hasDestination ? 1 : 0);
+                long hashCode = ReflectionUtils.GetHashKey(sourceType, destinationType) * (hasDestination ? -1 : 1);
 
                 if (_cache.TryGetValue(hashCode, out adapter))
                 {
