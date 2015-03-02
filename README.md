@@ -2,8 +2,8 @@
 ##Mapster - The Mapper of Your Domain
 <img style="float:left;margin-right:10px;" src="http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png" />
 
-TypeAdapter.Adapt<Fpr, Mapster>(poco)
-<br/>
+var newThing = TypeAdapter.Adapt&lt;Fpr, Mapster&gt;(oldThing);
+<br/><br/>
 What was Fpr has been mapped to Mapster!  Had to grow up (a little).
 
 
