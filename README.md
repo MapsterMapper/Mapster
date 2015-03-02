@@ -1,17 +1,16 @@
+![Mapster Icon](http://www.fancyicons.com/free-icons/103/pretty-office-5/png/256/order_256.png)
 
 ##Mapster - The Mapper of Your Domain
-<img style="float:left;margin-right:10px;" src="http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png" />
-
-var newThing = TypeAdapter.Adapt&lt;Fpr, Mapster&gt;(oldThing);
-<br/><br/>
-What was Fpr has been mapped to Mapster!  Had to grow up (a little).
-
-
-<div style="clear:both;float:none"></div>
 
 [![Build status](https://ci.appveyor.com/api/projects/status/krpp0nhspmklom1d?svg=true)](https://ci.appveyor.com/project/eswann/mapster)
 
-A fast, fun and stimulating object to object mapper for .Net 4.5.  
+
+What was Fpr has been mapped to Mapster!  Had to grow up (a little).
+<br/>
+<b>var newThing = TypeAdapter.Adapt&lt;Fpr, Mapster&gt;(oldThing);</b>
+
+
+But still a fast, fun and stimulating object to object mapper for .Net 4.5.  
 
 Mapster was originally forked from FastMapper (https://fmapper.codeplex.com/).
 Mapster maps properties by convention, including nested complex objects and collections, but also supports
