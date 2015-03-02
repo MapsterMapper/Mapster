@@ -7,7 +7,7 @@
         <authors>eric_swann</authors>
         <owners>eric_swann</owners>
         <projectUrl>https://github.com/eswann/Mapster</projectUrl>
-        <iconUrl>http://www.fancyicons.com/free-icons/103/pretty-office-5/png/256/order_256.png</iconUrl>
+        <iconUrl>http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>$description$</description>
         <summary>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.</summary>
