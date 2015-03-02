@@ -1,5 +1,5 @@
 <img style="float:left" src="http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png" />
-<h1 style="float:left">Mapster - The Mapper of Your Domain</h1>
+<div style="float:left"><h1 >Mapster - The Mapper of Your Domain</h1></div>
 
 <div style="clear:both;float:none"></div>
 What was Fpr is now Mapster!  Had to grow up (a little).
