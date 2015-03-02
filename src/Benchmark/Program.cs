@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Fpr;
 using AutoMapper;
+using Mapster;
 using Omu.ValueInjecter;
 using Fm = FastMapper;
 
@@ -12,7 +12,7 @@ namespace Benchmark
     class Program
     {
         private static decimal AutomapperTime;
-        private static decimal FprTime;
+        private static decimal MapsterTime;
 
         static void Main(string[] args)
         {
@@ -32,7 +32,7 @@ namespace Benchmark
         private static void TestSimpleTypes()
         {
             Console.WriteLine("Test 1 : Simple Types");
-            Console.WriteLine("Competitors : Fpr, Fast Mapper, Value Injecter, AutoMapper");
+            Console.WriteLine("Competitors : Mapster, Fast Mapper, Value Injecter, AutoMapper");
 
             var foo = GetFoo();
 
@@ -57,7 +57,7 @@ namespace Benchmark
             Console.WriteLine();
 
             Console.WriteLine("Test 2 : Complex Types");
-            Console.WriteLine("Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper");
+            Console.WriteLine("Competitors : Handwriting Mapper, Mapster, FastMapper, AutoMapper");
             Console.WriteLine("(Value Injecter cannot convert complex type, Value injecter need a custom injecter)");
 
             var customer = GetCustomer();
@@ -81,7 +81,7 @@ namespace Benchmark
             Test(customer, 100000);
 
             Console.WriteLine();
-            Console.WriteLine("Automapper to Fpr ratio: " + (AutomapperTime/FprTime).ToString("###.00") + " X slower");
+            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");
             Console.WriteLine();
 
             //Test(customer, 1000000);
@@ -153,8 +153,8 @@ namespace Benchmark
             where TSrc : class
             where TDest : class, new()
         {
-            FprTime = Loop<TSrc>(item, get => TypeAdapter.Adapt<TSrc, TDest>(get), iterations);
-            Console.WriteLine("Fpr:\t\t\t" + FprTime);
+            MapsterTime = Loop<TSrc>(item, get => TypeAdapter.Adapt<TSrc, TDest>(get), iterations);
+            Console.WriteLine("Mapster:\t\t" + MapsterTime);
         }
 
 

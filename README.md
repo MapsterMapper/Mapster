@@ -1,11 +1,13 @@
-##Fpr - The Mapper of Your Domain
+##Mapster - The Mapper of Your Domain
+
+What was Fpr is now Mapster!  Had to grow up (a little).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/krpp0nhspmklom1d?svg=true)](https://ci.appveyor.com/project/eswann/fpr)
 
 A fast, fun and stimulating object to object mapper for .Net 4.5.  
 
-Fpr was originally forked from FastMapper (https://fmapper.codeplex.com/).
-Fpr maps properties by convention, including nested complex objects and collections, but also supports
+Mapster was originally forked from FastMapper (https://fmapper.codeplex.com/).
+Mapster maps properties by convention, including nested complex objects and collections, but also supports
 explicit mapping.
 
 This fork fixes some issues and includes some additions to make the mapper more configurable and useful for .Net 4.5:
@@ -25,12 +27,12 @@ This fork fixes some issues and includes some additions to make the mapper more 
 
 ###Examples
 ####Mapping to a new object
-Fpr makes the object and maps values to it.
+Mapster makes the object and maps values to it.
 
     TDestination destObject = TypeAdapter.Adapt<TSource, TDestination>(sourceObject);
 
 ####Mapping to an existing object
-You make the object, Fpr maps to the object.
+You make the object, Mapster maps to the object.
 
     TDestination destObject = new TDestination();
     destObject = TypeAdapter.Adapt(sourceObject, destObject);
@@ -41,8 +43,8 @@ This includes lists, arrays, collections, enumerables etc...
     var destObjectList = TypeAdapter.Adapt<List<TSource>, List<TDestination>>(sourceList);
 
 ####Mapping Enums Included
-Fpr maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
-The default Enum.ToString() in .Net is quite slow.  The implementation in Fpr is double the speed.  
+Mapster maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
+The default Enum.ToString() in .Net is quite slow.  The implementation in Mapster is double the speed.  
 Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty, 
 the enum will initialize to the first enum value.
 
@@ -301,7 +303,7 @@ are enabled, it will also include errors for classes that are not registered at 
     TypeAdapterConfig.Validate();
 
 ####Mapper Instance Creation
-In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container.  Fpr has
+In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container.  Mapster has
 the IAdapter and Adapter to fill this need:
 
     IAdapter instance = TypeAdapter.GetInstance();
@@ -309,7 +311,7 @@ the IAdapter and Adapter to fill this need:
 
 ###Assembly Scanning for Custom Mappings
 To make it easier to register custom mappings, we've implemented an assembly scanning approach.
-To allow this, either inherit from IRegistry or Registry in the Fpr.Registration namespace.
+To allow this, either inherit from IRegistry or Registry in the Mapster.Registration namespace.
 
 Override the Apply() method and perform your registrations there.  When your app starts up, use the Registrar class to perform registration.
 
@@ -335,31 +337,29 @@ Override the Apply() method and perform your registrations there.  When your app
 
 
 ###Performance Comparisons
-Fpr now has speed parity with the original FastMapper.
-
 For complex objects, we're seeing a ~30x speed improvement in comparison to AutoMapper.  
 
 ####Benchmark "Complex" Object
 
 The following test converts a Customer object with 2 nested address collections and two nested address sub-objects to a DTO.
 
-Competitors : Handwriting Mapper, Fpr, FastMapper, AutoMapper
+Competitors : Handwriting Mapper, Mapster, FastMapper, AutoMapper
 
     Iterations : 100
     Handwritten Mapper:     1
-    Fpr:                    0
+    Mapster:                    0
     FastMapper:             0
     AutoMapper:             10
 
     Iterations : 10000
     Handwritten Mapper:     4
-    Fpr:                    17
+    Mapster:                    17
     FastMapper:             17
     AutoMapper:             507
 
     Iterations : 100000
     Handwritten Mapper:     29
-    Fpr:                    177
+    Mapster:                    177
     FastMapper:             175
     AutoMapper:             5058
 

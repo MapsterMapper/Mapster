@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <title>$id$</title>
+        <authors>eric_swann</authors>
+        <owners>eric_swann</owners>
+        <projectUrl>https://github.com/eswann/Mapster</projectUrl>
+        <iconUrl>http://www.fancyicons.com/free-icons/103/pretty-office-5/png/256/order_256.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>$description$</description>
+        <summary>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.</summary>
+        <copyright>Copyright 2014 Eric Swann, et. al. - All rights reserved.</copyright>
+        <language />
+        <tags>Mapper AutoMapper Fast Mapping</tags>
+        <dependencies>
+        </dependencies>
+    </metadata>
+  <files>
+    <file src="bin\$configuration$\$id$.pdb" target="lib\net45\" />
+    <file src="bin\$configuration$\$id$.dll" target="lib\net45\" />
+  </files>
+</package>
