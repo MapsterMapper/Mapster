@@ -1,8 +1,13 @@
-<img style="float:left" src="http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png" />
-<div style="float:left"><h1 >Mapster - The Mapper of Your Domain</h1></div>
+
+##Mapster - The Mapper of Your Domain
+<img style="float:left;margin-right:10px;" src="http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png" />
+
+TypeAdapter.Adapt<Fpr, Mapster>(poco)
+<br/>
+What was Fpr has been mapped to Mapster!  Had to grow up (a little).
+
 
 <div style="clear:both;float:none"></div>
-What was Fpr is now Mapster!  Had to grow up (a little).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/krpp0nhspmklom1d?svg=true)](https://ci.appveyor.com/project/eswann/mapster)
 
