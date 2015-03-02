@@ -1,4 +1,4 @@
-![Mapster Icon](http://www.fancyicons.com/free-icons/103/pretty-office-5/png/256/order_256.png)
+![Mapster Icon](http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png)
 
 ##Mapster - The Mapper of Your Domain
 
