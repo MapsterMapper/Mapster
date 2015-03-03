@@ -31,6 +31,11 @@ namespace Mapster.Tests
         public decimal BClassTotal { get; set; }
     }
 
+    public class E
+    {
+        public decimal BClass_Total { get; set; }
+    }
+
     #endregion
 
     [TestFixture]
@@ -52,6 +57,15 @@ namespace Mapster.Tests
 
             Assert.IsNotNull(d);
             Assert.IsTrue(d.BClassTotal == 250);
+        }
+
+        [Test]
+        public void PropertyTest_NameWithUnderscore()
+        {
+            var e = ClassAdapter<C, E>.Adapt(new C { BClass = new B { Total = 250 } });
+
+            Assert.IsNotNull(e);
+            Assert.IsTrue(e.BClass_Total == 250);
         }
     }
 }

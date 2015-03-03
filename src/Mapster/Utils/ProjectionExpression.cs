@@ -140,9 +140,9 @@ namespace Mapster.Utils
                         return Expression.Bind(destinationProperty, newMemberExpression);
                     }
 
-                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null));
+                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null, sourceProperty.PropertyType));
 
-                    var convertExp = Expression.Convert(Expression.Constant(null), destPropertyType);
+                    var convertExp = Expression.Constant(null, destPropertyType);
 
                     var conditionExpression = Expression.Condition(nullCheck, convertExp, newMemberExpression);
 
@@ -198,12 +198,12 @@ namespace Mapster.Utils
                         return Expression.Bind(destinationProperty, childExp);
                     }
 
-                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null));
+                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null, sourceProperty.PropertyType));
                     Expression defaultValueExp;
                     if (destinationPropertyType.IsValueType && !ReflectionUtils.IsNullable(destinationPropertyType))
                         defaultValueExp = Expression.Constant(ActivatorExtensions.CreateInstance(destinationPropertyType));
                     else
-                        defaultValueExp = Expression.Convert(Expression.Constant(null), destinationPropertyType);
+                        defaultValueExp = Expression.Constant(null, destinationPropertyType);
                     var conditionExpression = Expression.Condition(nullCheck, defaultValueExp, childExp);
 
                     return Expression.Bind(destinationProperty, conditionExpression);

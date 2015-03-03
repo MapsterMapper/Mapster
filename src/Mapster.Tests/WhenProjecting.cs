@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mapster.Tests.Classes;
 using NUnit.Framework;
+using Should;
 
 namespace Mapster.Tests
 {
@@ -254,6 +255,52 @@ namespace Mapster.Tests
             Assert.IsTrue(bList[0].Source.First().Name == "222");
             Assert.IsTrue(bList[0].Source.First().Source.Name == null);
             Assert.IsTrue(bList[0].Source.First().Source.Source == null);
+        }
+
+        [Test]
+        public void TestComplexTypeMapping()
+        {
+            var customers = new[]
+            {
+                new Customer {Id = 1, Name = "CustomerA", Address = new Address {Country = "CountryA"}},
+                new Customer {Id = 1, Name = "CustomerB", Address = new Address {Country = "CountryB"}},
+            };
+
+            var resultQuery = customers.AsQueryable().Project().To<CustomerDTO>();
+            var expectedQuery = from srcCustomer0 in customers.AsQueryable()
+                                select new CustomerDTO
+                                {
+                                    Id = srcCustomer0.Id,
+                                    Name = srcCustomer0.Name,
+                                    Address_Country = srcCustomer0.Address.Country,
+                                };
+            resultQuery.ToString().ShouldEqual(expectedQuery.ToString());
+
+            var result = resultQuery.ToList().Last();
+            result.Address_Country.ShouldEqual(customers.Last().Address.Country);
+        }
+
+        [Test]
+        public void TestPocoTypeMapping()
+        {
+            var products = new[]
+            {
+                new Product {Id = Guid.NewGuid(), Title = "ProductA", CreatedUser = new User {Name = "UserA"}},
+                new Product {Id = Guid.NewGuid(), Title = "ProductB", CreatedUser = null},
+            };
+
+            var resultQuery = products.AsQueryable().Project().To<ProductDTO>();
+            var expectedQuery = from srcProduct0 in products.AsQueryable()
+                                select new ProductDTO
+                                {
+                                    Id = srcProduct0.Id,
+                                    Title = srcProduct0.Title,
+                                    CreatedUserName = srcProduct0.CreatedUser == null ? null : srcProduct0.CreatedUser.Name,
+                                };
+            resultQuery.ToString().ShouldEqual(expectedQuery.ToString());
+
+            var result = resultQuery.ToList().Last();
+            result.CreatedUserName.ShouldBeNull();
         }
 
         private List<Product> GetProducts()
