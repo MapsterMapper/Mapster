@@ -343,29 +343,45 @@ Override the Apply() method and perform your registrations there.  When your app
 
 
 ###Performance Comparisons
-For complex objects, we're seeing a ~30x speed improvement in comparison to AutoMapper.  
+When aggregating times across complex and simple objects, we're seeing a ~30x speed improvement in comparison to AutoMapper, 
+but it's obviously very dependent upon your situation.
 
 ####Benchmark "Complex" Object
 
 The following test converts a Customer object with 2 nested address collections and two nested address sub-objects to a DTO.
 
+    Customer c = new Customer()
+    {
+        Address = new Address() { City = "istanbul", Country = "turkey", Id = 1, Street = "istiklal cad." },
+        HomeAddress = new Address() { City = "istanbul", Country = "turkey", Id = 2, Street = "istiklal cad." },
+        Id = 1,
+        Name = "Eduardo Najera",
+        Credit = 234.7m,
+        WorkAddresses = new List<Address>() { 
+            new Address() { City = "istanbul", Country = "turkey", Id = 5, Street = "istiklal cad." },
+            new Address() { City = "izmir", Country = "turkey", Id = 6, Street = "konak" }
+        },
+        Addresses = new List<Address>() { 
+            new Address() { City = "istanbul", Country = "turkey", Id = 3, Street = "istiklal cad." },
+            new Address() { City = "izmir", Country = "turkey", Id = 4, Street = "konak" }
+        }.ToArray()
+    };
+
+
 Competitors : Handwriting Mapper, Mapster, FastMapper, AutoMapper
 
     Iterations : 100
     Handwritten Mapper:     1
-    Mapster:                    0
-    FastMapper:             0
+    Mapster:                0
     AutoMapper:             10
 
     Iterations : 10000
     Handwritten Mapper:     4
-    Mapster:                    17
-    FastMapper:             17
+    Mapster:                17
     AutoMapper:             507
 
     Iterations : 100000
     Handwritten Mapper:     29
-    Mapster:                    177
-    FastMapper:             175
+    Mapster:                177
     AutoMapper:             5058
 
