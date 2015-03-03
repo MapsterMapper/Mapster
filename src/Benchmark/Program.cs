@@ -43,7 +43,7 @@ namespace Benchmark
 
             TestSimple(foo, 10000);
 
-            TestSimple(foo, 100000);
+            //TestSimple(foo, 100000);
 
             //TestSimple(foo, 1000000);
         }
@@ -89,8 +89,6 @@ namespace Benchmark
             Console.WriteLine("Iterations : {0}", iterations);
 
             TestCustomerNative(item, iterations);
-
-            //TestEmitMapper<Customer, CustomerDTO>(item, iterations);
 
             TestMapsterAdapter<Customer, CustomerDTO>(item, iterations);
 

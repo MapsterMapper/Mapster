@@ -147,7 +147,7 @@ namespace Mapster.Adapters
                             object value = source;
                             foreach (GenericGetter getter in flatInvokers)
                             {
-                                value = getter(value);
+                                value = getter.Invoke(value);
                                 if (value == null)
                                     break;
                             }
@@ -183,13 +183,13 @@ namespace Mapster.Adapters
                             
                     }
 
-                    if (propertyModel.DestinationTransform != null)
+                    if (propertyModel.DestinationTransform == null)
                     {
-                        propertyModel.Setter.Invoke(destination, propertyModel.DestinationTransform(destinationValue));
+                        propertyModel.Setter.Invoke(destination, destinationValue);
                     }
                     else
                     {
-                        propertyModel.Setter.Invoke(destination, destinationValue);
+                        propertyModel.Setter.Invoke(destination, propertyModel.DestinationTransform(destinationValue));
                     }
                 }
             }
