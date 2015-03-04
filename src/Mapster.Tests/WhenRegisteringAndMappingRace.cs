@@ -32,7 +32,7 @@ namespace Mapster.Tests
             TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco);
         }
 
-        [Test]
+        [Test, Explicit]
         public void Race_Condition_Produces_Error()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
@@ -60,7 +60,7 @@ namespace Mapster.Tests
 
         }
 
-        [Test, ExpectedException]
+        [Test, Explicit]
         public void Explicit_Mapping_Requirement_Throws_Before_Mapping_Attempted()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -68,7 +68,7 @@ namespace Mapster.Tests
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.Throws<AggregateException>(() =>
             {
                 for (int i = 0; i < 100; i++)
                 {
