@@ -70,6 +70,7 @@ namespace Mapster.Tests
 
             targetDto.Website.ShouldEqual(sourceDto.Website);
         }
+
         #region TestClasses
 
         public class SimplePoco

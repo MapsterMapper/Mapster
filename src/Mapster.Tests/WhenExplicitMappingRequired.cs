@@ -25,7 +25,7 @@ namespace Mapster.Tests
 
             var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco));
+            var exception = Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco));
 
             Console.WriteLine(exception.Message);
 

@@ -249,7 +249,7 @@ namespace Mapster.Adapters
 
             if (!hasConfig && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
             {
-                throw new ArgumentOutOfRangeException(
+                throw new InvalidOperationException(
                     String.Format("Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {0} TDestination: {1}",
                     typeof(TSource), typeof(TDestination)));
             }
