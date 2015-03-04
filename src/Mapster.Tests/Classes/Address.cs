@@ -1,5 +1,8 @@
-﻿namespace Mapster.Tests.Classes
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Mapster.Tests.Classes
 {
+    [ComplexType]
     public class Address
     {
         public string Street { get; set; }

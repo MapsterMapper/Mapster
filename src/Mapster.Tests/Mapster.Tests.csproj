@@ -43,6 +43,7 @@
       <HintPath>..\packages\Should.1.1.20\lib\Should.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -62,6 +63,7 @@
     <Compile Include="Classes\Product.cs" />
     <Compile Include="Classes\TypeTestClass.cs" />
     <Compile Include="WhenAddingCustomMappings.cs" />
+    <Compile Include="WhenAddingPrimitiveTypes.cs" />
     <Compile Include="WhenHandlingUnmappedMembers.cs" />
     <Compile Include="WhenExplicitMappingRequired.cs" />
     <Compile Include="WhenMappingConditionally.cs" />

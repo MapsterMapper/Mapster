@@ -61,6 +61,13 @@ namespace Mapster.Tests.Classes
         public Customer Customer { get; set; }
     }
 
+    public class ProductDTO
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string CreatedUserName { get; set; }
+    }
+
     public class ProductListDTO
     {
         public Guid Id { get; set; }

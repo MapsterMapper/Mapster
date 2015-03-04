@@ -94,7 +94,7 @@ namespace Mapster.Utils
                 || type == typeof(Guid)
                 || type.IsEnum
                 || (IsNullable(type) && IsPrimitiveRoot(Nullable.GetUnderlyingType(type)))
-                || TypeAdapterConfig.GlobalSettings.PrimitiveType.Contains(type)
+                || TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Contains(type)
                 || type == typeof(object)
                 ;
         }

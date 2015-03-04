@@ -128,6 +128,10 @@ namespace Mapster
             }
         }
 
+        internal static void ClearCache()
+        {
+            _cache.Clear();
+        }
 
         private static FastInvokeHandler GetAdapter<TSource, TDestination>(bool hasDestination = false)
         {

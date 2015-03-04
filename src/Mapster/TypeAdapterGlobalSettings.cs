@@ -13,6 +13,6 @@ namespace Mapster
 
         public bool AllowImplicitDestinationInheritance;
 
-        public readonly HashSet<Type> PrimitiveType = new HashSet<Type>(); 
+        public readonly HashSet<Type> PrimitiveTypes = new HashSet<Type>(); 
     }
 }
