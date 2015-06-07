@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Mapster.Models;
 using Mapster.Utils;
@@ -31,6 +32,7 @@ namespace Mapster.Adapters
             return Adapt(source, null, parameterIndexes);
         }
 
+        private static Func<TDestination> objectFactory; 
         public static object Adapt(TSource source, object destination, Dictionary<long, int> parameterIndexes)
         {
             if (source == null)
@@ -88,6 +90,40 @@ namespace Mapster.Adapters
                 }
 
                 return array;
+
+                #endregion
+            }
+
+            if (!destinationType.IsInterface && typeof (ICollection<TDestinationElement>).IsAssignableFrom(destinationType))
+            {
+                #region CopyToList
+
+                var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
+                if (objectFactory == null)
+                    objectFactory = FastObjectFactory.CreateObjectFactory<TDestination>();
+                var list = destination == null ? (ICollection<TDestinationElement>)objectFactory() : (ICollection<TDestinationElement>)destination;
+                if (_collectionAdapterModel.IsPrimitive)
+                {
+                    bool hasInvoker = adapterInvoker != null;
+                    foreach (var item in source)
+                    {
+                        if (item == null)
+                            list.Add(default(TDestinationElement));
+                        else if (hasInvoker)
+                            list.Add((TDestinationElement)adapterInvoker(null, new[] { item }));
+                        else
+                            list.Add((TDestinationElement)item);
+                    }
+                }
+                else
+                {
+                    foreach (var item in source)
+                    {
+                        list.Add((TDestinationElement)adapterInvoker(null, new[] { item, false, (hasMaxDepth ? ReflectionUtils.Clone(parameterIndexes) : parameterIndexes) }));
+                    }
+                }
+
+                return list;
 
                 #endregion
             }

@@ -123,7 +123,11 @@ namespace Mapster.Utils
             {
                 return collectionType.GetGenericArguments()[0];
             }
-            return collectionType;
+            if (collectionType == typeof (object))
+            {
+                return collectionType;
+            }
+            return collectionType.BaseType.ExtractCollectionType();
         }
         
         public static FastInvokeHandler CreatePrimitiveConverter(this Type sourceType, Type destinationType)
