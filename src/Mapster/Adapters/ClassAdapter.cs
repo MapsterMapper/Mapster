@@ -123,7 +123,7 @@ namespace Mapster.Adapters
                     {
                         case 1: //Primitive
                             object primitiveValue = propertyModel.Getter.Invoke(source);
-                            if (primitiveValue == null)
+                            if (primitiveValue == null && ignoreNullValues)
                             {
                                 continue;
                             }
