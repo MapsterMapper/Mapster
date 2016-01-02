@@ -106,7 +106,9 @@ namespace Mapster.Adapters
             if (destination == null)
                 destination = DestinationFactory();
 
-            bool ignoreNullValues = isNew || (hasConfig && configSettings.IgnoreNullValues.HasValue && configSettings.IgnoreNullValues.Value);
+            bool ignoreNullValues = isNew 
+                || !typeof(TDestination).IsNullable()
+                || (hasConfig && configSettings.IgnoreNullValues.HasValue && configSettings.IgnoreNullValues.Value);
 
             PropertyModel<TSource, TDestination> propertyModel = null;
             try

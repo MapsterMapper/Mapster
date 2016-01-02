@@ -10,8 +10,6 @@ namespace Mapster.Tests
         [Test]
         public void Can_Map_From_Null_Source_To_Non_Nullable_Existing_Target()
         {
-            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig().IgnoreNullValues(true);
-
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
 
             var dto = new NonNullablePrimitivesDto();
