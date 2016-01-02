@@ -24,6 +24,6 @@ namespace Mapster.Models
 
         public string SetterPropertyName;
 
-       
+        public Type DestinationPropertyType;
     }
 }

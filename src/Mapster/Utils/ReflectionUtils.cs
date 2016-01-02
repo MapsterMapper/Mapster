@@ -19,6 +19,11 @@ namespace Mapster.Utils
             return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
         }
 
+        public static bool IsNonNullable(this Type type)
+        {
+            return type.IsValueType && !type.IsNullable();
+        }
+
         public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
         {
             var results = new List<MemberInfo>();
