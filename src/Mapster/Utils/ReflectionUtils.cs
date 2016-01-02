@@ -13,7 +13,6 @@ namespace Mapster.Utils
         private static readonly Type _nullableType = typeof (Nullable<>);
 
         private static readonly Type _iEnumerableType = typeof(IEnumerable);
-        private static readonly Type _arrayListType = typeof(ArrayList);
 
         public static bool IsNullable(this Type type)
         {
@@ -87,13 +86,8 @@ namespace Mapster.Utils
         public static bool IsPrimitiveRoot(this Type type)
         {
             return
-                type.IsPrimitive
+                type.IsValueType
                 || type == typeof(string)
-                || type == typeof(decimal)
-                || type == typeof(DateTime)
-                || type == typeof(Guid)
-                || type.IsEnum
-                || (IsNullable(type) && IsPrimitiveRoot(Nullable.GetUnderlyingType(type)))
                 || TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Contains(type)
                 || type == typeof(object)
                 ;
@@ -111,25 +105,23 @@ namespace Mapster.Utils
 
         public static Type ExtractCollectionType(this Type collectionType)
         {
-            if (collectionType.IsArray)
-            {
-                return collectionType.GetElementType();
-            }
-            if (collectionType == _arrayListType)
-            {
-                return typeof(object);
-            }
-            if (collectionType.IsGenericType)
+            if (collectionType.IsGenericEnumerableType())
             {
                 return collectionType.GetGenericArguments()[0];
             }
-            if (collectionType == typeof (object))
+            var enumerableType = collectionType.GetInterfaces().FirstOrDefault(IsGenericEnumerableType);
+            if (enumerableType != null)
             {
-                return collectionType;
+                return enumerableType.GetGenericArguments()[0];
             }
-            return collectionType.BaseType.ExtractCollectionType();
+            return typeof (object);
         }
-        
+
+        public static bool IsGenericEnumerableType(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+        }
+
         public static FastInvokeHandler CreatePrimitiveConverter(this Type sourceType, Type destinationType)
         {
             Type srcType;

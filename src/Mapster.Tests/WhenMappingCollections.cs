@@ -56,7 +56,8 @@ namespace Mapster.Tests
         public Guid Id { get; set; }
         public string Name { get; set; }
         public Projects Project { get; set; }
-        public List<int> X { get; set; }
+
+        public HashSet<int> X { get; set; }
         public int[] Y { get; set; }
         public ICollection<Guid> Z { get; set; }
         public ArrayList Ids { get; set; }
@@ -107,7 +108,7 @@ namespace Mapster.Tests
                 dto.Project == person.Project);
 
             Assert.IsNotNull(dto.X);
-            Assert.IsTrue(dto.X.Count == 4 && dto.X[0] == 1 && dto.X[1] == 2 && dto.X[2] == 3 && dto.X[3] == 4);
+            Assert.IsTrue(dto.X.Count == 4 && dto.X.Contains(1) && dto.X.Contains(2) && dto.X.Contains(3) && dto.X.Contains(4));
 
             Assert.IsNotNull(dto.Y);
             Assert.IsTrue(dto.Y.Length == 3 && dto.Y[0] == 5 && dto.Y[1] == 6 && dto.Y[2] == 7);
