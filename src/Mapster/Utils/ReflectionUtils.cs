@@ -19,11 +19,6 @@ namespace Mapster.Utils
             return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
         }
 
-        public static bool IsNonNullable(this Type type)
-        {
-            return type.IsValueType && !type.IsNullable();
-        }
-
         public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
         {
             var results = new List<MemberInfo>();
@@ -31,7 +26,7 @@ namespace Mapster.Utils
             results.AddRange(type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                     .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null)));
 
-            results.AddRange(type.GetFields(BindingFlags.Instance | BindingFlags.Public));
+            results.AddRange(type.GetFields(BindingFlags.Instance | BindingFlags.Public).Where(x => (allowNoSetter || x.IsInitOnly)));
 
             return results;
         }
@@ -59,11 +54,7 @@ namespace Mapster.Utils
             }
 
             var mti = mi as MethodInfo;
-            if (mti != null)
-            {
-                return mti.ReturnType;
-            }
-            return null;
+            return mti?.ReturnType;
         }
 
         public static bool HasPublicSetter(this MemberInfo mi)
@@ -84,7 +75,7 @@ namespace Mapster.Utils
 
         public static bool IsCollection(this Type type)
         {
-            return _iEnumerableType.IsAssignableFrom(type) && !IsString(type);
+            return _iEnumerableType.IsAssignableFrom(type) && type != _stringType;
             
         }
 
@@ -96,16 +87,6 @@ namespace Mapster.Utils
                 || TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Contains(type)
                 || type == typeof(object)
                 ;
-        }
-
-        public static bool IsString(this Type type)
-        {
-            return type == _stringType;
-        }
-
-        public static bool IsEnum(this Type type)
-        {
-            return type.IsEnum || (IsNullable(type) && Nullable.GetUnderlyingType(type).IsEnum);
         }
 
         public static Type ExtractCollectionType(this Type collectionType)
@@ -127,94 +108,107 @@ namespace Mapster.Utils
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
         }
 
-        public static FastInvokeHandler CreatePrimitiveConverter(this Type sourceType, Type destinationType)
+        public static string ToString<T>(T item)
         {
-            Type srcType;
-            bool isNullableSource = sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == _nullableType;
-            if (isNullableSource)
-                srcType = sourceType.GetGenericArguments()[0];
-            else
-                srcType = sourceType;
+            return item.ToString();
+        }
 
-            Type destType;
-            bool isNullableDest = destinationType.IsGenericType && destinationType.GetGenericTypeDefinition() == _nullableType;
-            if (isNullableDest)
-                destType = destinationType.GetGenericArguments()[0];
-            else
-                destType = destinationType;
+        private static Expression CreateConvertMethod(string name, Type srcType, Type destType, Expression source)
+        {
+            var method = typeof (Convert).GetMethod(name, new[] {srcType});
+            if (method != null)
+                return Expression.Call(method, source);
+
+            method = typeof (Convert).GetMethod(name, new[] {typeof (object)});
+            return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof (object))), destType);
+        }
+
+        public static Expression BuildConvertExpression<TSource, TDestination>(Expression source)
+        {
+            var sourceType = typeof (TSource);
+            var destinationType = typeof (TDestination);
+            var srcType = sourceType.IsNullable() ? sourceType.GetGenericArguments()[0] : sourceType;
+            var destType = destinationType.IsNullable() ? destinationType.GetGenericArguments()[0] : destinationType;
 
             if (srcType == destType)
-                return null;
-                
+                return source;
+
             if (destType == _stringType)
             {
-                if (IsEnum(srcType))
+                var method = typeof (ReflectionUtils).GetMethods().First(m => m.Name == "ToString");
+                method = method.MakeGenericMethod(srcType);
+                return Expression.Call(method, source);
+            }
+
+            if (srcType == _stringType)
+            {
+                if (destType.IsEnum)
                 {
-                    return FastInvoker.GetMethodInvoker(typeof(FastEnum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType }));
+                    var method = typeof (Enum).GetMethod("Parse", new[] {typeof (Type), typeof (bool), typeof (string)});
+                    return
+                        Expression.Convert(
+                            Expression.Call(method, Expression.Constant(destType), Expression.Constant(true), source),
+                            destType);
                 }
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToString", new[] { typeof(object) }));
+                else
+                {
+                    var method = destType.GetMethod("Parse", new[] {typeof (string)});
+                    return Expression.Call(method, source);
+                }
             }
 
             if (destType == typeof(bool))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToBoolean", new[] { typeof(object) }));
+                return CreateConvertMethod("ToBoolean", srcType, destType, source);
 
             if (destType == typeof(int))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToInt32", new[] { typeof(object) }));
+                return CreateConvertMethod("ToInt32", srcType, destType, source);
 
             if (destType == typeof(long))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToInt64", new[] { typeof(object) }));
+                return CreateConvertMethod("ToInt64", srcType, destType, source);
 
             if (destType == typeof(short))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToInt16", new[] { typeof(object) }));
+                return CreateConvertMethod("ToInt16", srcType, destType, source);
 
             if (destType == typeof(decimal))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToDecimal", new[] { typeof(object) }));
+                return CreateConvertMethod("ToDecimal", srcType, destType, source);
 
             if (destType == typeof(double))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToDouble", new[] { typeof(object) }));
+                return CreateConvertMethod("ToDouble", srcType, destType, source);
 
             if (destType == typeof(float))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToSingle", new[] { typeof(object) }));
+                return CreateConvertMethod("ToSingle", srcType, destType, source);
 
             if (destType == typeof(DateTime))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToDateTime", new[] { typeof(object) }));
-
-            if (destType == typeof(Guid))
-                return FastInvoker.GetMethodInvoker(typeof(ReflectionUtils).GetMethod("ConvertToGuid", new[] { typeof(object) }));
-
-            if (IsEnum(destType) && IsString(sourceType))
-            {
-                return FastInvoker.GetMethodInvoker(typeof (FastEnum<>).MakeGenericType(destType).GetMethod("ToEnum", new[] { srcType }));
-            }
+                return CreateConvertMethod("ToDateTime", srcType, destType, source);
 
             if (destType == typeof(ulong))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToUInt64", new[] { typeof(object) }));
+                return CreateConvertMethod("ToUInt64", srcType, destType, source);
 
             if (destType == typeof(uint))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToUInt32", new[] { typeof(object) }));
+                return CreateConvertMethod("ToUInt32", srcType, destType, source);
 
             if (destType == typeof(ushort))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToUInt16", new[] { typeof(object) }));
+                return CreateConvertMethod("ToUInt16", srcType, destType, source);
 
             if (destType == typeof(byte))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToByte", new[] { typeof(object) }));
+                return CreateConvertMethod("ToByte", srcType, destType, source);
 
             if (destType == typeof(sbyte))
-                return FastInvoker.GetMethodInvoker(typeof(Convert).GetMethod("ToSByte", new[] { typeof(object) }));
+                return CreateConvertMethod("ToSByte", srcType, destType, source);
 
-            return null;
-        }
+            if (srcType.IsAssignableFrom(destType) || destType.IsAssignableFrom(srcType))
+                return Expression.Convert(source, destinationType);
 
-        public static Guid ConvertToGuid(object value)
-        {
-            return Guid.Parse(value.ToString());
+            var changeTypeMethod = typeof(Convert).GetMethod("ChangeType", new[] { typeof(object), typeof(Type) });
+            return Expression.Convert(Expression.Call(changeTypeMethod, Expression.Convert(source, typeof(object)), Expression.Constant(destinationType)), destType);
+
         }
 
         public static MemberExpression GetMemberInfo(Expression method)
         {
             var lambda = method as LambdaExpression;
             if (lambda == null)
-                throw new ArgumentNullException("method");
+                throw new ArgumentNullException(nameof(method));
 
             MemberExpression memberExpr = null;
 
@@ -234,43 +228,42 @@ namespace Mapster.Utils
             return memberExpr;
         }
 
-        public static void GetDeepFlattening(Type type, string propertyName, List<GenericGetter> invokers)
+        public static Expression GetDeepFlattening(Expression source, string propertyName)
         {
-            var properties = type.GetProperties();
-            for (int j = 0; j < properties.Length; j++)
+            var properties = source.Type.GetPublicFieldsAndProperties(allowNoSetter: false);
+            for (int j = 0; j < properties.Count; j++)
             {
                 var property = properties[j];
-                if (property.PropertyType.IsClass && property.PropertyType != _stringType
+                var propertyType = property.GetMemberType();
+                if (propertyType.IsClass && propertyType != _stringType
                     && propertyName.StartsWith(property.Name))
                 {
-                    invokers.Add(PropertyCaller.CreateGetMethod(property));
-                    GetDeepFlattening(property.PropertyType, propertyName.Substring(property.Name.Length).TrimStart('_'), invokers);
+                    var exp = property is PropertyInfo
+                        ? Expression.Property(source, (PropertyInfo) property)
+                        : Expression.Field(source, (FieldInfo) property);
+                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'));
+                    if (ifTrue == null)
+                        return null;
+                    return Expression.Condition(Expression.Equal(exp, Expression.Constant(null, exp.Type)), Expression.Constant(ifTrue.Type.IsValueType && !ifTrue.Type.IsNullable() ? Activator.CreateInstance(ifTrue.Type) : null, ifTrue.Type), ifTrue);
                 }
                 else if (string.Equals(propertyName, property.Name))
                 {
-                    invokers.Add(PropertyCaller.CreateGetMethod(property));
+                    return property is PropertyInfo
+                        ? Expression.Property(source, (PropertyInfo)property)
+                        : Expression.Field(source, (FieldInfo)property);
                 }
             }
+            return null;
         }
 
-
-        public static Dictionary<long, int> Clone(Dictionary<long, int> values)
+        public static ulong GetHashKey<TSource, TDestination>()
         {
-            if (values == null)
-                return null;
-
-            return values.ToDictionary(item => item.Key, item => item.Value);
-          
+            return ((ulong)(uint)typeof(TSource).GetHashCode() << 32) | (uint)typeof(TDestination).GetHashCode();
         }
 
-        public static long GetHashKey<TSource, TDestination>()
+        public static ulong GetHashKey(Type source, Type destination)
         {
-            return ((long)typeof(TSource).GetHashCode() << 32) | typeof(TDestination).GetHashCode();
-        }
-
-        public static long GetHashKey(Type source, Type destination)
-        {
-            return ((long)source.GetHashCode() << 32) | destination.GetHashCode();
+            return ((ulong)(uint)source.GetHashCode() << 32) | (uint)destination.GetHashCode();
         }
 
     }

@@ -11,9 +11,9 @@ namespace Mapster.Utils
     {
         #region Members
 
-        private static readonly Dictionary<long, Expression> _expressionCache = new Dictionary<long, Expression>();
+        private static readonly Dictionary<ulong, Expression> _expressionCache = new Dictionary<ulong, Expression>();
 
-        internal static readonly Dictionary<long, BaseProjectionConfig> ConfigurationCache = new Dictionary<long, BaseProjectionConfig>();
+        internal static readonly Dictionary<ulong, BaseProjectionConfig> ConfigurationCache = new Dictionary<ulong, BaseProjectionConfig>();
 
         private readonly IQueryable<TSource> _source;
 
@@ -88,7 +88,7 @@ namespace Mapster.Utils
             }
         }
 
-        private static MemberAssignment BuildBinding(Expression parameterExpression, MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties, 
+        private static MemberAssignment BuildBinding(Expression parameterExpression, MemberInfo destinationProperty, ICollection<PropertyInfo> sourceProperties, 
             BaseProjectionConfig config, Dictionary<int, int> parameterIndexs, int index, string sourcePropertyName = null)
         {
             var destPropertyType = ((PropertyInfo)destinationProperty).PropertyType;
@@ -182,32 +182,29 @@ namespace Mapster.Utils
                                                                   p.PropertyType != typeof(string) &&
                                                                   destinationProperty.Name.StartsWith(p.Name));
 
-            if (sourceProperty != null)
+            var sourceChildProperty = sourceProperty?.PropertyType.GetProperties().FirstOrDefault(src => src.Name == destinationProperty.Name.Substring(sourceProperty.Name.Length).TrimStart('_'));
+
+            if (sourceChildProperty != null)
             {
-                var sourceChildProperty = sourceProperty.PropertyType.GetProperties().FirstOrDefault(src => src.Name == destinationProperty.Name.Substring(sourceProperty.Name.Length).TrimStart('_'));
+                Expression childExp = Expression.Property(Expression.Property(parameterExpression, sourceProperty), sourceChildProperty);
 
-                if (sourceChildProperty != null)
+                Type destinationPropertyType = ((PropertyInfo)destinationProperty).PropertyType;
+                if (sourceChildProperty.PropertyType != destinationPropertyType)
+                    childExp = Expression.Convert(childExp, destinationPropertyType);
+                if (sourceProperty.PropertyType.GetCustomAttribute<ComplexTypeAttribute>() != null)
                 {
-                    Expression childExp = Expression.Property(Expression.Property(parameterExpression, sourceProperty), sourceChildProperty);
-
-                    Type destinationPropertyType = ((PropertyInfo)destinationProperty).PropertyType;
-                    if (sourceChildProperty.PropertyType != destinationPropertyType)
-                        childExp = Expression.Convert(childExp, destinationPropertyType);
-                    if (sourceProperty.PropertyType.GetCustomAttribute<ComplexTypeAttribute>() != null)
-                    {
-                        return Expression.Bind(destinationProperty, childExp);
-                    }
-
-                    var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null, sourceProperty.PropertyType));
-                    Expression defaultValueExp;
-                    if (destinationPropertyType.IsValueType && !ReflectionUtils.IsNullable(destinationPropertyType))
-                        defaultValueExp = Expression.Constant(ActivatorExtensions.CreateInstance(destinationPropertyType));
-                    else
-                        defaultValueExp = Expression.Constant(null, destinationPropertyType);
-                    var conditionExpression = Expression.Condition(nullCheck, defaultValueExp, childExp);
-
-                    return Expression.Bind(destinationProperty, conditionExpression);
+                    return Expression.Bind(destinationProperty, childExp);
                 }
+
+                var nullCheck = Expression.Equal(Expression.Property(parameterExpression, sourceProperty), Expression.Constant(null, sourceProperty.PropertyType));
+                Expression defaultValueExp;
+                if (destinationPropertyType.IsValueType && !destinationPropertyType.IsNullable())
+                    defaultValueExp = Expression.New(destinationPropertyType);
+                else
+                    defaultValueExp = Expression.Constant(null, destinationPropertyType);
+                var conditionExpression = Expression.Condition(nullCheck, defaultValueExp, childExp);
+
+                return Expression.Bind(destinationProperty, conditionExpression);
             }
 
             return null;
@@ -222,14 +219,11 @@ namespace Mapster.Utils
         private static MemberAssignment BuildCustomBinding(BaseProjectionConfig config, ParameterExpression parameterExpression, PropertyInfo destinationProperty)
         {
             var expression = config.Expressions.FirstOrDefault(c => c.DestinationMemberName == destinationProperty.Name);
-            if (expression != null)
+            var lambda = expression?.SourceExpression as LambdaExpression;
+            if (lambda != null)
             {
-                var lambda = expression.SourceExpression as LambdaExpression;
-                if (lambda != null)
-                {
-                    var rightExp = new ParameterRenamer().Rename(lambda.Body, parameterExpression);
-                    return Expression.Bind(destinationProperty, rightExp);
-                }
+                var rightExp = new ParameterRenamer().Rename(lambda.Body, parameterExpression);
+                return Expression.Bind(destinationProperty, rightExp);
             }
 
             return null;

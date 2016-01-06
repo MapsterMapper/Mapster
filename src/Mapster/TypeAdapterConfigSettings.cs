@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Mapster.Models;
 
 namespace Mapster
@@ -17,7 +18,7 @@ namespace Mapster
         /// </summary>
         internal bool NewInstanceForSameType { get; set; }
 
-        internal IDictionary<Type, Func<object, object>> CombinedTransforms
+        internal IDictionary<Type, Expression> CombinedTransforms
         {
             get { return TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms; }
         }
@@ -25,8 +26,8 @@ namespace Mapster
 
     internal class TypeAdapterConfigSettings<TSource, TDestination> : TypeAdapterConfigSettingsBase
     {
-        public readonly List<InvokerModel<TSource>> Resolvers = new List<InvokerModel<TSource>>();
-        public Func<TDestination> ConstructUsing;
+        public readonly List<InvokerModel> Resolvers = new List<InvokerModel>();
+        public Expression<Func<TDestination>> ConstructUsing;
         public Func<ITypeResolver<TSource, TDestination>> ConverterFactory;
         
         public void Reset()

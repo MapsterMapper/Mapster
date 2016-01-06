@@ -7,6 +7,13 @@ namespace Mapster.Tests
     [TestFixture]
     public class WhenAddingPrimitiveTypes
     {
+        public WhenAddingPrimitiveTypes()
+        {
+            //this is to prevent type initialization exception
+            TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Add(typeof (Uri));
+            TypeAdapter<Uri, Uri>.Recompile();
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -16,20 +23,23 @@ namespace Mapster.Tests
         [Test]
         public void No_Primitive_Uri_Should_Throw()
         {
-            TypeAdapter.ClearCache();
-            var sourceUri = new Uri("http://example.com");
+            try
+            {
+                TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Clear();
+                TypeAdapter<Uri, Uri>.Recompile();
 
-            var exception = Assert.Throws<ArgumentNullException>(() => TypeAdapter.Adapt<Uri, Uri>(sourceUri));
-            Console.WriteLine(exception.Message);
-
-            exception.ParamName.ShouldEqual("con");
+                var sourceUri = new Uri("http://example.com");
+                TypeAdapter.Adapt<Uri, Uri>(sourceUri);
+                Assert.Fail("Should go to catch");
+            }
+            catch (ArgumentException) { }
         }
 
         [Test]
         public void Set_Primitive_Uri_Success()
         {
-            TypeAdapter.ClearCache();
             TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Add(typeof(Uri));
+            TypeAdapter<Uri, Uri>.Recompile();
 
             var sourceUri = new Uri("http://example.com");
             var targetUri = TypeAdapter.Adapt<Uri, Uri>(sourceUri);
@@ -40,26 +50,27 @@ namespace Mapster.Tests
         [Test]
         public void No_Primitive_Uri_Property_Should_Throw()
         {
-            TypeAdapterConfig<SimplePoco, SimplePoco>.Clear();
-            var sourceDto = new SimplePoco
-            {
-                Id = 1,
-                Website = new Uri("http://example.com"),
-            };
+            try {
+                TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Clear();
+                TypeAdapter<Uri, Uri>.Recompile();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimplePoco, SimplePoco>(sourceDto));
-            Console.WriteLine(exception.Message);
+                var sourceDto = new SimplePoco
+                {
+                    Id = 1,
+                    Website = new Uri("http://example.com"),
+                };
 
-            var innerException = exception.InnerException;
-            innerException.ShouldBeType<ArgumentNullException>();
-            ((ArgumentNullException)innerException).ParamName.ShouldEqual("con");
+                TypeAdapter.Adapt<SimplePoco, SimplePoco>(sourceDto);
+                Assert.Fail("Should go to catch");
+            }
+            catch (ArgumentException) { }
         }
 
         [Test]
         public void Set_Primitive_Uri_Property_Success()
         {
-            TypeAdapterConfig<SimplePoco, SimplePoco>.Clear();
             TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Add(typeof(Uri));
+            TypeAdapter<Uri, Uri>.Recompile();
 
             var sourceDto = new SimplePoco
             {

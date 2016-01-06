@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Linq.Expressions;
 
 namespace Mapster.Models
 {
-    public class InvokerModel<TSource>
+    public class InvokerModel
     {
         public string MemberName;
 
-        public Func<TSource, object> Invoker;
+        public Expression Invoker;
 
-        public Func<TSource, bool> Condition;
+        public Expression Condition;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using Should;
 
@@ -19,18 +20,24 @@ namespace Mapster.Tests
         [Test]
         public void Unmapped_Classes_Should_Throw()
         {
-            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+            try
+            {
+                //this is to prevent TypeInitializeException
+                TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
+                
+                TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+                TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
-            TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
+                var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
-
-            var exception = Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco));
-
-            Console.WriteLine(exception.Message);
-
-            exception.Message.ShouldContain("SimplePoco");
-            exception.Message.ShouldContain("SimpleDto");
+                TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco);
+                Assert.Fail();
+            }
+            catch (TargetInvocationException ex)
+            {
+                ex.InnerException.Message.ShouldContain("SimplePoco");
+                ex.InnerException.Message.ShouldContain("SimpleDto");
+            }
         }
 
         [Test]

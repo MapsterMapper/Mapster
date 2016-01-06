@@ -17,7 +17,7 @@ namespace Mapster
 
     internal class ProjectionConfig<TSource, TDestination>
     {
-        private static readonly long _cacheKey = ReflectionUtils.GetHashKey<TSource, TDestination>();
+        private static readonly ulong _cacheKey = ReflectionUtils.GetHashKey<TSource, TDestination>();
 
         public static ProjectionConfig<TSource, TDestination> NewConfig()
         {

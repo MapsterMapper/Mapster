@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using Should;
 
@@ -18,6 +19,7 @@ namespace Mapster.Tests
         public void No_Errors_Thrown_With_Default_Configuration_On_Unmapped_Primitive()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
+            TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
             var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
@@ -31,19 +33,27 @@ namespace Mapster.Tests
         [Test]
         public void Error_Thrown_With_Explicit_Configuration_On_Unmapped_Primitive()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+            try
+            {
+                TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
+                TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+                TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
-            var source = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+                var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TypeAdapter.Adapt<SimplePoco, SimpleDto>(source));
-
-            exception.Message.ShouldContain("UnmappedMember");
+                TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
+            }
+            catch (TargetInvocationException ex)
+            {
+                ex.InnerException.Message.ShouldContain("UnmappedMember");
+            }
         }
 
         [Test]
         public void No_Errors_Thrown_With_Default_Configuration_On_Unmapped_Child_Collection()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
+            TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
             var source = new ParentPoco { Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco> { new ChildPoco { Id = Guid.NewGuid(), Name = "TestName" } } };
 
@@ -57,13 +67,21 @@ namespace Mapster.Tests
         [Test]
         public void Error_Thrown_With_Explicit_Configuration_On_Unmapped_Child_Collection()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+            try
+            {
+                TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
+                TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+                TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
-            var source = new ParentPoco { Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco> { new ChildPoco { Id = Guid.NewGuid(), Name = "TestName" } } };
-            
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => TypeAdapter.Adapt<ParentPoco, ParentDto>(source));
+                var source = new ParentPoco {Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco> {new ChildPoco {Id = Guid.NewGuid(), Name = "TestName"}}};
 
-            exception.Message.ShouldContain("UnmappedChildren");
+                TypeAdapter.Adapt<ParentPoco, ParentDto>(source);
+                Assert.Fail();
+            }
+            catch (TargetInvocationException ex)
+            {
+                ex.InnerException.Message.ShouldContain("UnmappedChildren");
+            }
 
         }
 

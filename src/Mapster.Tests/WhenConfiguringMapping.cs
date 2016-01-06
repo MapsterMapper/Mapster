@@ -85,9 +85,9 @@ namespace Mapster.Tests
             };
 
             TypeAdapterConfig<ConfigA, ConfigB>.NewConfig()
-                .IgnoreMember(dest => dest.Id);
+                .Ignore(dest => dest.Id);
 
-            var objB = ClassAdapter<ConfigA, ConfigB>.Adapt(objA);
+            var objB = TypeAdapter<ConfigA, ConfigB>.Adapt(objA);
 
             Assert.IsNotNull(objB);
 
@@ -111,7 +111,7 @@ namespace Mapster.Tests
                 //.Map(dest => dest.FullName, (src) => string.Concat(src.Name, " ", src.Surname));
                 .Map(dest => dest.FullName, src => string.Concat(src.Name, " ", src.Surname));
 
-            var objD = ClassAdapter<ConfigC, ConfigD>.Adapt(objC);
+            var objD = TypeAdapter<ConfigC, ConfigD>.Adapt(objC);
 
             Assert.IsNotNull(objD);
 

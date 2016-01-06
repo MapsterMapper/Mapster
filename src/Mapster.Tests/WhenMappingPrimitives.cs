@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using Mapster.Adapters;
 using NUnit.Framework;
 using Should;
 
@@ -12,7 +11,7 @@ namespace Mapster.Tests
         [Test]
         public void Integer_Is_Mapped_To_Byte()
         {
-            byte b = PrimitiveAdapter<int, byte>.Adapt(5);
+            byte b = TypeAdapter<int, byte>.Adapt(5);
 
             Assert.IsTrue(b == 5);
         }

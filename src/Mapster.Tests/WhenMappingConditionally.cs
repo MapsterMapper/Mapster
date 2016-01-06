@@ -12,7 +12,8 @@ namespace Mapster.Tests
         public void False_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.Name, src => src.Name, cond => false);
+                .Map(dest => dest.Name, src => src.Name, cond => false)
+                .Recompile();
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
@@ -26,7 +27,8 @@ namespace Mapster.Tests
         public void Failed_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.Name, src => src.Name, cond => cond.Name != "TestName");
+                .Map(dest => dest.Name, src => src.Name, cond => cond.Name != "TestName")
+                .Recompile();
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
@@ -41,7 +43,8 @@ namespace Mapster.Tests
         {
             
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.Name, src => src.Name, cond => cond.Name == "TestName");
+                .Map(dest => dest.Name, src => src.Name, cond => cond.Name == "TestName")
+                .Recompile();
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 

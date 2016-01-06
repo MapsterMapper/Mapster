@@ -12,7 +12,8 @@ namespace Mapster.Tests
         public void Property_Is_Mapped_To_Different_Property_Successfully()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.AnotherName, src => src.Name);
+                .Map(dest => dest.AnotherName, src => src.Name)
+                .Recompile();
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
@@ -27,7 +28,8 @@ namespace Mapster.Tests
         public void Property_Is_Mapped_From_Null_Value_Successfully()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.AnotherName, src => null);
+                .Map(dest => dest.AnotherName, src => null)
+                .Recompile();
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 

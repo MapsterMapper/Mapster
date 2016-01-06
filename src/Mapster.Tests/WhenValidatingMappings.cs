@@ -203,6 +203,11 @@ namespace Mapster.Tests
                     Name = "I got converted!",
                 };
             }
+
+            public SimpleDto Resolve(SimplePoco source, SimpleDto destination)
+            {
+                return Resolve(source);
+            }
         }
 
 

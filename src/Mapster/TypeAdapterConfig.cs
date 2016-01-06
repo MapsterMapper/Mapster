@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Adapters;
 using Mapster.Models;
 using Mapster.Utils;
 
@@ -12,10 +12,7 @@ namespace Mapster
 
     public class TypeAdapterConfig
     {
-        private static TypeAdapterGlobalSettings _globalSettings = new TypeAdapterGlobalSettings();
-
-        private static readonly object _syncLock = new object(); 
-        private static readonly Dictionary<long, object> _configurationCache = new Dictionary<long, object>();
+        private static readonly ConcurrentDictionary<ulong, object> _configurationCache = new ConcurrentDictionary<ulong, object>();
 
         internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 
@@ -23,11 +20,7 @@ namespace Mapster
         {
         }
         
-        public static TypeAdapterGlobalSettings GlobalSettings
-        {
-            get { return _globalSettings; }
-            set { _globalSettings = value; }
-        }
+        public static TypeAdapterGlobalSettings GlobalSettings { get; set; } = new TypeAdapterGlobalSettings();
 
         public static TypeAdapterConfig NewConfig()
         {
@@ -61,32 +54,14 @@ namespace Mapster
             TypeAdapterConfig<TSource, TDestination> config)
         {
             var key = ReflectionUtils.GetHashKey(typeof (TSource), typeof (TDestination));
-            lock (_syncLock)
-            {
-                if (_configurationCache.ContainsKey(key))
-                {
-                    _configurationCache[key] = config;
-                }
-                else
-                {
-                    _configurationCache.Add(key, config);
-                }
-            }
+            _configurationCache[key] = config;
         }
 
         internal static void RemoveFromConfigurationCache<TSource, TDestination>()
         {
             var key = ReflectionUtils.GetHashKey(typeof(TSource), typeof(TDestination));
-            if (_configurationCache.ContainsKey(key))
-            {
-                lock (_syncLock)
-                {
-                    if (_configurationCache.ContainsKey(key))
-                    {
-                        _configurationCache.Remove(key);
-                    }
-                }
-            }
+            object obj;
+            _configurationCache.TryRemove(key, out obj);
         }
 
         internal static bool ExistsInConfigurationCache(Type sourceType, Type destinationType)
@@ -140,7 +115,6 @@ namespace Mapster
                 _configSettings.Reset();
             }
 
-            ClassAdapter<TSource, TDestination>.Reset();
             _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
 
             var config = new TypeAdapterConfig<TSource, TDestination>();
@@ -168,13 +142,20 @@ namespace Mapster
             }
         }
 
+        public void Recompile()
+        {
+            var method = typeof (TypeAdapter<,>).MakeGenericType(typeof (TSource), typeof (TDestination)).GetMethod("Recompile");
+            method.Invoke(null, null);
+        }
+
         public static void Clear()
         {
             TypeAdapterConfig.RemoveFromConfigurationCache<TSource, TDestination>();
             _configSettings = null;
             _configSettingsSet = false;
-            ClassAdapter<TSource, TDestination>.Reset();
             _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
+            var method = typeof(TypeAdapter<,>).MakeGenericType(typeof(TSource), typeof(TDestination)).GetMethod("Recompile");
+            method.Invoke(null, null);
         }
 
         [Obsolete("Use Ignore instead.")]
@@ -295,16 +276,11 @@ namespace Mapster
             if (memberExp == null)
                 return this;
 
-            var func = source.Compile();
-            Func<TSource, object> resolver = src => func(src);
-
-            Func<TSource, bool> condition = shouldMap != null ? shouldMap.Compile() : null;
-
-            _configSettings.Resolvers.Add(new InvokerModel<TSource>
+            _configSettings.Resolvers.Add(new InvokerModel
             {
                 MemberName = memberExp.Member.Name,
-                Invoker = resolver,
-                Condition = condition
+                Invoker = source,
+                Condition = shouldMap
             });
 
             return this;
@@ -326,7 +302,7 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Func<TDestination> constructUsing)
+        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
         {
             _configSettings.ConstructUsing = constructUsing;
 
@@ -360,10 +336,7 @@ namespace Mapster
         {
             get
             {
-                if (_configSettings == null)
-                    return null;
-
-                return _configSettings.DestinationTransforms;
+                return _configSettings?.DestinationTransforms;
             }
         }
 
@@ -390,23 +363,15 @@ namespace Mapster
             if (unmappedMembers.Count > 0)
             {
                 string message =
-                    string.Format(
-                        "The following members on destination({0}) are not represented in either mappings or in the source({1}):{2}",
-                        typeof (TDestination).FullName, typeof (TSource).FullName, string.Join(", ", unmappedMembers));
+                    $"The following members on destination({typeof (TDestination).FullName}) are not represented in either mappings or in the source({typeof (TSource).FullName}):{string.Join(", ", unmappedMembers)}";
 
-                if (errorList != null)
-                {
-                    errorList.Add(message);
-                }
+                errorList?.Add(message);
                 isValid = false;
             }
 
             if (TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
             {
-                if (errorList != null)
-                {
-                    errorList.AddRange(GetMissingExplicitMappings());
-                }
+                errorList?.AddRange(GetMissingExplicitMappings());
                 isValid = false;
             }
 
@@ -431,9 +396,9 @@ namespace Mapster
 
             unmappedMembers.RemoveAll(x =>
             {
-                var delegates = new List<GenericGetter>();
-                ReflectionUtils.GetDeepFlattening(sourceType, x.Name, delegates);
-                return (delegates.Count > 0);
+                var source = Expression.Parameter(sourceType);
+                var exp = ReflectionUtils.GetDeepFlattening(source, x.Name);
+                return exp != null;
             });
 
             return unmappedMembers.Select(x => x.Name).ToList();
@@ -457,7 +422,7 @@ namespace Mapster
 
                 List<object> resolverObjects = configSettings.GetResolversAsObjects();
 
-                Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(sourceType);
+                Type baseInvokerType = typeof(InvokerModel);
 
                 foreach (var resolverObject in resolverObjects)
                 {
@@ -526,9 +491,7 @@ namespace Mapster
                 if (!TypeAdapterConfig.ExistsInConfigurationCache(sourceMemberType, destMemberType))
                 {
                     errorList.Add(
-                        string.Format(
-                            "Explicit Mapping is turned on and the following source({0}) and destination({1}) types do not have a mapping defined.",
-                            sourceMemberType.FullName, destMemberType.FullName));
+                        $"Explicit Mapping is turned on and the following source({sourceMemberType.FullName}) and destination({destMemberType.FullName}) types do not have a mapping defined.");
                 }
             }
 
@@ -569,15 +532,15 @@ namespace Mapster
 
                         List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
 
-                        Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(sourceType);
+                        Type baseInvokerType = typeof(InvokerModel);
 
                         foreach (var baseResolver in resolvers)
                         {
-                            var convertedResolver = new InvokerModel<TSource>
+                            var convertedResolver = new InvokerModel
                             {
                                 MemberName = (string) baseInvokerType.GetField("MemberName").GetValue(baseResolver),
-                                Invoker = (Func<TSource, object>) baseInvokerType.GetField("Invoker").GetValue(baseResolver),
-                                Condition = (Func<TSource, bool>) baseInvokerType.GetField("Condition").GetValue(baseResolver)
+                                Invoker = (Expression) baseInvokerType.GetField("Invoker").GetValue(baseResolver),
+                                Condition = (Expression) baseInvokerType.GetField("Condition").GetValue(baseResolver)
                             };
 
                             configSettings.Resolvers.Add(convertedResolver);
@@ -634,7 +597,7 @@ namespace Mapster
 
                 List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
 
-                Type baseInvokerType = typeof(InvokerModel<>).MakeGenericType(_configSettings.InheritedSourceType);
+                Type baseInvokerType = typeof(InvokerModel);
 
                 foreach (var baseResolver in resolvers)
                 {
@@ -642,13 +605,12 @@ namespace Mapster
 
                     if (_configSettings.Resolvers.All(x => x.MemberName != memberName))
                     {
-                        var convertedResolver = new InvokerModel<TSource>();
-                        convertedResolver.MemberName = memberName;
-
-                        convertedResolver.Invoker =
-                            (Func<TSource, object>)baseInvokerType.GetField("Invoker").GetValue(baseResolver);
-                        convertedResolver.Condition =
-                            (Func<TSource, bool>)baseInvokerType.GetField("Condition").GetValue(baseResolver);
+                        var convertedResolver = new InvokerModel
+                        {
+                            MemberName = memberName,
+                            Invoker = (Expression) baseInvokerType.GetField("Invoker").GetValue(baseResolver),
+                            Condition = (Expression) baseInvokerType.GetField("Condition").GetValue(baseResolver)
+                        };
 
                         _configSettings.Resolvers.Add(convertedResolver);    
                     }
@@ -657,9 +619,8 @@ namespace Mapster
             else
             {
                 throw new ArgumentOutOfRangeException(
-                    string.Format("The configuration of source {0} to destination {1} relies on explicit inheritance from a configuration with source {2}" +
-                                                      "and destination {3}, which does not exist.", typeof(TSource).FullName, typeof(TDestination).FullName, 
-                                                      _configSettings.InheritedSourceType.FullName, _configSettings.InheritedDestinationType.FullName));
+                    $"The configuration of source {typeof (TSource).FullName} to destination {typeof (TDestination).FullName} relies on explicit inheritance from a configuration with source {_configSettings.InheritedSourceType.FullName}" +
+                    $"and destination {_configSettings.InheritedDestinationType.FullName}, which does not exist.");
             }
 
             //See if this config exists

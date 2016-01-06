@@ -79,6 +79,11 @@ namespace Mapster.Tests
                     UnmappedMember2 = "Unmapped2"
                 };
             }
+
+            public SimpleDto Resolve(SimplePoco source, SimpleDto destination)
+            {
+                return Resolve(source);
+            }
         }
 
         public class SimplePoco
