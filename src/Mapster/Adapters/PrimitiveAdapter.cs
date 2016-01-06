@@ -5,7 +5,7 @@ using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
-    public static class PrimitiveAdapter<TSource, TDestination>
+    internal static class PrimitiveAdapter<TSource, TDestination>
     {
         public static Expression<Func<int, TSource, TDestination>> CreateAdaptFunc()
         {

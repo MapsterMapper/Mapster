@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Mapster.Utils
 {
-    public class ProjectionExpression<TSource>
+    internal class ProjectionExpression<TSource> : IProjectionExpression
     {
         #region Members
 

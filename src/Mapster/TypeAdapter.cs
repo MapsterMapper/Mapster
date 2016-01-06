@@ -120,9 +120,6 @@ namespace Mapster
         private static Func<int, TSource, TDestination> _adapt = CreateAdaptFunc();
         private static Func<int, TSource, TDestination, TDestination> _adaptTarget = CreateAdaptTargetFunc();
 
-        private static string _adaptCode;
-        private static string _adaptTargetCode;
-
         private static Func<int, TSource, TDestination> CreateAdaptFunc()
         {
             var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
@@ -141,11 +138,11 @@ namespace Mapster
             }
 
             if (sourceType.IsPrimitiveRoot() && destinationType.IsPrimitiveRoot())
-                return PrimitiveAdapter<TSource, TDestination>.CreateAdaptFunc().CompileWithCode(out _adaptCode);
+                return PrimitiveAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
             else if (sourceType.IsCollection() && destinationType.IsCollection())
-                return CollectionAdapter<TSource, TDestination>.CreateAdaptFunc().CompileWithCode(out _adaptCode);
+                return CollectionAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
             else
-                return ClassAdapter<TSource, TDestination>.CreateAdaptFunc().CompileWithCode(out _adaptCode);
+                return ClassAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
         }
 
         private static Func<int, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
@@ -166,11 +163,11 @@ namespace Mapster
             }
 
             if (sourceType.IsPrimitiveRoot() || destinationType.IsPrimitiveRoot())
-                return PrimitiveAdapter<TSource, TDestination>.CreateAdaptTargetFunc().CompileWithCode(out _adaptTargetCode);
+                return PrimitiveAdapter<TSource, TDestination>.CreateAdaptTargetFunc().Compile();
             else if (sourceType.IsCollection() && destinationType.IsCollection())
-                return CollectionAdapter<TSource, TDestination>.CreateAdaptTargetFunc().CompileWithCode(out _adaptTargetCode);
+                return CollectionAdapter<TSource, TDestination>.CreateAdaptTargetFunc().Compile();
             else
-                return ClassAdapter<TSource, TDestination>.CreateAdaptTargetFunc().CompileWithCode(out _adaptTargetCode);
+                return ClassAdapter<TSource, TDestination>.CreateAdaptTargetFunc().Compile();
         }
 
         public static void Recompile()

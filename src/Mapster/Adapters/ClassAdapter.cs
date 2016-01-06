@@ -15,7 +15,7 @@ namespace Mapster.Adapters
     /// </remarks>
     /// <typeparam name="TSource">The source type.</typeparam>
     /// <typeparam name="TDestination">The destination type</typeparam>
-    public static class ClassAdapter<TSource, TDestination>
+    internal static class ClassAdapter<TSource, TDestination>
     {
         public static Expression<Func<int, TSource, TDestination>> CreateAdaptFunc()
         {

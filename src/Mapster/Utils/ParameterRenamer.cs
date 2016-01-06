@@ -2,7 +2,7 @@
 
 namespace Mapster.Utils
 {
-    public class ParameterRenamer : ExpressionVisitor
+    internal class ParameterRenamer : ExpressionVisitor
     {
         private ParameterExpression _parameterExpression;
         private string _expName;

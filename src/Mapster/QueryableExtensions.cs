@@ -5,7 +5,7 @@ namespace Mapster
 {
     public static class QueryableExtensions
     {
-        public static ProjectionExpression<TSource> Project<TSource>(this IQueryable<TSource> source)
+        public static IProjectionExpression Project<TSource>(this IQueryable<TSource> source)
         {
             return new ProjectionExpression<TSource>(source);
         }

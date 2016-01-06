@@ -4,7 +4,7 @@ using Mapster.Utils;
 
 namespace Mapster.Models
 {
-    public class PropertyModel
+    internal class PropertyModel
     {
         public Expression Getter;
         public Expression Setter;

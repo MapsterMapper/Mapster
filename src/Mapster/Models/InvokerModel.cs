@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Mapster.Models
 {
-    public class InvokerModel
+    internal class InvokerModel
     {
         public string MemberName;
 
