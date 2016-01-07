@@ -4,6 +4,7 @@ using Should;
 
 namespace Mapster.Tests
 {
+    [Explicit]
     public class WhenMappingWithMaxDepth
     {
         [Test]

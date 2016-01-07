@@ -17,7 +17,8 @@ namespace Mapster.Tests
         [Test]
         public void Transform_Doesnt_Occur_If_None_Present()
         {
-            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
+            TypeAdapterConfig<string, string>.Clear();
+
             var source = new SimplePoco { Id = new Guid(), Name = "Test    " };
 
             var destination = TypeAdapter.Adapt<SimpleDto>(source);
@@ -29,6 +30,7 @@ namespace Mapster.Tests
         public void Global_Destination_Transform_Is_Applied_To_Class()
         {
             TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+            TypeAdapterConfig<string, string>.Clear();
 
             var source = new SimplePoco {Id = new Guid(), Name = "Test    "};
             var destination = TypeAdapter.Adapt<SimpleDto>(source);
@@ -40,6 +42,7 @@ namespace Mapster.Tests
         public void Global_Destination_Transform_Is_Applied_To_Primitive()
         {
             TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+            TypeAdapterConfig<string, string>.Clear();
 
             var source ="Test    " ;
             var destination = TypeAdapter.Adapt<string>(source);
@@ -50,8 +53,9 @@ namespace Mapster.Tests
         [Test]
         public void Adapter_Destination_Transform_Is_Applied_To_Class()
         {
-            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .DestinationTransforms.Upsert<string>(x => x.Trim());
+            var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
+            config.DestinationTransforms.Upsert<string>(x => x.Trim());
+            config.Recompile();
 
             var source = new SimplePoco { Id = new Guid(), Name = "Test    " };
             var destination = TypeAdapter.Adapt<SimpleDto>(source);
