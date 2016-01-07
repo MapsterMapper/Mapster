@@ -10,6 +10,8 @@ namespace Mapster.Tests
         [Test]
         public void Can_Map_From_Null_Source_To_Non_Nullable_Existing_Target()
         {
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.Clear();
+
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
 
             var dto = new NonNullablePrimitivesDto();
@@ -26,6 +28,8 @@ namespace Mapster.Tests
         [Test]
         public void Can_Map_From_Null_Source_To_Non_Nullable_Target()
         {
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.Clear();
+
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
@@ -70,7 +74,8 @@ namespace Mapster.Tests
         [Test]
         public void Can_Map_From_Nullable_Source_With_Values_To_Non_Nullable_Target()
         {
-            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig();
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
+                .Recompile();
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName", IsImport = true, Amount = 10};
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
@@ -84,7 +89,8 @@ namespace Mapster.Tests
         [Test]
         public void Can_Map_From_Nullable_Source_Without_Values_To_Non_Nullable_Target()
         {
-            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig();
+            TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
+                .Recompile();
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName"};
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
@@ -101,7 +107,8 @@ namespace Mapster.Tests
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
                 .Map(dest => dest.Amount, src => src.Amount)
                 .Map(dest => dest.IsImport, src => src.IsImport)
-                .Map(dest => dest.MyFee, src => src.Fee);
+                .Map(dest => dest.MyFee, src => src.Fee)
+                .Recompile();
 
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName", Fee = 20, IsImport = true, Amount = 10};
 

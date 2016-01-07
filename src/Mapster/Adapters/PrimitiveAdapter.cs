@@ -38,7 +38,7 @@ namespace Mapster.Adapters
                 {
                     convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
                 }
-                convert = ReflectionUtils.BuildConvertExpression<TSource, TDestination>(convert);
+                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression<TSource, TDestination>(convert);
                 if (convert.Type != destinationType)
                     convert = Expression.Convert(convert, destinationType);
             }

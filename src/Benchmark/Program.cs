@@ -1,8 +1,9 @@
-﻿using Benchmark.Classes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using AutoMapper;
+using Benchmark.Classes;
+using DeepCloning;
 using Mapster;
 using Omu.ValueInjecter;
 
@@ -155,7 +156,7 @@ namespace Benchmark
             if (iterations > 50000)
                 Console.WriteLine("ValueInjecter still working please wait...");
 
-            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<DeepCloning.FastDeepCloneInjection>(item), iterations));  
+            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<FastDeepCloneInjection>(item), iterations));  
         }
 
         private static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)

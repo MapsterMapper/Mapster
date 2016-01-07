@@ -66,17 +66,22 @@ namespace Mapster.Utils
                 pos = ~pos - 1;
 
             var list = new List<ulong>();
-            for (var j = pos; pos >= 0 && i > 0; pos--)
+            for (var j = pos; j >= 0 && i > 0; j--)
             {
                 var k = _flagList[j];
-                if ((k & i) > 0)
+                if ((k & i) == k)
                 {
                     list.Add(k);
                     i ^= k;
                 }
             }
             if (i == 0)
-                return list.Count > 0 ? string.Join(", ", list) : _zeroString;
+            {
+                if (list.Count == 0)
+                    return _zeroString;
+                list.Reverse();
+                return string.Join(", ", list.Select(x => _reverseLookup[_toEnum(x)]));
+            }
             return _toIntString(val);
         }
 

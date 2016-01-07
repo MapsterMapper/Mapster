@@ -1,8 +1,10 @@
-﻿namespace Mapster.Models
+﻿using System.Linq.Expressions;
+
+namespace Mapster.Models
 {
     internal class ExpressionModel
     {
         public string DestinationMemberName;
-        public System.Linq.Expressions.Expression SourceExpression;
+        public Expression SourceExpression;
     }
 }

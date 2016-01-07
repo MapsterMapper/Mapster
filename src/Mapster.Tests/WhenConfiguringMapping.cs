@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mapster.Adapters;
 using Mapster.Tests.Classes;
 using NUnit.Framework;
 

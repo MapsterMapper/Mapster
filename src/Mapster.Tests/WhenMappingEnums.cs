@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using Mapster.Adapters;
+using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
 using Should;
 
@@ -122,6 +122,31 @@ namespace Mapster.Tests
             poco.Department.ShouldEqual(employeeDto.Department.ToString());
         }
 
+        [Test]
+        public void Flag_Enum_Is_Supported()
+        {
+            Assert_Flag_Enum(0, "Zero");
+            Assert_Flag_Enum(1, "1");
+            Assert_Flag_Enum(2, "Two");
+            Assert_Flag_Enum(3, "3");
+            Assert_Flag_Enum(4, "Four");
+            Assert_Flag_Enum(5, "5");
+            Assert_Flag_Enum(6, "Six");
+            Assert_Flag_Enum(7, "7");
+            Assert_Flag_Enum(8, "Eight");
+            Assert_Flag_Enum(9, "9");
+            Assert_Flag_Enum(10, "Two, Eight");
+        }
+
+        private static void Assert_Flag_Enum(int value, string result)
+        {
+            var e = (Flags) value;
+            var str = TypeAdapter<Flags, string>.Adapt(e);
+            str.ShouldEqual(result);
+            var e2 = TypeAdapter<string, Flags>.Adapt(str);
+            e2.ShouldEqual(e);
+        }
+
         [Test, Explicit]
         public void MapEnumToStringSpeedTest()
         {
@@ -140,5 +165,15 @@ namespace Mapster.Tests
             Console.WriteLine("Enum to string Elapsed time ms: " + timer.ElapsedMilliseconds);
         }
 
+        [Flags]
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        enum Flags
+        {
+            Zero = 0,
+            Two = 2,
+            Four = 4,
+            Six = 6,
+            Eight = 8,
+        }
     }
 }

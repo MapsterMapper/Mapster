@@ -123,7 +123,7 @@ namespace Mapster.Utils
             return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof (object))), destType);
         }
 
-        public static Expression BuildConvertExpression<TSource, TDestination>(Expression source)
+        public static Expression BuildUnderlyingTypeConvertExpression<TSource, TDestination>(Expression source)
         {
             var sourceType = typeof (TSource);
             var destinationType = typeof (TDestination);
@@ -133,22 +133,16 @@ namespace Mapster.Utils
             if (srcType == destType)
                 return source;
 
-            var result = BuildConvertExpression(sourceType == srcType ? source : Expression.Convert(source, srcType), srcType, destType);
-            return result.Type == destinationType ? result : Expression.Convert(result, destinationType);
-        }
-
-        private static Expression BuildConvertExpression(Expression source, Type srcType, Type destType)
-        {
             if (destType == _stringType)
             {
                 if (srcType.IsEnum)
                 {
-                    var method = typeof (Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] {srcType});
+                    var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
                     return Expression.Call(method, source);
                 }
                 else
                 {
-                    var method = typeof (ReflectionUtils).GetMethods().First(m => m.Name == "ToString");
+                    var method = typeof(ReflectionUtils).GetMethods().First(m => m.Name == "ToString");
                     method = method.MakeGenericMethod(srcType);
                     return Expression.Call(method, source);
                 }
@@ -158,12 +152,12 @@ namespace Mapster.Utils
             {
                 if (destType.IsEnum)
                 {
-                    var method = typeof (Enum<>).MakeGenericType(destType).GetMethod("Parse", new[] {typeof (string)});
+                    var method = typeof(Enum<>).MakeGenericType(destType).GetMethod("Parse", new[] { typeof(string) });
                     return Expression.Call(method, source);
                 }
                 else
                 {
-                    var method = destType.GetMethod("Parse", new[] {typeof (string)});
+                    var method = destType.GetMethod("Parse", new[] { typeof(string) });
                     return Expression.Call(method, source);
                 }
             }
@@ -207,7 +201,7 @@ namespace Mapster.Utils
             if (destType == typeof(sbyte))
                 return CreateConvertMethod("ToSByte", srcType, destType, source);
 
-            if (srcType.IsAssignableFrom(destType) || 
+            if (srcType.IsAssignableFrom(destType) ||
                 destType.IsAssignableFrom(srcType) ||
                 (srcType.IsEnum && Enum.GetUnderlyingType(srcType) == destType) ||
                 (destType.IsEnum && Enum.GetUnderlyingType(destType) == srcType))

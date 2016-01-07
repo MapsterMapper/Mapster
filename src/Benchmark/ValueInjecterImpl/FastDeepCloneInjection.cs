@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-
 using FastMember;
 
 namespace DeepCloning

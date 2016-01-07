@@ -57,15 +57,13 @@ namespace Mapster.Tests
                 Count = 0
             };
 
-            var exception = Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimpleDto>(poco));
-
-            exception.InnerException.ShouldBeType<DivideByZeroException>();
+            var exception = Assert.Throws<DivideByZeroException>(() => TypeAdapter.Adapt<SimpleDto>(poco));
         }
 
         [Test]
         public void When_Condition_Throws_Exception_Bubbles_Up()
         {
-            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+            TypeAdapterConfig<SimplePoco, SimplePoco>.NewConfig()
                 .Map(dest => dest.Amount, src => src.Amount, cond => cond.Amount/cond.Count > 0);
 
             var poco = new SimplePoco
@@ -76,9 +74,7 @@ namespace Mapster.Tests
                 Count = 0
             };
 
-            var exception = Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimpleDto>(poco));
-
-            exception.InnerException.ShouldBeType<DivideByZeroException>();
+            var exception = Assert.Throws<DivideByZeroException>(() => TypeAdapter.Adapt<SimplePoco>(poco));
         }
 
         #region Test Classes
