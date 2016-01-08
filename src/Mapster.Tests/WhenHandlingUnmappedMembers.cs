@@ -43,9 +43,9 @@ namespace Mapster.Tests
 
                 TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
             }
-            catch (TargetInvocationException ex)
+            catch (ArgumentOutOfRangeException ex)
             {
-                ex.InnerException.Message.ShouldContain("UnmappedMember");
+                ex.Message.ShouldContain("UnmappedMember");
             }
         }
 
@@ -78,11 +78,10 @@ namespace Mapster.Tests
                 TypeAdapter.Adapt<ParentPoco, ParentDto>(source);
                 Assert.Fail();
             }
-            catch (TargetInvocationException ex)
+            catch (ArgumentOutOfRangeException ex)
             {
-                ex.InnerException.Message.ShouldContain("UnmappedChildren");
+                ex.Message.ShouldContain("UnmappedChildren");
             }
-
         }
 
 

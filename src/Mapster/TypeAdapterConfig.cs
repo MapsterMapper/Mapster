@@ -12,7 +12,7 @@ namespace Mapster
 
     public class TypeAdapterConfig
     {
-        private static readonly ConcurrentDictionary<ulong, object> _configurationCache = new ConcurrentDictionary<ulong, object>();
+        private static readonly ConcurrentDictionary<TypeTuple, object> _configurationCache = new ConcurrentDictionary<TypeTuple, object>();
 
         internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 
@@ -53,20 +53,20 @@ namespace Mapster
         internal static void UpsertConfigurationCache<TSource, TDestination>(
             TypeAdapterConfig<TSource, TDestination> config)
         {
-            var key = ReflectionUtils.GetHashKey(typeof (TSource), typeof (TDestination));
+            var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             _configurationCache[key] = config;
         }
 
         internal static void RemoveFromConfigurationCache<TSource, TDestination>()
         {
-            var key = ReflectionUtils.GetHashKey(typeof(TSource), typeof(TDestination));
+            var key = new TypeTuple(typeof(TSource), typeof(TDestination));
             object obj;
             _configurationCache.TryRemove(key, out obj);
         }
 
         internal static bool ExistsInConfigurationCache(Type sourceType, Type destinationType)
         {
-            var key = ReflectionUtils.GetHashKey(sourceType, destinationType);
+            var key = new TypeTuple(sourceType, destinationType);
 
             return _configurationCache.ContainsKey(key);
         }
@@ -78,7 +78,7 @@ namespace Mapster
 
         internal static object GetFromConfigurationCache(Type sourceType, Type destinationType)
         {
-            var key = ReflectionUtils.GetHashKey(sourceType, destinationType);
+            var key = new TypeTuple(sourceType, destinationType);
             object returnValue;
 
             _configurationCache.TryGetValue(key, out returnValue);
@@ -144,18 +144,29 @@ namespace Mapster
 
         public void Recompile()
         {
-            var method = typeof (TypeAdapter<,>).MakeGenericType(typeof (TSource), typeof (TDestination)).GetMethod("Recompile");
-            method.Invoke(null, null);
+            CallRecompile();
         }
 
-        public static void Clear()
+        private static Action _recompile;
+        private static void CallRecompile()
+        {
+            if (_recompile == null)
+            {
+                var method = typeof(TypeAdapter<,>).MakeGenericType(typeof(TSource), typeof(TDestination)).GetMethod("Recompile");
+                _recompile = Expression.Lambda<Action>(Expression.Call(method)).Compile();
+            }
+            _recompile();
+        }
+
+        public static void Clear(bool noRecompile = false)
         {
             TypeAdapterConfig.RemoveFromConfigurationCache<TSource, TDestination>();
             _configSettings = null;
             _configSettingsSet = false;
             _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
-            var method = typeof(TypeAdapter<,>).MakeGenericType(typeof(TSource), typeof(TDestination)).GetMethod("Recompile");
-            method.Invoke(null, null);
+
+            if (!noRecompile)
+                CallRecompile();
         }
 
         [Obsolete("Use Ignore instead.")]
@@ -309,9 +320,9 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> NewInstanceForSameType(bool newInstanceForSameType)
+        public TypeAdapterConfig<TSource, TDestination> SameInstanceForSameType(bool sameInstanceForSameType)
         {
-            _configSettings.NewInstanceForSameType = newInstanceForSameType;
+            _configSettings.SameInstanceForSameType = sameInstanceForSameType;
 
             return this;
         }
@@ -323,10 +334,15 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
+        public TypeAdapterConfig<TSource, TDestination> CircularReferenceCheck(bool isCheck)
         {
-            _configSettings.MaxDepth = maxDepth;
+            _configSettings.CircularReferenceCheck = isCheck;
 
+            return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> MaxProjectionDepth(int maxDepth)
+        {
             _projection.MaxDepth(maxDepth);
 
             return this;
@@ -521,9 +537,9 @@ namespace Mapster
 
                         configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
                         {
-                            MaxDepth = baseConfigSettings.MaxDepth,
+                            CircularReferenceCheck = baseConfigSettings.CircularReferenceCheck,
                             IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
-                            NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType
+                            SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType
                         };
 
                         configSettings.IgnoreMembers.AddRange(baseConfigSettings.IgnoreMembers);
@@ -581,10 +597,10 @@ namespace Mapster
 
                 if (_configSettings.IgnoreNullValues == null)
                     _configSettings.IgnoreNullValues = baseConfigSettings.IgnoreNullValues;
-                if (_configSettings.MaxDepth == null)
-                    _configSettings.MaxDepth = baseConfigSettings.MaxDepth;
-                if (_configSettings.NewInstanceForSameType == null)
-                    _configSettings.NewInstanceForSameType = baseConfigSettings.NewInstanceForSameType;
+                if (_configSettings.CircularReferenceCheck == null)
+                    _configSettings.CircularReferenceCheck = baseConfigSettings.CircularReferenceCheck;
+                if (_configSettings.SameInstanceForSameType == null)
+                    _configSettings.SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType;
 
                 foreach (var ignoreMember in baseConfigSettings.IgnoreMembers)
                 {

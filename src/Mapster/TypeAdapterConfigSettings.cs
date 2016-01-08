@@ -47,25 +47,16 @@ namespace Mapster
 
     internal abstract class TypeAdapterConfigSettingsBase
     {
-
-        protected TypeAdapterConfigSettingsBase()
-        {
-            foreach (var transform in TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms)
-            {
-                DestinationTransforms.Transforms.Add(transform.Key, transform.Value);
-            }
-        }
-
         public readonly List<string> IgnoreMembers = new List<string>();
 
         public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
 
-        public int? MaxDepth;
+        public bool? CircularReferenceCheck;
 
         /// <summary>
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: true
         /// </summary>
-        public bool? NewInstanceForSameType;
+        public bool? SameInstanceForSameType;
 
         /// <summary>
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: false

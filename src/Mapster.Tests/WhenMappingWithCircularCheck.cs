@@ -5,64 +5,22 @@ using Should;
 namespace Mapster.Tests
 {
     [Explicit]
-    public class WhenMappingWithMaxDepth
+    public class WhenMappingWithCircularCheck
     {
         [Test]
-        public void Max_Depth_Is_Honored()
+        public void Circular_Object_Should_Not_Take_Forever()
         {
             Initialize();
 
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
+            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().CircularReferenceCheck(true);
 
             var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
 
             dest.ShouldNotBeNull();
             dest.Parent.ShouldBeNull();
             dest.Level.ShouldEqual(1);
-            dest.Children[0].Children.Count.ShouldEqual(2);
+            dest.Children[0].Parent.ShouldBeSameAs(dest);
         }
-
-        [Test]
-        public void Deepest_Level_Is_Populated()
-        {
-            Initialize();
-
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
-
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
-
-            dest.ShouldNotBeNull();
-            dest.Children[0].Children.Count.ShouldEqual(2);
-            dest.Children[0].Children[1].ShouldNotBeNull();
-        }
-
-        [Test]
-        public void Level_Below_Max_Depth_Is_Not_Populated()
-        {
-            Initialize();
-
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
-
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
-
-            dest.Children[0].Children[1].Children.ShouldBeNull();
-        }
-
-        [Test]
-        public void Max_Depth_Does_Not_Limit_List()
-        {
-            Initialize();
-
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
-
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
-
-            dest.ShouldNotBeNull();
-            dest.Parent.ShouldBeNull();
-            dest.Level.ShouldEqual(1);
-            dest.Children.Count.ShouldEqual(4);
-        }
-
 
         #region Data
 

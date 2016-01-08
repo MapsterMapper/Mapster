@@ -13,6 +13,8 @@ namespace Mapster
 
         public bool AllowImplicitDestinationInheritance;
 
+        public bool CircularReferenceCheck;
+
         public readonly HashSet<Type> PrimitiveTypes = new HashSet<Type>(); 
     }
 }

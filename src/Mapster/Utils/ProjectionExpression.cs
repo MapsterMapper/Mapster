@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Models;
 
 namespace Mapster.Utils
 {
@@ -11,9 +12,9 @@ namespace Mapster.Utils
     {
         #region Members
 
-        private static readonly Dictionary<ulong, Expression> _expressionCache = new Dictionary<ulong, Expression>();
+        private static readonly Dictionary<TypeTuple, Expression> _expressionCache = new Dictionary<TypeTuple, Expression>();
 
-        internal static readonly Dictionary<ulong, BaseProjectionConfig> ConfigurationCache = new Dictionary<ulong, BaseProjectionConfig>();
+        internal static readonly Dictionary<TypeTuple, BaseProjectionConfig> ConfigurationCache = new Dictionary<TypeTuple, BaseProjectionConfig>();
 
         private readonly IQueryable<TSource> _source;
 
@@ -35,14 +36,14 @@ namespace Mapster.Utils
 
         private static Expression<Func<TSource, TDest>> GetCachedExpression<TDest>()
         {
-            var key = ReflectionUtils.GetHashKey<TSource, TDest>();
+            var key = new TypeTuple(typeof(TSource), typeof(TDest));
 
             return _expressionCache.ContainsKey(key) ? _expressionCache[key] as Expression<Func<TSource, TDest>> : null;
         }
 
         private static BaseProjectionConfig GetCachedConfig(Type sourceType, Type destinationType)
         {
-            var key = ReflectionUtils.GetHashKey(sourceType, destinationType);
+            var key = new TypeTuple(sourceType, destinationType);
 
             return ConfigurationCache.ContainsKey(key) ? ConfigurationCache[key] : null;
         }
@@ -82,7 +83,7 @@ namespace Mapster.Utils
 
                 var expression = Expression.Lambda<Func<TSource, TDest>>(Expression.MemberInit(Expression.New(destType), bindings), parameterExpression);
 
-                var key = ReflectionUtils.GetHashKey(sourceType, destType);
+                var key = new TypeTuple(sourceType, destType);
                 _expressionCache.Add(key, expression);
                 return expression;
             }

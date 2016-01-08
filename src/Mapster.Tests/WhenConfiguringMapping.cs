@@ -144,7 +144,7 @@ namespace Mapster.Tests
 
             TypeAdapterConfig<TestNewInstanceD, TestNewInstanceE>
                 .NewConfig()
-                .NewInstanceForSameType(false);
+                .SameInstanceForSameType(true);
 
             var newObj2 = TypeAdapter.Adapt<TestNewInstanceD, TestNewInstanceE>(obj);
 

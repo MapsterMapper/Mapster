@@ -2,14 +2,15 @@
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Mapster.Adapters;
+using Mapster.Models;
 using Mapster.Utils;
 
 namespace Mapster
 {
     public static class TypeAdapter
     {
-        private static readonly ConcurrentDictionary<ulong, Func<object, object>> _adaptDict = new ConcurrentDictionary<ulong, Func<object, object>>();
-        private static readonly ConcurrentDictionary<ulong, Func<object, object, object>> _adaptTargetDict = new ConcurrentDictionary<ulong, Func<object, object, object>>();
+        private static readonly ConcurrentDictionary<TypeTuple, Func<object, object>> _adaptDict = new ConcurrentDictionary<TypeTuple, Func<object, object>>();
+        private static readonly ConcurrentDictionary<TypeTuple, Func<object, object, object>> _adaptTargetDict = new ConcurrentDictionary<TypeTuple, Func<object, object, object>>();
 
         private static Func<object, object> CreateAdaptFunc(Type sourceType, Type destinationType)
         {
@@ -46,8 +47,8 @@ namespace Mapster
         public static TDestination Adapt<TDestination>(object source)
         {
             var sourceType = source.GetType();
-            var hash = ReflectionUtils.GetHashKey(sourceType, typeof (TDestination));
-            var func = _adaptDict.GetOrAdd(hash, (ulong _) => CreateAdaptFunc(sourceType, typeof (TDestination)));
+            var hash = new TypeTuple(sourceType, typeof (TDestination));
+            var func = _adaptDict.GetOrAdd(hash, (TypeTuple _) => CreateAdaptFunc(sourceType, typeof (TDestination)));
             return (TDestination) func(source);
         }
 
@@ -85,8 +86,8 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static object Adapt(object source, Type sourceType, Type destinationType)
         {
-            var hash = ReflectionUtils.GetHashKey(sourceType, destinationType);
-            var func = _adaptDict.GetOrAdd(hash, (ulong _) => CreateAdaptFunc(sourceType, destinationType));
+            var hash = new TypeTuple(sourceType, destinationType);
+            var func = _adaptDict.GetOrAdd(hash, (TypeTuple _) => CreateAdaptFunc(sourceType, destinationType));
             return func(source);
         }
 
@@ -100,7 +101,7 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static object Adapt(object source, object destination, Type sourceType, Type destinationType)
         {
-            var hash = ReflectionUtils.GetHashKey(sourceType, destinationType);
+            var hash = new TypeTuple(sourceType, destinationType);
             var func = _adaptTargetDict.GetOrAdd(hash, _ => CreateAdaptTargetFunc(sourceType, destinationType));
             return func(source, destination);
         }
@@ -117,10 +118,10 @@ namespace Mapster
 
     internal static class TypeAdapter<TSource, TDestination>
     {
-        private static Func<int, TSource, TDestination> _adapt = CreateAdaptFunc();
-        private static Func<int, TSource, TDestination, TDestination> _adaptTarget = CreateAdaptTargetFunc();
+        private static Func<ReferenceChecker, TSource, TDestination> _adapt = CreateAdaptFunc();
+        private static Func<ReferenceChecker, TSource, TDestination, TDestination> _adaptTarget = CreateAdaptTargetFunc();
 
-        private static Func<int, TSource, TDestination> CreateAdaptFunc()
+        private static Func<ReferenceChecker, TSource, TDestination> CreateAdaptFunc()
         {
             var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
             var converter = config?.ConverterFactory;
@@ -145,7 +146,7 @@ namespace Mapster
                 return ClassAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
         }
 
-        private static Func<int, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
+        private static Func<ReferenceChecker, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
         {
             var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
             var converter = config?.ConverterFactory;
@@ -178,22 +179,22 @@ namespace Mapster
 
         public static TDestination Adapt(TSource source)
         {
-            return _adapt(0, source);
+            return _adapt(ReferenceChecker.Default, source);
         }
 
-        public static TDestination AdaptWithDepth(int depth, TSource source)
+        public static TDestination AdaptWithCheck(ReferenceChecker checker, TSource source)
         {
-            return _adapt(depth, source);
+            return _adapt(checker, source);
         }
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {
-            return _adaptTarget(0, source, destination);
+            return _adaptTarget(ReferenceChecker.Default, source, destination);
         }
 
-        public static TDestination AdaptWithDepth(int depth, TSource source, TDestination destination)
+        public static TDestination AdaptWithCheck(ReferenceChecker checker, TSource source, TDestination destination)
         {
-            return _adaptTarget(depth, source, destination);
+            return _adaptTarget(checker, source, destination);
         }
     }
 }

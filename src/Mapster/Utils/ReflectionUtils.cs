@@ -262,16 +262,5 @@ namespace Mapster.Utils
             }
             return null;
         }
-
-        public static ulong GetHashKey<TSource, TDestination>()
-        {
-            return ((ulong)(uint)typeof(TSource).GetHashCode() << 32) | (uint)typeof(TDestination).GetHashCode();
-        }
-
-        public static ulong GetHashKey(Type source, Type destination)
-        {
-            return ((ulong)(uint)source.GetHashCode() << 32) | (uint)destination.GetHashCode();
-        }
-
     }
 }

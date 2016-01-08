@@ -17,30 +17,31 @@ namespace Mapster.Adapters
     /// <typeparam name="TDestination">The destination type</typeparam>
     internal static class ClassAdapter<TSource, TDestination>
     {
-        public static Expression<Func<int, TSource, TDestination>> CreateAdaptFunc()
+        public static Expression<Func<ReferenceChecker, TSource, TDestination>> CreateAdaptFunc()
         {
-            var depth = Expression.Parameter(typeof(int));
+            var checker = Expression.Parameter(typeof(ReferenceChecker));
             var p = Expression.Parameter(typeof(TSource));
-            var body = CreateExpressionBody(depth, p, null);
-            return Expression.Lambda<Func<int, TSource, TDestination>>(body, depth, p);
+            var body = CreateExpressionBody(checker, p, null);
+            return Expression.Lambda<Func<ReferenceChecker, TSource, TDestination>>(body, checker, p);
         }
 
-        public static Expression<Func<int, TSource, TDestination, TDestination>> CreateAdaptTargetFunc()
+        public static Expression<Func<ReferenceChecker, TSource, TDestination, TDestination>> CreateAdaptTargetFunc()
         {
-            var depth = Expression.Parameter(typeof(int));
+            var checker = Expression.Parameter(typeof(ReferenceChecker));
             var p = Expression.Parameter(typeof(TSource));
             var p2 = Expression.Parameter(typeof(TDestination));
-            var body = CreateExpressionBody(depth, p, p2);
-            return Expression.Lambda<Func<int, TSource, TDestination, TDestination>>(body, depth, p, p2);
+            var body = CreateExpressionBody(checker, p, p2);
+            return Expression.Lambda<Func<ReferenceChecker, TSource, TDestination, TDestination>>(body, checker, p, p2);
         }
 
-        public static Expression CreateExpressionBody(ParameterExpression depth, ParameterExpression p, ParameterExpression p2)
+        public static Expression CreateExpressionBody(ParameterExpression checker, ParameterExpression p, ParameterExpression p2)
         {
             var destinationType = typeof(TDestination);
             var list = new List<Expression>();
             var setting = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
             var pDest = Expression.Variable(destinationType);
+            var pCheck = Expression.Variable(typeof(ReferenceChecker));
             Expression assign;
             if (p2 != null)
             {
@@ -54,33 +55,44 @@ namespace Mapster.Adapters
             {
                 assign = Expression.Assign(pDest, Expression.New(destinationType));
             }
+            list.Add(assign);
 
+            var hasCircularCheck = setting?.CircularReferenceCheck ?? TypeAdapterConfig.GlobalSettings.CircularReferenceCheck;
+            list.Add(hasCircularCheck 
+                ? Expression.Assign(pCheck, Expression.Call(checker, "Add", Type.EmptyTypes, Expression.Convert(p, typeof(object)), Expression.Convert(pDest, typeof(object)))) 
+                : Expression.Assign(pCheck, checker));
+
+            var localTransform = setting?.DestinationTransforms.Transforms;
             var models = CreatePropertyModels(p, pDest);
             var list2 = new List<Expression>();
-            list2.Add(assign);
             foreach (var model in models)
             {
                 var typeAdaptType = typeof(TypeAdapter<,>).MakeGenericType(model.Getter.Type, model.Setter.Type);
-                var adaptMethod = typeAdaptType.GetMethod("AdaptWithDepth",
-                    new[] { typeof(int), model.Getter.Type });
-                Expression itemAssign = model.Getter.Type == model.Setter.Type && setting?.NewInstanceForSameType == false
-                    ? Expression.Assign(model.Setter, model.Getter)
-                    : Expression.Assign(model.Setter, Expression.Call(adaptMethod, depth, model.Getter));
+                var adaptMethod = typeAdaptType.GetMethod("AdaptWithCheck",
+                    new[] { typeof(ReferenceChecker), model.Getter.Type });
+                var getter = model.Getter.Type == model.Setter.Type && setting?.SameInstanceForSameType == true
+                    ? model.Getter
+                    : Expression.Call(adaptMethod, pCheck, model.Getter);
+
+                if (localTransform != null && localTransform.ContainsKey(getter.Type))
+                    getter = Expression.Invoke(localTransform[getter.Type], getter);
+
+                Expression itemAssign = Expression.Assign(model.Setter, getter);
                 if (setting?.IgnoreNullValues == true && (!model.Getter.Type.IsValueType || model.Getter.Type.IsNullable()))
                 {
-                    var condition = Expression.Equal(model.Getter, Expression.Constant(null, model.Getter.Type));
+                    var condition = Expression.NotEqual(model.Getter, Expression.Constant(null, model.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);
                 }
                 list2.Add(itemAssign);
             }
             Expression set = Expression.Block(list2);
 
-            if (setting?.MaxDepth != null && setting.MaxDepth.Value > 0)
+            if (hasCircularCheck)
             {
-                var compareDepth = Expression.GreaterThan(depth, Expression.Constant(setting.MaxDepth.Value));
+                var checkCircular = Expression.Property(pCheck, "IsCircular");
                 set = Expression.IfThenElse(
-                    compareDepth,
-                    Expression.Assign(pDest, (Expression)p2 ?? Expression.Constant(null, destinationType)),
+                    checkCircular,
+                    ExpressionEx.Assign(pDest, Expression.Property(pCheck, "Result")),
                     set);
             }
 
@@ -91,18 +103,23 @@ namespace Mapster.Adapters
                 set);
             list.Add(set);
 
-            var destinationTransforms = setting != null
-                ? setting.DestinationTransforms.Transforms
-                : TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
+            var destinationTransforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
             if (destinationTransforms.ContainsKey(destinationType))
             {
                 var transform = destinationTransforms[destinationType];
                 var invoke = Expression.Invoke(transform, pDest);
                 list.Add(Expression.Assign(pDest, invoke));
             }
+            if (localTransform != null && localTransform.ContainsKey(destinationType))
+            {
+                var transform = localTransform[destinationType];
+                var invoke = Expression.Invoke(transform, pDest);
+                list.Add(Expression.Assign(pDest, invoke));
+            }
+
             list.Add(pDest);
 
-            return Expression.Block(new[] {pDest}, list);
+            return Expression.Block(new[] {pDest, pCheck}, list);
         }
 
         #region Build the Adapter Model

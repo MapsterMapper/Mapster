@@ -18,6 +18,7 @@ namespace Mapster.Tests
         public void Transform_Doesnt_Occur_If_None_Present()
         {
             TypeAdapterConfig<string, string>.Clear();
+            TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
             var source = new SimplePoco { Id = new Guid(), Name = "Test    " };
 

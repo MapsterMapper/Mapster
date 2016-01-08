@@ -24,7 +24,7 @@ namespace Mapster.Tests
             {
                 //this is to prevent TypeInitializeException
                 TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
-                
+
                 TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
                 TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
@@ -33,10 +33,10 @@ namespace Mapster.Tests
                 TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco);
                 Assert.Fail();
             }
-            catch (TargetInvocationException ex)
+            catch (InvalidOperationException ex)
             {
-                ex.InnerException.Message.ShouldContain("SimplePoco");
-                ex.InnerException.Message.ShouldContain("SimpleDto");
+                ex.Message.ShouldContain("SimplePoco");
+                ex.Message.ShouldContain("SimpleDto");
             }
         }
 

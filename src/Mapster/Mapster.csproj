@@ -51,6 +51,8 @@
     <Compile Include="Adapter.cs" />
     <Compile Include="ITypeResolver.cs" />
     <Compile Include="IValueResolver.cs" />
+    <Compile Include="Models\ReferenceChecker.cs" />
+    <Compile Include="Models\TypeTuple.cs" />
     <Compile Include="TransformsCollection.cs" />
     <Compile Include="TypeAdapterConfigSettings.cs" />
     <Compile Include="QueryableExtensions.cs" />

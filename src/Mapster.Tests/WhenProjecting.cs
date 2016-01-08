@@ -204,7 +204,7 @@ namespace Mapster.Tests
 
             TypeAdapterConfig<MaxDepthTestSource, MaxDepthTestSourceDTO>
                 .NewConfig()
-                .MaxDepth(2);
+                .MaxProjectionDepth(2);
 
             var bList = list.AsQueryable().Project().To<MaxDepthTestSourceDTO>().ToList();
 
@@ -244,7 +244,7 @@ namespace Mapster.Tests
 
             TypeAdapterConfig<MaxDepthTestListSource, MaxDepthTestListSourceDTO>
                 .NewConfig()
-                .MaxDepth(2);
+                .MaxProjectionDepth(2);
 
             var bList = list.AsQueryable().Project().To<MaxDepthTestListSourceDTO>().ToList();
 

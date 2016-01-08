@@ -11,10 +11,10 @@ namespace Mapster.Tests
         [SetUp]
         public void Setup()
         {
-            TypeAdapterConfig<SimplePocoBase, SimpleDto>.Clear();
-            TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
-            TypeAdapterConfig<SimplePoco, SimpleDtoWithoutMissingMembers>.Clear();
-            TypeAdapterConfig<SimpleFlattenedPoco, SimpleDto>.Clear();
+            TypeAdapterConfig<SimplePocoBase, SimpleDto>.Clear(true);
+            TypeAdapterConfig<SimplePoco, SimpleDto>.Clear(true);
+            TypeAdapterConfig<SimplePoco, SimpleDtoWithoutMissingMembers>.Clear(true);
+            TypeAdapterConfig<SimpleFlattenedPoco, SimpleDto>.Clear(true);
         }
 
         [Test]
