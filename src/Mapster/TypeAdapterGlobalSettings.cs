@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Mapster
 {
@@ -13,8 +12,10 @@ namespace Mapster
 
         public bool AllowImplicitDestinationInheritance;
 
-        public bool CircularReferenceCheck;
+        public bool EnableMaxDepth;
 
-        public readonly HashSet<Type> PrimitiveTypes = new HashSet<Type>(); 
+        public bool PreserveReference;
+
+        public readonly List<ITypeAdapter> CustomAdapters = new List<ITypeAdapter>();
     }
 }

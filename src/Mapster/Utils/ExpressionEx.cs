@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Mapster.Models;
 
 namespace Mapster.Utils
 {
@@ -12,5 +13,10 @@ namespace Mapster.Utils
             return Expression.Assign(left, middle);
         }
 
+        public static Expression Apply(this LambdaExpression lambda, Expression exp)
+        {
+            var replacer = new ParameterExpressionReplacer(lambda.Parameters[0], exp);
+            return replacer.Visit(lambda.Body);
+        }
     }
 }

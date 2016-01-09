@@ -67,7 +67,7 @@ namespace Mapster.Tests
 
         #region TestClasses
 
-        public class SimplePocoResolver : ITypeResolver<SimplePoco, SimpleDto>
+        public class SimplePocoResolver : ITypeResolverWithTarget<SimplePoco, SimpleDto>
         {
             public SimpleDto Resolve(SimplePoco source)
             {
@@ -79,7 +79,7 @@ namespace Mapster.Tests
                     UnmappedMember2 = "Unmapped2"
                 };
             }
-
+            
             public SimpleDto Resolve(SimplePoco source, SimpleDto destination)
             {
                 return Resolve(source);

@@ -18,7 +18,7 @@ namespace Mapster
         /// </summary>
         internal bool NewInstanceForSameType { get; set; }
 
-        internal IDictionary<Type, Expression> CombinedTransforms
+        internal IDictionary<Type, LambdaExpression> CombinedTransforms
         {
             get { return TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms; }
         }
@@ -26,8 +26,6 @@ namespace Mapster
 
     internal class TypeAdapterConfigSettings<TSource, TDestination> : TypeAdapterConfigSettingsBase
     {
-        public readonly List<InvokerModel> Resolvers = new List<InvokerModel>();
-        public Expression<Func<TDestination>> ConstructUsing;
         public Func<ITypeResolver<TSource, TDestination>> ConverterFactory;
         
         public void Reset()
@@ -38,20 +36,15 @@ namespace Mapster
             ConstructUsing = null;
             ConverterFactory = null;
         }
-
-        public override List<object> GetResolversAsObjects()
-        {
-            return new List<object>(Resolvers);
-        }
     }
 
-    internal abstract class TypeAdapterConfigSettingsBase
+    public abstract class TypeAdapterConfigSettingsBase
     {
         public readonly List<string> IgnoreMembers = new List<string>();
 
         public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
 
-        public bool? CircularReferenceCheck;
+        public int? MaxDepth;
 
         /// <summary>
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: true
@@ -72,9 +65,8 @@ namespace Mapster
         /// Destination type of the inherited config
         /// </summary>
         public Type InheritedDestinationType;
-        
-        public abstract List<object> GetResolversAsObjects();
 
-
+        public readonly List<InvokerModel> Resolvers = new List<InvokerModel>();
+        public LambdaExpression ConstructUsing;
     }
 }

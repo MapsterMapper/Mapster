@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
@@ -13,86 +14,127 @@ namespace Mapster.Adapters
     /// <remarks>The operations in this class must be extremely fast.  Make sure to benchmark before making **any** changes in here.  
     /// The core Adapt method is critically important to performance.
     /// </remarks>
-    /// <typeparam name="TSource">The source type.</typeparam>
-    /// <typeparam name="TDestination">The destination type</typeparam>
-    internal static class ClassAdapter<TSource, TDestination>
+    internal class ClassAdapter : ITypeAdapterWithTarget
     {
-        public static Expression<Func<ReferenceChecker, TSource, TDestination>> CreateAdaptFunc()
+        public bool CanAdapt(Type sourceType, Type destinationType)
         {
-            var checker = Expression.Parameter(typeof(ReferenceChecker));
-            var p = Expression.Parameter(typeof(TSource));
-            var body = CreateExpressionBody(checker, p, null);
-            return Expression.Lambda<Func<ReferenceChecker, TSource, TDestination>>(body, checker, p);
+            var settings = TypeAdapter.GetSettings(sourceType, destinationType);
+            var model = CreateAdapterModel(Expression.Parameter(sourceType), Expression.Parameter(destinationType), settings);
+            return model.Properties.Count > 0;
         }
 
-        public static Expression<Func<ReferenceChecker, TSource, TDestination, TDestination>> CreateAdaptTargetFunc()
+        public Func<int, MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
         {
-            var checker = Expression.Parameter(typeof(ReferenceChecker));
+            var depth = Expression.Parameter(typeof(int));
+            var context = Expression.Parameter(typeof(MapContext));
+            var p = Expression.Parameter(typeof(TSource));
+            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            var body = CreateExpressionBody(depth, context, p, null, typeof(TSource), typeof(TDestination), settings);
+            return Expression.Lambda<Func<int, MapContext, TSource, TDestination>>(body, depth, context, p).Compile();
+        }
+
+        public Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        {
+            var depth = Expression.Parameter(typeof(int));
+            var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var p2 = Expression.Parameter(typeof(TDestination));
-            var body = CreateExpressionBody(checker, p, p2);
-            return Expression.Lambda<Func<ReferenceChecker, TSource, TDestination, TDestination>>(body, checker, p, p2);
+            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            var body = CreateExpressionBody(depth, context, p, p2, typeof(TSource), typeof(TDestination), settings);
+            return Expression.Lambda<Func<int, MapContext, TSource, TDestination, TDestination>>(body, depth, context, p, p2).Compile();
         }
 
-        public static Expression CreateExpressionBody(ParameterExpression checker, ParameterExpression p, ParameterExpression p2)
+        private static Expression CreateExpressionBody(ParameterExpression depth, ParameterExpression context, ParameterExpression p, ParameterExpression p2, Type sourceType, Type destinationType, TypeAdapterConfigSettingsBase settings)
         {
-            var destinationType = typeof(TDestination);
             var list = new List<Expression>();
-            var setting = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
             var pDest = Expression.Variable(destinationType);
-            var pCheck = Expression.Variable(typeof(ReferenceChecker));
             Expression assign;
             if (p2 != null)
             {
                 assign = Expression.Assign(pDest, p2);
             }
-            else if (setting?.ConstructUsing != null)
+            else if (settings?.ConstructUsing != null)
             {
-                assign = Expression.Assign(pDest, Expression.Invoke(setting.ConstructUsing));
+                assign = Expression.Assign(pDest, settings.ConstructUsing.Body);
             }
             else
             {
                 assign = Expression.Assign(pDest, Expression.New(destinationType));
             }
-            list.Add(assign);
 
-            var hasCircularCheck = setting?.CircularReferenceCheck ?? TypeAdapterConfig.GlobalSettings.CircularReferenceCheck;
-            list.Add(hasCircularCheck 
-                ? Expression.Assign(pCheck, Expression.Call(checker, "Add", Type.EmptyTypes, Expression.Convert(p, typeof(object)), Expression.Convert(pDest, typeof(object)))) 
-                : Expression.Assign(pCheck, checker));
+            var localTransform = settings?.DestinationTransforms.Transforms;
+            var model = CreateAdapterModel(p, pDest, settings);
 
-            var localTransform = setting?.DestinationTransforms.Transforms;
-            var models = CreatePropertyModels(p, pDest);
-            var list2 = new List<Expression>();
-            foreach (var model in models)
+            if (TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && model.UnmappedProperties.Count > 0)
             {
-                var typeAdaptType = typeof(TypeAdapter<,>).MakeGenericType(model.Getter.Type, model.Setter.Type);
-                var adaptMethod = typeAdaptType.GetMethod("AdaptWithCheck",
-                    new[] { typeof(ReferenceChecker), model.Getter.Type });
-                var getter = model.Getter.Type == model.Setter.Type && setting?.SameInstanceForSameType == true
-                    ? model.Getter
-                    : Expression.Call(adaptMethod, pCheck, model.Getter);
+                throw new ArgumentOutOfRangeException($"The following members of destination class {destinationType} do not have a corresponding source member mapped or ignored:{string.Join(",", model.UnmappedProperties)}");
+            }
+
+            var list2 = new List<Expression>();
+            var pDepth = Expression.Variable(typeof(int));
+
+            if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
+                list2.Add(Expression.Assign(pDepth, Expression.Subtract(depth, Expression.Constant(1))));
+
+            foreach (var property in model.Properties)
+            {
+                var adapter = TypeAdapter.GetAdapter(property.Getter.Type, property.Setter.Type) as ITypeExpression;
+
+                Expression getter;
+                if (adapter != null)
+                {
+                    getter = adapter.CreateExpression(property.Getter, property.Getter.Type, property.Setter.Type);
+                }
+                else
+                {
+                    var typeAdaptType = typeof (TypeAdapter<,>).MakeGenericType(property.Getter.Type, property.Setter.Type);
+                    var adaptMethod = typeAdaptType.GetMethod("AdaptWithContext",
+                        new[] {typeof (int), typeof(MapContext), property.Getter.Type});
+                    getter = property.Getter.Type == property.Setter.Type && settings?.SameInstanceForSameType == true
+                        ? property.Getter
+                        : Expression.Call(adaptMethod, pDepth, context, property.Getter);
+                }
 
                 if (localTransform != null && localTransform.ContainsKey(getter.Type))
                     getter = Expression.Invoke(localTransform[getter.Type], getter);
 
-                Expression itemAssign = Expression.Assign(model.Setter, getter);
-                if (setting?.IgnoreNullValues == true && (!model.Getter.Type.IsValueType || model.Getter.Type.IsNullable()))
+                Expression itemAssign = Expression.Assign(property.Setter, getter);
+                if (settings?.IgnoreNullValues == true && (!property.Getter.Type.IsValueType || property.Getter.Type.IsNullable()))
                 {
-                    var condition = Expression.NotEqual(model.Getter, Expression.Constant(null, model.Getter.Type));
+                    var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);
                 }
                 list2.Add(itemAssign);
             }
-            Expression set = Expression.Block(list2);
 
-            if (hasCircularCheck)
+            Expression set;
+            if (TypeAdapterConfig.GlobalSettings.PreserveReference)
             {
-                var checkCircular = Expression.Property(pCheck, "IsCircular");
+                var refDict = Expression.Property(context, "References");
+                var refAdd = Expression.Call(refDict, "Add", null, Expression.Convert(p, typeof(object)), Expression.Convert(pDest, typeof(object)));
+                set = Expression.Block(new[] { pDepth }, new[] {assign, refAdd}.Concat(list2));
+
+                var pDest3 = Expression.Variable(typeof(object));
+                var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
+                var checkHasRef = Expression.Call(refDict, tryGetMethod, p, pDest3);
                 set = Expression.IfThenElse(
-                    checkCircular,
-                    ExpressionEx.Assign(pDest, Expression.Property(pCheck, "Result")),
+                    checkHasRef,
+                    ExpressionEx.Assign(pDest, pDest3),
+                    set);
+                set = Expression.Block(new[] { pDest3 }, set);
+            }
+            else
+            {
+                set = Expression.Block(new[] {pDepth}, new[] {assign}.Concat(list2));
+            }
+
+            if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
+            {
+                var compareDepth = Expression.Equal(depth, Expression.Constant(0));
+                set = Expression.IfThenElse(
+                    compareDepth,
+                    Expression.Assign(pDest, (Expression) p2 ?? Expression.Constant(null, destinationType)),
                     set);
             }
 
@@ -119,23 +161,21 @@ namespace Mapster.Adapters
 
             list.Add(pDest);
 
-            return Expression.Block(new[] {pDest, pCheck}, list);
+            return Expression.Block(new[] {pDest}, list);
         }
 
         #region Build the Adapter Model
 
-        private static List<PropertyModel> CreatePropertyModels(Expression source, Expression destination)
+        private static AdapterModel CreateAdapterModel(Expression source, Expression destination, TypeAdapterConfigSettingsBase settings)
         {
-            Type destinationType = typeof(TDestination);
-            Type sourceType = typeof(TSource);
+            Type destinationType = destination.Type;
+            Type sourceType = source.Type;
 
             var unmappedDestinationMembers = new List<string>();
 
             var properties = new List<PropertyModel>();
 
             List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties(allowNoSetter: false);
-
-            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
 
             for (int i = 0; i < destinationMembers.Count; i++)
             {
@@ -178,12 +218,11 @@ namespace Mapster.Adapters
                 }
             }
 
-            if (TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
+            return new AdapterModel
             {
-                throw new ArgumentOutOfRangeException($"The following members of destination class {typeof (TDestination)} do not have a corresponding source member mapped or ignored:{string.Join(",", unmappedDestinationMembers)}");
-            }
-
-            return properties;
+                Properties = properties,
+                UnmappedProperties = unmappedDestinationMembers,
+            };
         }
 
         private static bool FlattenClass(
@@ -240,7 +279,7 @@ namespace Mapster.Adapters
         private static bool ProcessCustomResolvers(
             Expression source,
             Expression destination,
-            TypeAdapterConfigSettings<TSource, TDestination> config, 
+            TypeAdapterConfigSettingsBase config, 
             MemberInfo destinationMember,
             List<PropertyModel> properties)
         {
@@ -249,7 +288,7 @@ namespace Mapster.Adapters
             if (resolvers != null && resolvers.Count > 0)
             {
                 PropertyModel propertyModel = null;
-                Expression lastCondition = null;
+                LambdaExpression lastCondition = null;
                 for (int j = 0; j < resolvers.Count; j++)
                 {
                     var resolver = resolvers[j];
@@ -268,9 +307,9 @@ namespace Mapster.Adapters
                             isAdded = true;
                         }
 
-                        Expression invoke = Expression.Invoke(resolver.Invoker, source);
+                        Expression invoke = resolver.Invoker.Apply(source);
                         propertyModel.Getter = lastCondition != null
-                            ? Expression.Condition(Expression.Invoke(lastCondition, source), propertyModel.Getter, invoke)
+                            ? Expression.Condition(lastCondition.Apply(source), propertyModel.Getter, invoke)
                             : invoke;
                         lastCondition = resolver.Condition;
                         if (resolver.Condition == null)
@@ -280,14 +319,14 @@ namespace Mapster.Adapters
                 if (propertyModel != null)
                 {
                     if (lastCondition != null)
-                        propertyModel.Getter = Expression.Condition(Expression.Invoke(lastCondition, source), propertyModel.Getter, Expression.Constant(propertyModel.Getter.Type.IsValueType && !propertyModel.Getter.Type.IsNullable() ? Activator.CreateInstance(propertyModel.Getter.Type) : null, propertyModel.Getter.Type));
+                        propertyModel.Getter = Expression.Condition(lastCondition.Apply(source), propertyModel.Getter, Expression.Constant(propertyModel.Getter.Type.GetDefault(), propertyModel.Getter.Type));
                     properties.Add(propertyModel);
                 }
             }
             return isAdded;
         }
 
-        private static bool ProcessIgnores(TypeAdapterConfigSettings<TSource, TDestination> config, MemberInfo destinationMember)
+        private static bool ProcessIgnores(TypeAdapterConfigSettingsBase config, MemberInfo destinationMember)
         {
             var ignoreMembers = config.IgnoreMembers;
             if (ignoreMembers != null && ignoreMembers.Count > 0)

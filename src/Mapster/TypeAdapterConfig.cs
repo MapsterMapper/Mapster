@@ -12,7 +12,7 @@ namespace Mapster
 
     public class TypeAdapterConfig
     {
-        private static readonly ConcurrentDictionary<TypeTuple, object> _configurationCache = new ConcurrentDictionary<TypeTuple, object>();
+        private static readonly ConcurrentDictionary<TypeTuple, TypeAdapterConfigSettingsBase> _configurationCache = new ConcurrentDictionary<TypeTuple, TypeAdapterConfigSettingsBase>();
 
         internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
 
@@ -36,22 +36,8 @@ namespace Mapster
             return this;
         }
 
-        public static void Validate()
-        {
-            var errorList = new List<string>();
-            foreach (var config in _configurationCache)
-            {
-                ((IValidatableConfig) config.Value).Validate(errorList);
-            }
-
-            if (errorList.Count > 0)
-            {
-                throw new ArgumentOutOfRangeException(string.Join(Environment.NewLine, errorList));
-            }
-        }
-
         internal static void UpsertConfigurationCache<TSource, TDestination>(
-            TypeAdapterConfig<TSource, TDestination> config)
+            TypeAdapterConfigSettings<TSource, TDestination> config)
         {
             var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             _configurationCache[key] = config;
@@ -60,7 +46,7 @@ namespace Mapster
         internal static void RemoveFromConfigurationCache<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
-            object obj;
+            TypeAdapterConfigSettingsBase obj;
             _configurationCache.TryRemove(key, out obj);
         }
 
@@ -71,15 +57,10 @@ namespace Mapster
             return _configurationCache.ContainsKey(key);
         }
 
-        internal static TypeAdapterConfig<TSource, TDestination> GetFromConfigurationCache<TSource, TDestination>()
-        {
-            return (TypeAdapterConfig<TSource, TDestination>)GetFromConfigurationCache(typeof(TSource), typeof(TDestination));
-        }
-
-        internal static object GetFromConfigurationCache(Type sourceType, Type destinationType)
+        internal static TypeAdapterConfigSettingsBase GetConfigurationCache(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object returnValue;
+            TypeAdapterConfigSettingsBase returnValue;
 
             _configurationCache.TryGetValue(key, out returnValue);
 
@@ -92,9 +73,8 @@ namespace Mapster
         }
 
     }
-
-
-    public class TypeAdapterConfig<TSource, TDestination> : IValidatableConfig
+    
+    public class TypeAdapterConfig<TSource, TDestination>
     {
         private static TypeAdapterConfigSettings<TSource, TDestination> _configSettings;
         private static bool _configSettingsSet;
@@ -118,7 +98,7 @@ namespace Mapster
             _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
 
             var config = new TypeAdapterConfig<TSource, TDestination>();
-            TypeAdapterConfig.UpsertConfigurationCache(config);
+            TypeAdapterConfig.UpsertConfigurationCache(_configSettings);
             _configSettingsSet = false;
 
             return config;
@@ -142,7 +122,7 @@ namespace Mapster
             }
         }
 
-        public void Recompile()
+        public void Compile()
         {
             CallRecompile();
         }
@@ -167,18 +147,6 @@ namespace Mapster
 
             if (!noRecompile)
                 CallRecompile();
-        }
-
-        [Obsolete("Use Ignore instead.")]
-        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params Expression<Func<TDestination, object>>[] members)
-        {
-            return Ignore(members);
-        }
-
-        [Obsolete("Use Ignore instead.")]
-        public TypeAdapterConfig<TSource, TDestination> IgnoreMember(params string[] members)
-        {
-            return Ignore(members);
         }
 
         public TypeAdapterConfig<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
@@ -261,18 +229,10 @@ namespace Mapster
             return Map(member, src => resolver.Resolve(src), shouldMap);
         }
 
-        [Obsolete("Use Map instead.")]
-        public TypeAdapterConfig<TSource, TDestination> MapFrom<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TDestinationMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+        public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
         {
-            return Map(member, source, shouldMap);
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Map<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TDestinationMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
-        {
-            _projection.MapFrom(member, source);
-
             if (source == null)
                 return this;
 
@@ -280,7 +240,7 @@ namespace Mapster
 
             if (memberExp == null)
             {
-                var ubody = (UnaryExpression) member.Body;
+                var ubody = (UnaryExpression)member.Body;
                 memberExp = ubody.Operand as MemberExpression;
             }
 
@@ -295,6 +255,15 @@ namespace Mapster
             });
 
             return this;
+        }
+
+        public TypeAdapterConfig<TSource, TDestination> Map<TDestinationMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TDestinationMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+        {
+            _projection.MapFrom(member, source);
+
+            return Resolve(member, source, shouldMap);
         }
 
         public TypeAdapterConfig<TSource, TDestination> Inherits<TBaseSource, TBaseDestination>()
@@ -334,16 +303,13 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> CircularReferenceCheck(bool isCheck)
+        public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
         {
-            _configSettings.CircularReferenceCheck = isCheck;
+            _configSettings.MaxDepth = maxDepth;
 
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> MaxProjectionDepth(int maxDepth)
-        {
             _projection.MaxDepth(maxDepth);
+
+            TypeAdapterConfig.GlobalSettings.EnableMaxDepth = true;
 
             return this;
         }
@@ -356,164 +322,6 @@ namespace Mapster
             }
         }
 
-        public void Validate()
-        {
-            var errorList = new List<string>();
-
-            Validate(errorList);
-
-            if(errorList.Count > 0)
-                throw new ArgumentOutOfRangeException(string.Join(Environment.NewLine, errorList));
-        }
-
-        public bool Validate(List<string> errorList)
-        {
-            //Skip things that have a custom converter
-            if (_configSettings.ConverterFactory != null)
-                return true;
-
-            bool isValid = true;
-
-            var unmappedMembers = GetUnmappedMembers();
-
-            if (unmappedMembers.Count > 0)
-            {
-                string message =
-                    $"The following members on destination({typeof (TDestination).FullName}) are not represented in either mappings or in the source({typeof (TSource).FullName}):{string.Join(", ", unmappedMembers)}";
-
-                errorList?.Add(message);
-                isValid = false;
-            }
-
-            if (TypeAdapterConfig.GlobalSettings.RequireExplicitMapping)
-            {
-                errorList?.AddRange(GetMissingExplicitMappings());
-                isValid = false;
-            }
-
-            return isValid;
-        }
-
-        private static List<string> GetUnmappedMembers()
-        {
-            var destType = typeof (TDestination);
-
-            List<MemberInfo> unmappedMembers = destType.GetPublicFieldsAndProperties(false).ToList();
-
-            var sourceType = typeof (TSource);
-            List<string> sourceMembers = sourceType.GetPublicFieldsAndProperties().Select(x => x.Name).ToList();
-
-            //Remove items that have resolvers or are ignored
-            unmappedMembers.RemoveAll(x => sourceMembers.Contains(x.Name));
-
-            RemoveInheritedExplicitMappings<TSource>(unmappedMembers, sourceType, destType);
-
-            unmappedMembers.RemoveAll(x => sourceType.GetMethod("Get" + x.Name) != null);
-
-            unmappedMembers.RemoveAll(x =>
-            {
-                var source = Expression.Parameter(sourceType);
-                var exp = ReflectionUtils.GetDeepFlattening(source, x.Name);
-                return exp != null;
-            });
-
-            return unmappedMembers.Select(x => x.Name).ToList();
-        }
-
-
-        private static void RemoveInheritedExplicitMappings<TOriginalSource>(List<MemberInfo>unmappedMembers, Type sourceType, Type destType)
-        {
-            var config = TypeAdapterConfig.GetFromConfigurationCache(sourceType, destType);
-
-            Type configType = typeof(TypeAdapterConfig<,>).MakeGenericType(sourceType, destType);
-            var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
-
-            var configSettings = (TypeAdapterConfigSettingsBase)property.GetValue(config);
-
-            if (configSettings != null)
-            {
-
-                //Remove items that have resolvers or are ignored
-                unmappedMembers.RemoveAll(x => configSettings.IgnoreMembers.Contains(x.Name));
-
-                List<object> resolverObjects = configSettings.GetResolversAsObjects();
-
-                Type baseInvokerType = typeof(InvokerModel);
-
-                foreach (var resolverObject in resolverObjects)
-                {
-                    var memberName = (string) baseInvokerType.GetField("MemberName").GetValue(resolverObject);
-                    unmappedMembers.RemoveAll(x => x.Name == memberName);
-                }
-
-                if (unmappedMembers.Count == 0)
-                    return;
-
-                if (configSettings.InheritedDestinationType != null &&
-                    configSettings.InheritedSourceType != null)
-                {
-                    RemoveInheritedExplicitMappings<TOriginalSource>(unmappedMembers, configSettings.InheritedSourceType,
-                        configSettings.InheritedDestinationType);
-                }
-            }
-        }
-
-
-        private static List<string> GetMissingExplicitMappings()
-        {
-            var errorList = new List<string>();
-
-            var destType = typeof (TDestination);
-            var sourceType = typeof(TSource);
-
-            var unmappedMembers = destType.GetPublicFieldsAndProperties(false).ToList();
-
-            RemoveInheritedExplicitMappings<TSource>(unmappedMembers, sourceType, destType);
-
-            //Remove items that have resolvers or are ignored
-            unmappedMembers.RemoveAll(x => _configSettings.IgnoreMembers.Contains(x.Name));
-            unmappedMembers.RemoveAll(x => _configSettings.Resolvers.Any(r => r.MemberName == x.Name));
-
-            var sourceMembers = sourceType.GetPublicFieldsAndProperties().ToList();
-
-            foreach (var sourceMember in sourceMembers)
-            {
-                var destMemberInfo = unmappedMembers.FirstOrDefault(x => x.Name == sourceMember.Name);
-
-                if (destMemberInfo == null)
-                    continue;
-
-                unmappedMembers.Remove(destMemberInfo);
-
-                Type destMemberType = destMemberInfo.GetMemberType();
-                if (destMemberType.IsCollection())
-                {
-                    destMemberType = destMemberType.ExtractCollectionType();
-                }
-
-                if (destMemberType.IsPrimitiveRoot())
-                    continue;
-
-                Type sourceMemberType = sourceMember.GetMemberType();
-                if (sourceMemberType.IsCollection())
-                {
-                    sourceMemberType = sourceMemberType.ExtractCollectionType();
-                }
-
-                if (destMemberType == sourceMemberType)
-                    continue;
-
-                //See if the destination member has a mapping if needed
-                if (!TypeAdapterConfig.ExistsInConfigurationCache(sourceMemberType, destMemberType))
-                {
-                    errorList.Add(
-                        $"Explicit Mapping is turned on and the following source({sourceMemberType.FullName}) and destination({destMemberType.FullName}) types do not have a mapping defined.");
-                }
-            }
-
-            return errorList;
-        }
-
         private static TypeAdapterConfigSettings<TSource, TDestination> DeriveConfigSettings()
         {
             TypeAdapterConfigSettings<TSource, TDestination> configSettings = null;
@@ -523,21 +331,16 @@ namespace Mapster
             Type sourceType = typeof(TSource).BaseType;
             bool matchFound = false;
 
-            while (destType != null && !destType.IsPrimitiveRoot())
+            while (destType != null && destType != typeof(object))
             {
-                while (sourceType != null && !sourceType.IsPrimitiveRoot())
+                while (sourceType != null && sourceType != typeof(object))
                 {
-                    var baseConfig = TypeAdapterConfig.GetFromConfigurationCache(sourceType, destType);
-                    if (baseConfig != null)
+                    var baseConfigSettings = TypeAdapterConfig.GetConfigurationCache(sourceType, destType);
+                    if (baseConfigSettings != null)
                     {
-                        Type configType = typeof(TypeAdapterConfig<,>).MakeGenericType(sourceType, destType);
-                        var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
-
-                        var baseConfigSettings = (TypeAdapterConfigSettingsBase)property.GetValue(baseConfig);
-
                         configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
                         {
-                            CircularReferenceCheck = baseConfigSettings.CircularReferenceCheck,
+                            MaxDepth = baseConfigSettings.MaxDepth,
                             IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
                             SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType
                         };
@@ -546,17 +349,13 @@ namespace Mapster
                         
                         configSettings.DestinationTransforms.Upsert(baseConfigSettings.DestinationTransforms.Transforms);
 
-                        List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
-
-                        Type baseInvokerType = typeof(InvokerModel);
-
-                        foreach (var baseResolver in resolvers)
+                        foreach (var baseResolver in baseConfigSettings.Resolvers)
                         {
                             var convertedResolver = new InvokerModel
                             {
-                                MemberName = (string) baseInvokerType.GetField("MemberName").GetValue(baseResolver),
-                                Invoker = (Expression) baseInvokerType.GetField("Invoker").GetValue(baseResolver),
-                                Condition = (Expression) baseInvokerType.GetField("Condition").GetValue(baseResolver)
+                                MemberName = baseResolver.MemberName,
+                                Invoker = baseResolver.Invoker,
+                                Condition = baseResolver.Condition,
                             };
 
                             configSettings.Resolvers.Add(convertedResolver);
@@ -587,18 +386,13 @@ namespace Mapster
             if (_configSettings.InheritedSourceType == null || _configSettings.InheritedDestinationType == null)
                 return;
 
-            var baseConfig = TypeAdapterConfig.GetFromConfigurationCache(_configSettings.InheritedSourceType, _configSettings.InheritedDestinationType);
-            if (baseConfig != null)
+            var baseConfigSettings = TypeAdapterConfig.GetConfigurationCache(_configSettings.InheritedSourceType, _configSettings.InheritedDestinationType);
+            if (baseConfigSettings != null)
             {
-                Type configType = typeof (TypeAdapterConfig<,>).MakeGenericType(_configSettings.InheritedSourceType, _configSettings.InheritedDestinationType);
-                var property = configType.GetProperty("ConfigSettings", BindingFlags.Static | BindingFlags.NonPublic);
-
-                var baseConfigSettings = (TypeAdapterConfigSettingsBase) property.GetValue(baseConfig);
-
                 if (_configSettings.IgnoreNullValues == null)
                     _configSettings.IgnoreNullValues = baseConfigSettings.IgnoreNullValues;
-                if (_configSettings.CircularReferenceCheck == null)
-                    _configSettings.CircularReferenceCheck = baseConfigSettings.CircularReferenceCheck;
+                if (_configSettings.MaxDepth == null)
+                    _configSettings.MaxDepth = baseConfigSettings.MaxDepth;
                 if (_configSettings.SameInstanceForSameType == null)
                     _configSettings.SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType;
 
@@ -611,21 +405,17 @@ namespace Mapster
 
                 _configSettings.DestinationTransforms.TryAdd(baseConfigSettings.DestinationTransforms.Transforms);
 
-                List<object> resolvers = baseConfigSettings.GetResolversAsObjects();
-
-                Type baseInvokerType = typeof(InvokerModel);
-
-                foreach (var baseResolver in resolvers)
+                foreach (var baseResolver in baseConfigSettings.Resolvers)
                 {
-                    string memberName = (string)baseInvokerType.GetField("MemberName").GetValue(baseResolver);
+                    string memberName = baseResolver.MemberName;
 
                     if (_configSettings.Resolvers.All(x => x.MemberName != memberName))
                     {
                         var convertedResolver = new InvokerModel
                         {
                             MemberName = memberName,
-                            Invoker = (Expression) baseInvokerType.GetField("Invoker").GetValue(baseResolver),
-                            Condition = (Expression) baseInvokerType.GetField("Condition").GetValue(baseResolver)
+                            Invoker = baseResolver.Invoker,
+                            Condition = baseResolver.Condition,
                         };
 
                         _configSettings.Resolvers.Add(convertedResolver);    
@@ -642,12 +432,5 @@ namespace Mapster
             //See if this config exists
         }
 
-    }
-
-    public interface IValidatableConfig
-    {
-        bool Validate(List<string> errorList);
-
-        void Validate();
     }
 }

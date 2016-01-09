@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Mapster.Adapters;
 using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster
 {
@@ -11,6 +12,8 @@ namespace Mapster
     {
         private static readonly ConcurrentDictionary<TypeTuple, Func<object, object>> _adaptDict = new ConcurrentDictionary<TypeTuple, Func<object, object>>();
         private static readonly ConcurrentDictionary<TypeTuple, Func<object, object, object>> _adaptTargetDict = new ConcurrentDictionary<TypeTuple, Func<object, object, object>>();
+        private static readonly ConcurrentDictionary<TypeTuple, Func<ITypeAdapter>> _getAdapter = new ConcurrentDictionary<TypeTuple, Func<ITypeAdapter>>();
+        private static readonly ConcurrentDictionary<TypeTuple, Func<TypeAdapterConfigSettingsBase>> _getSettings = new ConcurrentDictionary<TypeTuple, Func<TypeAdapterConfigSettingsBase>>();
 
         private static Func<object, object> CreateAdaptFunc(Type sourceType, Type destinationType)
         {
@@ -36,6 +39,20 @@ namespace Mapster
             var adapt = Expression.Call(func, convert, convert2);
             var body = Expression.Convert(adapt, typeof(object));
             return Expression.Lambda<Func<object, object, object>>(body, p).Compile();
+        }
+
+        private static Func<ITypeAdapter> CreateGetAdapter(Type sourceType, Type destinationType)
+        {
+            var typeAdapterType = typeof(TypeAdapter<,>).MakeGenericType(sourceType, destinationType);
+            var func = typeAdapterType.GetMethod("GetAdapter", Type.EmptyTypes);
+            return Expression.Lambda<Func<ITypeAdapter>>(Expression.Call(func)).Compile();
+        }
+
+        private static Func<TypeAdapterConfigSettingsBase> CreateGetSettings(Type sourceType, Type destinationType)
+        {
+            var typeAdapterType = typeof(TypeAdapter<,>).MakeGenericType(sourceType, destinationType);
+            var func = typeAdapterType.GetMethod("GetSettings", Type.EmptyTypes);
+            return Expression.Lambda<Func<TypeAdapterConfigSettingsBase>>(Expression.Call(func)).Compile();
         }
 
         /// <summary>
@@ -114,87 +131,131 @@ namespace Mapster
         {
             return new Adapter();
         }
+
+        internal static readonly List<ITypeAdapter> Adapters = new List<ITypeAdapter>
+        {
+            new CollectionAdapter(),
+            new ClassAdapter(),
+            new PrimitiveAdapter(),
+        };
+
+        public static ITypeAdapter GetAdapter(Type sourceType, Type destinationType)
+        {
+            var hash = new TypeTuple(sourceType, destinationType);
+            var func = _getAdapter.GetOrAdd(hash, _ => CreateGetAdapter(sourceType, destinationType));
+            return func();
+        }
+
+        public static TypeAdapterConfigSettingsBase GetSettings(Type sourceType, Type destinationType)
+        {
+            var hash = new TypeTuple(sourceType, destinationType);
+            var func = _getSettings.GetOrAdd(hash, _ => CreateGetSettings(sourceType, destinationType));
+            return func();
+        }
     }
 
     internal static class TypeAdapter<TSource, TDestination>
     {
-        private static Func<ReferenceChecker, TSource, TDestination> _adapt = CreateAdaptFunc();
-        private static Func<ReferenceChecker, TSource, TDestination, TDestination> _adaptTarget = CreateAdaptTargetFunc();
+        private static Func<int, MapContext, TSource, TDestination> _adapt;
+        private static Func<int, MapContext, TSource, TDestination, TDestination> _adaptTarget;
+        private static int _maxDepth;
 
-        private static Func<ReferenceChecker, TSource, TDestination> CreateAdaptFunc()
+        static TypeAdapter()
         {
-            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var converter = config?.ConverterFactory;
-            if (converter != null)
-            {
-                return (d, src) => converter().Resolve(src);
-            }
-            var sourceType = typeof(TSource);
-            var destinationType = typeof(TDestination);
-
-            if (config == null && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
-            {
-                throw new InvalidOperationException(
-                    $"Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {typeof(TSource)} TDestination: {typeof(TDestination)}");
-            }
-
-            if (sourceType.IsPrimitiveRoot() && destinationType.IsPrimitiveRoot())
-                return PrimitiveAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
-            else if (sourceType.IsCollection() && destinationType.IsCollection())
-                return CollectionAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
-            else
-                return ClassAdapter<TSource, TDestination>.CreateAdaptFunc().Compile();
+            Recompile();
         }
 
-        private static Func<ReferenceChecker, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
+        private static ITypeResolver<TSource, TDestination> _resolver; 
+        private static Func<int, MapContext, TSource, TDestination> CreateAdaptFunc()
         {
-            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var converter = config?.ConverterFactory;
-            if (converter != null)
-            {
-                return (d, src, dest) => converter().Resolve(src, dest);
-            }
+            if (_resolver != null)
+                return (d, ctx, src) => _resolver.Resolve(src);
+
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
 
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
             if (config == null && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
             {
                 throw new InvalidOperationException(
                     $"Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {typeof(TSource)} TDestination: {typeof(TDestination)}");
             }
 
-            if (sourceType.IsPrimitiveRoot() || destinationType.IsPrimitiveRoot())
-                return PrimitiveAdapter<TSource, TDestination>.CreateAdaptTargetFunc().Compile();
-            else if (sourceType.IsCollection() && destinationType.IsCollection())
-                return CollectionAdapter<TSource, TDestination>.CreateAdaptTargetFunc().Compile();
-            else
-                return ClassAdapter<TSource, TDestination>.CreateAdaptTargetFunc().Compile();
+            var adapter = TypeAdapterConfig.GlobalSettings.CustomAdapters.Concat(TypeAdapter.Adapters)
+                .First(a => a.CanAdapt(sourceType, destinationType));
+
+            return adapter.CreateAdaptFunc<TSource, TDestination>();
+        }
+
+        private static Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
+        {
+            var resolverWithTarget = _resolver as ITypeResolverWithTarget<TSource, TDestination>;
+            if (resolverWithTarget != null)
+                return (d, ctx, src, dest) => resolverWithTarget.Resolve(src, dest);
+
+            var sourceType = typeof(TSource);
+            var destinationType = typeof(TDestination);
+
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            if (config == null && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
+            {
+                throw new InvalidOperationException(
+                    $"Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {typeof(TSource)} TDestination: {typeof(TDestination)}");
+            }
+
+            var adapter = TypeAdapterConfig.GlobalSettings.CustomAdapters.Concat(TypeAdapter.Adapters)
+                .Select(a => a as ITypeAdapterWithTarget)
+                .First(a => a?.CanAdapt(sourceType, destinationType) == true);
+
+            return adapter.CreateAdaptTargetFunc<TSource, TDestination>();
         }
 
         public static void Recompile()
         {
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            _maxDepth = config?.MaxDepth ?? -1;
+            _resolver = config?.ConverterFactory?.Invoke();
             _adapt = CreateAdaptFunc();
             _adaptTarget = CreateAdaptTargetFunc();
         }
 
-        public static TDestination Adapt(TSource source)
+        public static ITypeAdapter GetAdapter()
         {
-            return _adapt(ReferenceChecker.Default, source);
+            return TypeAdapterConfig.GlobalSettings.CustomAdapters.Concat(TypeAdapter.Adapters)
+                .Select(a => a as ITypeAdapterWithTarget)
+                .First(a => a?.CanAdapt(typeof(TSource), typeof(TDestination)) == true);
         }
 
-        public static TDestination AdaptWithCheck(ReferenceChecker checker, TSource source)
+        public static TypeAdapterConfigSettingsBase GetSettings()
         {
-            return _adapt(checker, source);
+            return TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+        }
+
+        public static TDestination Adapt(TSource source)
+        {
+            return _adapt(
+                _maxDepth, 
+                MapContext.Create(), 
+                source);
+        }
+
+        public static TDestination AdaptWithContext(int depth, MapContext context, TSource source)
+        {
+            return _adapt(depth, context, source);
         }
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {
-            return _adaptTarget(ReferenceChecker.Default, source, destination);
+            return _adaptTarget(
+                _maxDepth, 
+                MapContext.Create(), 
+                source, 
+                destination);
         }
 
-        public static TDestination AdaptWithCheck(ReferenceChecker checker, TSource source, TDestination destination)
+        public static TDestination AdaptWithContext(int depth, MapContext context, TSource source, TDestination destination)
         {
-            return _adaptTarget(checker, source, destination);
+            return _adaptTarget(depth, context, source, destination);
         }
     }
 }

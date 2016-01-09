@@ -22,7 +22,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
-                .Recompile();
+                .Compile();
 
             var source = new DerivedPoco
             {
@@ -41,7 +41,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix", src => src.Name == "SourceName")
-                .Recompile();
+                .Compile();
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear();
 
             var source = new DerivedPoco
@@ -72,7 +72,7 @@ namespace Mapster.Tests
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
             config.DestinationTransforms.Upsert<string>(x => x.Trim());
-            config.Recompile();
+            config.Compile();
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear();
 
             var source = new DerivedPoco
@@ -92,7 +92,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Ignore(dest => dest.Name)
-                .Recompile();
+                .Compile();
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear();
 
             var source = new DerivedPoco
@@ -111,11 +111,11 @@ namespace Mapster.Tests
         public void Base_Configuration_Doesnt_Apply_To_Derived_Class_If_Explicit_Configuration_Exists()
         {
 
-            TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig().Recompile();
+            TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig().Compile();
 
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
-                .Recompile();
+                .Compile();
 
             var source = new DerivedPoco
             {
@@ -134,7 +134,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
-                .Recompile();
+                .Compile();
 
             var source = new DoubleDerivedPoco()
             {
@@ -153,11 +153,11 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
-                .Recompile();
+                .Compile();
 
             TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Derived")
-                .Recompile();
+                .Compile();
             TypeAdapterConfig<DoubleDerivedPoco, SimpleDto>.Clear();
 
             var source = new DoubleDerivedPoco
@@ -178,14 +178,14 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .CircularReferenceCheck(true)
-                .Recompile();
+                .MaxDepth(5)
+                .Compile();
 
             var derivedConfig = TypeAdapterConfig<DerivedPoco, SimpleDto>.ConfigSettings;
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.SameInstanceForSameType.ShouldEqual(true);
-            derivedConfig.CircularReferenceCheck.ShouldEqual(true);
+            derivedConfig.MaxDepth.ShouldEqual(5);
         }
 
         [Test]
@@ -195,14 +195,14 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .CircularReferenceCheck(true)
-                .Recompile();
+                .MaxDepth(5)
+                .Compile();
 
             var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.SameInstanceForSameType.ShouldEqual(true);
-            derivedConfig.CircularReferenceCheck.ShouldEqual(true);
+            derivedConfig.MaxDepth.ShouldEqual(5);
         }
 
         [Test]
@@ -212,8 +212,8 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .CircularReferenceCheck(true)
-                .Recompile();
+                .MaxDepth(5)
+                .Compile();
 
             var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;
 
@@ -226,7 +226,7 @@ namespace Mapster.Tests
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
-                .Recompile();
+                .Compile();
 
             var source = new DerivedPoco
             {

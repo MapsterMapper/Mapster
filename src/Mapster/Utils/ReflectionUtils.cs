@@ -79,16 +79,6 @@ namespace Mapster.Utils
             
         }
 
-        public static bool IsPrimitiveRoot(this Type type)
-        {
-            return
-                type.IsValueType
-                || type == typeof(string)
-                || TypeAdapterConfig.GlobalSettings.PrimitiveTypes.Contains(type)
-                || type == typeof(object)
-                ;
-        }
-
         public static Type ExtractCollectionType(this Type collectionType)
         {
             if (collectionType.IsGenericEnumerableType())
@@ -123,10 +113,15 @@ namespace Mapster.Utils
             return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof (object))), destType);
         }
 
-        public static Expression BuildUnderlyingTypeConvertExpression<TSource, TDestination>(Expression source)
+        public static object GetDefault(this Type type)
         {
-            var sourceType = typeof (TSource);
-            var destinationType = typeof (TDestination);
+            return type.IsValueType && !type.IsNullable()
+                ? Activator.CreateInstance(type)
+                : null;
+        }
+
+        public static Expression BuildUnderlyingTypeConvertExpression(Expression source, Type sourceType, Type destinationType)
+        {
             var srcType = sourceType.IsNullable() ? sourceType.GetGenericArguments()[0] : sourceType;
             var destType = destinationType.IsNullable() ? destinationType.GetGenericArguments()[0] : destinationType;
             
@@ -158,7 +153,8 @@ namespace Mapster.Utils
                 else
                 {
                     var method = destType.GetMethod("Parse", new[] { typeof(string) });
-                    return Expression.Call(method, source);
+                    if (method != null)
+                        return Expression.Call(method, source);
                 }
             }
 
@@ -251,7 +247,7 @@ namespace Mapster.Utils
                     var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'));
                     if (ifTrue == null)
                         return null;
-                    return Expression.Condition(Expression.Equal(exp, Expression.Constant(null, exp.Type)), Expression.Constant(ifTrue.Type.IsValueType && !ifTrue.Type.IsNullable() ? Activator.CreateInstance(ifTrue.Type) : null, ifTrue.Type), ifTrue);
+                    return Expression.Condition(Expression.Equal(exp, Expression.Constant(null, exp.Type)), Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type), ifTrue);
                 }
                 else if (string.Equals(propertyName, property.Name))
                 {

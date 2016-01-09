@@ -1,37 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using Mapster.Models;
 using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
-    internal static class PrimitiveAdapter<TSource, TDestination>
+    internal class PrimitiveAdapter : ITypeAdapterWithTarget, ITypeExpression
     {
-        public static Expression<Func<ReferenceChecker, TSource, TDestination>> CreateAdaptFunc()
+        public bool CanAdapt(Type sourceType, Type destinationType)
         {
-            var checker = Expression.Parameter(typeof (ReferenceChecker));
-            var p = Expression.Parameter(typeof (TSource));
-            var body = CreateExpressionBody(p);
-            return Expression.Lambda<Func<ReferenceChecker, TSource, TDestination>>(body, checker, p);
+            return true;
         }
 
-        public static Expression<Func<ReferenceChecker, TSource, TDestination, TDestination>> CreateAdaptTargetFunc()
+        public Func<int, MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
         {
-            var checker = Expression.Parameter(typeof(ReferenceChecker));
+            var depth = Expression.Parameter(typeof (int));
+            var context = Expression.Parameter(typeof (MapContext));
+            var p = Expression.Parameter(typeof (TSource));
+            var body = CreateExpression(p, typeof(TSource), typeof(TDestination));
+            return Expression.Lambda<Func<int, MapContext, TSource, TDestination>>(body, depth, context, p).Compile();
+        }
+
+        public Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        {
+            var depth = Expression.Parameter(typeof(int));
+            var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var p2 = Expression.Parameter(typeof (TDestination));
-            var body = CreateExpressionBody(p);
-            return Expression.Lambda<Func<ReferenceChecker, TSource, TDestination, TDestination>>(body, checker, p, p2);
+            var body = CreateExpression(p, typeof(TSource), typeof(TDestination));
+            return Expression.Lambda<Func<int, MapContext, TSource, TDestination, TDestination>>(body, depth, context, p, p2).Compile();
         }
 
-        private static Expression CreateExpressionBody(ParameterExpression p)
+        public Expression CreateExpression(Expression p, Type sourceType, Type destinationType)
         {
-            var sourceType = typeof (TSource);
-            var destinationType = typeof (TDestination);
-            var list = new List<Expression>();
-
-            var pDest = Expression.Variable(destinationType);
             Expression convert = p;
             if (sourceType != destinationType)
             {
@@ -39,36 +39,31 @@ namespace Mapster.Adapters
                 {
                     convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
                 }
-                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression<TSource, TDestination>(convert);
+                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
                 if (convert.Type != destinationType)
                     convert = Expression.Convert(convert, destinationType);
             }
             if ((!sourceType.IsValueType || sourceType.IsNullable()) && destinationType.IsValueType && !destinationType.IsNullable())
             {
                 var compareNull = Expression.Equal(p, Expression.Constant(null, sourceType));
-                convert = Expression.Condition(compareNull, Expression.Constant(default(TDestination), typeof(TDestination)), convert);
+                convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
             }
-
-            list.Add(Expression.Assign(pDest, convert));
 
             var destinationTransforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
             if (destinationTransforms.ContainsKey(destinationType))
             {
                 var transform = destinationTransforms[destinationType];
-                var invoke = Expression.Invoke(transform, pDest);
-                list.Add(Expression.Assign(pDest, invoke));
+                convert = Expression.Invoke(transform, convert);
             }
-            var setting = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var localTransform = setting?.DestinationTransforms.Transforms;
+            var settings = TypeAdapter.GetSettings(sourceType, destinationType);
+            var localTransform = settings?.DestinationTransforms.Transforms;
             if (localTransform != null && localTransform.ContainsKey(destinationType))
             {
                 var transform = localTransform[destinationType];
-                var invoke = Expression.Invoke(transform, pDest);
-                list.Add(Expression.Assign(pDest, invoke));
+                convert = Expression.Invoke(transform, convert);
             }
 
-            list.Add(pDest);
-            return Expression.Block(destinationType, new[] {pDest}, list);
+            return convert;
         }
     }
 }

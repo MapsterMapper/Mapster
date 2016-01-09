@@ -6,14 +6,14 @@ namespace Mapster
 {
     public class TransformsCollection
     {
-        private readonly Dictionary<Type, Expression> _transforms = new Dictionary<Type, Expression>();
+        private readonly Dictionary<Type, LambdaExpression> _transforms = new Dictionary<Type, LambdaExpression>();
 
-        public Expression Get<T>()
+        public Expression<Func<T, T>> Get<T>()
         {
-            Expression found;
+            LambdaExpression found;
             _transforms.TryGetValue(typeof(T), out found);
 
-            return found;
+            return (Expression<Func<T, T>>)found;
         }
 
         public void Upsert<T>(Expression<Func<T, T>> transform)
@@ -25,7 +25,7 @@ namespace Mapster
             _transforms[type] = transform;
         }
 
-        public void Upsert(IDictionary<Type, Expression> sourceTransforms)
+        public void Upsert(IDictionary<Type, LambdaExpression> sourceTransforms)
         {
             foreach (var sourceTransform in sourceTransforms)
             {
@@ -33,7 +33,7 @@ namespace Mapster
             }
         }
 
-        public void TryAdd(IDictionary<Type, Expression> sourceTransforms)
+        public void TryAdd(IDictionary<Type, LambdaExpression> sourceTransforms)
         {
             foreach (var sourceTransform in sourceTransforms)
             {
@@ -55,7 +55,7 @@ namespace Mapster
             _transforms.Clear();
         }
 
-        internal IDictionary<Type, Expression> Transforms
+        internal IDictionary<Type, LambdaExpression> Transforms
         {
             get { return _transforms; }
         } 

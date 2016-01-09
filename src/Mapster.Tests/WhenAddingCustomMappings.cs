@@ -13,7 +13,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.AnotherName, src => src.Name)
-                .Recompile();
+                .Compile();
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
@@ -29,7 +29,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.AnotherName, src => null)
-                .Recompile();
+                .Compile();
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 

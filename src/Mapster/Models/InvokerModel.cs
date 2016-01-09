@@ -2,12 +2,12 @@
 
 namespace Mapster.Models
 {
-    internal class InvokerModel
+    public class InvokerModel
     {
         public string MemberName;
 
-        public Expression Invoker;
+        public LambdaExpression Invoker;
 
-        public Expression Condition;
+        public LambdaExpression Condition;
     }
 }

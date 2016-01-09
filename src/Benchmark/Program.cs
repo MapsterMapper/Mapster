@@ -13,6 +13,7 @@ namespace Benchmark
     {
         private static double AutomapperTime;
         private static double MapsterTime;
+        private static double ExpressMapperTime;
 
         static void Main(string[] args)
         {
@@ -39,6 +40,8 @@ namespace Benchmark
             Mapper.CreateMap<Foo, Foo>();
 
             TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
+
+            ExpressMapper.Mapper.Map<Foo, Foo>(foo);
 
             TestSimple(foo, 1000);
 
@@ -68,19 +71,22 @@ namespace Benchmark
             TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
 
             //ObjectMapperManager.DefaultInstance.GetMapper<Customer, CustomerDTO>().Map(customer);
+            ExpressMapper.Mapper.Map<Customer, CustomerDTO>(customer);
 
-
-            Test(customer, 100);
+            Test(customer, 1000);
 
             Test(customer, 10000);
 
             Test(customer, 100000);
 
-            Console.WriteLine();
-            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");
-            Console.WriteLine();
+            Test(customer, 1000000);
 
-            //Test(customer, 1000000);
+            Test(customer, 10000000);
+
+            Console.WriteLine();
+            //Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime / MapsterTime).ToString("###.00") + " X slower");
+            Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime / MapsterTime).ToString("###.00") + " X slower");
+            Console.WriteLine();
         }
 
         private static void Test(Customer item, int iterations)
@@ -93,7 +99,9 @@ namespace Benchmark
 
             TestMapsterAdapter<Customer, CustomerDTO>(item, iterations);
 
-            TestAutoMapper<Customer, CustomerDTO>(item, iterations);
+            TestExpressMapper<Customer, CustomerDTO>(item, iterations);
+
+            //TestAutoMapper<Customer, CustomerDTO>(item, iterations);
         }
 
         private static void TestSimple(Foo item, int iterations)
@@ -105,6 +113,8 @@ namespace Benchmark
             TestMapsterAdapter<Foo, Foo>(item, iterations);
 
             TestValueInjecter<Foo, Foo>(item, iterations);
+
+            TestExpressMapper<Foo, Foo>(item, iterations);
 
             TestAutoMapper<Foo, Foo>(item, iterations);
         }
@@ -159,11 +169,19 @@ namespace Benchmark
             Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<FastDeepCloneInjection>(item), iterations));  
         }
 
+        private static void TestExpressMapper<TSrc, TDest>(TSrc item, int iterations)
+            where TSrc : class
+            where TDest : class, new()
+        {
+            ExpressMapperTime = Loop(item, get => ExpressMapper.Mapper.Map<TSrc, TDest>(get), iterations);
+            Console.WriteLine("ExpressMapper:\t\t" + ExpressMapperTime);
+        }
+
         private static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)
             where TSrc : class
             where TDest : class, new()
         {
-            if(iterations > 50000)
+            if (iterations > 50000)
                 Console.WriteLine("AutoMapper still working please wait...");
 
             AutomapperTime = Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);

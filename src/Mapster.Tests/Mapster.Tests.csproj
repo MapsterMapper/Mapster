@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
@@ -62,6 +66,8 @@
     <Compile Include="Classes\Customer.cs" />
     <Compile Include="Classes\Product.cs" />
     <Compile Include="Classes\TypeTestClass.cs" />
+    <Compile Include="WhenPreserveReferences.cs" />
+    <Compile Include="WhenAddingCustomAdapter.cs" />
     <Compile Include="WhenAddingCustomMappings.cs" />
     <Compile Include="WhenAddingPrimitiveTypes.cs" />
     <Compile Include="WhenHandlingUnmappedMembers.cs" />
@@ -80,7 +86,7 @@
     <Compile Include="WhenMappingPrimitives.cs" />
     <Compile Include="WhenConfiguringMapping.cs" />
     <Compile Include="WhenMappingWithInstance.cs" />
-    <Compile Include="WhenMappingWithCircularCheck.cs" />
+    <Compile Include="WhenMappingWithMaxDepth.cs" />
     <Compile Include="WhenPerformingDestinationTransforms.cs" />
     <Compile Include="WhenProjecting.cs" />
     <Compile Include="WhenRegisteringAndMappingRace.cs" />
@@ -88,7 +94,6 @@
     <Compile Include="WhenUsingNonDefaultConstructor.cs" />
     <Compile Include="WhenUsingTypeResolvers.cs" />
     <Compile Include="WhenUsingValueResolvers.cs" />
-    <Compile Include="WhenValidatingMappings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

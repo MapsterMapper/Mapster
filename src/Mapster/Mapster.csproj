@@ -49,8 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapter.cs" />
+    <Compile Include="ITypeAdapter.cs" />
     <Compile Include="ITypeResolver.cs" />
     <Compile Include="IValueResolver.cs" />
+    <Compile Include="MapContext.cs" />
+    <Compile Include="Models\AdapterModel.cs" />
+    <Compile Include="Models\ParameterExpressionReplacer.cs" />
     <Compile Include="Models\ReferenceChecker.cs" />
     <Compile Include="Models\TypeTuple.cs" />
     <Compile Include="TransformsCollection.cs" />

@@ -56,7 +56,7 @@ namespace Mapster.Tests
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
             config.DestinationTransforms.Upsert<string>(x => x.Trim());
-            config.Recompile();
+            config.Compile();
 
             var source = new SimplePoco { Id = new Guid(), Name = "Test    " };
             var destination = TypeAdapter.Adapt<SimpleDto>(source);

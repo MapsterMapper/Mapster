@@ -167,7 +167,7 @@ namespace Mapster.Tests
             
             TypeAdapterConfig<ConfigTestClassA, ConfigTestClassB>
                 .NewConfig()
-                .IgnoreMember(dest => dest.A)
+                .Ignore(dest => dest.A)
                 .Map(dest => dest.B, src => Convert.ToInt32(src.B))
                 .Map(dest => dest.C, src => src.C.ToString());
 
@@ -204,7 +204,7 @@ namespace Mapster.Tests
 
             TypeAdapterConfig<MaxDepthTestSource, MaxDepthTestSourceDTO>
                 .NewConfig()
-                .MaxProjectionDepth(2);
+                .MaxDepth(2);
 
             var bList = list.AsQueryable().Project().To<MaxDepthTestSourceDTO>().ToList();
 
@@ -244,7 +244,7 @@ namespace Mapster.Tests
 
             TypeAdapterConfig<MaxDepthTestListSource, MaxDepthTestListSourceDTO>
                 .NewConfig()
-                .MaxProjectionDepth(2);
+                .MaxDepth(2);
 
             var bList = list.AsQueryable().Project().To<MaxDepthTestListSourceDTO>().ToList();
 
