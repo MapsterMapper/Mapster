@@ -178,14 +178,14 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .MaxDepth(5)
+                //.MaxDepth(5)
                 .Compile();
 
             var derivedConfig = TypeAdapterConfig<DerivedPoco, SimpleDto>.ConfigSettings;
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.SameInstanceForSameType.ShouldEqual(true);
-            derivedConfig.MaxDepth.ShouldEqual(5);
+            //derivedConfig.MaxDepth.ShouldEqual(5);
         }
 
         [Test]
@@ -195,14 +195,14 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .MaxDepth(5)
+                //.MaxDepth(5)
                 .Compile();
 
             var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.SameInstanceForSameType.ShouldEqual(true);
-            derivedConfig.MaxDepth.ShouldEqual(5);
+            //derivedConfig.MaxDepth.ShouldEqual(5);
         }
 
         [Test]
@@ -212,7 +212,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .MaxDepth(5)
+                //.MaxDepth(5)
                 .Compile();
 
             var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;

@@ -12,7 +12,7 @@ namespace Mapster
 
         public bool AllowImplicitDestinationInheritance;
 
-        public bool EnableMaxDepth;
+        //public bool EnableMaxDepth;
 
         public bool PreserveReference;
 

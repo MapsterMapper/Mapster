@@ -303,16 +303,21 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
+        //public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
+        //{
+        //    _configSettings.MaxDepth = maxDepth;
+
+        //    _projection.MaxDepth(maxDepth);
+
+        //    TypeAdapterConfig.GlobalSettings.EnableMaxDepth = true;
+
+        //    return this;
+        //}
+        public TypeAdapterConfig<TSource, TDestination> PreserveReference(bool preserveReference)
         {
-            _configSettings.MaxDepth = maxDepth;
-
-            _projection.MaxDepth(maxDepth);
-
-            TypeAdapterConfig.GlobalSettings.EnableMaxDepth = true;
-
+            _configSettings.PreserveReference = preserveReference;
             return this;
-        }
+        }  
 
         public TransformsCollection DestinationTransforms
         {
@@ -340,7 +345,8 @@ namespace Mapster
                     {
                         configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
                         {
-                            MaxDepth = baseConfigSettings.MaxDepth,
+                            //MaxDepth = baseConfigSettings.MaxDepth,
+                            PreserveReference = baseConfigSettings.PreserveReference,
                             IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
                             SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType
                         };
@@ -391,8 +397,10 @@ namespace Mapster
             {
                 if (_configSettings.IgnoreNullValues == null)
                     _configSettings.IgnoreNullValues = baseConfigSettings.IgnoreNullValues;
-                if (_configSettings.MaxDepth == null)
-                    _configSettings.MaxDepth = baseConfigSettings.MaxDepth;
+                //if (_configSettings.MaxDepth == null)
+                //    _configSettings.MaxDepth = baseConfigSettings.MaxDepth;
+                if (_configSettings.PreserveReference == null)
+                    _configSettings.PreserveReference = baseConfigSettings.PreserveReference;
                 if (_configSettings.SameInstanceForSameType == null)
                     _configSettings.SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType;
 

@@ -181,81 +181,81 @@ namespace Mapster.Tests
             Assert.IsTrue(bList[0].C == testA.C.ToString());
         }
 
-        [Test]
-        public void TestMaxDepth()
-        {
-            MaxDepthTestSource obj = new MaxDepthTestSource();
-            obj.Name = "111";
-            obj.Source = new MaxDepthTestDest()
-            {
-                Name = "222",
-                Source = new MaxDepthTestSource()
-                {
-                    Name = "333",
-                    Source = new MaxDepthTestDest()
-                    {
-                        Name = "444",
-                        Source = new MaxDepthTestSource() { Name = "555" }
-                    }
-                }
-            };
+        //[Test]
+        //public void TestMaxDepth()
+        //{
+        //    MaxDepthTestSource obj = new MaxDepthTestSource();
+        //    obj.Name = "111";
+        //    obj.Source = new MaxDepthTestDest()
+        //    {
+        //        Name = "222",
+        //        Source = new MaxDepthTestSource()
+        //        {
+        //            Name = "333",
+        //            Source = new MaxDepthTestDest()
+        //            {
+        //                Name = "444",
+        //                Source = new MaxDepthTestSource() { Name = "555" }
+        //            }
+        //        }
+        //    };
 
-            var list = new List<MaxDepthTestSource>() { obj };
+        //    var list = new List<MaxDepthTestSource>() { obj };
 
-            TypeAdapterConfig<MaxDepthTestSource, MaxDepthTestSourceDTO>
-                .NewConfig()
-                .MaxDepth(2);
+        //    TypeAdapterConfig<MaxDepthTestSource, MaxDepthTestSourceDTO>
+        //        .NewConfig()
+        //        .MaxDepth(2);
 
-            var bList = list.AsQueryable().Project().To<MaxDepthTestSourceDTO>().ToList();
+        //    var bList = list.AsQueryable().Project().To<MaxDepthTestSourceDTO>().ToList();
 
-            Assert.IsNotNull(bList);
+        //    Assert.IsNotNull(bList);
 
-            Assert.IsTrue(bList.Count == 1);
-            Assert.IsTrue(bList[0].Name == "111");
-            Assert.IsTrue(bList[0].Source.Name == "222");
-            Assert.IsTrue(bList[0].Source.Source.Name == null);
-            Assert.IsTrue(bList[0].Source.Source.Source == null);
-        }
+        //    Assert.IsTrue(bList.Count == 1);
+        //    Assert.IsTrue(bList[0].Name == "111");
+        //    Assert.IsTrue(bList[0].Source.Name == "222");
+        //    Assert.IsTrue(bList[0].Source.Source.Name == null);
+        //    Assert.IsTrue(bList[0].Source.Source.Source == null);
+        //}
 
-        [Test]
-        public void TestMaxDepthListProperty()
-        {
-            MaxDepthTestListSource obj = new MaxDepthTestListSource();
-            obj.Name = "111";
-            obj.Source = new List<MaxDepthTestListDest>() { new MaxDepthTestListDest()
-            {
-                Name = "222",
-                Source = new List<MaxDepthTestListSource> { new MaxDepthTestListSource()
-                    {
-                        Name = "333",
-                        Source = new List<MaxDepthTestListDest> { new MaxDepthTestListDest()
-                            {
-                                Name = "444",
-                                Source = new List<MaxDepthTestListSource> { new MaxDepthTestListSource() { Name = "555" } }
-                            }
-                        }
-                    }
-                }
-            } 
+        //[Test]
+        //public void TestMaxDepthListProperty()
+        //{
+        //    MaxDepthTestListSource obj = new MaxDepthTestListSource();
+        //    obj.Name = "111";
+        //    obj.Source = new List<MaxDepthTestListDest>() { new MaxDepthTestListDest()
+        //    {
+        //        Name = "222",
+        //        Source = new List<MaxDepthTestListSource> { new MaxDepthTestListSource()
+        //            {
+        //                Name = "333",
+        //                Source = new List<MaxDepthTestListDest> { new MaxDepthTestListDest()
+        //                    {
+        //                        Name = "444",
+        //                        Source = new List<MaxDepthTestListSource> { new MaxDepthTestListSource() { Name = "555" } }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    } 
             
-            };
+        //    };
 
-            var list = new List<MaxDepthTestListSource>() { obj };
+        //    var list = new List<MaxDepthTestListSource>() { obj };
 
-            TypeAdapterConfig<MaxDepthTestListSource, MaxDepthTestListSourceDTO>
-                .NewConfig()
-                .MaxDepth(2);
+        //    TypeAdapterConfig<MaxDepthTestListSource, MaxDepthTestListSourceDTO>
+        //        .NewConfig()
+        //        .MaxDepth(2);
 
-            var bList = list.AsQueryable().Project().To<MaxDepthTestListSourceDTO>().ToList();
+        //    var bList = list.AsQueryable().Project().To<MaxDepthTestListSourceDTO>().ToList();
 
-            Assert.IsNotNull(bList);
+        //    Assert.IsNotNull(bList);
 
-            Assert.IsTrue(bList.Count == 1);
-            Assert.IsTrue(bList[0].Name == "111");
-            Assert.IsTrue(bList[0].Source.First().Name == "222");
-            Assert.IsTrue(bList[0].Source.First().Source.Name == null);
-            Assert.IsTrue(bList[0].Source.First().Source.Source == null);
-        }
+        //    Assert.IsTrue(bList.Count == 1);
+        //    Assert.IsTrue(bList[0].Name == "111");
+        //    Assert.IsTrue(bList[0].Source.First().Name == "222");
+        //    Assert.IsTrue(bList[0].Source.First().Source.Name == null);
+        //    Assert.IsTrue(bList[0].Source.First().Source.Source == null);
+        //}
 
         [Test]
         public void TestComplexTypeMapping()

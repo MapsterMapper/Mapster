@@ -4,126 +4,126 @@ using Should;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
-    public class WhenMappingWithMaxDepth
-    {
-        [Test]
-        public void Max_Depth_Is_Honored()
-        {
-            Initialize();
+    //[TestFixture]
+    //public class WhenMappingWithMaxDepth
+    //{
+    //    [Test]
+    //    public void Max_Depth_Is_Honored()
+    //    {
+    //        Initialize();
 
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
+    //        TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
 
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
+    //        var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
 
-            dest.ShouldNotBeNull();
-            dest.Parent.ShouldBeNull();
-            dest.Level.ShouldEqual(1);
-            dest.Children[0].Children.Count.ShouldEqual(2);
-        }
+    //        dest.ShouldNotBeNull();
+    //        dest.Parent.ShouldBeNull();
+    //        dest.Level.ShouldEqual(1);
+    //        dest.Children[0].Children.Count.ShouldEqual(2);
+    //    }
 
-        [Test]
-        public void Deepest_Level_Is_Populated()
-        {
-            Initialize();
+    //    [Test]
+    //    public void Deepest_Level_Is_Populated()
+    //    {
+    //        Initialize();
 
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
+    //        TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
 
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
+    //        var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
 
-            dest.ShouldNotBeNull();
-            dest.Children[0].Children.Count.ShouldEqual(2);
-            dest.Children[0].Children[1].ShouldNotBeNull();
-        }
+    //        dest.ShouldNotBeNull();
+    //        dest.Children[0].Children.Count.ShouldEqual(2);
+    //        dest.Children[0].Children[1].ShouldNotBeNull();
+    //    }
 
-        [Test]
-        public void Level_Below_Max_Depth_Is_Not_Populated()
-        {
-            Initialize();
+    //    [Test]
+    //    public void Level_Below_Max_Depth_Is_Not_Populated()
+    //    {
+    //        Initialize();
 
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
+    //        TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
 
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
+    //        var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
 
-            dest.Children[0].Children[1].Children.ShouldBeNull();
-        }
+    //        dest.Children[0].Children[1].Children.ShouldBeNull();
+    //    }
 
-        [Test]
-        public void Max_Depth_Does_Not_Limit_List()
-        {
-            Initialize();
+    //    [Test]
+    //    public void Max_Depth_Does_Not_Limit_List()
+    //    {
+    //        Initialize();
 
-            TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
+    //        TypeAdapterConfig<MaxDepthSource, MaxDepthDestination>.NewConfig().MaxDepth(3);
 
-            var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
+    //        var dest = TypeAdapter.Adapt<MaxDepthSource, MaxDepthDestination>(_source);
 
-            dest.ShouldNotBeNull();
-            dest.Parent.ShouldBeNull();
-            dest.Level.ShouldEqual(1);
-            dest.Children.Count.ShouldEqual(4);
-        }
-
-
-        #region Data
-
-        private MaxDepthSource _source;
-
-        public void Initialize()
-        {
-            var top = new MaxDepthSource(1);
-
-            top.AddChild(new MaxDepthSource(2));
-            top.Children[0].AddChild(new MaxDepthSource(3));
-            top.Children[0].AddChild(new MaxDepthSource(3));
-            top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
-            top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
-            top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
-            top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
-
-            top.AddChild(new MaxDepthSource(2));
-            top.Children[1].AddChild(new MaxDepthSource(3));
-
-            top.AddChild(new MaxDepthSource(2));
-            top.Children[2].AddChild(new MaxDepthSource(3));
-
-            top.AddChild(new MaxDepthSource(2));
-            top.Children[3].AddChild(new MaxDepthSource(3));
-
-            _source = top;
-        }
+    //        dest.ShouldNotBeNull();
+    //        dest.Parent.ShouldBeNull();
+    //        dest.Level.ShouldEqual(1);
+    //        dest.Children.Count.ShouldEqual(4);
+    //    }
 
 
-        public class MaxDepthSource
-        {
-            public int Level { get; set; }
+    //    #region Data
 
-            public IList<MaxDepthSource> Children { get; set; }
+    //    private MaxDepthSource _source;
 
-            public MaxDepthSource Parent { get; set; }
+    //    public void Initialize()
+    //    {
+    //        var top = new MaxDepthSource(1);
 
-            public MaxDepthSource(int level)
-            {
-                Children = new List<MaxDepthSource>();
-                Level = level;
-            }
+    //        top.AddChild(new MaxDepthSource(2));
+    //        top.Children[0].AddChild(new MaxDepthSource(3));
+    //        top.Children[0].AddChild(new MaxDepthSource(3));
+    //        top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
+    //        top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
+    //        top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
+    //        top.Children[0].Children[1].AddChild(new MaxDepthSource(4));
 
-            public void AddChild(MaxDepthSource child)
-            {
-                Children.Add(child);
-                child.Parent = this;
-            }
-        }
+    //        top.AddChild(new MaxDepthSource(2));
+    //        top.Children[1].AddChild(new MaxDepthSource(3));
 
-        public class MaxDepthDestination
-        {
-            public int Level { get; set; }
+    //        top.AddChild(new MaxDepthSource(2));
+    //        top.Children[2].AddChild(new MaxDepthSource(3));
 
-            public IList<MaxDepthDestination> Children { get; set; }
+    //        top.AddChild(new MaxDepthSource(2));
+    //        top.Children[3].AddChild(new MaxDepthSource(3));
 
-            public MaxDepthDestination Parent { get; set; }
-        }
+    //        _source = top;
+    //    }
 
 
-        #endregion
-    }
+    //    public class MaxDepthSource
+    //    {
+    //        public int Level { get; set; }
+
+    //        public IList<MaxDepthSource> Children { get; set; }
+
+    //        public MaxDepthSource Parent { get; set; }
+
+    //        public MaxDepthSource(int level)
+    //        {
+    //            Children = new List<MaxDepthSource>();
+    //            Level = level;
+    //        }
+
+    //        public void AddChild(MaxDepthSource child)
+    //        {
+    //            Children.Add(child);
+    //            child.Parent = this;
+    //        }
+    //    }
+
+    //    public class MaxDepthDestination
+    //    {
+    //        public int Level { get; set; }
+
+    //        public IList<MaxDepthDestination> Children { get; set; }
+
+    //        public MaxDepthDestination Parent { get; set; }
+    //    }
+
+
+    //    #endregion
+    //}
 }

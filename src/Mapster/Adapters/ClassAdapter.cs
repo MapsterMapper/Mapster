@@ -23,28 +23,28 @@ namespace Mapster.Adapters
             return model.Properties.Count > 0;
         }
 
-        public Func<int, MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+        public Func<MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
         {
-            var depth = Expression.Parameter(typeof(int));
+            //var depth = Expression.Parameter(typeof(int));
             var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(depth, context, p, null, typeof(TSource), typeof(TDestination), settings);
-            return Expression.Lambda<Func<int, MapContext, TSource, TDestination>>(body, depth, context, p).Compile();
+            var body = CreateExpressionBody(context, p, null, typeof(TSource), typeof(TDestination), settings);
+            return Expression.Lambda<Func<MapContext, TSource, TDestination>>(body, context, p).Compile();
         }
 
-        public Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        public Func<MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
         {
-            var depth = Expression.Parameter(typeof(int));
+            //var depth = Expression.Parameter(typeof(int));
             var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var p2 = Expression.Parameter(typeof(TDestination));
             var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(depth, context, p, p2, typeof(TSource), typeof(TDestination), settings);
-            return Expression.Lambda<Func<int, MapContext, TSource, TDestination, TDestination>>(body, depth, context, p, p2).Compile();
+            var body = CreateExpressionBody(context, p, p2, typeof(TSource), typeof(TDestination), settings);
+            return Expression.Lambda<Func<MapContext, TSource, TDestination, TDestination>>(body, context, p, p2).Compile();
         }
 
-        private static Expression CreateExpressionBody(ParameterExpression depth, ParameterExpression context, ParameterExpression p, ParameterExpression p2, Type sourceType, Type destinationType, TypeAdapterConfigSettingsBase settings)
+        private static Expression CreateExpressionBody(ParameterExpression context, ParameterExpression p, ParameterExpression p2, Type sourceType, Type destinationType, TypeAdapterConfigSettingsBase settings)
         {
             var list = new List<Expression>();
 
@@ -72,10 +72,10 @@ namespace Mapster.Adapters
             }
 
             var list2 = new List<Expression>();
-            var pDepth = Expression.Variable(typeof(int));
+            //var pDepth = Expression.Variable(typeof(int));
 
-            if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
-                list2.Add(Expression.Assign(pDepth, Expression.Subtract(depth, Expression.Constant(1))));
+            //if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
+            //    list2.Add(Expression.Assign(pDepth, Expression.Subtract(depth, Expression.Constant(1))));
 
             foreach (var property in model.Properties)
             {
@@ -90,10 +90,10 @@ namespace Mapster.Adapters
                 {
                     var typeAdaptType = typeof (TypeAdapter<,>).MakeGenericType(property.Getter.Type, property.Setter.Type);
                     var adaptMethod = typeAdaptType.GetMethod("AdaptWithContext",
-                        new[] {typeof (int), typeof(MapContext), property.Getter.Type});
+                        new[] {typeof(MapContext), property.Getter.Type});
                     getter = property.Getter.Type == property.Setter.Type && settings?.SameInstanceForSameType == true
                         ? property.Getter
-                        : Expression.Call(adaptMethod, pDepth, context, property.Getter);
+                        : Expression.Call(adaptMethod, context, property.Getter);
                 }
 
                 if (localTransform != null && localTransform.ContainsKey(getter.Type))
@@ -109,11 +109,13 @@ namespace Mapster.Adapters
             }
 
             Expression set;
-            if (TypeAdapterConfig.GlobalSettings.PreserveReference)
+            if ((TypeAdapterConfig.GlobalSettings.PreserveReference || settings?.PreserveReference == true) && 
+                !sourceType.IsValueType && 
+                !destinationType.IsValueType)
             {
                 var refDict = Expression.Property(context, "References");
                 var refAdd = Expression.Call(refDict, "Add", null, Expression.Convert(p, typeof(object)), Expression.Convert(pDest, typeof(object)));
-                set = Expression.Block(new[] { pDepth }, new[] {assign, refAdd}.Concat(list2));
+                set = Expression.Block(new[] {assign, refAdd}.Concat(list2));
 
                 var pDest3 = Expression.Variable(typeof(object));
                 var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
@@ -126,23 +128,26 @@ namespace Mapster.Adapters
             }
             else
             {
-                set = Expression.Block(new[] {pDepth}, new[] {assign}.Concat(list2));
+                set = Expression.Block(new[] {assign}.Concat(list2));
             }
 
-            if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
+            //if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
+            //{
+            //    var compareDepth = Expression.Equal(depth, Expression.Constant(0));
+            //    set = Expression.IfThenElse(
+            //        compareDepth,
+            //        Expression.Assign(pDest, (Expression) p2 ?? Expression.Constant(null, destinationType)),
+            //        set);
+            //}
+
+            if (!sourceType.IsValueType || sourceType.IsNullable())
             {
-                var compareDepth = Expression.Equal(depth, Expression.Constant(0));
+                var compareNull = Expression.Equal(p, Expression.Constant(null, p.Type));
                 set = Expression.IfThenElse(
-                    compareDepth,
-                    Expression.Assign(pDest, (Expression) p2 ?? Expression.Constant(null, destinationType)),
+                    compareNull,
+                    Expression.Assign(pDest, (Expression) p2 ?? Expression.Constant(destinationType.GetDefault(), destinationType)),
                     set);
             }
-
-            var compareNull = Expression.Equal(p, Expression.Constant(null, p.Type));
-            set = Expression.IfThenElse(
-                compareNull,
-                Expression.Assign(pDest, (Expression)p2 ?? Expression.Constant(null, destinationType)),
-                set);
             list.Add(set);
 
             var destinationTransforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
@@ -170,12 +175,13 @@ namespace Mapster.Adapters
         {
             Type destinationType = destination.Type;
             Type sourceType = source.Type;
+            List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties(allowNoSetter: false);
+            if (destinationMembers.Count == 0)
+                return AdapterModel.Default;
 
             var unmappedDestinationMembers = new List<string>();
 
             var properties = new List<PropertyModel>();
-
-            List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties(allowNoSetter: false);
 
             for (int i = 0; i < destinationMembers.Count; i++)
             {

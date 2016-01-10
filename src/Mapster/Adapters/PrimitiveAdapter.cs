@@ -11,23 +11,23 @@ namespace Mapster.Adapters
             return true;
         }
 
-        public Func<int, MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+        public Func<MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
         {
-            var depth = Expression.Parameter(typeof (int));
+            //var depth = Expression.Parameter(typeof (int));
             var context = Expression.Parameter(typeof (MapContext));
             var p = Expression.Parameter(typeof (TSource));
             var body = CreateExpression(p, typeof(TSource), typeof(TDestination));
-            return Expression.Lambda<Func<int, MapContext, TSource, TDestination>>(body, depth, context, p).Compile();
+            return Expression.Lambda<Func<MapContext, TSource, TDestination>>(body, context, p).Compile();
         }
 
-        public Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        public Func<MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
         {
-            var depth = Expression.Parameter(typeof(int));
+            //var depth = Expression.Parameter(typeof(int));
             var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var p2 = Expression.Parameter(typeof (TDestination));
             var body = CreateExpression(p, typeof(TSource), typeof(TDestination));
-            return Expression.Lambda<Func<int, MapContext, TSource, TDestination, TDestination>>(body, depth, context, p, p2).Compile();
+            return Expression.Lambda<Func<MapContext, TSource, TDestination, TDestination>>(body, context, p, p2).Compile();
         }
 
         public Expression CreateExpression(Expression p, Type sourceType, Type destinationType)

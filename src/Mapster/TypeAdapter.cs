@@ -156,9 +156,9 @@ namespace Mapster
 
     internal static class TypeAdapter<TSource, TDestination>
     {
-        private static Func<int, MapContext, TSource, TDestination> _adapt;
-        private static Func<int, MapContext, TSource, TDestination, TDestination> _adaptTarget;
-        private static int _maxDepth;
+        private static Func<MapContext, TSource, TDestination> _adapt;
+        private static Func<MapContext, TSource, TDestination, TDestination> _adaptTarget;
+        //private static int _maxDepth;
 
         static TypeAdapter()
         {
@@ -166,10 +166,10 @@ namespace Mapster
         }
 
         private static ITypeResolver<TSource, TDestination> _resolver; 
-        private static Func<int, MapContext, TSource, TDestination> CreateAdaptFunc()
+        private static Func<MapContext, TSource, TDestination> CreateAdaptFunc()
         {
             if (_resolver != null)
-                return (d, ctx, src) => _resolver.Resolve(src);
+                return (ctx, src) => _resolver.Resolve(src);
 
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
@@ -187,11 +187,11 @@ namespace Mapster
             return adapter.CreateAdaptFunc<TSource, TDestination>();
         }
 
-        private static Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
+        private static Func<MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
         {
             var resolverWithTarget = _resolver as ITypeResolverWithTarget<TSource, TDestination>;
             if (resolverWithTarget != null)
-                return (d, ctx, src, dest) => resolverWithTarget.Resolve(src, dest);
+                return (ctx, src, dest) => resolverWithTarget.Resolve(src, dest);
 
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
@@ -213,7 +213,7 @@ namespace Mapster
         public static void Recompile()
         {
             var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            _maxDepth = config?.MaxDepth ?? -1;
+            //_maxDepth = config?.MaxDepth ?? -1;
             _resolver = config?.ConverterFactory?.Invoke();
             _adapt = CreateAdaptFunc();
             _adaptTarget = CreateAdaptTargetFunc();
@@ -221,9 +221,22 @@ namespace Mapster
 
         public static ITypeAdapter GetAdapter()
         {
+            if (_resolver != null)
+                return null;
+
+            var sourceType = typeof(TSource);
+            var destinationType = typeof(TDestination);
+
+            var config = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
+            if (config == null && TypeAdapterConfig.GlobalSettings.RequireExplicitMapping && sourceType != destinationType)
+            {
+                throw new InvalidOperationException(
+                    $"Implicit mapping is not allowed (check GlobalSettings.AllowImplicitMapping) and no configuration exists for the following mapping: TSource: {typeof(TSource)} TDestination: {typeof(TDestination)}");
+            }
+
             return TypeAdapterConfig.GlobalSettings.CustomAdapters.Concat(TypeAdapter.Adapters)
                 .Select(a => a as ITypeAdapterWithTarget)
-                .First(a => a?.CanAdapt(typeof(TSource), typeof(TDestination)) == true);
+                .First(a => a?.CanAdapt(sourceType, destinationType) == true);
         }
 
         public static TypeAdapterConfigSettingsBase GetSettings()
@@ -234,28 +247,26 @@ namespace Mapster
         public static TDestination Adapt(TSource source)
         {
             return _adapt(
-                _maxDepth, 
-                MapContext.Create(), 
+                new MapContext(), 
                 source);
         }
 
-        public static TDestination AdaptWithContext(int depth, MapContext context, TSource source)
+        public static TDestination AdaptWithContext(MapContext context, TSource source)
         {
-            return _adapt(depth, context, source);
+            return _adapt(context, source);
         }
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {
             return _adaptTarget(
-                _maxDepth, 
-                MapContext.Create(), 
+                new MapContext(), 
                 source, 
                 destination);
         }
 
-        public static TDestination AdaptWithContext(int depth, MapContext context, TSource source, TDestination destination)
+        public static TDestination AdaptWithContext(MapContext context, TSource source, TDestination destination)
         {
-            return _adaptTarget(depth, context, source, destination);
+            return _adaptTarget(context, source, destination);
         }
     }
 }

@@ -108,14 +108,14 @@ namespace Mapster.Utils
                     parameterIndexs.Add(propertyHashCode, 1);
                 }
 
-                int maxDepth = 3;
+                const int maxDepth = 30;
 
-                if (config != null && config.MaxDepth > 0)
-                    maxDepth = config.MaxDepth;
+                //if (config != null && config.MaxDepth > 0)
+                //    maxDepth = config.MaxDepth;
 
                 if (parameterIndexs[propertyHashCode] >= maxDepth)
                 {
-                    return null;
+                    throw new InvalidOperationException("There are 30 recursive calls to the same type. There might be some circular reference.");
                 }
             //}
 

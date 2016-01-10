@@ -127,7 +127,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
-                .MaxDepth(5)
+                //.MaxDepth(5)
                 .Compile();
 
             TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
@@ -137,7 +137,7 @@ namespace Mapster.Tests
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.SameInstanceForSameType.ShouldEqual(true);
-            derivedConfig.MaxDepth.ShouldEqual(5);
+            //derivedConfig.MaxDepth.ShouldEqual(5);
         }
 
 

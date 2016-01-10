@@ -12,7 +12,7 @@ namespace Mapster
         internal List<string> IgnoreMembers = new List<string>();
         internal List<ExpressionModel> Expressions = new List<ExpressionModel>();
 
-        public int MaxDepth { get; set; }
+        //public int MaxDepth { get; set; }
     }
 
     internal class ProjectionConfig<TSource, TDestination>
@@ -76,30 +76,30 @@ namespace Mapster
             return this;
         }
 
-        /// <summary>
-        /// Set MaxDepth Value. Default 3
-        /// </summary>
-        /// <param name="maxDepth">int maxDepth</param>
-        /// <returns>return instance</returns>
-        public ProjectionConfig<TSource, TDestination> MaxDepth(int maxDepth)
-        {
-            SetCache(maxDepth);
-            return this;
-        }
+        ///// <summary>
+        ///// Set MaxDepth Value. Default 3
+        ///// </summary>
+        ///// <param name="maxDepth">int maxDepth</param>
+        ///// <returns>return instance</returns>
+        //public ProjectionConfig<TSource, TDestination> MaxDepth(int maxDepth)
+        //{
+        //    SetCache(maxDepth);
+        //    return this;
+        //}
 
-        private static void SetCache(int maxDepth)
-        {
-            var cache = ProjectionExpression<TSource>.ConfigurationCache;
-            if (cache.ContainsKey(_cacheKey))
-            {
-                cache[_cacheKey].MaxDepth = maxDepth;
-            }
-            else
-            {
-                var config = new BaseProjectionConfig {MaxDepth = maxDepth};
-                cache.Add(_cacheKey, config);
-            }
-        }
+        //private static void SetCache(int maxDepth)
+        //{
+        //    var cache = ProjectionExpression<TSource>.ConfigurationCache;
+        //    if (cache.ContainsKey(_cacheKey))
+        //    {
+        //        cache[_cacheKey].MaxDepth = maxDepth;
+        //    }
+        //    else
+        //    {
+        //        var config = new BaseProjectionConfig {MaxDepth = maxDepth};
+        //        cache.Add(_cacheKey, config);
+        //    }
+        //}
 
         private static void SetCache(params string[] ignoreMembers)
         {

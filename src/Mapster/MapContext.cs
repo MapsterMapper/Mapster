@@ -23,16 +23,10 @@ namespace Mapster
     }
     public class MapContext
     {
-        public Dictionary<object, object> References { get; private set; }
-
-        internal static MapContext Create()
+        private Dictionary<object, object> _references;
+        public Dictionary<object, object> References
         {
-            return new MapContext
-            {
-                References = TypeAdapterConfig.GlobalSettings.PreserveReference
-                    ? new Dictionary<object, object>(ReferenceComparer.Default)
-                    : null
-            };
+            get { return _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default)); }
         }
     }
 }

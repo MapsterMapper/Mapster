@@ -44,7 +44,8 @@ namespace Mapster
 
         public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
 
-        public int? MaxDepth;
+        //public int? MaxDepth;
+        public bool? PreserveReference;
 
         /// <summary>
         /// This property only use TypeAdapter.Adapt() method. Project().To() not use this property. Default: true

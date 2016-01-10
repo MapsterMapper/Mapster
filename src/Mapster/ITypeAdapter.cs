@@ -6,12 +6,12 @@ namespace Mapster
     public interface ITypeAdapter
     {
         bool CanAdapt(Type sourceType, Type desinationType);
-        Func<int, MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>();
+        Func<MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>();
     }
 
     public interface ITypeAdapterWithTarget : ITypeAdapter
     {
-        Func<int, MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>();
+        Func<MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>();
     }
 
     public interface ITypeExpression : ITypeAdapter
