@@ -21,12 +21,18 @@ namespace Mapster
             return RuntimeHelpers.GetHashCode(obj);
         }
     }
-    public class MapContext
+    public static class MapContext
     {
-        private Dictionary<object, object> _references;
-        public Dictionary<object, object> References
+        [ThreadStatic]
+        private static Dictionary<object, object> _references;
+        public static Dictionary<object, object> References
         {
             get { return _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default)); }
+        }
+
+        public static void Clear()
+        {
+            _references = null;
         }
     }
 }

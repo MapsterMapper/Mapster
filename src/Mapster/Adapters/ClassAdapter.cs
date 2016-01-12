@@ -23,28 +23,26 @@ namespace Mapster.Adapters
             return model.Properties.Count > 0;
         }
 
-        public Func<MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+        public Func<TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
         {
             //var depth = Expression.Parameter(typeof(int));
-            var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(context, p, null, typeof(TSource), typeof(TDestination), settings);
-            return Expression.Lambda<Func<MapContext, TSource, TDestination>>(body, context, p).Compile();
+            var body = CreateExpressionBody(p, null, typeof(TSource), typeof(TDestination), settings);
+            return Expression.Lambda<Func<TSource, TDestination>>(body, p).Compile();
         }
 
-        public Func<MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        public Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
         {
             //var depth = Expression.Parameter(typeof(int));
-            var context = Expression.Parameter(typeof(MapContext));
             var p = Expression.Parameter(typeof(TSource));
             var p2 = Expression.Parameter(typeof(TDestination));
             var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(context, p, p2, typeof(TSource), typeof(TDestination), settings);
-            return Expression.Lambda<Func<MapContext, TSource, TDestination, TDestination>>(body, context, p, p2).Compile();
+            var body = CreateExpressionBody(p, p2, typeof(TSource), typeof(TDestination), settings);
+            return Expression.Lambda<Func<TSource, TDestination, TDestination>>(body, p, p2).Compile();
         }
 
-        private static Expression CreateExpressionBody(ParameterExpression context, ParameterExpression p, ParameterExpression p2, Type sourceType, Type destinationType, TypeAdapterConfigSettingsBase settings)
+        private static Expression CreateExpressionBody(ParameterExpression p, ParameterExpression p2, Type sourceType, Type destinationType, TypeAdapterConfigSettingsBase settings)
         {
             var list = new List<Expression>();
 
@@ -90,10 +88,10 @@ namespace Mapster.Adapters
                 {
                     var typeAdaptType = typeof (TypeAdapter<,>).MakeGenericType(property.Getter.Type, property.Setter.Type);
                     var adaptMethod = typeAdaptType.GetMethod("AdaptWithContext",
-                        new[] {typeof(MapContext), property.Getter.Type});
+                        new[] {property.Getter.Type});
                     getter = property.Getter.Type == property.Setter.Type && settings?.SameInstanceForSameType == true
                         ? property.Getter
-                        : Expression.Call(adaptMethod, context, property.Getter);
+                        : Expression.Call(adaptMethod, property.Getter);
                 }
 
                 if (localTransform != null && localTransform.ContainsKey(getter.Type))
@@ -113,7 +111,8 @@ namespace Mapster.Adapters
                 !sourceType.IsValueType && 
                 !destinationType.IsValueType)
             {
-                var refDict = Expression.Property(context, "References");
+                var propInfo = typeof(MapContext).GetProperty("References", BindingFlags.Static | BindingFlags.Public);
+                var refDict = Expression.Property(null, propInfo);
                 var refAdd = Expression.Call(refDict, "Add", null, Expression.Convert(p, typeof(object)), Expression.Convert(pDest, typeof(object)));
                 set = Expression.Block(new[] {assign, refAdd}.Concat(list2));
 

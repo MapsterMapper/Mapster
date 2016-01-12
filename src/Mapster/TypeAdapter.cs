@@ -156,8 +156,8 @@ namespace Mapster
 
     internal static class TypeAdapter<TSource, TDestination>
     {
-        private static Func<MapContext, TSource, TDestination> _adapt;
-        private static Func<MapContext, TSource, TDestination, TDestination> _adaptTarget;
+        private static Func<TSource, TDestination> _adapt;
+        private static Func<TSource, TDestination, TDestination> _adaptTarget;
         //private static int _maxDepth;
 
         static TypeAdapter()
@@ -166,10 +166,10 @@ namespace Mapster
         }
 
         private static ITypeResolver<TSource, TDestination> _resolver; 
-        private static Func<MapContext, TSource, TDestination> CreateAdaptFunc()
+        private static Func<TSource, TDestination> CreateAdaptFunc()
         {
             if (_resolver != null)
-                return (ctx, src) => _resolver.Resolve(src);
+                return _resolver.Resolve;
 
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
@@ -187,11 +187,11 @@ namespace Mapster
             return adapter.CreateAdaptFunc<TSource, TDestination>();
         }
 
-        private static Func<MapContext, TSource, TDestination, TDestination> CreateAdaptTargetFunc()
+        private static Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc()
         {
             var resolverWithTarget = _resolver as ITypeResolverWithTarget<TSource, TDestination>;
             if (resolverWithTarget != null)
-                return (ctx, src, dest) => resolverWithTarget.Resolve(src, dest);
+                return resolverWithTarget.Resolve;
 
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
@@ -246,27 +246,26 @@ namespace Mapster
 
         public static TDestination Adapt(TSource source)
         {
-            return _adapt(
-                new MapContext(), 
-                source);
+            var result = _adapt(source);
+            MapContext.Clear();
+            return result;
         }
 
-        public static TDestination AdaptWithContext(MapContext context, TSource source)
+        public static TDestination AdaptWithContext(TSource source)
         {
-            return _adapt(context, source);
+            return _adapt(source);
         }
 
         public static TDestination Adapt(TSource source, TDestination destination)
         {
-            return _adaptTarget(
-                new MapContext(), 
-                source, 
-                destination);
+            var result = _adaptTarget(source, destination);
+            MapContext.Clear();
+            return result;
         }
 
-        public static TDestination AdaptWithContext(MapContext context, TSource source, TDestination destination)
+        public static TDestination AdaptWithContext(TSource source, TDestination destination)
         {
-            return _adaptTarget(context, source, destination);
+            return _adaptTarget(source, destination);
         }
     }
 }

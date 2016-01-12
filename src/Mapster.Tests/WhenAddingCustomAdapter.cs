@@ -38,12 +38,12 @@ namespace Mapster.Tests
                        typeof (JToken).IsAssignableFrom(desinationType);
             }
 
-            public Func<MapContext, TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+            public Func<TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
             {
                 if (typeof (JToken).IsAssignableFrom(typeof (TSource)))
-                    return (ctx, src) => ((JToken) (object) src).ToObject<TDestination>();
+                    return src => ((JToken) (object) src).ToObject<TDestination>();
                 else
-                    return (ctx, src) => (TDestination) (object) JToken.FromObject(src);
+                    return src => (TDestination) (object) JToken.FromObject(src);
             }
         }
 
