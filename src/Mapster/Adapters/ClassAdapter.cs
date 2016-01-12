@@ -107,7 +107,7 @@ namespace Mapster.Adapters
             }
 
             Expression set;
-            if ((TypeAdapterConfig.GlobalSettings.PreserveReference || settings?.PreserveReference == true) && 
+            if (settings?.PreserveReference == true && 
                 !sourceType.IsValueType && 
                 !destinationType.IsValueType)
             {

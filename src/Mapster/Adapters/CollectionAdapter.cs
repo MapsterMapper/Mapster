@@ -65,11 +65,19 @@ namespace Mapster.Adapters
                 set = CreateArraySet(p, pDest);
                 if (assign == null)
                 {
-                    var countMethod = typeof (Enumerable).GetMethods()
-                        .First(m => m.Name == "Count" && m.GetParameters().Length == 1)
-                        .MakeGenericMethod(p.Type.ExtractCollectionType());
-                    assign = ExpressionEx.Assign(pDest,
-                        Expression.NewArrayBounds(destinationElementType, Expression.Call(countMethod, p)));
+                    if (p.Type.IsArray)
+                    {
+                        assign = ExpressionEx.Assign(pDest,
+                            Expression.NewArrayBounds(destinationElementType, Expression.ArrayLength(p)));
+                    }
+                    else
+                    {
+                        var countMethod = typeof (Enumerable).GetMethods()
+                            .First(m => m.Name == "Count" && m.GetParameters().Length == 1)
+                            .MakeGenericMethod(p.Type.ExtractCollectionType());
+                        assign = ExpressionEx.Assign(pDest,
+                            Expression.NewArrayBounds(destinationElementType, Expression.Call(countMethod, p)));
+                    }
                 }
             }
             else
@@ -94,7 +102,7 @@ namespace Mapster.Adapters
 
             //set = Expression.Block(new[] { pDepth }, assignDepth, assign, set);
 
-            if ((TypeAdapterConfig.GlobalSettings.PreserveReference || settings?.PreserveReference == true) &&
+            if (settings?.PreserveReference == true &&
                 !sourceType.IsValueType &&
                 !destinationType.IsValueType)
             {
