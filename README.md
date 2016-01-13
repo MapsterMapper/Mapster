@@ -4,38 +4,39 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/krpp0nhspmklom1d?svg=true)](https://ci.appveyor.com/project/eswann/mapster)
 
+### Basic usage
+```
+var result = TypeAdapter.Adapt<NewType>(original);
+```
+### Get it
+```
+PM> Install-Package GeekMapper
+```
+###Mapster 2.0 Release!
+Mapster 2.0 is now become blistering fast! We upgraded the whole compilation unit while still maintain its functionalities. Here is benchmark.
 
-What was Fpr has been mapped to Mapster!  Had to grow up (a little).
-<br/>
-<b>var newThing = TypeAdapter.Adapt&lt;Fpr, Mapster&gt;(oldThing);</b>
+| Engine          | Structs | Simple objects | Parent-Child | Parent-Children | Complex objects | Advance mapping |
+|-----------------|--------:|---------------:|-------------:|----------------:|----------------:|----------------:|
+| AutoMapper      |   11076 |          26121 |        21019 |           15841 |           18619 |           21987 |
+| ExpressMapper   |     758 |           1701 |         1208 |            1323 |            3296 |            5252 |
+| OoMapper        |       - |           1595 |         1182 |            1188 |            3221 |               - |
+| ValueInjector   |    9071 |          21030 |        15698 |           12263 |           17334 |           31261 |
+| TinyMapper      |       - |           1238 |            - |               - |               - |               - |
+| Mapster         |       - |           2382 |         1892 |            1626 |            4287 |            6756 |
+| **Mapster 2.0** | **610** |       **1323** |      **874** |         **787** |        **2292** |        **3654** |
+| Native          |     593 |            796 |          496 |             659 |            2287 |            4266 |
 
-
-But still a fast, fun and stimulating object to object mapper for .Net 4.5.  
-
-Mapster was originally forked from FastMapper (https://fmapper.codeplex.com/).
-Mapster maps properties by convention, including nested complex objects and collections, but also supports
-explicit mapping.
-
-This fork fixes some issues and includes some additions to make the mapper more configurable and useful for .Net 4.5:
-
-* Support for IReadOnlyList
-* Mapping of members with non-public setters
-* Automatic mapping of nullable primitives to non-nullable primitives
-* Improved error messages that help you find configuration errors
-* Conditional mapping
-* Assembly scanning for custom mappers
-* Strict modes to err if types or members are not explicity mapped (implicit/forgiving mapping is the default).
-* Type specific destination transforms (typically such as trim or lowercase all strings).  Can be used on any destination type.
-* Custom destination creation (not just default constructor)
-* Automatic Enum <=> String mapping
-* Mapper instance creation for injection situations
-* Lots more stuff below...
+(NOTE: Benchmark runner is forked from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
 
 ###Examples
 ####Mapping to a new object
 Mapster makes the object and maps values to it.
 
-    TDestination destObject = TypeAdapter.Adapt<TSource, TDestination>(sourceObject);
+    var destObject = TypeAdapter.Adapt<TSource, TDestination>(sourceObject);
+    
+or just
+    
+    var destObject = TypeAdapter.Adapt<TDestination>(sourceObject);
 
 ####Mapping to an existing object
 You make the object, Mapster maps to the object.
@@ -70,9 +71,9 @@ When the default convention mappings aren't enough to do the job, you can specif
 
     TypeAdapterConfig<TSource, TDestination>()
     .NewConfig()
-    .IgnoreMember(dest => dest.Property)
+    .Ignore(dest => dest.Property)
     .Map(dest => dest.FullName, 
-             src => string.Format("{0} {1}", src.FirstName, src.LastName));
+         src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 ####Implicit TSource Mapping Inheritance
 If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
@@ -191,11 +192,11 @@ or anything else that provides an object of the expected type.
 
     //Example using a non-default constructor
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .ConstructUsing(() => new TDestination("constructorValue"));
+                .ConstructUsing(src => new TDestination("constructorValue"));
 
     //Example using an object initializer
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .ConstructUsing(() => new TDestination{Unmapped = "unmapped"});
+                .ConstructUsing(src => new TDestination{Unmapped = "unmapped"});
 
 ####Custom Type Resolvers
 In some cases, you may want to have complete control over how an object is mapped.  In this case, you can
