@@ -14,7 +14,7 @@ namespace Mapster
 
         //public bool EnableMaxDepth;
 
-        public bool PreserveReference;
+        public bool? PreserveReference;
 
         public readonly List<ITypeAdapter> CustomAdapters = new List<ITypeAdapter>();
     }

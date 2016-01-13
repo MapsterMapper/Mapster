@@ -49,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapter.cs" />
+    <Compile Include="Adapters\BaseAdapter.cs" />
+    <Compile Include="Adapters\BaseInlineAdapter.cs" />
     <Compile Include="ITypeAdapter.cs" />
     <Compile Include="ITypeResolver.cs" />
     <Compile Include="IValueResolver.cs" />

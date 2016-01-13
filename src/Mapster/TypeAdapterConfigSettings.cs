@@ -40,11 +40,6 @@ namespace Mapster
 
     public abstract class TypeAdapterConfigSettingsBase
     {
-        protected TypeAdapterConfigSettingsBase()
-        {
-            this.PreserveReference = TypeAdapterConfig.GlobalSettings.PreserveReference;
-        }
-
         public readonly List<string> IgnoreMembers = new List<string>();
 
         public readonly TransformsCollection DestinationTransforms = new TransformsCollection();

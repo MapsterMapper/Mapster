@@ -282,7 +282,7 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
+        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Expression<Func<TSource, TDestination>> constructUsing)
         {
             _configSettings.ConstructUsing = constructUsing;
 

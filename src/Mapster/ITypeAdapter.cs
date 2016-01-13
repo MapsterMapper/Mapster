@@ -14,8 +14,8 @@ namespace Mapster
         Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>();
     }
 
-    public interface ITypeExpression : ITypeAdapter
+    public interface IInlineTypeAdapter : ITypeAdapter
     {
-        Expression CreateExpression(Expression p, Type sourceType, Type destinationType);
+        Expression CreateExpression(Expression source, Expression destination, Type destinationType);
     }
 }

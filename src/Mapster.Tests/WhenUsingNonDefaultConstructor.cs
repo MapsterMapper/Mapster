@@ -13,7 +13,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDtoWithDefaultConstructor>.NewConfig()
                 .IgnoreNullValues(true)
-                .ConstructUsing(() => new SimpleDtoWithDefaultConstructor("unmapped"))
+                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor("unmapped"))
                 .Compile();
 
             var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
@@ -30,7 +30,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDtoWithDefaultConstructor>.NewConfig()
                 .IgnoreNullValues(true)
-                .ConstructUsing(() => new SimpleDtoWithDefaultConstructor{Unmapped = "unmapped"})
+                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor{Unmapped = "unmapped"})
                 .Compile();
 
             var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };

@@ -8,201 +8,78 @@ using System.Reflection;
 
 namespace Mapster.Adapters
 {
-    internal class CollectionAdapter : ITypeAdapterWithTarget
+    internal class CollectionAdapter : BaseAdapter
     {
-        public bool CanAdapt(Type sourceType, Type destinationType)
+        public override bool CanAdapt(Type sourceType, Type destinationType)
         {
             return sourceType.IsCollection() &&
                 destinationType.IsCollection();
         }
 
-        public Func<TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+        private static Expression CreateCountExpression(ParameterExpression source, bool allowCountAll)
         {
-            //var depth = Expression.Parameter(typeof (int));
-            var p = Expression.Parameter(typeof (TSource));
-            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(p, null, typeof(TSource), typeof(TDestination), settings);
-            return Expression.Lambda<Func<TSource, TDestination>>(body, p).Compile();
+            if (source.Type.IsArray)
+                return Expression.ArrayLength(source);
+            else
+            {
+                var countProperty = source.Type.GetProperty("Count");
+                if (countProperty != null)
+                    return Expression.Property(source, countProperty);
+                if (!allowCountAll)
+                    return null;
+                var countMethod = typeof(Enumerable).GetMethods()
+                    .First(m => m.Name == "Count" && m.GetParameters().Length == 1)
+                    .MakeGenericMethod(source.Type.ExtractCollectionType());
+                return Expression.Call(countMethod, source);
+            }
         }
 
-        public Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        protected override Expression CreateInstantiationExpression(ParameterExpression source, Type destinationType, TypeAdapterConfigSettingsBase settings)
         {
-            //var depth = Expression.Parameter(typeof (int));
-            var p = Expression.Parameter(typeof (TSource));
-            var p2 = Expression.Parameter(typeof (TDestination));
-            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(p, p2, typeof(TSource), typeof(TDestination), settings);
-            return Expression.Lambda<Func<TSource, TDestination, TDestination>>(body, p, p2).Compile();
-        }
-
-        private static Expression CreateExpressionBody(ParameterExpression p, ParameterExpression p2, Type sourceType, Type destinationType, TypeAdapterConfigSettingsBase settings)
-        {
-            var list = new List<Expression>();
             var destinationElementType = destinationType.ExtractCollectionType();
-
-            var listType = destinationType.IsArray
-                ? destinationType
-                : destinationType.IsGenericEnumerableType() || destinationType.GetInterfaces().Any(ReflectionUtils.IsGenericEnumerableType)
-                ? typeof(ICollection<>).MakeGenericType(destinationElementType)
-                : typeof(IList);
-
-            var pDest = Expression.Variable(listType);
-            var pDest2 = Expression.Variable(destinationType);
-            //var pDepth = Expression.Variable(typeof (int));
-            Expression assign = null;
-            Expression set;
-            //Expression assignDepth = Expression.Assign(pDepth, Expression.Subtract(depth, Expression.Constant(1)));
-            if (p2 != null)
-            {
-                assign = ExpressionEx.Assign(pDest, p2);
-            }
-            else if (settings?.ConstructUsing != null)
-            {
-                assign = ExpressionEx.Assign(pDest, settings.ConstructUsing.Body);
-            }
             if (destinationType.IsArray)
-            {
-                set = CreateArraySet(p, pDest);
-                if (assign == null)
-                {
-                    if (p.Type.IsArray)
-                    {
-                        assign = ExpressionEx.Assign(pDest,
-                            Expression.NewArrayBounds(destinationElementType, Expression.ArrayLength(p)));
-                    }
-                    else
-                    {
-                        var countMethod = typeof (Enumerable).GetMethods()
-                            .First(m => m.Name == "Count" && m.GetParameters().Length == 1)
-                            .MakeGenericMethod(p.Type.ExtractCollectionType());
-                        assign = ExpressionEx.Assign(pDest,
-                            Expression.NewArrayBounds(destinationElementType, Expression.Call(countMethod, p)));
-                    }
-                }
-            }
+                return Expression.NewArrayBounds(destinationElementType, CreateCountExpression(source, true));
+
+            var count = CreateCountExpression(source, false);
+            var listType = destinationType.IsInterface
+                ? typeof (List<>).MakeGenericType(destinationElementType)
+                : destinationType;
+            if (count == null)
+                return Expression.New(listType);
+            var ctor = listType.GetConstructor(new[] { typeof(int) });
+            if (ctor == null)
+                return Expression.New(listType);
             else
-            {
-                if (!destinationType.IsInterface)
-                {
-                    set = CreateListSet(p, pDest);
-                    if (assign == null)
-                        assign = ExpressionEx.Assign(pDest, Expression.New(destinationType));
-                }
-                else
-                {
-                    set = CreateListSet(p, pDest);
-                    if (assign == null)
-                    {
-                        var constructorInfo = typeof (List<>).MakeGenericType(destinationElementType);
-                        assign = ExpressionEx.Assign(pDest, Expression.New(constructorInfo));
-                    }
-                }
-
-            }
-
-            //set = Expression.Block(new[] { pDepth }, assignDepth, assign, set);
-
-            if (settings?.PreserveReference == true &&
-                !sourceType.IsValueType &&
-                !destinationType.IsValueType)
-            {
-                var propInfo = typeof(MapContext).GetProperty("References", BindingFlags.Static | BindingFlags.Public);
-                var refDict = Expression.Property(null, propInfo);
-                var refAdd = Expression.Call(refDict, "Add", null, Expression.Convert(p, typeof (object)), Expression.Convert(pDest, typeof (object)));
-                set = Expression.Block(assign, refAdd, set);
-
-                var pDest3 = Expression.Variable(typeof(object));
-                var tryGetMethod = typeof (Dictionary<object, object>).GetMethod("TryGetValue", new[] {typeof (object), typeof (object).MakeByRefType()});
-                var checkHasRef = Expression.Call(refDict, tryGetMethod, p, pDest3);
-                set = Expression.IfThenElse(
-                    checkHasRef,
-                    ExpressionEx.Assign(pDest, pDest3),
-                    set);
-                set = Expression.Block(new[] {pDest3}, set);
-            }
-            else
-            {
-                set = Expression.Block(assign, set);
-            }
-
-            //if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
-            //{
-            //    var compareDepth = Expression.Equal(depth, Expression.Constant(0));
-            //    set = Expression.IfThenElse(
-            //        compareDepth,
-            //        ExpressionEx.Assign(pDest, (Expression) p2 ?? Expression.Constant(null, listType)),
-            //        set);
-            //}
-
-            if (!sourceType.IsValueType || sourceType.IsNullable())
-            {
-                var compareNull = Expression.Equal(p, Expression.Constant(null, p.Type));
-                set = Expression.IfThenElse(
-                    compareNull,
-                    ExpressionEx.Assign(pDest, (Expression) p2 ?? Expression.Constant(listType.GetDefault(), listType)),
-                    set);
-            }
-            list.Add(set);
-
-            if (destinationType.IsGenericType && destinationType.GetGenericTypeDefinition() == typeof (IQueryable<>))
-            {
-                var method = typeof (Queryable).GetMethods().First(m => m.Name == "AsQueryable" && m.IsGenericMethod)
-                    .MakeGenericMethod(destinationElementType);
-                list.Add(ExpressionEx.Assign(pDest2, Expression.Call(method, pDest)));
-            }
-            else if (destinationType == typeof (IQueryable))
-            {
-                var method = typeof (Queryable).GetMethods().First(m => m.Name == "AsQueryable" && !m.IsGenericMethod);
-                list.Add(ExpressionEx.Assign(pDest2, Expression.Call(method, pDest)));
-            }
-            else
-                list.Add(ExpressionEx.Assign(pDest2, pDest));
-
-            var destinationTransforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
-            if (destinationTransforms.ContainsKey(destinationType))
-            {
-                var transform = destinationTransforms[destinationType];
-                var invoke = Expression.Invoke(transform, pDest2);
-                list.Add(ExpressionEx.Assign(pDest2, invoke));
-            }
-            var localTransform = settings?.DestinationTransforms.Transforms;
-            if (localTransform != null && localTransform.ContainsKey(destinationType))
-            {
-                var transform = localTransform[destinationType];
-                var invoke = Expression.Invoke(transform, pDest2);
-                list.Add(ExpressionEx.Assign(pDest2, invoke));
-            }
-
-            list.Add(pDest2);
-            return Expression.Block(destinationType, new[] { pDest, pDest2 }, list);
-
+                return Expression.New(ctor, count);
         }
 
-        private static Expression CreateGetter(Expression p, Type sourceElementType, Type destinationElementType)
+        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterConfigSettingsBase settings)
         {
-            var adapter = TypeAdapter.GetAdapter(sourceElementType, destinationElementType) as ITypeExpression;
-
-            if (adapter != null)
+            if (destination.Type.IsArray)
             {
-                return adapter.CreateExpression(p, sourceElementType, destinationElementType);
+                return CreateArraySet(source, destination, settings);
             }
             else
             {
-                var typeAdaptType = typeof (TypeAdapter<,>).MakeGenericType(sourceElementType, destinationElementType);
-                var method = typeAdaptType.GetMethod("AdaptWithContext",
-                    new[] {sourceElementType});
-                return Expression.Call(method, p);
+                var destinationElementType = destination.Type.ExtractCollectionType();
+                var listType = destination.Type.IsGenericEnumerableType() || destination.Type.GetInterfaces().Any(ReflectionUtils.IsGenericEnumerableType)
+                    ? typeof(ICollection<>).MakeGenericType(destinationElementType)
+                    : typeof(IList);
+                var tmp = Expression.Variable(listType);
+                var assign = ExpressionEx.Assign(tmp, destination); //convert to list type
+                var set = CreateListSet(source, tmp, settings);
+                return Expression.Block(new[] {tmp}, assign, set);
             }
         }
 
-        private static Expression CreateArraySet(Expression source, Expression destination)
+        private Expression CreateArraySet(Expression source, Expression destination, TypeAdapterConfigSettingsBase settings)
         {
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
             var v = Expression.Variable(typeof (int));
             var start = Expression.Assign(v, Expression.Constant(0));
-            var getter = CreateGetter(p, sourceElementType, destinationElementType);
+            var getter = CreateAdaptExpression(p, destinationElementType, settings);
             var set = Expression.Assign(
                 Expression.ArrayAccess(destination, v),
                 getter);
@@ -211,12 +88,12 @@ namespace Mapster.Adapters
             return Expression.Block(new[] {v}, start, loop);
         }
 
-        private static Expression CreateListSet(Expression source, Expression destination)
+        private Expression CreateListSet(Expression source, Expression destination, TypeAdapterConfigSettingsBase settings)
         {
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
-            var getter = CreateGetter(p, sourceElementType, destinationElementType);
+            var getter = CreateAdaptExpression(p, destinationElementType, settings);
             
             var addMethod = destination.Type.GetMethod("Add", new[] {destinationElementType});
             var set = Expression.Call(

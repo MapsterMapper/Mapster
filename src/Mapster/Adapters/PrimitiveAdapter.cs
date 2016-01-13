@@ -4,33 +4,17 @@ using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
-    internal class PrimitiveAdapter : ITypeAdapterWithTarget, ITypeExpression
+    internal class PrimitiveAdapter : BaseInlineAdapter
     {
-        public bool CanAdapt(Type sourceType, Type destinationType)
+        public override bool CanAdapt(Type sourceType, Type destinationType)
         {
             return true;
         }
 
-        public Func<TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+        public override Expression CreateExpression(Expression source, Expression destination, Type destinationType)
         {
-            //var depth = Expression.Parameter(typeof (int));
-            var p = Expression.Parameter(typeof (TSource));
-            var body = CreateExpression(p, typeof(TSource), typeof(TDestination));
-            return Expression.Lambda<Func<TSource, TDestination>>(body, p).Compile();
-        }
-
-        public Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
-        {
-            //var depth = Expression.Parameter(typeof(int));
-            var p = Expression.Parameter(typeof(TSource));
-            var p2 = Expression.Parameter(typeof (TDestination));
-            var body = CreateExpression(p, typeof(TSource), typeof(TDestination));
-            return Expression.Lambda<Func<TSource, TDestination, TDestination>>(body, p, p2).Compile();
-        }
-
-        public Expression CreateExpression(Expression p, Type sourceType, Type destinationType)
-        {
-            Expression convert = p;
+            Expression convert = source;
+            var sourceType = source.Type;
             if (sourceType != destinationType)
             {
                 if (sourceType.IsNullable())
@@ -43,7 +27,7 @@ namespace Mapster.Adapters
             }
             if ((!sourceType.IsValueType || sourceType.IsNullable()) && destinationType.IsValueType && !destinationType.IsNullable())
             {
-                var compareNull = Expression.Equal(p, Expression.Constant(null, sourceType));
+                var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
                 convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
             }
 

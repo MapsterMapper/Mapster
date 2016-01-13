@@ -64,7 +64,7 @@ namespace Mapster.Tests
         public byte[] Picture { get; set; }
         public ICollection<string> Countries { get; set; }
         public IReadOnlyList<string> ReadOnlyCountries { get; set; }
-        public IQueryable<string> XX { get; set; }
+        public IEnumerable<string> XX { get; set; }
         public IList<int> YY { get; set; }
         public List<int> ZZ { get; set; }
         public Departments[] RelatedDepartments { get; set; }

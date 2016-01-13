@@ -101,7 +101,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Mapster\Mapster.csproj">
       <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
-      <Name>Fpr</Name>
+      <Name>Mapster</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

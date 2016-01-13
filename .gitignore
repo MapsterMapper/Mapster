@@ -176,3 +176,4 @@ FakesAssemblies/
 # Deploy directories
 deploy/archive
 deploy/output
+/src/.vs/config
