@@ -44,6 +44,97 @@ You make the object, Mapster maps to the object.
     TDestination destObject = new TDestination();
     destObject = TypeAdapter.Adapt(sourceObject, destObject);
 
+####Customized Mapping
+When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .Ignore(dest => dest.Property)
+        .Map(dest => dest.FullName, 
+             src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+#####Ignore Members & Attributes
+By default, Mapster will automatically map properties with the same names. You can ignore members by using `Ignore` method.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .Ignore(dest => dest.Id);
+
+Or you can ignore globally by using global setting.
+
+    TypeAdapterConfig.GlobalSettings.IgnoreMembers.Add('Id');
+
+You can ignore members annotated with specific attribute by using `IgnoreAttribute` method.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .IgnoreAttribute(typeof(JsonIgnoreAttribute));
+
+Or
+
+    TypeAdapterConfig.GlobalSettings.IgnoreAttributes.Add(typeof(JsonIgnoreAttribute));
+
+#####Property mapping
+By default, Mapster map property by name, but you can customize property mapping.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .Map(dest => dest.FullName, 
+             src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+The Map configuration can accept a third parameter that provides a condition based on the source.
+If the condition is not met, the mapping is skipped altogether.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
+
+You can also map even type of source and destination properties are different.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .Map(dest => dest.Gender,      //Genders.Male or Genders.Female
+             src => src.GenderString); //"Male" or "Female"
+
+#####Merge object
+By default, Mapster will copy null values to destination properties (or convert destination properties to default values). You can merge objects by ignore null values in source properties by using `IgnoreNullValues` method. When you use this setting, null value will not copy to destination property.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .IgnoreNullValues(true);
+
+Or you can ignore null values globally by using global setting.
+
+    TypeAdapterConfig.GlobalSettings.IgnoreNullValues = true;
+
+NOTE: after you set `IgnoreNullValues` in global settings to `true`, you can opt-out by setting `IgnoreNullValues` in `TypeAdapterConfig<TSource, TDestination>` to `false`.
+
+#####Shallow copy
+By default, Mapster will recursively copy nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. When you use this setting, when types of source properties and destination properties are the same, it will not create new objects, but it just copy reference from source properties to destination properties.
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .ShallowCopyForSameType(true);
+
+Or you can set globally by using global setting.
+
+    TypeAdapterConfig.GlobalSettings.ShallowCopyForSameType = true;
+
+NOTE: after you set `ShallowCopyForSameType` in global settings to `true`, you can opt-out by setting `ShallowCopyForSameType` in `TypeAdapterConfig<TSource, TDestination>` to `false`.
+
+#####Preserve reference (preventing circular reference stackoverflow)
+By default, Mapster will not track reference (for performance reason). Therefore, when you copying circular reference objects, there will be stackoverflow exception. If you would like to copy circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
+
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .PreserveReference(true);
+
+Or you can set globally by using global setting.
+
+    TypeAdapterConfig.GlobalSettings.PreserveReference = true;
+
+NOTE: after you set `PreserveReference` in global settings to `true`, you can opt-out by setting `PreserveReference` in `TypeAdapterConfig<TSource, TDestination>` to `false`.
+
 ####Mapping Lists Included
 This includes lists, arrays, collections, enumerables etc...
 
@@ -66,14 +157,6 @@ In addition, fast Enum mapper extension methods are included for convenience.
     myEnumString.ToFastEnum<SomeEnum>();
     
 
-####Customized Mapping
-When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
-
-    TypeAdapterConfig<TSource, TDestination>()
-    .NewConfig()
-    .Ignore(dest => dest.Property)
-    .Map(dest => dest.FullName, 
-         src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 ####Implicit TSource Mapping Inheritance
 If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
