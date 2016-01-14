@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Mapster.Models;
 using Mapster.Utils;
@@ -61,7 +62,7 @@ namespace Mapster.Adapters
             {
                 #region CopyToArray
 
-                byte i = 0;
+                int i = 0;
                 var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
                 var array = destination == null ? new TDestinationElement[((ICollection)source).Count] : (TDestinationElement[])destination;
                 if (_collectionAdapterModel.IsPrimitive)
@@ -91,13 +92,24 @@ namespace Mapster.Adapters
 
                 #endregion
             }
-            
-            if (destinationType.IsGenericType)
+
+            var canInstantiate = !destinationType.IsInterface && typeof (ICollection<TDestinationElement>).IsAssignableFrom(destinationType);
+            if (canInstantiate || destinationType.IsAssignableFrom(typeof(List<TDestinationElement>)))
             {
                 #region CopyToList
 
                 var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
-                var list = destination == null ? new List<TDestinationElement>() : (List<TDestinationElement>)destination;
+                ICollection<TDestinationElement> list;
+                if (destination == null)
+                {
+                    list = canInstantiate
+                        ? (ICollection<TDestinationElement>) ActivatorExtensions.CreateInstance(destinationType)
+                        : new List<TDestinationElement>();
+                }
+                else
+                {
+                    list = (ICollection<TDestinationElement>)destination;
+                }
                 if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;
@@ -105,7 +117,7 @@ namespace Mapster.Adapters
                     {
                         if (item == null)
                             list.Add(default(TDestinationElement));
-                        else if(hasInvoker)
+                        else if (hasInvoker)
                             list.Add((TDestinationElement)adapterInvoker(null, new[] { item }));
                         else
                             list.Add((TDestinationElement)item);
@@ -124,12 +136,12 @@ namespace Mapster.Adapters
                 #endregion
             }
             
-            if (destinationType == typeof(ArrayList))
+            if (!destinationType.IsInterface && typeof(IList).IsAssignableFrom(destinationType))
             {
                 #region CopyToArrayList
 
                 var adapterInvoker = _collectionAdapterModel.AdaptInvoker;
-                var array = destination == null ? new ArrayList() : (ArrayList)destination;
+                var array = destination == null ? (IList)ActivatorExtensions.CreateInstance(destinationType) : (IList)destination;
                 if (_collectionAdapterModel.IsPrimitive)
                 {
                     bool hasInvoker = adapterInvoker != null;

@@ -45,6 +45,21 @@ namespace Mapster.Tests
             testString.ShouldEqual(resultString);
         }
 
+        [Test]
+        public void ValueType_String_Object_Is_Always_Primitive()
+        {
+            var sourceDto = new PrimitivePoco
+            {
+                Id = "test",
+                Time = TimeSpan.FromHours(7),
+                Obj = new object(),
+            };
+            var targetDto = TypeAdapter.Adapt<PrimitivePoco, PrimitivePoco>(sourceDto);
+
+            targetDto.Id.ShouldEqual(sourceDto.Id);
+            targetDto.Time.ShouldEqual(sourceDto.Time);
+            targetDto.Obj.ShouldBeSameAs(sourceDto.Obj);
+        }
 
         public class TestA
         {
@@ -55,5 +70,13 @@ namespace Mapster.Tests
         {
             public Byte[] Bytes { get; set; }
         }
+        
+        public class PrimitivePoco
+        {
+            public string Id { get; set; }
+            public TimeSpan Time { get; set; }
+            public object Obj { get; set; }
+        }
+
     }
 }

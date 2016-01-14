@@ -48,6 +48,24 @@ namespace Mapster.Tests
             dto.Amount.ShouldBeNull();
         }
 
+        [Test]
+        public void Can_Map_From_Nullable_Source_To_Nullable_Existing_Target()
+        {
+            var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            NullablePrimitivesPoco2 dto = new NullablePrimitivesPoco2
+            {
+                IsImport = true,
+                Amount = 1,
+            };
+
+            TypeAdapter.Adapt(poco, dto);
+
+            dto.Id.ShouldEqual(poco.Id);
+            dto.Name.ShouldEqual(poco.Name);
+            dto.IsImport.ShouldBeNull();
+            dto.Amount.ShouldBeNull();
+        }
 
         [Test]
         public void Can_Map_From_Nullable_Source_With_Values_To_Non_Nullable_Target()

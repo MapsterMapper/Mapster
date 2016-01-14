@@ -39,7 +39,7 @@ namespace Mapster.Utils
                     type.Name));
             }
 
-            var dynamicMethod = new DynamicMethod("DM$_" + type.Name, type, argTypes, type);
+            var dynamicMethod = new DynamicMethod("DM$_" + type.Name, type, argTypes);
             ILGenerator ilGen = dynamicMethod.GetILGenerator();
             for (int i = 0; i < argTypes.Length; i++)
             {

@@ -21,7 +21,7 @@ namespace Mapster.Utils
             }
             else
             {
-                var dynMethod = new DynamicMethod("DM$OBJ_FACTORY_" + type.Name, type, null, type);
+                var dynMethod = new DynamicMethod("DM$OBJ_FACTORY_" + type.Name, type, null);
                 ILGenerator ilGen = dynMethod.GetILGenerator();
 
                 ilGen.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));

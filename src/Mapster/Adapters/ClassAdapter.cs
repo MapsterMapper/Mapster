@@ -123,7 +123,7 @@ namespace Mapster.Adapters
                     {
                         case 1: //Primitive
                             object primitiveValue = propertyModel.Getter.Invoke(source);
-                            if (primitiveValue == null)
+                            if (primitiveValue == null && (ignoreNullValues || propertyModel.DestinationPropertyType.IsNonNullable()))
                             {
                                 continue;
                             }
@@ -141,6 +141,11 @@ namespace Mapster.Adapters
                             break;
                         case 2: //Flattening Get Method
                             destinationValue = propertyModel.AdaptInvoker(source, null);
+                            if (destinationValue == null &&
+                                (ignoreNullValues || propertyModel.DestinationPropertyType.IsNonNullable()))
+                            {
+                                continue;
+                            }
                             break;
                         case 3: //Flattening Deep Property
                             var flatInvokers = propertyModel.FlatteningInvokers;
@@ -152,7 +157,7 @@ namespace Mapster.Adapters
                                     break;
                             }
 
-                            if (value == null && ignoreNullValues)
+                            if (value == null && (ignoreNullValues || propertyModel.DestinationPropertyType.IsNonNullable()))
                             {
                                 continue;
                             }
@@ -160,7 +165,7 @@ namespace Mapster.Adapters
                             break;
                         case 4: // Adapter
                             object sourceValue = propertyModel.Getter.Invoke(source);
-                            if (sourceValue == null && ignoreNullValues)
+                            if (sourceValue == null && (ignoreNullValues || propertyModel.DestinationPropertyType.IsNonNullable()))
                             {
                                 continue;
                             }
@@ -177,6 +182,11 @@ namespace Mapster.Adapters
                             if (propertyModel.Condition == null || propertyModel.Condition(source))
                             {
                                 destinationValue = propertyModel.CustomResolver(source);
+                                if (destinationValue == null &&
+                                    (ignoreNullValues || propertyModel.DestinationPropertyType.IsNonNullable()))
+                                {
+                                    continue;
+                                }
                                 break;
                             }
                             continue;
@@ -303,6 +313,7 @@ namespace Mapster.Adapters
                     var propertyModel = propertyModelFactory();
                     propertyModel.Getter = getter;
                     propertyModel.Setter = setter;
+                    propertyModel.DestinationPropertyType = destinationPropertyType;
                     propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                     if (destinationTransforms.ContainsKey(destinationPropertyType))
                         propertyModel.DestinationTransform = destinationTransforms[destinationPropertyType];
@@ -411,12 +422,14 @@ namespace Mapster.Adapters
             ReflectionUtils.GetDeepFlattening(sourceType, destinationMember.Name, delegates);
             if (delegates.Count > 0)
             {
-                var setter = PropertyCaller<TDestination>.CreateSetMethod((PropertyInfo)destinationMember);
+                var destinationProperty = (PropertyInfo) destinationMember;
+                var setter = PropertyCaller<TDestination>.CreateSetMethod(destinationProperty);
                 if (setter != null)
                 {
                     var propertyModel = (PropertyModel<TSource, TDestination>)propertyModelFactory();
                     propertyModel.ConvertType = 3;
                     propertyModel.Setter = setter;
+                    propertyModel.DestinationPropertyType = destinationProperty.PropertyType;
                     propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                     var destinationPropertyType = typeof(TDestination);
                     if (destinationTransforms.ContainsKey(destinationPropertyType))
@@ -438,13 +451,15 @@ namespace Mapster.Adapters
             var getMethod = sourceType.GetMethod(String.Concat("Get", destinationMember.Name));
             if (getMethod != null)
             {
-                var setter = PropertyCaller<TDestination>.CreateSetMethod((PropertyInfo)destinationMember);
+                var destinationProperty = (PropertyInfo) destinationMember;
+                var setter = PropertyCaller<TDestination>.CreateSetMethod(destinationProperty);
                 if (setter == null)
                     return true;
 
                 var propertyModel = (PropertyModel<TSource, TDestination>)propertyModelFactory();
                 propertyModel.ConvertType = 2;
                 propertyModel.Setter = setter;
+                propertyModel.DestinationPropertyType = destinationProperty.PropertyType;
                 propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                 var destinationPropertyType = typeof(TDestination);
                 if (destinationTransforms.ContainsKey(destinationPropertyType))
@@ -481,6 +496,7 @@ namespace Mapster.Adapters
                         var propertyModel = (PropertyModel<TSource, TDestination>)propertyModelFactory();
                         propertyModel.ConvertType = 5;
                         propertyModel.Setter = setter;
+                        propertyModel.DestinationPropertyType = destinationProperty.PropertyType;
                         propertyModel.SetterPropertyName = ExtractPropertyName(setter, "Set");
                         propertyModel.CustomResolver = resolver.Invoker;
                         propertyModel.Condition = resolver.Condition;
