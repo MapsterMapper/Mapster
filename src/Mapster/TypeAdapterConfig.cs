@@ -1,444 +1,221 @@
-﻿using System;
+﻿using Mapster.Models;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster
 {
-
     public class TypeAdapterConfig
     {
-        private static readonly ConcurrentDictionary<TypeTuple, TypeAdapterConfigSettingsBase> _configurationCache = new ConcurrentDictionary<TypeTuple, TypeAdapterConfigSettingsBase>();
-
-        internal static readonly TypeAdapterConfigSettings ConfigSettings = new TypeAdapterConfigSettings();
-
-        private TypeAdapterConfig()
+        public static TypeAdapterConfig GlobalSettings = new TypeAdapterConfig();
+        public static List<TypeAdapterRule> RulesTemplate = CreateRuleTemplate();
+        private static List<TypeAdapterRule> CreateRuleTemplate()
         {
-        }
-        
-        public static TypeAdapterGlobalSettings GlobalSettings { get; set; } = new TypeAdapterGlobalSettings();
-
-        public static TypeAdapterConfig NewConfig()
-        {
-            ConfigSettings.NewInstanceForSameType = true;
-
-            return new TypeAdapterConfig();
+            return new List<TypeAdapterRule>();
         }
 
-        public TypeAdapterConfig NewInstanceForSameType(bool newInstanceForSameType)
+        public bool RequireDestinationMemberSource;
+        public bool RequireExplicitMapping;
+        public bool AllowImplicitDestinationInheritance;
+
+        public readonly List<TypeAdapterRule> Rules;
+        public readonly TypeAdapterSetter Default;
+        internal readonly Dictionary<TypeTuple, TypeAdapterSettings> Dict = new Dictionary<TypeTuple, TypeAdapterSettings>();
+        public TypeAdapterConfig()
         {
-            ConfigSettings.NewInstanceForSameType = newInstanceForSameType;
-
-            return this;
-        }
-
-        internal static void UpsertConfigurationCache<TSource, TDestination>(
-            TypeAdapterConfigSettings<TSource, TDestination> config)
-        {
-            var key = new TypeTuple(typeof (TSource), typeof (TDestination));
-            _configurationCache[key] = config;
-        }
-
-        internal static void RemoveFromConfigurationCache<TSource, TDestination>()
-        {
-            var key = new TypeTuple(typeof(TSource), typeof(TDestination));
-            TypeAdapterConfigSettingsBase obj;
-            _configurationCache.TryRemove(key, out obj);
-        }
-
-        internal static bool ExistsInConfigurationCache(Type sourceType, Type destinationType)
-        {
-            var key = new TypeTuple(sourceType, destinationType);
-
-            return _configurationCache.ContainsKey(key);
-        }
-
-        internal static TypeAdapterConfigSettingsBase GetConfigurationCache(Type sourceType, Type destinationType)
-        {
-            var key = new TypeTuple(sourceType, destinationType);
-            TypeAdapterConfigSettingsBase returnValue;
-
-            _configurationCache.TryGetValue(key, out returnValue);
-
-            return returnValue;
-        }
-
-        internal static void ClearConfigurationCache()
-        {
-            _configurationCache.Clear();
-        }
-
-    }
-    
-    public class TypeAdapterConfig<TSource, TDestination>
-    {
-        private static TypeAdapterConfigSettings<TSource, TDestination> _configSettings;
-        private static bool _configSettingsSet;
-        private static ProjectionConfig<TSource, TDestination> _projection;
-
-        private TypeAdapterConfig()
-        {
-        }
-
-        public static TypeAdapterConfig<TSource, TDestination> NewConfig()
-        {
-            if (_configSettings == null)
+            this.Rules = RulesTemplate.ToList();
+            this.Default = new TypeAdapterSetter(new TypeAdapterSettings(), this);
+            this.Rules.Add(new TypeAdapterRule
             {
-                _configSettings = new TypeAdapterConfigSettings<TSource, TDestination>();
-            }
-            else
-            {
-                _configSettings.Reset();
-            }
-
-            _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
-
-            var config = new TypeAdapterConfig<TSource, TDestination>();
-            TypeAdapterConfig.UpsertConfigurationCache(_configSettings);
-            _configSettingsSet = false;
-
-            return config;
-        }
-
-        internal static TypeAdapterConfigSettings<TSource, TDestination> ConfigSettings
-        {
-            get
-            {
-                if (_configSettingsSet)
-                    return _configSettings;
-
-                _configSettingsSet = true;
-
-                if (_configSettings == null)
-                    return _configSettings = DeriveConfigSettings();
-
-                ApplyInheritedConfigSettings();
-
-                return _configSettings;
-            }
-        }
-
-        public void Compile()
-        {
-            CallRecompile();
-        }
-
-        private static Action _recompile;
-        private static void CallRecompile()
-        {
-            if (_recompile == null)
-            {
-                var method = typeof(TypeAdapter<,>).MakeGenericType(typeof(TSource), typeof(TDestination)).GetMethod("Recompile");
-                _recompile = Expression.Lambda<Action>(Expression.Call(method)).Compile();
-            }
-            _recompile();
-        }
-
-        public static void Clear(bool noRecompile = false)
-        {
-            TypeAdapterConfig.RemoveFromConfigurationCache<TSource, TDestination>();
-            _configSettings = null;
-            _configSettingsSet = false;
-            _projection = ProjectionConfig<TSource, TDestination>.NewConfig();
-
-            if (!noRecompile)
-                CallRecompile();
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
-        {
-            _projection.IgnoreMember(members);
-
-            if (members != null && members.Length > 0)
-            {
-                for (int i = 0; i < members.Length; i++)
-                {
-                    var memberExp = ReflectionUtils.GetMemberInfo(members[i]);
-                    if (memberExp != null)
-                    {
-                        _configSettings.IgnoreMembers.Add(memberExp.Member.Name);
-                    }
-                }
-            }
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Ignore(params string[] members)
-        {
-            _projection.IgnoreMember(members);
-
-            if (members != null && members.Length > 0)
-            {
-                members =
-                    typeof (TDestination).GetProperties()
-                        .Where(p => members.Contains(p.Name))
-                        .Select(p => p.Name)
-                        .ToArray();
-
-                if (members.Length > 0)
-                {
-                    for (int i = 0; i < members.Length; i++)
-                    {
-                        _configSettings.IgnoreMembers.Add(members[i]);
-                    }
-                }
-            }
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> MapWith<TConverter>() where TConverter : ITypeResolver<TSource, TDestination>, new()
-        {
-            _configSettings.ConverterFactory = () => new TConverter();
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> MapWith(ITypeResolver<TSource, TDestination> resolver)
-        {
-            _configSettings.ConverterFactory = () => resolver;
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> MapWith(Func<ITypeResolver<TSource, TDestination>> converterFactoryFunc)
-        {
-            _configSettings.ConverterFactory = converterFactoryFunc;
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Resolve<TValueResolver, TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, bool>> shouldMap = null) 
-            where TValueResolver : IValueResolver<TSource, TDestinationMember>, new()
-        {
-            return Map(member, src => new TValueResolver().Resolve(src), shouldMap);
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> member,
-            Func<IValueResolver<TSource, TDestinationMember>> resolverFactory, 
-            Expression<Func<TSource, bool>> shouldMap = null) 
-        {
-            return Map(member, src => resolverFactory().Resolve(src), shouldMap);
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember>(
-            Expression<Func<TDestination, TDestinationMember>> member, IValueResolver<TSource, TDestinationMember> resolver, 
-            Expression<Func<TSource, bool>> shouldMap = null)
-        {
-            return Map(member, src => resolver.Resolve(src), shouldMap);
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Resolve<TDestinationMember, TSourceMember>(
-            Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
-        {
-            if (source == null)
-                return this;
-
-            var memberExp = member.Body as MemberExpression;
-
-            if (memberExp == null)
-            {
-                var ubody = (UnaryExpression)member.Body;
-                memberExp = ubody.Operand as MemberExpression;
-            }
-
-            if (memberExp == null)
-                return this;
-
-            _configSettings.Resolvers.Add(new InvokerModel
-            {
-                MemberName = memberExp.Member.Name,
-                Invoker = source,
-                Condition = shouldMap
+                Priority = (sourceType, destinationType, mapType) => -100,
+                Settings = this.Default.Settings,
             });
-
-            return this;
         }
 
-        public TypeAdapterConfig<TSource, TDestination> Map<TDestinationMember>(
-            Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TDestinationMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+        public TypeAdapterSetter When(Func<Type, Type, MapType, int?> priority)
         {
-            _projection.MapFrom(member, source);
-
-            return Resolve(member, source, shouldMap);
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> Inherits<TBaseSource, TBaseDestination>()
-        {
-            Type baseSourceType = typeof (TBaseSource);
-            Type baseDestinationType = typeof (TBaseDestination);
-
-            if (!baseSourceType.IsAssignableFrom(typeof(TSource)))
-                throw new InvalidCastException("In order to use inherits, TSource must inherit directly or indirectly from TBaseSource.");
-
-            if (!baseDestinationType.IsAssignableFrom(typeof(TDestination)))
-                throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
-
-            _configSettings.InheritedSourceType = baseSourceType;
-            _configSettings.InheritedDestinationType = baseDestinationType;
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> ConstructUsing(Expression<Func<TSource, TDestination>> constructUsing)
-        {
-            _configSettings.ConstructUsing = constructUsing;
-
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> SameInstanceForSameType(bool sameInstanceForSameType)
-        {
-            _configSettings.SameInstanceForSameType = sameInstanceForSameType;
-
-            return this;
-        }
-
-        public TypeAdapterConfig<TSource, TDestination> IgnoreNullValues(bool ignoreNullValues)
-        {
-            _configSettings.IgnoreNullValues = ignoreNullValues;
-
-            return this;
-        }
-
-        //public TypeAdapterConfig<TSource, TDestination> MaxDepth(int maxDepth)
-        //{
-        //    _configSettings.MaxDepth = maxDepth;
-
-        //    _projection.MaxDepth(maxDepth);
-
-        //    TypeAdapterConfig.GlobalSettings.EnableMaxDepth = true;
-
-        //    return this;
-        //}
-        public TypeAdapterConfig<TSource, TDestination> PreserveReference(bool preserveReference)
-        {
-            _configSettings.PreserveReference = preserveReference;
-            return this;
-        }  
-
-        public TransformsCollection DestinationTransforms
-        {
-            get
+            var rule = new TypeAdapterRule
             {
-                return _configSettings?.DestinationTransforms;
+                Priority = priority,
+                Settings = new TypeAdapterSettings(),
+            };
+            this.Rules.Add(rule);
+            return new TypeAdapterSetter(rule.Settings, this);
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
+        {
+            var rule = new TypeAdapterRule
+            {
+                Priority = (sourceType, destinationType, mapType) =>
+                {
+                    var score1 = GetSubclassDistance(destinationType, typeof(TDestination), this.AllowImplicitDestinationInheritance);
+                    if (score1 == null)
+                        return null;
+                    var score2 = GetSubclassDistance(sourceType, typeof(TSource), true);
+                    if (score2 == null)
+                        return null;
+                    return score1.Value + score2.Value;
+                },
+                Settings = new TypeAdapterSettings(),
+            };
+            this.Rules.Add(rule);
+            this.Dict[new TypeTuple(typeof(TSource), typeof(TDestination))] = rule.Settings;
+            return new TypeAdapterSetter<TSource, TDestination>(rule.Settings, this);
+        }
+
+        private static int? GetSubclassDistance(Type type1, Type type2, bool allowInheritance)
+        {
+            if (type1 == type2)
+                return 100;
+            if (!allowInheritance)
+                return null;
+
+            if (type2.IsInterface)
+            {
+                return type2.IsAssignableFrom(type1)
+                    ? (int?)50
+                    : null;
+            }
+
+            int score = 100;
+            while (type1 != null && type1 != type2)
+            {
+                score--;
+                type1 = type1.BaseType;
+            }
+            return type1 == null ? null : (int?)score;
+        }
+
+        private ConcurrentDictionary<TypeTuple, Delegate> _mapDict = new ConcurrentDictionary<TypeTuple, Delegate>();
+        public Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
+        {
+            return (Func<TSource, TDestination>)GetMapFunction(typeof(TSource), typeof(TDestination));
+        }
+        public Delegate GetMapFunction(Type sourceType, Type destinationType)
+        {
+            return _mapDict.GetOrAdd(new TypeTuple(sourceType, destinationType), CreateMapFunction);
+        }
+
+        private ConcurrentDictionary<TypeTuple, Delegate> _mapToTargetDict = new ConcurrentDictionary<TypeTuple, Delegate>();
+        public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
+        {
+            return (Func<TSource, TDestination, TDestination>)GetMapToTargetFunction(typeof(TSource), typeof(TDestination));
+        }
+        public Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
+        {
+            return _mapToTargetDict.GetOrAdd(new TypeTuple(sourceType, destinationType), CreateMapToTargetFunction);
+        }
+
+        private ConcurrentDictionary<TypeTuple, LambdaExpression> _projectionDict = new ConcurrentDictionary<TypeTuple, LambdaExpression>();
+        public Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
+        {
+            return (Expression<Func<TSource, TDestination>>)GetProjectionExpression(typeof(TSource), typeof(TDestination));
+        }
+        public LambdaExpression GetProjectionExpression(Type sourceType, Type destinationType)
+        {
+            return _projectionDict.GetOrAdd(new TypeTuple(sourceType, destinationType), CreateProjectionExpression);
+        }
+
+        private Delegate CreateMapFunction(TypeTuple tuple)
+        {
+            var result = CreateMapExpression(tuple.Source, tuple.Destination, MapType.Map, new CompileContext(this));
+            return result.Compile();
+        }
+
+        private Delegate CreateMapToTargetFunction(TypeTuple tuple)
+        {
+            var result = CreateMapExpression(tuple.Source, tuple.Destination, MapType.MapToTarget, new CompileContext(this));
+            return result.Compile();
+        }
+
+        private LambdaExpression CreateProjectionExpression(TypeTuple tuple)
+        {
+            return CreateMapExpression(tuple.Source, tuple.Destination, MapType.Projection, new CompileContext(this));
+        }
+
+        private LambdaExpression CreateMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
+        {
+            var setting = GetMergedSettings(sourceType, destinationType, mapType);
+            var fn = mapType == MapType.MapToTarget
+                ? setting.ConverterToTargetFactory
+                : setting.ConverterFactory;
+            if (fn == null)
+                throw new InvalidOperationException(
+                    $"ConverterFactory is not found for the following mapping: TSource: {sourceType} TDestination: {destinationType}");
+
+            var arg = new CompileArgument
+            {
+                SourceType = sourceType,
+                DestinationType = destinationType,
+                MapType = mapType,
+                Context = context,
+                Settings = setting,
+            };
+            return fn(arg);
+        }
+
+        internal Expression CreateInlineMapExpression(Type sourceType, Type destinationType, CompileContext context)
+        {
+            var tuple = new TypeTuple(sourceType, destinationType);
+            if (context.Running.Contains(tuple))
+            {
+                var method = (from m in typeof(TypeAdapterConfig).GetMethods()
+                              where m.Name == "GetMapFunction"
+                              select m).First().MakeGenericMethod(sourceType, destinationType);
+                var invoker = Expression.Call(Expression.Constant(this), method);
+                var p = Expression.Parameter(sourceType);
+                var invoke = Expression.Call(invoker, "Invoke", null, p);
+                return Expression.Lambda(invoke, p);
+            }
+
+            context.Running.Add(tuple);
+            try
+            {
+                return CreateMapExpression(sourceType, destinationType, MapType.InlineMap, context);
+            }
+            finally
+            {
+                context.Running.Remove(tuple);
             }
         }
 
-        private static TypeAdapterConfigSettings<TSource, TDestination> DeriveConfigSettings()
+        private TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
         {
-            TypeAdapterConfigSettings<TSource, TDestination> configSettings = null;
-
-            //See if we can convert inherited config settings.
-            Type destType = typeof(TDestination);
-            Type sourceType = typeof(TSource).BaseType;
-            bool matchFound = false;
-
-            while (destType != null && destType != typeof(object))
+            if (this.RequireExplicitMapping && mapType != MapType.InlineMap)
             {
-                while (sourceType != null && sourceType != typeof(object))
-                {
-                    var baseConfigSettings = TypeAdapterConfig.GetConfigurationCache(sourceType, destType);
-                    if (baseConfigSettings != null)
-                    {
-                        configSettings = new TypeAdapterConfigSettings<TSource, TDestination>
-                        {
-                            //MaxDepth = baseConfigSettings.MaxDepth,
-                            PreserveReference = baseConfigSettings.PreserveReference,
-                            IgnoreNullValues = baseConfigSettings.IgnoreNullValues,
-                            SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType
-                        };
-
-                        configSettings.IgnoreMembers.AddRange(baseConfigSettings.IgnoreMembers);
-                        
-                        configSettings.DestinationTransforms.Upsert(baseConfigSettings.DestinationTransforms.Transforms);
-
-                        foreach (var baseResolver in baseConfigSettings.Resolvers)
-                        {
-                            var convertedResolver = new InvokerModel
-                            {
-                                MemberName = baseResolver.MemberName,
-                                Invoker = baseResolver.Invoker,
-                                Condition = baseResolver.Condition,
-                            };
-
-                            configSettings.Resolvers.Add(convertedResolver);
-                        }
-                        matchFound = true;
-                        break;
-                    }
-                    sourceType = sourceType.BaseType;
-                }
-
-                if (!matchFound && TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance)
-                {
-                    destType = destType.BaseType;
-                    sourceType = typeof(TSource);
-                }
-                else
-                {
-                    destType = null;
-                }
-
+                if (!this.Dict.ContainsKey(new TypeTuple(sourceType, destinationType)))
+                    throw new InvalidOperationException(
+                        $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {sourceType} TDestination: {destinationType}");
             }
 
-            return configSettings;
+            var settings = from rule in this.Rules.Reverse<TypeAdapterRule>()
+                           let priority = rule.Priority(sourceType, destinationType, mapType)
+                           where priority != null
+                           orderby priority.Value descending
+                           select rule.Settings;
+            var result = new TypeAdapterSettings();
+            foreach (var setting in settings)
+            {
+                result.Apply(setting);
+            }
+            return result;
         }
+    }
 
-        private static void ApplyInheritedConfigSettings()
+    public static class TypeAdapterConfig<TSource, TDestination>
+    {
+        public static TypeAdapterSetter<TSource, TDestination> NewConfig()
         {
-            if (_configSettings.InheritedSourceType == null || _configSettings.InheritedDestinationType == null)
-                return;
-
-            var baseConfigSettings = TypeAdapterConfig.GetConfigurationCache(_configSettings.InheritedSourceType, _configSettings.InheritedDestinationType);
-            if (baseConfigSettings != null)
-            {
-                if (_configSettings.IgnoreNullValues == null)
-                    _configSettings.IgnoreNullValues = baseConfigSettings.IgnoreNullValues;
-                //if (_configSettings.MaxDepth == null)
-                //    _configSettings.MaxDepth = baseConfigSettings.MaxDepth;
-                if (_configSettings.PreserveReference == null)
-                    _configSettings.PreserveReference = baseConfigSettings.PreserveReference;
-                if (_configSettings.SameInstanceForSameType == null)
-                    _configSettings.SameInstanceForSameType = baseConfigSettings.SameInstanceForSameType;
-
-                foreach (var ignoreMember in baseConfigSettings.IgnoreMembers)
-                {
-                    if(!_configSettings.IgnoreMembers.Contains(ignoreMember)
-                        && _configSettings.Resolvers.All(x => x.MemberName != ignoreMember))
-                        _configSettings.IgnoreMembers.Add(ignoreMember);
-                }
-
-                _configSettings.DestinationTransforms.TryAdd(baseConfigSettings.DestinationTransforms.Transforms);
-
-                foreach (var baseResolver in baseConfigSettings.Resolvers)
-                {
-                    string memberName = baseResolver.MemberName;
-
-                    if (_configSettings.Resolvers.All(x => x.MemberName != memberName))
-                    {
-                        var convertedResolver = new InvokerModel
-                        {
-                            MemberName = memberName,
-                            Invoker = baseResolver.Invoker,
-                            Condition = baseResolver.Condition,
-                        };
-
-                        _configSettings.Resolvers.Add(convertedResolver);    
-                    }
-                }
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(
-                    $"The configuration of source {typeof (TSource).FullName} to destination {typeof (TDestination).FullName} relies on explicit inheritance from a configuration with source {_configSettings.InheritedSourceType.FullName}" +
-                    $"and destination {_configSettings.InheritedDestinationType.FullName}, which does not exist.");
-            }
-
-            //See if this config exists
+            return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
         }
+    }
 
+    public class TypeAdapterRule
+    {
+        public Func<Type, Type, MapType, int?> Priority;
+        public TypeAdapterSettings Settings;
     }
 }

@@ -12,13 +12,13 @@ namespace Mapster.Tests
         [TestFixtureTearDown]
         public void TearDown()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
         }
 
         [Test]
         public void No_Errors_Thrown_With_Default_Configuration_On_Unmapped_Primitive()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
             TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
             var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
@@ -36,7 +36,7 @@ namespace Mapster.Tests
             try
             {
                 TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
-                TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+                BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
                 TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
                 var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
@@ -52,7 +52,7 @@ namespace Mapster.Tests
         [Test]
         public void No_Errors_Thrown_With_Default_Configuration_On_Unmapped_Child_Collection()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
             TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
             var source = new ParentPoco { Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco> { new ChildPoco { Id = Guid.NewGuid(), Name = "TestName" } } };
@@ -70,7 +70,7 @@ namespace Mapster.Tests
             try
             {
                 TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
-                TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+                BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
                 TypeAdapterConfig<ParentPoco, ParentDto>.Clear();
 
                 var source = new ParentPoco {Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco> {new ChildPoco {Id = Guid.NewGuid(), Name = "TestName"}}};

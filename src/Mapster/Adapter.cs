@@ -13,29 +13,48 @@ namespace Mapster
 
     public class Adapter : IAdapter
     {
+        readonly TypeAdapterConfig _config;
+        public Adapter(TypeAdapterConfig config)
+        {
+            _config = config;
+        }
+
         public TDestination Adapt<TDestination>(object source)
         {
-            return TypeAdapter.Adapt<TDestination>(source);
+            var fn = _config.GetMapFunction(source.GetType(), typeof(TDestination));
+            var result = (TDestination)fn.DynamicInvoke(source);
+            MapContext.Clear();
+            return result;
         }
 
         public TDestination Adapt<TSource, TDestination>(TSource source)
         {
-            return TypeAdapter.Adapt<TSource, TDestination>(source);
+            var result = _config.GetMapFunction<TSource, TDestination>()(source);
+            MapContext.Clear();
+            return result;
         }
 
         public TDestination Adapt<TSource, TDestination>(TSource source, TDestination destination)
         {
-            return TypeAdapter.Adapt(source, destination);
+            var result = _config.GetMapToTargetFunction<TSource, TDestination>()(source, destination);
+            MapContext.Clear();
+            return result;
         }
 
         public object Adapt(object source, Type sourceType, Type destinationType)
         {
-            return TypeAdapter.Adapt(source, sourceType, destinationType);
+            var fn = _config.GetMapFunction(sourceType, destinationType);
+            var result = fn.DynamicInvoke(source);
+            MapContext.Clear();
+            return result;
         }
 
         public object Adapt(object source, object destination, Type sourceType, Type destinationType)
         {
-            return TypeAdapter.Adapt(source, destination, sourceType, destinationType);
+            var fn = _config.GetMapToTargetFunction(sourceType, destinationType);
+            var result = fn.DynamicInvoke(source, destination);
+            MapContext.Clear();
+            return result;
         } 
     }
 

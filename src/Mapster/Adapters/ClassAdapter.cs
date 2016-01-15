@@ -22,11 +22,11 @@ namespace Mapster.Adapters
             return model.Properties.Count > 0;
         }
 
-        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterConfigSettingsBase settings)
+        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterSettings settings)
         {
             var model = CreateAdapterModel(source, destination, settings);
 
-            if (TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && model.UnmappedProperties.Count > 0)
+            if (BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && model.UnmappedProperties.Count > 0)
             {
                 throw new ArgumentOutOfRangeException($"The following members of destination class {destination.Type} do not have a corresponding source member mapped or ignored:{string.Join(",", model.UnmappedProperties)}");
             }
@@ -55,7 +55,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        private static AdapterModel CreateAdapterModel(Expression source, Expression destination, TypeAdapterConfigSettingsBase settings)
+        private static AdapterModel CreateAdapterModel(Expression source, Expression destination, TypeAdapterSettings settings)
         {
             Type destinationType = destination.Type;
             Type sourceType = source.Type;
@@ -169,7 +169,7 @@ namespace Mapster.Adapters
         private static bool ProcessCustomResolvers(
             Expression source,
             Expression destination,
-            TypeAdapterConfigSettingsBase config, 
+            TypeAdapterSettings config, 
             MemberInfo destinationMember,
             List<PropertyModel> properties)
         {
@@ -216,7 +216,7 @@ namespace Mapster.Adapters
             return isAdded;
         }
 
-        private static bool ProcessIgnores(TypeAdapterConfigSettingsBase config, MemberInfo destinationMember)
+        private static bool ProcessIgnores(TypeAdapterSettings config, MemberInfo destinationMember)
         {
             var ignoreMembers = config.IgnoreMembers;
             if (ignoreMembers != null && ignoreMembers.Count > 0)

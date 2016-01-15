@@ -13,7 +13,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear();
             TypeAdapterConfig<DerivedPoco, DerivedDto>.Clear();
-            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
+            BaseTypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
         [Test]

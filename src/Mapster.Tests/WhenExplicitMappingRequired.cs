@@ -13,7 +13,7 @@ namespace Mapster.Tests
         [TestFixtureTearDown]
         public void TearDown()
         {
-            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
+            BaseTypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
         }
 
 
@@ -25,7 +25,7 @@ namespace Mapster.Tests
                 //this is to prevent TypeInitializeException
                 TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
-                TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+                BaseTypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
                 TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
                 var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
@@ -43,7 +43,7 @@ namespace Mapster.Tests
         [Test]
         public void Mapped_Classes_Succeed()
         {
-            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+            BaseTypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
 
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
 

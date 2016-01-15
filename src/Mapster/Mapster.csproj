@@ -51,28 +51,21 @@
     <Compile Include="Adapter.cs" />
     <Compile Include="Adapters\BaseAdapter.cs" />
     <Compile Include="Adapters\BaseInlineAdapter.cs" />
-    <Compile Include="ITypeAdapter.cs" />
-    <Compile Include="ITypeResolver.cs" />
-    <Compile Include="IValueResolver.cs" />
     <Compile Include="MapContext.cs" />
     <Compile Include="Models\AdapterModel.cs" />
     <Compile Include="Models\ParameterExpressionReplacer.cs" />
-    <Compile Include="Models\ReferenceChecker.cs" />
     <Compile Include="Models\TypeTuple.cs" />
     <Compile Include="TransformsCollection.cs" />
-    <Compile Include="TypeAdapterConfigSettings.cs" />
     <Compile Include="QueryableExtensions.cs" />
-    <Compile Include="Models\ExpressionModel.cs" />
     <Compile Include="Models\InvokerModel.cs" />
     <Compile Include="Models\PropertyModel.cs" />
-    <Compile Include="TypeAdapterGlobalSettings.cs" />
+    <Compile Include="TypeAdapterSetter.cs" />
+    <Compile Include="TypeAdapterSettings.cs" />
+    <Compile Include="TypeAdapterConfig.cs" />
     <Compile Include="Utils\Enum.cs" />
     <Compile Include="Utils\ExpressionEx.cs" />
     <Compile Include="IProjectionExpression.cs" />
-    <Compile Include="Utils\ParameterRenamer.cs" />
-    <Compile Include="ProjectionConfig.cs" />
     <Compile Include="Utils\ProjectionExpression.cs" />
-    <Compile Include="TypeAdapterConfig.cs" />
     <Compile Include="Adapters\CollectionAdapter.cs">
       <SubType>Code</SubType>
     </Compile>

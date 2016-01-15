@@ -3,25 +3,25 @@ using System.Linq.Expressions;
 
 namespace Mapster.Adapters
 {
-    public abstract class BaseInlineAdapter : ITypeAdapterWithTarget, IInlineTypeAdapter
+    public abstract class BaseInlineAdapter
     {
-        public abstract bool CanAdapt(Type sourceType, Type desinationType);
+        public abstract int? Priority(Type sourceType, Type desinationType, MapType mapType);
 
-        public Func<TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
-        {
-            //var depth = Expression.Parameter(typeof (int));
-            var p = Expression.Parameter(typeof(TSource));
-            var body = CreateExpression(p, null, typeof(TDestination));
-            return Expression.Lambda<Func<TSource, TDestination>>(body, p).Compile();
-        }
-
-        public Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        public virtual LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
             //var depth = Expression.Parameter(typeof(int));
-            var p = Expression.Parameter(typeof(TSource));
-            var p2 = Expression.Parameter(typeof(TDestination));
-            var body = CreateExpression(p, p2, typeof(TDestination));
-            return Expression.Lambda<Func<TSource, TDestination, TDestination>>(body, p, p2).Compile();
+            var p = Expression.Parameter(arg.SourceType);
+            var body = CreateExpressionBody(p, null, arg);
+            return Expression.Lambda(body, p);
+        }
+
+        public virtual LambdaExpression CreateAdaptToTargetFunc(CompileArgument arg)
+        {
+            //var depth = Expression.Parameter(typeof(int));
+            var p = Expression.Parameter(arg.SourceType);
+            var p2 = Expression.Parameter(arg.DestinationType);
+            var body = CreateExpressionBody(p, p2, arg);
+            return Expression.Lambda(body, p, p2);
         }
 
         public abstract Expression CreateExpression(Expression source, Expression destination, Type destinationType);

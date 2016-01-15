@@ -14,7 +14,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear(true);
             TypeAdapterConfig<DoubleDerivedPoco, SimpleDto>.Clear(true);
             TypeAdapterConfig<DerivedPoco, DerivedDto>.Clear(true);
-            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
+            BaseTypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
         [Test]
@@ -191,7 +191,7 @@ namespace Mapster.Tests
         [Test]
         public void Derived_Config_Shares_Base_Dest_Config_Properties()
         {
-            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
+            BaseTypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
@@ -208,7 +208,7 @@ namespace Mapster.Tests
         [Test]
         public void Derived_Config_Doesnt_Share_Base_Dest_Config_Properties_If_Disabled()
         {
-            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
+            BaseTypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
                 .SameInstanceForSameType(true)
@@ -223,7 +223,7 @@ namespace Mapster.Tests
         [Test]
         public void Ignores_Are_Derived_From_Base_Dest_Configurations()
         {
-            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
+            BaseTypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
                 .Compile();

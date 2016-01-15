@@ -11,7 +11,7 @@ namespace Mapster.Tests
         [TearDown]
         public void TearDown()
         {
-            TypeAdapterConfig.GlobalSettings.DestinationTransforms.Clear();
+            BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Clear();
         }
 
         [Test]
@@ -30,7 +30,7 @@ namespace Mapster.Tests
         [Test]
         public void Global_Destination_Transform_Is_Applied_To_Class()
         {
-            TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+            BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
             TypeAdapterConfig<string, string>.Clear();
 
             var source = new SimplePoco {Id = new Guid(), Name = "Test    "};
@@ -42,7 +42,7 @@ namespace Mapster.Tests
         [Test]
         public void Global_Destination_Transform_Is_Applied_To_Primitive()
         {
-            TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+            BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
             TypeAdapterConfig<string, string>.Clear();
 
             var source ="Test    " ;

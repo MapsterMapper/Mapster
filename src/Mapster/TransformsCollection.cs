@@ -16,6 +16,14 @@ namespace Mapster
             return (Expression<Func<T, T>>)found;
         }
 
+        public LambdaExpression Get(Type type)
+        {
+            LambdaExpression found;
+            _transforms.TryGetValue(type, out found);
+
+            return found;
+        }
+
         public void Upsert<T>(Expression<Func<T, T>> transform)
         {
             if (transform == null)

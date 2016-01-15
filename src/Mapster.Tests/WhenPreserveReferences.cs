@@ -11,13 +11,13 @@ namespace Mapster.Tests
         [TearDown]
         public void Teardown()
         {
-            TypeAdapterConfig.GlobalSettings.PreserveReference = false;
+            BaseTypeAdapterConfig.GlobalSettings.PreserveReference = false;
         }
 
         [Test]
         public void Preserve_Reference_For_List()
         {
-            TypeAdapterConfig.GlobalSettings.PreserveReference = true;
+            BaseTypeAdapterConfig.GlobalSettings.PreserveReference = true;
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
@@ -31,7 +31,7 @@ namespace Mapster.Tests
         [Test]
         public void Preserve_Reference_For_Circular_Reference()
         {
-            TypeAdapterConfig.GlobalSettings.PreserveReference = true;
+            BaseTypeAdapterConfig.GlobalSettings.PreserveReference = true;
 
             var node1 = new LinkNode {Id = Guid.NewGuid()};
             var node2 = new LinkNode {Id = Guid.NewGuid()};

@@ -6,52 +6,59 @@ using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
-    public abstract class BaseAdapter : ITypeAdapterWithTarget
+    public abstract class BaseAdapter
     {
-        public abstract bool CanAdapt(Type sourceType, Type desinationType);
+        public abstract int? Priority(Type sourceType, Type desinationType, MapType mapType);
 
-        public Func<TSource, TDestination> CreateAdaptFunc<TSource, TDestination>()
+        public virtual LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
             //var depth = Expression.Parameter(typeof(int));
-            var p = Expression.Parameter(typeof(TSource));
-            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(p, null, typeof(TDestination), settings);
-            return Expression.Lambda<Func<TSource, TDestination>>(body, p).Compile();
+            var p = Expression.Parameter(arg.SourceType);
+            var body = CreateExpressionBody(p, null, arg);
+            return Expression.Lambda(body, p);
         }
 
-        public Func<TSource, TDestination, TDestination> CreateAdaptTargetFunc<TSource, TDestination>()
+        public virtual LambdaExpression CreateAdaptToTargetFunc(CompileArgument arg)
         {
             //var depth = Expression.Parameter(typeof(int));
-            var p = Expression.Parameter(typeof(TSource));
-            var p2 = Expression.Parameter(typeof(TDestination));
-            var settings = TypeAdapterConfig<TSource, TDestination>.ConfigSettings;
-            var body = CreateExpressionBody(p, p2, typeof(TDestination), settings);
-            return Expression.Lambda<Func<TSource, TDestination, TDestination>>(body, p, p2).Compile();
+            var p = Expression.Parameter(arg.SourceType);
+            var p2 = Expression.Parameter(arg.DestinationType);
+            var body = CreateExpressionBody(p, p2, arg);
+            return Expression.Lambda(body, p, p2);
         }
 
-        protected virtual Expression CreateExpressionBody(ParameterExpression source, ParameterExpression destination, Type destinationType, TypeAdapterConfigSettingsBase settings)
+        public TypeAdapterRule CreateRule()
+        {
+            return new TypeAdapterRule
+            {
+                Priority = this.Priority,
+                Settings = new TypeAdapterSettings
+                {
+                    ConverterFactory = this.CreateAdaptFunc,
+                    ConverterToTargetFactory = this.CreateAdaptToTargetFunc,
+                }
+            };
+        }
+
+        protected virtual Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
             var list = new List<Expression>();
 
-            var result = Expression.Variable(destinationType);
-
-            Expression assign;
-            if (destination != null)
+            if (destination == null)
             {
-                assign = Expression.Assign(result, destination);
-            }
-            else if (settings?.ConstructUsing != null)
-            {
-                assign = Expression.Assign(result, settings.ConstructUsing.Apply(source));
-            }
-            else
-            {
-                assign = ExpressionEx.Assign(result, CreateInstantiationExpression(source, destinationType, settings));
+                if (arg.Settings.ConstructUsing != null)
+                {
+                    destination = arg.Settings.ConstructUsing.Apply(source).TrimConversion().To(destination.Type);
+                }
+                else
+                {
+                    destination = CreateInstantiationExpression(source, arg);
+                }
             }
             var set = CreateSetterExpression(source, result, settings);
 
             var sourceType = source.Type;
-            if ((settings?.PreserveReference ?? TypeAdapterConfig.GlobalSettings.PreserveReference) == true &&
+            if ((settings?.PreserveReference ?? BaseTypeAdapterConfig.GlobalSettings.PreserveReference) == true &&
                 !sourceType.IsValueType &&
                 !destinationType.IsValueType)
             {
@@ -93,7 +100,7 @@ namespace Mapster.Adapters
             }
             list.Add(set);
 
-            var destinationTransforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
+            var destinationTransforms = BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
             if (destinationTransforms.ContainsKey(destinationType))
             {
                 var transform = destinationTransforms[destinationType];
@@ -113,14 +120,14 @@ namespace Mapster.Adapters
             return Expression.Block(new[] { result }, list);
         }
 
-        protected abstract Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterConfigSettingsBase settings);
+        protected abstract Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterSettings settings);
 
-        protected virtual Expression CreateInstantiationExpression(ParameterExpression source, Type destinationType, TypeAdapterConfigSettingsBase settings)
+        protected virtual Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
         {
-            return Expression.New(destinationType);
+            return Expression.New(arg.DestinationType);
         }
 
-        protected virtual Expression CreateAdaptExpression(Expression sourceElement, Type destinationElementType, TypeAdapterConfigSettingsBase settings)
+        protected virtual Expression CreateAdaptExpression(Expression sourceElement, Type destinationElementType, TypeAdapterSettings settings)
         {
             var sourceElementType = sourceElement.Type;
             var adapter = TypeAdapter.GetAdapter(sourceElementType, destinationElementType) as IInlineTypeAdapter;
@@ -135,7 +142,7 @@ namespace Mapster.Adapters
                 var typeAdaptType = typeof(TypeAdapter<,>).MakeGenericType(sourceElementType, destinationElementType);
                 var method = typeAdaptType.GetMethod("AdaptWithContext",
                     new[] { sourceElementType });
-                getter = sourceElementType == destinationElementType && settings?.SameInstanceForSameType == true
+                getter = sourceElementType == destinationElementType && settings?.ShallowCopyForSameType == true
                     ? sourceElement
                     : Expression.Call(method, sourceElement);
             }

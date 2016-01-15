@@ -11,13 +11,13 @@ namespace Mapster.Tests
         [TearDown]
         public void Teardown()
         {
-            TypeAdapterConfig.GlobalSettings.CustomAdapters.Clear();
+            BaseTypeAdapterConfig.GlobalSettings.CustomAdapters.Clear();
         }
 
         [Test]
         public void Map_Using_Json_Adapter()
         {
-            TypeAdapterConfig.GlobalSettings.CustomAdapters.Add(new JsonAdapter());
+            BaseTypeAdapterConfig.GlobalSettings.CustomAdapters.Add(new JsonAdapter());
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 

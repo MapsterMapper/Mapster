@@ -31,7 +31,7 @@ namespace Mapster.Adapters
                 convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
             }
 
-            var destinationTransforms = TypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
+            var destinationTransforms = BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
             if (destinationTransforms.ContainsKey(destinationType))
             {
                 var transform = destinationTransforms[destinationType];

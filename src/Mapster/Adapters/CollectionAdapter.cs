@@ -34,7 +34,7 @@ namespace Mapster.Adapters
             }
         }
 
-        protected override Expression CreateInstantiationExpression(ParameterExpression source, Type destinationType, TypeAdapterConfigSettingsBase settings)
+        protected override Expression CreateInstantiationExpression(ParameterExpression source, Type destinationType, TypeAdapterSettings settings)
         {
             var destinationElementType = destinationType.ExtractCollectionType();
             if (destinationType.IsArray)
@@ -53,7 +53,7 @@ namespace Mapster.Adapters
                 return Expression.New(ctor, count);
         }
 
-        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterConfigSettingsBase settings)
+        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterSettings settings)
         {
             if (destination.Type.IsArray)
             {
@@ -72,7 +72,7 @@ namespace Mapster.Adapters
             }
         }
 
-        private Expression CreateArraySet(Expression source, Expression destination, TypeAdapterConfigSettingsBase settings)
+        private Expression CreateArraySet(Expression source, Expression destination, TypeAdapterSettings settings)
         {
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
@@ -88,7 +88,7 @@ namespace Mapster.Adapters
             return Expression.Block(new[] {v}, start, loop);
         }
 
-        private Expression CreateListSet(Expression source, Expression destination, TypeAdapterConfigSettingsBase settings)
+        private Expression CreateListSet(Expression source, Expression destination, TypeAdapterSettings settings)
         {
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();

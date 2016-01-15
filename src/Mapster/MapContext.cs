@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mapster
 {
@@ -21,18 +18,24 @@ namespace Mapster
             return RuntimeHelpers.GetHashCode(obj);
         }
     }
-    public static class MapContext
+    public class MapContext
     {
         [ThreadStatic]
-        private static Dictionary<object, object> _references;
-        public static Dictionary<object, object> References
+        private static MapContext _context;
+        public static MapContext Context
+        {
+            get { return _context ?? (_context = new MapContext()); }
+        }
+
+        private Dictionary<object, object> _references;
+        public Dictionary<object, object> References
         {
             get { return _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default)); }
         }
 
         public static void Clear()
         {
-            _references = null;
+            _context = null;
         }
     }
 }

@@ -226,7 +226,7 @@ namespace Mapster.Utils
             }
 
             if (memberExpr == null)
-                throw new ArgumentException("method");
+                throw new ArgumentException("argument must be member access", "method");
 
             return memberExpr;
         }

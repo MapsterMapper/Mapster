@@ -4,6 +4,6 @@ namespace Mapster
 {
     public interface IProjectionExpression
     {
-        IQueryable<TDestination> To<TDestination>();
+        IQueryable<TDestination> To<TDestination>(TypeAdapterConfig config = null);
     }
 }

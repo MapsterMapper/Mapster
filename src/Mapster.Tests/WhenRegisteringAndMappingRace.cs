@@ -12,15 +12,15 @@ namespace Mapster.Tests
         [TestFixtureTearDown]
         public void TearDown()
         {
-            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
+            BaseTypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
         }
 
 
         [Test]
         public void Types_Map_Successfully_If_Mapping_Applied_First()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
@@ -35,7 +35,7 @@ namespace Mapster.Tests
         [Test, Explicit]
         public void Race_Condition_Produces_Error()
         {
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
@@ -63,8 +63,8 @@ namespace Mapster.Tests
         [Test, Explicit]
         public void Explicit_Mapping_Requirement_Throws_Before_Mapping_Attempted()
         {
-            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
-            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+            BaseTypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+            BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
