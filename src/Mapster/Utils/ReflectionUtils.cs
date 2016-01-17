@@ -125,6 +125,7 @@ namespace Mapster.Utils
             if (srcType == destType)
                 return source;
 
+            //special handling for string
             if (destType == _stringType)
             {
                 if (srcType.IsEnum)
@@ -155,6 +156,14 @@ namespace Mapster.Utils
                 }
             }
 
+            //try using type casting
+            try
+            {
+                return Expression.Convert(source, destType);
+            }
+            catch { }
+
+            //using Convert
             if (destType == typeof(bool))
                 return CreateConvertMethod("ToBoolean", srcType, destType, source);
 
@@ -193,12 +202,6 @@ namespace Mapster.Utils
 
             if (destType == typeof(sbyte))
                 return CreateConvertMethod("ToSByte", srcType, destType, source);
-
-            if (srcType.IsAssignableFrom(destType) ||
-                destType.IsAssignableFrom(srcType) ||
-                (srcType.IsEnum && Enum.GetUnderlyingType(srcType) == destType) ||
-                (destType.IsEnum && Enum.GetUnderlyingType(destType) == srcType))
-                return Expression.Convert(source, destType);
 
             var changeTypeMethod = typeof(Convert).GetMethod("ChangeType", new[] { typeof(object), typeof(Type) });
             return Expression.Convert(Expression.Call(changeTypeMethod, Expression.Convert(source, typeof(object)), Expression.Constant(destType)), destType);

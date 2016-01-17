@@ -14,6 +14,9 @@ namespace Mapster
     public class Adapter : IAdapter
     {
         readonly TypeAdapterConfig _config;
+
+        public Adapter() : this(TypeAdapterConfig.GlobalSettings) { }
+
         public Adapter(TypeAdapterConfig config)
         {
             _config = config;
