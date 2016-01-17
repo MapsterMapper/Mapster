@@ -100,7 +100,7 @@ namespace Mapster.Tests
                 RelatedDepartments = new Departments[] { Departments.IT, Departments.Finance }
             };
 
-            var dto = TypeAdapter<Person, PersonDTO>.Adapt(person);
+            var dto = TypeAdapter.Adapt<Person, PersonDTO>(person);
             Assert.IsNotNull(dto);
             Assert.IsTrue(dto.Id == person.Id && 
                 dto.Name == person.Name &&
@@ -168,7 +168,7 @@ namespace Mapster.Tests
 
             var persons = new List<Person>() { person };
 
-            var dtos = TypeAdapter<List<Person>, Person[]>.Adapt(persons);
+            var dtos = TypeAdapter.Adapt<List<Person>, Person[]>(persons);
 
             Assert.IsNotNull(dtos);
             Assert.IsTrue(dtos.Length == 1);

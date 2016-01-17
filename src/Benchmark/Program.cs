@@ -81,7 +81,7 @@ namespace Benchmark
 
             Test(customer, 1000000);
 
-            //Test(customer, 10000000);
+            Test(customer, 10000000);
 
             Console.WriteLine();
             Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime / MapsterTime).ToString("###.00") + " X slower");
@@ -101,7 +101,7 @@ namespace Benchmark
 
             TestExpressMapper<Customer, CustomerDTO>(item, iterations);
 
-            TestAutoMapper<Customer, CustomerDTO>(item, iterations);
+            //TestAutoMapper<Customer, CustomerDTO>(item, iterations);
         }
 
         private static void TestSimple(Foo item, int iterations)

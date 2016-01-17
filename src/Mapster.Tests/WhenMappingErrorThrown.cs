@@ -18,7 +18,7 @@ namespace Mapster.Tests
         [Test]
         public void When_Getter_Throws_Exception_Bubbles_Up()
         {
-            TypeAdapterConfig<SimplePocoThatThrowsOnGet, SimpleDto>.NewConfig();
+            TypeAdapterConfig<SimplePocoThatThrowsOnGet, SimpleDto>.NewConfig().Compile();
 
             var poco = new SimplePocoThatThrowsOnGet
             {
@@ -26,13 +26,13 @@ namespace Mapster.Tests
                 Name = "TestName"
             };
 
-            Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimpleDto>(poco));
+            Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimplePocoThatThrowsOnGet, SimpleDto>(poco));
         }
 
         [Test]
         public void When_Setter_Throws_Exception_Bubbles_Up()
         {
-            TypeAdapterConfig<SimplePoco, SimpleDtoThatThrowsOnSet>.NewConfig();
+            TypeAdapterConfig<SimplePoco, SimpleDtoThatThrowsOnSet>.NewConfig().Compile();
 
             var poco = new SimplePoco
             {
@@ -40,14 +40,14 @@ namespace Mapster.Tests
                 Name = "TestName"
             };
 
-            Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimpleDtoThatThrowsOnSet>(poco));
+            Assert.Throws<InvalidOperationException>(() => TypeAdapter.Adapt<SimplePoco, SimpleDtoThatThrowsOnSet>(poco));
         }
 
         [Test]
         public void When_Source_Expression_Throws_Exception_Bubbles_Up()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.Amount, src => src.Amount/src.Count);
+                .Map(dest => dest.Amount, src => src.Amount/src.Count).Compile();
 
             var poco = new SimplePoco
             {
@@ -57,14 +57,14 @@ namespace Mapster.Tests
                 Count = 0
             };
 
-            var exception = Assert.Throws<DivideByZeroException>(() => TypeAdapter.Adapt<SimpleDto>(poco));
+            var exception = Assert.Throws<DivideByZeroException>(() => TypeAdapter.Adapt<SimplePoco, SimpleDto>(poco));
         }
 
         [Test]
         public void When_Condition_Throws_Exception_Bubbles_Up()
         {
             TypeAdapterConfig<SimplePoco, SimplePoco>.NewConfig()
-                .Map(dest => dest.Amount, src => src.Amount, cond => cond.Amount/cond.Count > 0);
+                .Map(dest => dest.Amount, src => src.Amount, cond => cond.Amount/cond.Count > 0).Compile();
 
             var poco = new SimplePoco
             {
@@ -74,7 +74,7 @@ namespace Mapster.Tests
                 Count = 0
             };
 
-            var exception = Assert.Throws<DivideByZeroException>(() => TypeAdapter.Adapt<SimplePoco>(poco));
+            var exception = Assert.Throws<DivideByZeroException>(() => TypeAdapter.Adapt<SimplePoco, SimplePoco>(poco));
         }
 
         #region Test Classes

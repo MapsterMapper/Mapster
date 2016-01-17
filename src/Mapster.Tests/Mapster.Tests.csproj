@@ -67,7 +67,6 @@
     <Compile Include="Classes\Product.cs" />
     <Compile Include="Classes\TypeTestClass.cs" />
     <Compile Include="WhenPreserveReferences.cs" />
-    <Compile Include="WhenAddingCustomAdapter.cs" />
     <Compile Include="WhenAddingCustomMappings.cs" />
     <Compile Include="WhenAddingPrimitiveTypes.cs" />
     <Compile Include="WhenHandlingUnmappedMembers.cs" />
@@ -92,8 +91,6 @@
     <Compile Include="WhenRegisteringAndMappingRace.cs" />
     <Compile Include="WhenRunningOnMultipleThreads.cs" />
     <Compile Include="WhenUsingNonDefaultConstructor.cs" />
-    <Compile Include="WhenUsingTypeResolvers.cs" />
-    <Compile Include="WhenUsingValueResolvers.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -9,8 +9,10 @@ namespace Mapster.Models
         readonly ReadOnlyCollection<ParameterExpression> _from;
         readonly Expression[] _to;
 
+        public int ReplaceCount { get; private set; }
+
         //constructors
-        public ParameterExpressionReplacer(ReadOnlyCollection<ParameterExpression> from, Expression[] to)
+        public ParameterExpressionReplacer(ReadOnlyCollection<ParameterExpression> from, params Expression[] to)
         {
             _from = from;
             _to = to;
@@ -22,6 +24,7 @@ namespace Mapster.Models
             {
                 if (node == _from[i])
                 {
+                    this.ReplaceCount += 1;
                     if (node.Type == _to[i].Type)
                         return _to[i];
                     else

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
@@ -15,34 +16,25 @@ namespace Mapster.Adapters
     /// </remarks>
     internal class ClassAdapter : BaseAdapter
     {
-        public override bool CanAdapt(Type sourceType, Type destinationType)
+        public override int? Priority(Type sourceType, Type destinationType, MapType mapType)
         {
-            var settings = TypeAdapter.GetSettings(sourceType, destinationType);
-            var model = CreateAdapterModel(Expression.Parameter(sourceType), Expression.Parameter(destinationType), settings);
-            return model.Properties.Count > 0;
+            if (destinationType.GetPublicFieldsAndProperties(allowNoSetter: false).Count == 0)
+                return null;
+            else
+                return -150;
         }
 
-        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterSettings settings)
+        protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            var model = CreateAdapterModel(source, destination, settings);
-
-            if (BaseTypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource && model.UnmappedProperties.Count > 0)
-            {
-                throw new ArgumentOutOfRangeException($"The following members of destination class {destination.Type} do not have a corresponding source member mapped or ignored:{string.Join(",", model.UnmappedProperties)}");
-            }
+            var properties = CreateAdapterModel(source, destination, arg);
 
             var lines = new List<Expression>();
-            //var pDepth = Expression.Variable(typeof(int));
-
-            //if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
-            //    list2.Add(Expression.Assign(pDepth, Expression.Subtract(depth, Expression.Constant(1))));
-
-            foreach (var property in model.Properties)
+            foreach (var property in properties)
             {
-                var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, settings);
+                var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
 
                 Expression itemAssign = Expression.Assign(property.Setter, getter);
-                if (settings?.IgnoreNullValues == true && (!property.Getter.Type.IsValueType || property.Getter.Type.IsNullable()))
+                if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.IsValueType || property.Getter.Type.IsNullable()))
                 {
                     var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);
@@ -53,15 +45,28 @@ namespace Mapster.Adapters
             return Expression.Block(lines);
         }
 
+        protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
+        {
+            var newInstance = (NewExpression)CreateInstantiationExpression(source, arg);
+            var properties = CreateAdapterModel(source, newInstance, arg);
+
+            var lines = new List<MemberBinding>();
+            foreach (var property in properties)
+            {
+                var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+                var bind = Expression.Bind(property.SetterProperty, getter);
+                lines.Add(bind);
+            }
+
+            return Expression.MemberInit(newInstance, lines);
+        }
+
         #region Build the Adapter Model
 
-        private static AdapterModel CreateAdapterModel(Expression source, Expression destination, TypeAdapterSettings settings)
+        private static IEnumerable<PropertyModel> CreateAdapterModel(Expression source, Expression destination, CompileArgument arg)
         {
-            Type destinationType = destination.Type;
             Type sourceType = source.Type;
-            List<MemberInfo> destinationMembers = destinationType.GetPublicFieldsAndProperties(allowNoSetter: false);
-            if (destinationMembers.Count == 0)
-                return AdapterModel.Default;
+            var destinationMembers = arg.DestinationType.GetPublicFieldsAndProperties(allowNoSetter: false);
 
             var unmappedDestinationMembers = new List<string>();
 
@@ -72,26 +77,12 @@ namespace Mapster.Adapters
                 MemberInfo destinationMember = destinationMembers[i];
                 bool isProperty = destinationMember is PropertyInfo;
 
-                if (settings != null)
-                {
-                    if (ProcessIgnores(settings, destinationMember)) continue;
+                if (ProcessIgnores(arg.Settings, destinationMember)) continue;
 
-                    if (ProcessCustomResolvers(source, destination, settings, destinationMember, properties)) continue;
-                }
+                if (ProcessCustomResolvers(source, destination, arg.Settings, destinationMember, properties)) continue;
 
                 MemberInfo sourceMember = ReflectionUtils.GetPublicFieldOrProperty(sourceType, isProperty, destinationMember.Name);
-                if (sourceMember == null)
-                {
-                    if (FlattenMethod(source, destination, destinationMember, properties)) continue;
-
-                    if (FlattenClass(source, destination, destinationMember, properties)) continue;
-
-                    if (destinationMember.HasPublicSetter())
-                    {
-                        unmappedDestinationMembers.Add(destinationMember.Name);
-                    }
-                }
-                else
+                if (sourceMember != null)
                 {
                     var propertyModel = new PropertyModel
                     {
@@ -102,26 +93,39 @@ namespace Mapster.Adapters
                         Setter = destinationMember is PropertyInfo
                             ? Expression.Property(destination, (PropertyInfo) destinationMember)
                             : Expression.Field(destination, (FieldInfo) destinationMember),
-                        SetterPropertyName = destinationMember.Name,
+                        SetterProperty = destinationMember,
                     };
                     properties.Add(propertyModel);
                 }
+                else
+                {
+                    if (FlattenMethod(source, destination, destinationMember, properties)) continue;
+
+                    if (FlattenClass(source, destination, destinationMember, properties, arg.MapType == MapType.Projection)) continue;
+
+                    if (destinationMember.HasPublicSetter())
+                    {
+                        unmappedDestinationMembers.Add(destinationMember.Name);
+                    }
+                }
             }
 
-            return new AdapterModel
+            if (arg.Context.Config.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
             {
-                Properties = properties,
-                UnmappedProperties = unmappedDestinationMembers,
-            };
+                throw new ArgumentOutOfRangeException($"The following members of destination class {arg.DestinationType} do not have a corresponding source member mapped or ignored:{string.Join(",", unmappedDestinationMembers)}");
+            }
+
+            return properties;
         }
 
         private static bool FlattenClass(
             Expression source,
             Expression destination, 
             MemberInfo destinationMember,
-            List<PropertyModel> properties)
+            List<PropertyModel> properties,
+            bool isProjection)
         {
-            var getter = ReflectionUtils.GetDeepFlattening(source, destinationMember.Name);
+            var getter = ReflectionUtils.GetDeepFlattening(source, destinationMember.Name, isProjection);
             if (getter != null)
             {
                 var propertyModel = new PropertyModel
@@ -131,7 +135,7 @@ namespace Mapster.Adapters
                     Setter = destinationMember is PropertyInfo
                         ? Expression.Property(destination, (PropertyInfo) destinationMember)
                         : Expression.Field(destination, (FieldInfo) destinationMember),
-                    SetterPropertyName = destinationMember.Name,
+                    SetterProperty = destinationMember,
                 };
                 properties.Add(propertyModel);
 
@@ -156,7 +160,7 @@ namespace Mapster.Adapters
                     Setter = destinationMember is PropertyInfo
                         ? Expression.Property(destination, (PropertyInfo)destinationMember)
                         : Expression.Field(destination, (FieldInfo)destinationMember),
-                    SetterPropertyName = destinationMember.Name,
+                    SetterProperty = destinationMember,
                 };
 
                 properties.Add(propertyModel);
@@ -192,7 +196,7 @@ namespace Mapster.Adapters
                                 Setter = destinationMember is PropertyInfo
                                     ? Expression.Property(destination, (PropertyInfo) destinationMember)
                                     : Expression.Field(destination, (FieldInfo) destinationMember),
-                                SetterPropertyName = destinationMember.Name,
+                                SetterProperty = destinationMember,
                             };
                             isAdded = true;
                         }
@@ -218,22 +222,10 @@ namespace Mapster.Adapters
 
         private static bool ProcessIgnores(TypeAdapterSettings config, MemberInfo destinationMember)
         {
-            var ignoreMembers = config.IgnoreMembers;
-            if (ignoreMembers != null && ignoreMembers.Count > 0)
-            {
-                bool ignored = false;
-                for (int j = 0; j < ignoreMembers.Count; j++)
-                {
-                    if (destinationMember.Name.Equals(ignoreMembers[j]))
-                    {
-                        ignored = true;
-                        break;
-                    }
-                }
-                if (ignored)
-                    return true;
-            }
-            return false;
+            if (config.IgnoreMembers.Contains(destinationMember.Name))
+                return true;
+            var attributes = destinationMember.GetCustomAttributes(true).Select(attr => attr.GetType());
+            return config.IgnoreAttributes.Overlaps(attributes);
         }
 
         #endregion

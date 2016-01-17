@@ -51,7 +51,7 @@ namespace Mapster.Tests
         [Test]
         public void ConvertPrimitiveEntityToDto()
         {
-            var dto = TypeAdapter<Customer, CustomerDTO>.Adapt(GetCustomer());
+            var dto = TypeAdapter.Adapt<Customer, CustomerDTO>(GetCustomer());
             
             Assert.IsNotNull(dto);
             Assert.IsTrue(dto.Id == 1 && 

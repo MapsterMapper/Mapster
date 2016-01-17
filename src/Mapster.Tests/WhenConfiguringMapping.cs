@@ -86,7 +86,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<ConfigA, ConfigB>.NewConfig()
                 .Ignore(dest => dest.Id);
 
-            var objB = TypeAdapter<ConfigA, ConfigB>.Adapt(objA);
+            var objB = TypeAdapter.Adapt<ConfigA, ConfigB>(objA);
 
             Assert.IsNotNull(objB);
 
@@ -110,7 +110,7 @@ namespace Mapster.Tests
                 //.Map(dest => dest.FullName, (src) => string.Concat(src.Name, " ", src.Surname));
                 .Map(dest => dest.FullName, src => string.Concat(src.Name, " ", src.Surname));
 
-            var objD = TypeAdapter<ConfigC, ConfigD>.Adapt(objC);
+            var objD = TypeAdapter.Adapt<ConfigC, ConfigD>(objC);
 
             Assert.IsNotNull(objD);
 
@@ -144,7 +144,7 @@ namespace Mapster.Tests
 
             TypeAdapterConfig<TestNewInstanceD, TestNewInstanceE>
                 .NewConfig()
-                .SameInstanceForSameType(true);
+                .ShallowCopyForSameType(true);
 
             var newObj2 = TypeAdapter.Adapt<TestNewInstanceD, TestNewInstanceE>(obj);
 

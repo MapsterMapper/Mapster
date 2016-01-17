@@ -22,7 +22,7 @@ namespace Mapster
         public bool? PreserveReference;
         public bool? ShallowCopyForSameType;
         public bool? IgnoreNullValues;
-        public bool? CheckNullBeforeMapping;
+        public Type DestinationType;
 
         public readonly List<InvokerModel> Resolvers = new List<InvokerModel>();
         public LambdaExpression ConstructUsing;
@@ -41,16 +41,21 @@ namespace Mapster
                 this.ShallowCopyForSameType = other.ShallowCopyForSameType;
             if (this.IgnoreNullValues == null)
                 this.IgnoreNullValues = other.IgnoreNullValues;
-            if (this.CheckNullBeforeMapping == null)
-                this.CheckNullBeforeMapping = other.CheckNullBeforeMapping;
 
             this.Resolvers.AddRange(other.Resolvers);
-            if (this.ConstructUsing == null)
-                this.ConstructUsing = other.ConstructUsing;
-            if (this.ConverterFactory == null)
-                this.ConverterFactory = other.ConverterFactory;
-            if (this.ConverterToTargetFactory == null)
-                this.ConverterToTargetFactory = other.ConverterToTargetFactory;
+
+            if (this.DestinationType == null 
+                || other.DestinationType == null 
+                || this.DestinationType.IsAssignableFrom(other.DestinationType) 
+                || other.DestinationType.IsAssignableFrom(this.DestinationType))
+            {
+                if (this.ConstructUsing == null)
+                    this.ConstructUsing = other.ConstructUsing;
+                if (this.ConverterFactory == null)
+                    this.ConverterFactory = other.ConverterFactory;
+                if (this.ConverterToTargetFactory == null)
+                    this.ConverterToTargetFactory = other.ConverterToTargetFactory;
+            }
         }
     }
 

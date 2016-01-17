@@ -53,12 +53,6 @@ namespace Mapster
             setter.Settings.PreserveReference = value;
             return setter;
         }
-
-        public static TSetter CheckNullBeforeMapping<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
-        {
-            setter.Settings.CheckNullBeforeMapping = value;
-            return setter;
-        }
     }
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter
     {
@@ -85,7 +79,7 @@ namespace Mapster
             }
 
             if (memberExp == null)
-                throw new ArgumentException("argument must be member access", "member"); ;
+                throw new ArgumentException("argument must be member access", nameof(member));
 
             Settings.Resolvers.Add(new InvokerModel
             {
@@ -127,12 +121,17 @@ namespace Mapster
             if (!baseDestinationType.IsAssignableFrom(typeof(TDestination)))
                 throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
 
-            TypeAdapterSettings baseSettings;
-            if (ParentConfig.Dict.TryGetValue(new TypeTuple(typeof(TSource), typeof(TDestination)), out baseSettings))
+            TypeAdapterRule rule;
+            if (ParentConfig.Dict.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out rule))
             {
-                Settings.Apply(baseSettings);
+                Settings.Apply(rule.Settings);
             }
             return this;
+        }
+
+        public void Compile()
+        {
+            this.ParentConfig.Compile(typeof(TSource), typeof(TDestination));
         }
     }
 }

@@ -10,13 +10,15 @@ namespace Mapster.Adapters
 {
     internal class CollectionAdapter : BaseAdapter
     {
-        public override bool CanAdapt(Type sourceType, Type destinationType)
+        public override int? Priority(Type sourceType, Type destinationType, MapType mapType)
         {
-            return sourceType.IsCollection() &&
-                destinationType.IsCollection();
+            if (sourceType.IsCollection() && destinationType.IsCollection())
+                return -125;
+            else
+                return null;
         }
 
-        private static Expression CreateCountExpression(ParameterExpression source, bool allowCountAll)
+        private static Expression CreateCountExpression(Expression source, bool allowCountAll)
         {
             if (source.Type.IsArray)
                 return Expression.ArrayLength(source);
@@ -34,16 +36,22 @@ namespace Mapster.Adapters
             }
         }
 
-        protected override Expression CreateInstantiationExpression(ParameterExpression source, Type destinationType, TypeAdapterSettings settings)
+        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
         {
-            var destinationElementType = destinationType.ExtractCollectionType();
-            if (destinationType.IsArray)
+            return base.CanInline(source, destination, arg)
+                   && (arg.DestinationType == typeof (IEnumerable) || arg.DestinationType.IsGenericEnumerableType());
+        }
+
+        protected override Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
+        {
+            var destinationElementType = arg.DestinationType.ExtractCollectionType();
+            if (arg.DestinationType.IsArray)
                 return Expression.NewArrayBounds(destinationElementType, CreateCountExpression(source, true));
 
             var count = CreateCountExpression(source, false);
-            var listType = destinationType.IsInterface
+            var listType = arg.DestinationType.IsInterface
                 ? typeof (List<>).MakeGenericType(destinationElementType)
-                : destinationType;
+                : arg.DestinationType;
             if (count == null)
                 return Expression.New(listType);
             var ctor = listType.GetConstructor(new[] { typeof(int) });
@@ -53,11 +61,11 @@ namespace Mapster.Adapters
                 return Expression.New(ctor, count);
         }
 
-        protected override Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterSettings settings)
+        protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             if (destination.Type.IsArray)
             {
-                return CreateArraySet(source, destination, settings);
+                return CreateArraySet(source, destination, arg);
             }
             else
             {
@@ -67,19 +75,39 @@ namespace Mapster.Adapters
                     : typeof(IList);
                 var tmp = Expression.Variable(listType);
                 var assign = ExpressionEx.Assign(tmp, destination); //convert to list type
-                var set = CreateListSet(source, tmp, settings);
+                var set = CreateListSet(source, tmp, arg);
                 return Expression.Block(new[] {tmp}, assign, set);
             }
         }
 
-        private Expression CreateArraySet(Expression source, Expression destination, TypeAdapterSettings settings)
+        protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
+        {
+            if (arg.DestinationType.IsAssignableFrom(source.Type) && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
+                return source.To(arg.DestinationType);
+
+            var sourceElementType = source.Type.ExtractCollectionType();
+            var destinationElementType = arg.DestinationType.ExtractCollectionType();
+            var method = (from m in typeof (Enumerable).GetMethods()
+                          where m.Name == "Select"
+                          let p = m.GetParameters()[1]
+                          where p.ParameterType.GetGenericTypeDefinition() == typeof (Func<,>)
+                          select m).First().MakeGenericMethod(sourceElementType, destinationElementType);
+
+            var p1 = Expression.Parameter(sourceElementType);
+            var adapt = CreateAdaptExpression(p1, destinationElementType, arg);
+            if (adapt == p1)
+                return source;
+            return Expression.Call(method, source, Expression.Lambda(adapt, p1));
+        }
+
+        private Expression CreateArraySet(Expression source, Expression destination, CompileArgument arg)
         {
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
             var v = Expression.Variable(typeof (int));
             var start = Expression.Assign(v, Expression.Constant(0));
-            var getter = CreateAdaptExpression(p, destinationElementType, settings);
+            var getter = CreateAdaptExpression(p, destinationElementType, arg);
             var set = Expression.Assign(
                 Expression.ArrayAccess(destination, v),
                 getter);
@@ -88,12 +116,12 @@ namespace Mapster.Adapters
             return Expression.Block(new[] {v}, start, loop);
         }
 
-        private Expression CreateListSet(Expression source, Expression destination, TypeAdapterSettings settings)
+        private Expression CreateListSet(Expression source, Expression destination, CompileArgument arg)
         {
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
-            var getter = CreateAdaptExpression(p, destinationElementType, settings);
+            var getter = CreateAdaptExpression(p, destinationElementType, arg);
             
             var addMethod = destination.Type.GetMethod("Add", new[] {destinationElementType});
             var set = Expression.Call(

@@ -50,7 +50,7 @@ namespace Mapster.Tests
 
             var employee = new Employee { Id = Guid.NewGuid(), Name = "Timuçin", Surname = "KIVANÇ", Department = (int)Departments.IT  };
 
-            var dto = TypeAdapter<Employee, EmployeeDTO>.Adapt(employee);
+            var dto = TypeAdapter.Adapt<Employee, EmployeeDTO>(employee);
 
             Assert.IsNotNull(dto);
           
@@ -64,7 +64,7 @@ namespace Mapster.Tests
         {
             var employee = new EmployeeWithStringEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = Departments.IT.ToString() };
 
-            var dto = TypeAdapter<EmployeeWithStringEnum, EmployeeDTO>.Adapt(employee);
+            var dto = TypeAdapter.Adapt<EmployeeWithStringEnum, EmployeeDTO>(employee);
 
             dto.ShouldNotBeNull();
 
@@ -141,9 +141,9 @@ namespace Mapster.Tests
         private static void Assert_Flag_Enum(int value, string result)
         {
             var e = (Flags) value;
-            var str = TypeAdapter<Flags, string>.Adapt(e);
+            var str = TypeAdapter.Adapt<Flags, string>(e);
             str.ShouldEqual(result);
-            var e2 = TypeAdapter<string, Flags>.Adapt(str);
+            var e2 = TypeAdapter.Adapt<string, Flags>(str);
             e2.ShouldEqual(e);
         }
 

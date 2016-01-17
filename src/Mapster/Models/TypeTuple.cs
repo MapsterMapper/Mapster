@@ -2,7 +2,7 @@
 
 namespace Mapster.Models
 {
-    public struct TypeTuple : IEquatable<TypeTuple>
+    public class TypeTuple : IEquatable<TypeTuple>
     {
         public bool Equals(TypeTuple other)
         {

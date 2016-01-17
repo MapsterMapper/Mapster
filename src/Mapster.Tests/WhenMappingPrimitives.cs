@@ -11,7 +11,7 @@ namespace Mapster.Tests
         [Test]
         public void Integer_Is_Mapped_To_Byte()
         {
-            byte b = TypeAdapter<int, byte>.Adapt(5);
+            byte b = TypeAdapter.Adapt<int, byte>(5);
 
             Assert.IsTrue(b == 5);
         }

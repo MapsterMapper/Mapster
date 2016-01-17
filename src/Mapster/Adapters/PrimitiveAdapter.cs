@@ -4,48 +4,53 @@ using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
-    internal class PrimitiveAdapter : BaseInlineAdapter
+    internal class PrimitiveAdapter : BaseAdapter
     {
-        public override bool CanAdapt(Type sourceType, Type destinationType)
+        public override int? Priority(Type sourceType, Type destinationType, MapType mapType)
         {
-            return true;
+            return -200;
         }
 
-        public override Expression CreateExpression(Expression source, Expression destination, Type destinationType)
+        protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
             Expression convert = source;
-            var sourceType = source.Type;
+            var sourceType = arg.SourceType;
+            var destinationType = arg.DestinationType;
             if (sourceType != destinationType)
             {
-                if (sourceType.IsNullable())
-                {
-                    convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
-                }
-                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
-                if (convert.Type != destinationType)
+                if (arg.MapType == MapType.Projection)
                     convert = Expression.Convert(convert, destinationType);
+                else
+                {
+                    if (sourceType.IsNullable())
+                    {
+                        convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
+                    }
+                    convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
+                    if (convert.Type != destinationType)
+                        convert = Expression.Convert(convert, destinationType);
+                }
             }
-            if ((!sourceType.IsValueType || sourceType.IsNullable()) && destinationType.IsValueType && !destinationType.IsNullable())
+            if (arg.MapType != MapType.Projection
+                && (!arg.SourceType.IsValueType || arg.SourceType.IsNullable()) 
+                && destinationType.IsValueType 
+                && !destinationType.IsNullable())
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
                 convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
             }
 
-            var destinationTransforms = BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
-            if (destinationTransforms.ContainsKey(destinationType))
-            {
-                var transform = destinationTransforms[destinationType];
-                convert = Expression.Invoke(transform, convert);
-            }
-            var settings = TypeAdapter.GetSettings(sourceType, destinationType);
-            var localTransform = settings?.DestinationTransforms.Transforms;
-            if (localTransform != null && localTransform.ContainsKey(destinationType))
-            {
-                var transform = localTransform[destinationType];
-                convert = Expression.Invoke(transform, convert);
-            }
-
             return convert;
+        }
+
+        protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
+        {
+            throw new NotImplementedException();
         }
     }
 }

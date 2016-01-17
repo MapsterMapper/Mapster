@@ -21,24 +21,42 @@ namespace Mapster
 
         public TDestination Adapt<TDestination>(object source)
         {
-            var fn = _config.GetMapFunction(source.GetType(), typeof(TDestination));
-            var result = (TDestination)fn.DynamicInvoke(source);
-            MapContext.Clear();
-            return result;
+            dynamic fn = _config.GetMapFunction(source.GetType(), typeof(TDestination));
+            try
+            {
+                return fn((dynamic)source);
+            }
+            finally
+            {
+                MapContext.Clear();
+            }
         }
 
         public TDestination Adapt<TSource, TDestination>(TSource source)
         {
-            var result = _config.GetMapFunction<TSource, TDestination>()(source);
-            MapContext.Clear();
-            return result;
+            var fn = _config.GetMapFunction<TSource, TDestination>();
+            try
+            {
+                return fn(source);
+            }
+            finally
+            {
+                MapContext.Clear();
+            }
         }
 
         public TDestination Adapt<TSource, TDestination>(TSource source, TDestination destination)
         {
-            var result = _config.GetMapToTargetFunction<TSource, TDestination>()(source, destination);
-            MapContext.Clear();
-            return result;
+            var fn = _config.GetMapToTargetFunction<TSource, TDestination>();
+
+            try
+            {
+                return fn(source, destination);
+            }
+            finally
+            {
+                MapContext.Clear();
+            }
         }
 
         public object Adapt(object source, Type sourceType, Type destinationType)
@@ -51,11 +69,16 @@ namespace Mapster
 
         public object Adapt(object source, object destination, Type sourceType, Type destinationType)
         {
-            var fn = _config.GetMapToTargetFunction(sourceType, destinationType);
-            var result = fn.DynamicInvoke(source, destination);
-            MapContext.Clear();
-            return result;
-        } 
+            dynamic fn = _config.GetMapFunction(sourceType, destinationType);
+            try
+            {
+                return fn((dynamic)source);
+            }
+            finally
+            {
+                MapContext.Clear();
+            }
+        }
     }
 
 }

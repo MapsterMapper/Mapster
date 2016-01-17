@@ -11,7 +11,7 @@ namespace Mapster.Tests
         [TearDown]
         public void TearDown()
         {
-            BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Clear();
+            TypeAdapterConfig.GlobalSettings.Default.Settings.DestinationTransforms.Clear();
         }
 
         [Test]
@@ -30,7 +30,7 @@ namespace Mapster.Tests
         [Test]
         public void Global_Destination_Transform_Is_Applied_To_Class()
         {
-            BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+            TypeAdapterConfig.GlobalSettings.Default.AddDestinationTransform((string x) => x.Trim());
             TypeAdapterConfig<string, string>.Clear();
 
             var source = new SimplePoco {Id = new Guid(), Name = "Test    "};
@@ -40,22 +40,10 @@ namespace Mapster.Tests
         }
 
         [Test]
-        public void Global_Destination_Transform_Is_Applied_To_Primitive()
-        {
-            BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
-            TypeAdapterConfig<string, string>.Clear();
-
-            var source ="Test    " ;
-            var destination = TypeAdapter.Adapt<string>(source);
-
-            destination.ShouldEqual("Test");
-        }
-
-        [Test]
         public void Adapter_Destination_Transform_Is_Applied_To_Class()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
-            config.DestinationTransforms.Upsert<string>(x => x.Trim());
+            config.AddDestinationTransform((string x) => x.Trim());
             config.Compile();
 
             var source = new SimplePoco { Id = new Guid(), Name = "Test    " };

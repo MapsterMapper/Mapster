@@ -10,13 +10,10 @@ namespace Mapster.Utils
     internal static class ReflectionUtils
     {
         private static readonly Type _stringType = typeof(string);
-        private static readonly Type _nullableType = typeof (Nullable<>);
-
-        private static readonly Type _iEnumerableType = typeof(IEnumerable);
 
         public static bool IsNullable(this Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == _nullableType;
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
@@ -75,7 +72,7 @@ namespace Mapster.Utils
 
         public static bool IsCollection(this Type type)
         {
-            return _iEnumerableType.IsAssignableFrom(type) && type != _stringType;
+            return typeof(IEnumerable).IsAssignableFrom(type) && type != _stringType;
             
         }
 
@@ -226,14 +223,14 @@ namespace Mapster.Utils
             }
 
             if (memberExpr == null)
-                throw new ArgumentException("argument must be member access", "method");
+                throw new ArgumentException("argument must be member access", nameof(method));
 
             return memberExpr;
         }
 
-        public static Expression GetDeepFlattening(Expression source, string propertyName)
+        public static Expression GetDeepFlattening(Expression source, string propertyName, bool isProjection)
         {
-            var properties = source.Type.GetPublicFieldsAndProperties(allowNoSetter: false);
+            var properties = source.Type.GetPublicFieldsAndProperties();
             for (int j = 0; j < properties.Count; j++)
             {
                 var property = properties[j];
@@ -244,10 +241,15 @@ namespace Mapster.Utils
                     var exp = property is PropertyInfo
                         ? Expression.Property(source, (PropertyInfo) property)
                         : Expression.Field(source, (FieldInfo) property);
-                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'));
+                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'), isProjection);
                     if (ifTrue == null)
                         return null;
-                    return Expression.Condition(Expression.Equal(exp, Expression.Constant(null, exp.Type)), Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type), ifTrue);
+                    if (isProjection)
+                        return ifTrue;
+                    return Expression.Condition(
+                        Expression.Equal(exp, Expression.Constant(null, exp.Type)), 
+                        Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type), 
+                        ifTrue);
                 }
                 else if (string.Equals(propertyName, property.Name))
                 {

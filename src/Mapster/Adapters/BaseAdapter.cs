@@ -2,25 +2,24 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Models;
 using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
     public abstract class BaseAdapter
     {
-        public abstract int? Priority(Type sourceType, Type desinationType, MapType mapType);
+        public abstract int? Priority(Type sourceType, Type destinationType, MapType mapType);
 
-        public virtual LambdaExpression CreateAdaptFunc(CompileArgument arg)
+        public LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
-            //var depth = Expression.Parameter(typeof(int));
             var p = Expression.Parameter(arg.SourceType);
             var body = CreateExpressionBody(p, null, arg);
             return Expression.Lambda(body, p);
         }
 
-        public virtual LambdaExpression CreateAdaptToTargetFunc(CompileArgument arg)
+        public LambdaExpression CreateAdaptToTargetFunc(CompileArgument arg)
         {
-            //var depth = Expression.Parameter(typeof(int));
             var p = Expression.Parameter(arg.SourceType);
             var p2 = Expression.Parameter(arg.DestinationType);
             var body = CreateExpressionBody(p, p2, arg);
@@ -29,7 +28,7 @@ namespace Mapster.Adapters
 
         public TypeAdapterRule CreateRule()
         {
-            return new TypeAdapterRule
+            var rule = new TypeAdapterRule
             {
                 Priority = this.Priority,
                 Settings = new TypeAdapterSettings
@@ -38,120 +37,123 @@ namespace Mapster.Adapters
                     ConverterToTargetFactory = this.CreateAdaptToTargetFunc,
                 }
             };
+            DecorateRule(rule);
+            return rule;
+        }
+
+        protected virtual void DecorateRule(TypeAdapterRule rule) { }
+
+        protected virtual bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        {
+            if (destination != null)
+                return false;
+            if (arg.Settings.ConstructUsing != null && arg.Settings.ConstructUsing.Body.NodeType != ExpressionType.New)
+                return false;
+            if (arg.Settings.PreserveReference == true &&
+                arg.MapType != MapType.Projection &&
+                !arg.SourceType.IsValueType &&
+                !arg.DestinationType.IsValueType)
+                return false;
+            return true;
         }
 
         protected virtual Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
-            var list = new List<Expression>();
+            return CanInline(source, destination, arg) 
+                ? CreateInlineExpressionBody(source, arg).To(arg.DestinationType) 
+                : CreateBlockExpressionBody(source, destination, arg);
+        }
 
-            if (destination == null)
-            {
-                if (arg.Settings.ConstructUsing != null)
-                {
-                    destination = arg.Settings.ConstructUsing.Apply(source).TrimConversion().To(destination.Type);
-                }
-                else
-                {
-                    destination = CreateInstantiationExpression(source, arg);
-                }
-            }
-            var set = CreateSetterExpression(source, result, settings);
+        protected Expression CreateBlockExpressionBody(Expression source, Expression destination, CompileArgument arg)
+        {
+            var result = Expression.Variable(arg.DestinationType);
+            Expression assign = Expression.Assign(result, destination ?? CreateInstantiationExpression(source, arg));
 
-            var sourceType = source.Type;
-            if ((settings?.PreserveReference ?? BaseTypeAdapterConfig.GlobalSettings.PreserveReference) == true &&
-                !sourceType.IsValueType &&
-                !destinationType.IsValueType)
+            var set = CreateBlockExpression(source, result, arg);
+
+            if (arg.Settings.PreserveReference == true &&
+                arg.MapType != MapType.Projection &&
+                !arg.SourceType.IsValueType &&
+                !arg.DestinationType.IsValueType)
             {
-                var propInfo = typeof(MapContext).GetProperty("References", BindingFlags.Static | BindingFlags.Public);
-                var refDict = Expression.Property(null, propInfo);
-                var refAdd = Expression.Call(refDict, "Add", null, Expression.Convert(source, typeof(object)), Expression.Convert(result, typeof(object)));
+                var dict = Expression.Parameter(typeof (Dictionary<object, object>));
+                var propInfo = typeof(MapContext).GetProperty("Context", BindingFlags.Static | BindingFlags.Public);
+                var refContext = Expression.Property(null, propInfo);
+                var refDict = Expression.Property(refContext, "References");
+
+                var refAdd = Expression.Call(dict, "Add", null, Expression.Convert(source, typeof(object)), Expression.Convert(result, typeof(object)));
                 set = Expression.Block(assign, refAdd, set);
 
                 var cached = Expression.Variable(typeof(object));
                 var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
-                var checkHasRef = Expression.Call(refDict, tryGetMethod, source, cached);
+                var checkHasRef = Expression.Call(dict, tryGetMethod, source, cached);
+                var assignDict = Expression.Assign(dict, refDict);
                 set = Expression.IfThenElse(
                     checkHasRef,
                     ExpressionEx.Assign(result, cached),
                     set);
-                set = Expression.Block(new[] { cached }, set);
+                set = Expression.Block(new[] { cached, dict }, assignDict, set);
             }
             else
             {
                 set = Expression.Block(assign, set);
             }
 
-            //if (TypeAdapterConfig.GlobalSettings.EnableMaxDepth)
-            //{
-            //    var compareDepth = Expression.Equal(depth, Expression.Constant(0));
-            //    set = Expression.IfThenElse(
-            //        compareDepth,
-            //        Expression.Assign(pDest, (Expression) p2 ?? Expression.Constant(null, destinationType)),
-            //        set);
-            //}
-
-            if (!sourceType.IsValueType || sourceType.IsNullable())
+            if (arg.MapType != MapType.Projection && 
+                (!arg.SourceType.IsValueType || arg.SourceType.IsNullable()))
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 set = Expression.IfThenElse(
                     compareNull,
-                    Expression.Assign(result, (Expression)destination ?? Expression.Constant(destinationType.GetDefault(), destinationType)),
+                    Expression.Assign(result, destination ?? Expression.Constant(arg.DestinationType.GetDefault(), arg.DestinationType)),
                     set);
             }
-            list.Add(set);
 
-            var destinationTransforms = BaseTypeAdapterConfig.GlobalSettings.DestinationTransforms.Transforms;
-            if (destinationTransforms.ContainsKey(destinationType))
+            return Expression.Block(new[] { result }, set, result);
+        }
+        protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
+        {
+            var exp = CreateInlineExpression(source, arg);
+
+            if (arg.MapType != MapType.Projection
+                && (!arg.SourceType.IsValueType || arg.SourceType.IsNullable()))
             {
-                var transform = destinationTransforms[destinationType];
-                var invoke = Expression.Invoke(transform, result);
-                list.Add(Expression.Assign(result, invoke));
-            }
-            var localTransform = settings?.DestinationTransforms.Transforms;
-            if (localTransform != null && localTransform.ContainsKey(destinationType))
-            {
-                var transform = localTransform[destinationType];
-                var invoke = Expression.Invoke(transform, result);
-                list.Add(Expression.Assign(result, invoke));
+                var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
+                exp = Expression.Condition(
+                    compareNull,
+                    Expression.Constant(exp.Type.GetDefault(), exp.Type),
+                    exp);
             }
 
-            list.Add(result);
-
-            return Expression.Block(new[] { result }, list);
+            return exp;
         }
 
-        protected abstract Expression CreateSetterExpression(ParameterExpression source, ParameterExpression destination, TypeAdapterSettings settings);
+        protected abstract Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg);
+        protected abstract Expression CreateInlineExpression(Expression source, CompileArgument arg);
 
         protected virtual Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
         {
-            return Expression.New(arg.DestinationType);
+            return arg.Settings.ConstructUsing != null 
+                ? arg.Settings.ConstructUsing.Apply(source).TrimConversion().To(arg.DestinationType) 
+                : Expression.New(arg.DestinationType);
         }
 
-        protected virtual Expression CreateAdaptExpression(Expression sourceElement, Type destinationElementType, TypeAdapterSettings settings)
+        protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)
         {
-            var sourceElementType = sourceElement.Type;
-            var adapter = TypeAdapter.GetAdapter(sourceElementType, destinationElementType) as IInlineTypeAdapter;
+            if (source.Type == destinationType && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
+                return source.To(destinationType);
 
-            Expression getter;
-            if (adapter != null)
+            var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destinationType, arg.MapType, arg.Context);
+            var exp = lambda.Apply(source);
+
+            if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))
             {
-                getter = adapter.CreateExpression(sourceElement, null, destinationElementType);
+                var transform = arg.Settings.DestinationTransforms.Transforms[exp.Type];
+                var replacer = new ParameterExpressionReplacer(transform.Parameters, exp);
+                var newExp = replacer.Visit(transform.Body);
+                exp = replacer.ReplaceCount >= 2 ? Expression.Invoke(transform, exp) : newExp;
             }
-            else
-            {
-                var typeAdaptType = typeof(TypeAdapter<,>).MakeGenericType(sourceElementType, destinationElementType);
-                var method = typeAdaptType.GetMethod("AdaptWithContext",
-                    new[] { sourceElementType });
-                getter = sourceElementType == destinationElementType && settings?.ShallowCopyForSameType == true
-                    ? sourceElement
-                    : Expression.Call(method, sourceElement);
-            }
-
-            var localTransform = settings?.DestinationTransforms.Transforms;
-            if (localTransform != null && localTransform.ContainsKey(getter.Type))
-                getter = Expression.Invoke(localTransform[getter.Type], getter);
-
-            return getter;
+            return exp.To(destinationType);
         }
     }
 }

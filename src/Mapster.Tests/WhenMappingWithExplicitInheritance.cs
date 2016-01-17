@@ -13,7 +13,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
             TypeAdapterConfig<DerivedPoco, SimpleDto>.Clear();
             TypeAdapterConfig<DerivedPoco, DerivedDto>.Clear();
-            BaseTypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
+            TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Mapster.Tests
         public void Base_Configuration_DestinationTransforms_Apply_To_Derived_Class()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
-            config.DestinationTransforms.Upsert<string>(x => x.Trim());
+            config.AddDestinationTransform((string x) => x.Trim());
             config.Compile();
 
             TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
@@ -97,46 +97,19 @@ namespace Mapster.Tests
         }
 
         [Test]
-        public void Ignores_Are_Overridden_By_Derived_Configurations()
-        {
-            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Ignore(dest => dest.Name)
-                .Compile();
-
-            TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
-                .Inherits<SimplePoco, SimpleDto>()
-                .Map(dest => dest.Name, src => src.Name)
-                .Compile();
-
-            var source = new DerivedPoco
-            {
-                Id = new Guid(),
-                Name = "SourceName"
-            };
-
-            var dto = TypeAdapter.Adapt<DerivedDto>(source);
-
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name);
-        }
-
-
-        [Test]
         public void Derived_Config_Shares_Base_Config_Properties()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .IgnoreNullValues(true)
-                .SameInstanceForSameType(true)
+                .ShallowCopyForSameType(true)
                 //.MaxDepth(5)
                 .Compile();
 
-            TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
-                .Inherits<SimplePoco, SimpleDto>();
-
-            var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.ConfigSettings;
+            var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+                .Inherits<SimplePoco, SimpleDto>().Settings;
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
-            derivedConfig.SameInstanceForSameType.ShouldEqual(true);
+            derivedConfig.ShallowCopyForSameType.ShouldEqual(true);
             //derivedConfig.MaxDepth.ShouldEqual(5);
         }
 

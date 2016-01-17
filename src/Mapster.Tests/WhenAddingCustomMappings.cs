@@ -28,7 +28,7 @@ namespace Mapster.Tests
         public void Property_Is_Mapped_From_Null_Value_Successfully()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-                .Map(dest => dest.AnotherName, src => null)
+                .Map(dest => dest.AnotherName, src => (string)null)
                 .Compile();
 
             var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };

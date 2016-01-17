@@ -34,7 +34,8 @@
     <Prefer32Bit>false</Prefer32Bit>
     <DebugSymbols>true</DebugSymbols>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\Mapster.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <BaseAddress>1124073472</BaseAddress>
   </PropertyGroup>
   <ItemGroup>
@@ -50,9 +51,8 @@
   <ItemGroup>
     <Compile Include="Adapter.cs" />
     <Compile Include="Adapters\BaseAdapter.cs" />
-    <Compile Include="Adapters\BaseInlineAdapter.cs" />
     <Compile Include="MapContext.cs" />
-    <Compile Include="Models\AdapterModel.cs" />
+    <Compile Include="Models\BlockExpressionDetector.cs" />
     <Compile Include="Models\ParameterExpressionReplacer.cs" />
     <Compile Include="Models\TypeTuple.cs" />
     <Compile Include="TransformsCollection.cs" />

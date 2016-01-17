@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mapster.Models
 {
@@ -9,6 +10,6 @@ namespace Mapster.Models
 
         public byte ConvertType; //Primitive = 1, FlatteningGetMethod = 2, FlatteningDeep = 3, Adapter = 4, CustomResolve = 5;
 
-        public string SetterPropertyName;
+        public MemberInfo SetterProperty;
     }
 }

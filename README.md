@@ -17,14 +17,14 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 
 | Engine          | Structs | Simple objects | Parent-Child | Parent-Children | Complex objects | Advance mapping |
 |-----------------|--------:|---------------:|-------------:|----------------:|----------------:|----------------:|
-| AutoMapper      |   11076 |          26121 |        21019 |           15841 |           18619 |           21987 |
-| ExpressMapper   |     758 |           1701 |         1208 |            1323 |            3296 |            5252 |
-| OoMapper        |       - |           1595 |         1182 |            1188 |            3221 |               - |
-| ValueInjector   |    9071 |          21030 |        15698 |           12263 |           17334 |           31261 |
-| TinyMapper      |       - |           1238 |            - |               - |               - |               - |
+| AutoMapper      |   10871 |          27075 |        20895 |           19199 |           19333 |           21496 |
+| ExpressMapper   |     690 |           1350 |         1195 |            1678 |            3130 |            3920 |
+| OoMapper        |       - |           2043 |         1277 |            1416 |            2777 |               - |
+| ValueInjector   |    8534 |          21089 |        17008 |           12355 |           16876 |           19970 |
+| TinyMapper      |       - |           1282 |            - |               - |               - |               - |
 | Mapster         |       - |           2382 |         1892 |            1626 |            4287 |            6756 |
-| **Mapster 2.0** | **610** |       **1323** |      **874** |         **787** |        **2292** |        **3654** |
-| Native          |     593 |            796 |          496 |             659 |            2287 |            4266 |
+| **Mapster 2.0** | **515** |       **1251** |      **950** |        **1037** |        **2455** |        **2342** |
+| Native          |     458 |            790 |          870 |            1253 |            3037 |            2754 |
 
 (NOTE: Benchmark runner is forked from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
 
@@ -54,15 +54,11 @@ When the default convention mappings aren't enough to do the job, you can specif
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 #####Ignore Members & Attributes
-By default, Mapster will automatically map properties with the same names. You can ignore members by using `Ignore` method.
+Mapster will automatically map properties with the same names. You can ignore members by using `Ignore` method.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .Ignore(dest => dest.Id);
-
-Or you can ignore globally by using global setting.
-
-    TypeAdapterConfig.GlobalSettings.IgnoreMembers.Add('Id');
 
 You can ignore members annotated with specific attribute by using `IgnoreAttribute` method.
 
@@ -70,12 +66,8 @@ You can ignore members annotated with specific attribute by using `IgnoreAttribu
         .NewConfig()
         .IgnoreAttribute(typeof(JsonIgnoreAttribute));
 
-Or
-
-    TypeAdapterConfig.GlobalSettings.IgnoreAttributes.Add(typeof(JsonIgnoreAttribute));
-
 #####Property mapping
-By default, Mapster map property by name, but you can customize property mapping.
+You can customize how Mapster maps value to property.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
@@ -89,7 +81,7 @@ If the condition is not met, the mapping is skipped altogether.
         .NewConfig()
         .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
 
-You can also map even type of source and destination properties are different.
+You can map even type of source and destination properties are different.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
@@ -97,43 +89,31 @@ You can also map even type of source and destination properties are different.
              src => src.GenderString); //"Male" or "Female"
 
 #####Merge object
-By default, Mapster will copy null values to destination properties (or convert destination properties to default values). You can merge objects by ignore null values in source properties by using `IgnoreNullValues` method. When you use this setting, null value will not copy to destination property.
+By default, Mapster will clone all properties, even source properties contains null value. You can copy only properties that have value by using `IgnoreNullValues` method.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .IgnoreNullValues(true);
 
-Or you can ignore null values globally by using global setting.
-
-    TypeAdapterConfig.GlobalSettings.IgnoreNullValues = true;
-
-NOTE: after you set `IgnoreNullValues` in global settings to `true`, you can opt-out by setting `IgnoreNullValues` in `TypeAdapterConfig<TSource, TDestination>` to `false`.
-
 #####Shallow copy
-By default, Mapster will recursively copy nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. When you use this setting, when types of source properties and destination properties are the same, it will not create new objects, but it just copy reference from source properties to destination properties.
+By default, Mapster will recursively copy nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. 
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .ShallowCopyForSameType(true);
 
-Or you can set globally by using global setting.
-
-    TypeAdapterConfig.GlobalSettings.ShallowCopyForSameType = true;
-
-NOTE: after you set `ShallowCopyForSameType` in global settings to `true`, you can opt-out by setting `ShallowCopyForSameType` in `TypeAdapterConfig<TSource, TDestination>` to `false`.
-
 #####Preserve reference (preventing circular reference stackoverflow)
-By default, Mapster will not track reference (for performance reason). Therefore, when you copying circular reference objects, there will be stackoverflow exception. If you would like to copy circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
+When you copying circular reference objects, there will be stackoverflow exception, because Mapster will try to recursively clone all objects in circular. If you would like to copy circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .PreserveReference(true);
 
-Or you can set globally by using global setting.
+####Supported Types
+Mapster basically can clone nearly all kind of objects. Here are some details.
 
-    TypeAdapterConfig.GlobalSettings.PreserveReference = true;
-
-NOTE: after you set `PreserveReference` in global settings to `true`, you can opt-out by setting `PreserveReference` in `TypeAdapterConfig<TSource, TDestination>` to `false`.
+#####Primitive types
+Converting between primitive types (ie. int, string, bool, double, decimal, DateTime) is supported, including when those types are nullable.
 
 ####Mapping Lists Included
 This includes lists, arrays, collections, enumerables etc...
