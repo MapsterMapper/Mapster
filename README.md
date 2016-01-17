@@ -10,7 +10,7 @@ var result = TypeAdapter.Adapt<NewType>(original);
 ```
 ### Get it
 ```
-PM> Install-Package GeekMapper
+PM> Install-Package Mapster
 ```
 ###Mapster 2.0 Release!
 Mapster 2.0 is now become blistering fast! We upgraded the whole compilation unit while still maintain its functionalities. Here is benchmark.
@@ -28,7 +28,8 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 
 (NOTE: Benchmark runner is forked from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
 
-###Examples
+###Get started
+
 ####Mapping to a new object
 Mapster makes the object and maps values to it.
 
@@ -44,14 +45,26 @@ You make the object, Mapster maps to the object.
     TDestination destObject = new TDestination();
     destObject = TypeAdapter.Adapt(sourceObject, destObject);
 
+####Queryable Extensions
+Mapster also provides extension to map queryable.
+
+    using(MyDbContext context = new MyDbContext())
+    {
+        // Build a Select Expression from DTO
+        var destinations = context.Sources.Project().To<Destination>().ToList();
+
+        // Versus creating by hand:
+        var destinations = context.Sources.Select(c => new Destination(){
+            Id = p.Id,
+            Name = p.Name,
+            Surname = p.Surname,
+            ....
+        })
+        .ToList();
+    }
+
 ####Customized Mapping
 When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
-
-    TypeAdapterConfig<TSource, TDestination>()
-        .NewConfig()
-        .Ignore(dest => dest.Property)
-        .Map(dest => dest.FullName, 
-             src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 #####Ignore Members & Attributes
 Mapster will automatically map properties with the same names. You can ignore members by using `Ignore` method.
@@ -89,54 +102,50 @@ You can map even type of source and destination properties are different.
              src => src.GenderString); //"Male" or "Female"
 
 #####Merge object
-By default, Mapster will clone all properties, even source properties contains null value. You can copy only properties that have value by using `IgnoreNullValues` method.
+By default, Mapster will map all properties, even source properties contains null value. You can copy only properties that have value by using `IgnoreNullValues` method.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .IgnoreNullValues(true);
 
 #####Shallow copy
-By default, Mapster will recursively copy nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. 
+By default, Mapster will recursively map nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. 
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .ShallowCopyForSameType(true);
 
 #####Preserve reference (preventing circular reference stackoverflow)
-When you copying circular reference objects, there will be stackoverflow exception, because Mapster will try to recursively clone all objects in circular. If you would like to copy circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
+When you map circular reference objects, there will be stackoverflow exception, because Mapster will try to recursively map all objects in circular. If you would like to map circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .PreserveReference(true);
 
-####Supported Types
+####Supported Mappings
 Mapster basically can clone nearly all kind of objects. Here are some details.
 
-#####Primitive types
-Converting between primitive types (ie. int, string, bool, double, decimal, DateTime) is supported, including when those types are nullable.
+#####Conversion of immutable types
+Converting between primitive types (ie. int, string, bool, double, decimal) are supported, including when those types are nullable. For all other types, if you can cast types in c#, you can also cast in Mapster.
 
-####Mapping Lists Included
-This includes lists, arrays, collections, enumerables etc...
-
-    var destObjectList = TypeAdapter.Adapt<List<TSource>, List<TDestination>>(sourceList);
-
-####Mapping Enums Included
+#####Conversion from/to enum
 Mapster maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
-The default Enum.ToString() in .Net is quite slow.  The implementation in Mapster is double the speed.  
+The default Enum.ToString() in .Net is quite slow. The implementation in Mapster is double the speed.  
 Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty, 
 the enum will initialize to the first enum value.
 
-In addition, fast Enum mapper extension methods are included for convenience.
+In Mapster 2.0, flagged enum is also supported.
 
-    //Convert enum to string
-    var myEnum = new SomeEnum.FirstValue;
-    myEnum.ToFastString();
+#####Mapping POCO
+Mapster can map 2 different POCO types by maching following
+- Source and destination property names are the same ie. `dest.Name = src.Name`
+- Source has get method ie. `dest.Name = src.GetName()`
+- Source properties has child object which can flatten to destination ie. `dest.ContactName = src.Contact.Name` or `dest.Contact_Name = src.Contact.Name`
 
-    //Convert string to enum
-    var myEnumString = "FirstValue";
-    myEnumString.ToFastEnum<SomeEnum>();
-    
+In Mapster 2.0, POCO struct is also supported.
 
+#####Mapping Lists Included
+This includes lists, arrays, collections, dictionary including various interface ie. IList<T>, ICollection<T>, IEnumerable<T> etc...
 
 ####Implicit TSource Mapping Inheritance
 If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
@@ -309,39 +318,6 @@ or a mapping level.
         .DestinationTransforms.Upsert<string>(x => x.Trim());
     
 
-####Conditional Mapping
-The Map configuration can accept a third parameter that provides a condition based on the source.
-If the condition is not met, the mapping is skipped altogether.
-
-    TypeAdapterConfig<TSource, TDestination>()
-        .NewConfig()
-        .IgnoreMember(dest => dest.Property)
-        .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
-
-####Max Depth
-When mapping nested or tree-type structures, it's often necessary to specify a max nesting depth to prevent overflows.
-
-    TypeAdapterConfig<TSource, TDestination>
-                .NewConfig()
-                .MaxDepth(3);
-
-####Queryable Extensions
-
-    using(MyDbContext context = new MyDbContext())
-    {
-        // Build a Select Expression from DTO
-        var destinations = context.Sources.Project().To<Destination>().ToList();
-
-        // Versus creating by hand:
-        var destinations = context.Sources.Select(c => new Destination(){
-            Id = p.Id,
-            Name = p.Name,
-            Surname = p.Surname,
-            ....
-        })
-        .ToList();
-    }
-
 ####Forcing Explicit Mapping
 In order to help with "Fail Fast" situations, the following strict mapping modes have been added.
 An ArgumentOutOfRange exception will currently be thrown in the situations below if an appropriate mapping and/or source cannot be located.
@@ -377,75 +353,4 @@ In some cases, you need an instance of a mapper (or a factory function) to pass 
 the IAdapter and Adapter to fill this need:
 
     IAdapter instance = TypeAdapter.GetInstance();
-
-
-###Assembly Scanning for Custom Mappings
-To make it easier to register custom mappings, we've implemented an assembly scanning approach.
-To allow this, either inherit from IRegistry or Registry in the Mapster.Registration namespace.
-
-Override the Apply() method and perform your registrations there.  When your app starts up, use the Registrar class to perform registration.
-
-    //Implement a registry class
-    public class MyRegistry : Registry
-    {
-        public override void Apply()
-        {
-            TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .IgnoreMember(dest => dest.CurrencyCode)
-                .IgnoreMember(dest => dest.ExtraElements);
-        }
-    }
-
-    //In my boostrap/startup code, call the registry
-    //Method 1: Call registry directly with extension method
-    new MyRegistry().Register();
-
-    //Method 2: Scan the assembly (by assembly or class type)
-    Registrar.RegisterFromAssemblyContaining<MyRegistry>();
-    //or
-    Assembly.GetExecutingAssembly().RegisterFromAssembly();
-
-
-###Performance Comparisons
-When aggregating times across complex and simple objects, we're seeing a ~30x speed improvement in comparison to AutoMapper, 
-but it's obviously very dependent upon your situation.
-
-####Benchmark "Complex" Object
-
-The following test converts a Customer object with 2 nested address collections and two nested address sub-objects to a DTO.
-
-    Customer c = new Customer()
-    {
-        Address = new Address() { City = "istanbul", Country = "turkey", Id = 1, Street = "istiklal cad." },
-        HomeAddress = new Address() { City = "istanbul", Country = "turkey", Id = 2, Street = "istiklal cad." },
-        Id = 1,
-        Name = "Eduardo Najera",
-        Credit = 234.7m,
-        WorkAddresses = new List<Address>() { 
-            new Address() { City = "istanbul", Country = "turkey", Id = 5, Street = "istiklal cad." },
-            new Address() { City = "izmir", Country = "turkey", Id = 6, Street = "konak" }
-        },
-        Addresses = new List<Address>() { 
-            new Address() { City = "istanbul", Country = "turkey", Id = 3, Street = "istiklal cad." },
-            new Address() { City = "izmir", Country = "turkey", Id = 4, Street = "konak" }
-        }.ToArray()
-    };
-
-
-Competitors : Handwriting Mapper, Mapster, FastMapper, AutoMapper
-
-    Iterations : 100
-    Handwritten Mapper:     1
-    Mapster:                0
-    AutoMapper:             10
-
-    Iterations : 10000
-    Handwritten Mapper:     4
-    Mapster:                17
-    AutoMapper:             507
-
-    Iterations : 100000
-    Handwritten Mapper:     29
-    Mapster:                177
-    AutoMapper:             5058
 
