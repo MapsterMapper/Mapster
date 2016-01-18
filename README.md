@@ -30,7 +30,7 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 
 And here are list of new features!
 - Projection is improved to generate nicer sql query
-- Mapsters is now able to map struct
+- Mapster is now able to map struct
 - Flagged enum is supported
 - Setting is now much more flexible
     - You can now both opt-in and opt-out setting
