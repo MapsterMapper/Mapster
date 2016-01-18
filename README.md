@@ -26,11 +26,62 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 | **Mapster 2.0** | **515** |       **1251** |      **950** |        **1037** |        **2455** |        **2342** |
 | Native          |     458 |            790 |          870 |            1253 |            3037 |            2754 |
 
-(NOTE: Benchmark runner is forked from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
+(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
+
+And here are list of new features!
+- Projection is improved to generate nicer sql query
+- Mapsters is now able to map struct
+- Flagged enum is supported
+- Setting is now much more flexible
+    - You can now both opt-in and opt-out setting
+    - Setting inheritance is able to inherit from interface
+    - Setting inheritance is now combined (it does not only pick from the closest parent)
+    - New rule based setting, you can defined your setting more granular level
+    - Setting is no more static, you can overload your setting to use different setting for your mapping
+- You can ignore properties by attributes
+- Now you can setup your map from different type ie `config.Map(dest => dest.AgeString, src => src.AgeInt)`
+- Mapster is now support circular reference mapping!
 
 ###Get started
 
-####Mapping to a new object
+[Mapping](#Mapping)
+- [Mapping to a new object](#MappingNew)
+- [Mapping to an existing object](#MappingToTarget)
+- [Queryable Extensions](#Projection)
+- [Mapping instance](#UnitTest)
+
+[Conversion](#Conversion)
+- [Conversion of immutable types](#ConversionImmutable)
+- [Conversion from/to enum](#ConversionEnum)
+- [Mapping POCO](#ConversionPOCO)
+- [Mapping Lists](#ConversionList)
+
+[Setting](#Setting)
+- [Global Settings](#SettingGlobal)
+- [Setting per type](#SettingPerType)
+- [Setting inheritance](#SettingInheritance)
+- [Rule based setting](#SettingRuleBased)
+- [Overload setting](#SettingOverload)
+
+[Basic Customization](#Basic)
+- [Ignore properties & attributes](#Ignore)
+- [Property Mapping](#Map)
+- [Merge Objects](#Merge)
+- [Shallow Copy](#ShallowCopy)
+- [Preserve reference (preventing circular reference stackoverflow)](#PreserveReference)
+
+[Advance Customization](#Advance)
+- [Custom instance creation](#ConstructUsing)
+- [Destination transform](#Transform)
+- [Converter factory](#ConverterFactory)
+
+[Validation](#Validate)
+- [Explicit Mapping](#ExplicitMapping)
+- [Checking Destination Member](#CheckDestinationMember)
+- [Compilation Validation](#Compile)
+
+####Mapping <a name="Mapping"></a>
+#####Mapping to a new object <a name="MappingNew"></a>
 Mapster makes the object and maps values to it.
 
     var destObject = TypeAdapter.Adapt<TSource, TDestination>(sourceObject);
@@ -39,13 +90,13 @@ or just
     
     var destObject = TypeAdapter.Adapt<TDestination>(sourceObject);
 
-####Mapping to an existing object
+#####Mapping to an existing object <a name="MappingToTarget"></a>
 You make the object, Mapster maps to the object.
 
     TDestination destObject = new TDestination();
     destObject = TypeAdapter.Adapt(sourceObject, destObject);
 
-####Queryable Extensions
+#####Queryable Extensions <a name="Projection"></a>
 Mapster also provides extension to map queryable.
 
     using(MyDbContext context = new MyDbContext())
@@ -62,6 +113,54 @@ Mapster also provides extension to map queryable.
         })
         .ToList();
     }
+
+####Conversion <a name="Conversion"></a>
+Mapster basically can map nearly all kind of objects. Here are some details.
+
+#####Conversion of immutable types <a name="ConversionImmutable"></a>
+Converting between primitive types (ie. int, string, bool, double, decimal) are supported, including when those types are nullable. For all other types, if you can cast types in c#, you can also cast in Mapster.
+
+    var i = TypeAdapter.Adapt<string, int>("123");  //123
+
+#####Conversion from/to enum <a name="ConversionEnum"></a>
+Mapster maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
+The default Enum.ToString() in .Net is quite slow. The implementation in Mapster is double the speed.  
+Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty, 
+the enum will initialize to the first enum value.
+
+In Mapster 2.0, flagged enum is also supported.
+
+    var e = TypeAdapter.Adapt<string, FileShare>("Read, Write, Delete");  
+    //FileShare.Read | FileShare.Write | FileShare.Delete
+
+#####Mapping POCO <a name="ConversionPOCO"></a>
+Mapster can map 2 different POCO types by maching following
+- Source and destination property names are the same ie. `dest.Name = src.Name`
+- Source has get method ie. `dest.Name = src.GetName()`
+- Source properties has child object which can flatten to destination ie. `dest.ContactName = src.Contact.Name` or `dest.Contact_Name = src.Contact.Name`
+
+In Mapster 2.0, POCO struct is also supported.
+
+    class Staff {
+        public string Name { get; set; }
+        public int GetAge() { return (DateTime.Now - this.BirthDate).TotalDays / 365.25; }
+        public Staff Supervisor { get; set; }
+        ...
+    }
+    
+    struct StaffDto {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string SupervisorName { get; set; }
+    }
+
+    var dto = TypeAdapter.Adapt<Staff, StaffDto>(staff);  
+    //dto.Name = staff.Name, dto.Age = staff.GetAge(), dto.SupervisorName = staff.Supervisor.Name
+
+#####Mapping Lists <a name="ConversionList"></a>
+This includes mapping among lists, arrays, collections, dictionary including various interface ie. IList<T>, ICollection<T>, IEnumerable<T> etc...
+
+    var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
 
 ####Customized Mapping
 When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
@@ -121,31 +220,6 @@ When you map circular reference objects, there will be stackoverflow exception, 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .PreserveReference(true);
-
-####Supported Mappings
-Mapster basically can clone nearly all kind of objects. Here are some details.
-
-#####Conversion of immutable types
-Converting between primitive types (ie. int, string, bool, double, decimal) are supported, including when those types are nullable. For all other types, if you can cast types in c#, you can also cast in Mapster.
-
-#####Conversion from/to enum
-Mapster maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
-The default Enum.ToString() in .Net is quite slow. The implementation in Mapster is double the speed.  
-Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty, 
-the enum will initialize to the first enum value.
-
-In Mapster 2.0, flagged enum is also supported.
-
-#####Mapping POCO
-Mapster can map 2 different POCO types by maching following
-- Source and destination property names are the same ie. `dest.Name = src.Name`
-- Source has get method ie. `dest.Name = src.GetName()`
-- Source properties has child object which can flatten to destination ie. `dest.ContactName = src.Contact.Name` or `dest.Contact_Name = src.Contact.Name`
-
-In Mapster 2.0, POCO struct is also supported.
-
-#####Mapping Lists Included
-This includes lists, arrays, collections, dictionary including various interface ie. IList<T>, ICollection<T>, IEnumerable<T> etc...
 
 ####Implicit TSource Mapping Inheritance
 If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
