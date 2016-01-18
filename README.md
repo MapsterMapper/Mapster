@@ -41,6 +41,7 @@ And here are list of new features!
 - You can ignore properties by attributes
 - Now you can setup your map from different type ie `config.Map(dest => dest.AgeString, src => src.AgeInt)`
 - Mapster is now support circular reference mapping!
+- Supported more frameworks (.NET 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, .NET Core 5.4)
 
 ###Get started
 
@@ -199,7 +200,7 @@ Type mapping will automatically inherit for source type. Ie. if you set up follo
 
 Derived type of `SimplePoco` will automatically apply above property mapping config.
 
-    var dest = TypeAdapt.Adapt<DerivedPoco, SimpleDto>(src); //dest.Name = src.Name + "_Suffix"
+    var dest = TypeAdapter.Adapt<DerivedPoco, SimpleDto>(src); //dest.Name = src.Name + "_Suffix"
 
 If you don't wish a derived type to use the base mapping, just define `NoInherit` for that type.
 
@@ -242,7 +243,7 @@ For type mapping, you can use `OfType` method.
 
 You can apply setting instance by passing to `Adapt` method.
 
-    var result = TypeAdapt.Adapt<TDestination>(src, config);
+    var result = TypeAdapter.Adapt<TDestination>(src, config);
 
 Or to Adapter instance.
 
