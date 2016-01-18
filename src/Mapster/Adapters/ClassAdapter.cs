@@ -25,21 +25,6 @@ namespace Mapster.Adapters
             if (destProp.Count == 0)
                 return null;
 
-            var srcProp = sourceType.GetPublicFieldsAndProperties().Select(x => x.Name).ToList();
-            var srcGet =
-                new HashSet<string>(from m in sourceType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                    where m.Name.StartsWith("Get") && m.GetParameters().Length == 0
-                    select m.Name.Substring(3));
-            if (srcProp.Count == 0 && srcGet.Count == 0)
-                return null;
-
-            if (!srcGet.Overlaps(destProp) &&
-                !(from s in srcProp
-                  from d in destProp
-                  where d.StartsWith(s)
-                  select s).Any())
-                return null;
-
             return -150;
         }
 

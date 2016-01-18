@@ -58,25 +58,31 @@ namespace Mapster
             TypeAdapterRule rule;
             if (!this.Dict.TryGetValue(key, out rule))
             {
-                rule = new TypeAdapterRule
+                lock(this.Dict)
                 {
-                    Priority = (sourceType, destinationType, mapType) =>
+                    if (!this.Dict.TryGetValue(key, out rule))
                     {
-                        var score1 = GetSubclassDistance(destinationType, typeof(TDestination), this.AllowImplicitDestinationInheritance);
-                        if (score1 == null)
-                            return null;
-                        var score2 = GetSubclassDistance(sourceType, typeof(TSource), true);
-                        if (score2 == null)
-                            return null;
-                        return score1.Value + score2.Value;
-                    },
-                    Settings = new TypeAdapterSettings
-                    {
-                        DestinationType = typeof(TDestination)
-                    },
-                };
-                this.Rules.Add(rule);
-                this.Dict.Add(key, rule);
+                        rule = new TypeAdapterRule
+                        {
+                            Priority = (sourceType, destinationType, mapType) =>
+                            {
+                                var score1 = GetSubclassDistance(destinationType, typeof(TDestination), this.AllowImplicitDestinationInheritance);
+                                if (score1 == null)
+                                    return null;
+                                var score2 = GetSubclassDistance(sourceType, typeof(TSource), true);
+                                if (score2 == null)
+                                    return null;
+                                return score1.Value + score2.Value;
+                            },
+                            Settings = new TypeAdapterSettings
+                            {
+                                DestinationType = typeof(TDestination)
+                            },
+                        };
+                        this.Rules.Add(rule);
+                        this.Dict.Add(key, rule);
+                    }
+                }
             }
             return new TypeAdapterSetter<TSource, TDestination>(rule.Settings, this);
         }
@@ -307,12 +313,15 @@ namespace Mapster
                         $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {sourceType} TDestination: {destinationType}");
             }
 
-            var settings = from rule in this.Rules.Reverse<TypeAdapterRule>()
-                           let priority = rule.Priority(sourceType, destinationType, mapType)
-                           where priority != null
-                           orderby priority.Value descending
-                           select rule.Settings;
-            var result = new TypeAdapterSettings();
+            var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
+                            let priority = rule.Priority(sourceType, destinationType, mapType)
+                            where priority != null
+                            orderby priority.Value descending
+                            select rule.Settings).ToList();
+            var result = new TypeAdapterSettings
+            {
+                NoInherit = settings.FirstOrDefault(s => s.NoInherit.HasValue)?.NoInherit
+            };
             foreach (var setting in settings)
             {
                 result.Apply(setting);

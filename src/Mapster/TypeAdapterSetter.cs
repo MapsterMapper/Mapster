@@ -104,15 +104,15 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> MapWith(Func<CompileArgument, Expression<Func<TSource, TDestination>>> converterFactory)
+        public TypeAdapterSetter<TSource, TDestination> MapWith(Expression<Func<TSource, TDestination>> converterFactory)
         {
-            Settings.ConverterFactory = converterFactory;
+            Settings.ConverterFactory = arg => converterFactory;
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(Func<CompileArgument, Expression<Func<TSource, TDestination, TDestination>>> converterFactory)
+        public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(Expression<Func<TSource, TDestination, TDestination>> converterFactory)
         {
-            Settings.ConverterToTargetFactory = converterFactory;
+            Settings.ConverterToTargetFactory = arg => converterFactory;
             return this;
         }
 

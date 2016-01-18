@@ -51,7 +51,7 @@ namespace Mapster.Tests
                                 .Map(dest => dest.MyNamePropertyIsDifferent, src => src.Name)
                                 .Ignore(dest => dest.Children);
                         },
-                        () => { TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco); }
+                        () => { TypeAdapter.Adapt<WeirdPoco>(simplePoco); }
                         );
                 }
             });
@@ -80,7 +80,7 @@ namespace Mapster.Tests
                                 .Map(dest => dest.MyNamePropertyIsDifferent, src => src.Name)
                                 .Ignore(dest => dest.Children);
                         },
-                        () => { TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco); }
+                        () => { TypeAdapter.Adapt<WeirdPoco>(simplePoco); }
                         );
                 }
             });

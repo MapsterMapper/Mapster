@@ -22,15 +22,15 @@ namespace Mapster.Tests
         {
             try
             {
-                //this is to prevent TypeInitializeException
-                TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
+                //compile first to prevent type initialize exception
+                TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig().Compile();
 
                 TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
                 TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
                 var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-                TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco);
+                TypeAdapter.Adapt<SimpleDto>(simplePoco);
                 Assert.Fail();
             }
             catch (InvalidOperationException ex)
