@@ -41,7 +41,7 @@ And here are list of new features!
 - You can ignore properties by attributes
 - Now you can setup your map from different type ie `config.Map(dest => dest.AgeString, src => src.AgeInt)`
 - Mapster is now support circular reference mapping!
-- Supported more frameworks (.NET 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, .NET Core 5.4)
+- Supported more frameworks (.NET 4.0, 4.5, .NET Core RC 5.4)
 
 ###Get started
 
