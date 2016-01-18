@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mapster.Adapters;
 
 namespace Mapster
@@ -40,11 +41,11 @@ namespace Mapster
             });
         }
 
-        public TypeAdapterSetter When(Func<Type, Type, MapType, int?> priority)
+        public TypeAdapterSetter When(Func<Type, Type, MapType, bool> canMap)
         {
             var rule = new TypeAdapterRule
             {
-                Priority = priority,
+                Priority = (srcType, destType, mapType) => canMap(srcType, destType, mapType) ? (int?)25 : null,
                 Settings = new TypeAdapterSettings(),
             };
             this.Rules.Add(rule);
@@ -104,7 +105,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapDict = new Hashtable();
-        public Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
+        internal Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
             object del = _mapDict[key];
@@ -126,7 +127,7 @@ namespace Mapster
                 return del;
             }
         }
-        public Delegate GetMapFunction(Type sourceType, Type destinationType)
+        internal Delegate GetMapFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
             object del = _mapDict[key];
@@ -137,7 +138,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapToTargetDict = new Hashtable();
-        public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
+        internal Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
             object del = _mapToTargetDict[key];
@@ -146,7 +147,7 @@ namespace Mapster
 
             return (Func<TSource, TDestination, TDestination>)AddToHash(_mapToTargetDict, key, CreateMapToTargetFunction);
         }
-        public Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
+        internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
             object del = _mapToTargetDict[key];
@@ -157,7 +158,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _projectionDict = new Hashtable();
-        public Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
+        internal Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
             object del = _projectionDict[key];
@@ -166,7 +167,7 @@ namespace Mapster
 
             return (Expression<Func<TSource, TDestination>>)AddToHash(_projectionDict, key, CreateProjectionExpression);
         }
-        public LambdaExpression GetProjectionExpression(Type sourceType, Type destinationType)
+        internal LambdaExpression GetProjectionExpression(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
             object del = _projectionDict[key];
@@ -287,7 +288,7 @@ namespace Mapster
             }
             else
             {
-                var method = (from m in typeof (TypeAdapterConfig).GetMethods()
+                var method = (from m in typeof (TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
                     where m.Name == "GetMapFunction"
                     select m).First().MakeGenericMethod(sourceType, destinationType);
                 invoker = Expression.Call(Expression.Constant(this), method);
@@ -337,7 +338,7 @@ namespace Mapster
             _projectionDict[tuple] = CreateProjectionExpression(tuple);
         }
 
-        public void Clear(Type sourceType, Type destinationType)
+        internal void Clear(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
             TypeAdapterRule rule;

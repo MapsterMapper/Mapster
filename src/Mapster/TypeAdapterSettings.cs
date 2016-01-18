@@ -22,6 +22,7 @@ namespace Mapster
         public bool? PreserveReference;
         public bool? ShallowCopyForSameType;
         public bool? IgnoreNullValues;
+        public bool? NoInherit;
         public Type DestinationType;
 
         public readonly List<InvokerModel> Resolvers = new List<InvokerModel>();
@@ -31,26 +32,35 @@ namespace Mapster
 
         public void Apply(TypeAdapterSettings other)
         {
-            this.IgnoreMembers.UnionWith(other.IgnoreMembers);
-            this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
-            this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
+            if (this.NoInherit == null)
+                this.NoInherit = other.NoInherit;
 
-            if (this.PreserveReference == null)
-                this.PreserveReference = other.PreserveReference;
-            if (this.ShallowCopyForSameType == null)
-                this.ShallowCopyForSameType = other.ShallowCopyForSameType;
-            if (this.IgnoreNullValues == null)
-                this.IgnoreNullValues = other.IgnoreNullValues;
+            if (!this.NoInherit.GetValueOrDefault())
+            {
+                if (this.PreserveReference == null)
+                    this.PreserveReference = other.PreserveReference;
+                if (this.ShallowCopyForSameType == null)
+                    this.ShallowCopyForSameType = other.ShallowCopyForSameType;
+                if (this.IgnoreNullValues == null)
+                    this.IgnoreNullValues = other.IgnoreNullValues;
 
-            this.Resolvers.AddRange(other.Resolvers);
+                this.IgnoreMembers.UnionWith(other.IgnoreMembers);
+                this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
+                this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
+
+                this.Resolvers.AddRange(other.Resolvers);
+            }
 
             if (this.DestinationType == null 
                 || other.DestinationType == null 
                 || this.DestinationType.IsAssignableFrom(other.DestinationType) 
                 || other.DestinationType.IsAssignableFrom(this.DestinationType))
             {
-                if (this.ConstructUsing == null)
-                    this.ConstructUsing = other.ConstructUsing;
+                if (!this.NoInherit.GetValueOrDefault())
+                {
+                    if (this.ConstructUsing == null)
+                        this.ConstructUsing = other.ConstructUsing;
+                }
                 if (this.ConverterFactory == null)
                     this.ConverterFactory = other.ConverterFactory;
                 if (this.ConverterToTargetFactory == null)

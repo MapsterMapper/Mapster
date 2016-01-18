@@ -53,6 +53,12 @@ namespace Mapster
             setter.Settings.PreserveReference = value;
             return setter;
         }
+
+        public static TSetter NoInherit<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.Settings.NoInherit = value;
+            return setter;
+        }
     }
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter
     {
