@@ -13,7 +13,7 @@ namespace Mapster.Utils
 
         public static bool IsNullable(this Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         public static List<MemberInfo> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
@@ -72,8 +72,7 @@ namespace Mapster.Utils
 
         public static bool IsCollection(this Type type)
         {
-            return typeof(IEnumerable).IsAssignableFrom(type) && type != _stringType;
-            
+            return typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != _stringType;
         }
 
         public static Type ExtractCollectionType(this Type collectionType)
@@ -92,7 +91,7 @@ namespace Mapster.Utils
 
         public static bool IsGenericEnumerableType(this Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
         }
 
         public static string ToString<T>(T item)
@@ -112,7 +111,7 @@ namespace Mapster.Utils
 
         public static object GetDefault(this Type type)
         {
-            return type.IsValueType && !type.IsNullable()
+            return type.GetTypeInfo().IsValueType && !type.IsNullable()
                 ? Activator.CreateInstance(type)
                 : null;
         }
@@ -128,7 +127,7 @@ namespace Mapster.Utils
             //special handling for string
             if (destType == _stringType)
             {
-                if (srcType.IsEnum)
+                if (srcType.GetTypeInfo().IsEnum)
                 {
                     var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
                     return Expression.Call(method, source);
@@ -143,7 +142,7 @@ namespace Mapster.Utils
 
             if (srcType == _stringType)
             {
-                if (destType.IsEnum)
+                if (destType.GetTypeInfo().IsEnum)
                 {
                     var method = typeof(Enum<>).MakeGenericType(destType).GetMethod("Parse", new[] { typeof(string) });
                     return Expression.Call(method, source);
@@ -238,7 +237,7 @@ namespace Mapster.Utils
             {
                 var property = properties[j];
                 var propertyType = property.GetMemberType();
-                if (propertyType.IsClass && propertyType != _stringType
+                if (propertyType.GetTypeInfo().IsClass && propertyType != _stringType
                     && propertyName.StartsWith(property.Name))
                 {
                     var exp = property is PropertyInfo

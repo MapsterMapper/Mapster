@@ -77,9 +77,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Mapster\Mapster.csproj">
+    <ProjectReference Include="..\Mapster\Mapster.Net4.5.csproj">
       <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
-      <Name>Mapster</Name>
+      <Name>Mapster.Net4.5</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

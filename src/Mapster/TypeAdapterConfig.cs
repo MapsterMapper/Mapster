@@ -94,9 +94,9 @@ namespace Mapster
             if (!allowInheritance)
                 return null;
 
-            if (type2.IsInterface)
+            if (type2.GetTypeInfo().IsInterface)
             {
-                return type2.IsAssignableFrom(type1)
+                return type2.GetTypeInfo().IsAssignableFrom(type1.GetTypeInfo())
                     ? (int?)25
                     : null;
             }
@@ -105,7 +105,7 @@ namespace Mapster
             while (type1 != null && type1 != type2)
             {
                 score--;
-                type1 = type1.BaseType;
+                type1 = type1.GetTypeInfo().BaseType;
             }
             return type1 == null ? null : (int?)score;
         }

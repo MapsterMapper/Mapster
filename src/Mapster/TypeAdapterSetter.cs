@@ -3,6 +3,7 @@ using Mapster.Utils;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mapster
 {
@@ -121,10 +122,10 @@ namespace Mapster
             Type baseSourceType = typeof(TBaseSource);
             Type baseDestinationType = typeof(TBaseDestination);
 
-            if (!baseSourceType.IsAssignableFrom(typeof(TSource)))
+            if (!baseSourceType.GetTypeInfo().IsAssignableFrom(typeof(TSource).GetTypeInfo()))
                 throw new InvalidCastException("In order to use inherits, TSource must inherit directly or indirectly from TBaseSource.");
 
-            if (!baseDestinationType.IsAssignableFrom(typeof(TDestination)))
+            if (!baseDestinationType.GetTypeInfo().IsAssignableFrom(typeof(TDestination).GetTypeInfo()))
                 throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
 
             TypeAdapterRule rule;

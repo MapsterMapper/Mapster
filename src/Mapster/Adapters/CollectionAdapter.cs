@@ -49,7 +49,7 @@ namespace Mapster.Adapters
                 return Expression.NewArrayBounds(destinationElementType, CreateCountExpression(source, true));
 
             var count = CreateCountExpression(source, false);
-            var listType = arg.DestinationType.IsInterface
+            var listType = arg.DestinationType.GetTypeInfo().IsInterface
                 ? typeof (List<>).MakeGenericType(destinationElementType)
                 : arg.DestinationType;
             if (count == null)
@@ -82,7 +82,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
         {
-            if (arg.DestinationType.IsAssignableFrom(source.Type) && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
+            if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(source.Type.GetTypeInfo()) && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
                 return source.To(arg.DestinationType);
 
             var sourceElementType = source.Type.ExtractCollectionType();
@@ -185,7 +185,7 @@ namespace Mapster.Adapters
             var elementType = loopVar.Type;
             var enumerableType = typeof (IEnumerable<>).MakeGenericType(elementType);
             var enumeratorType = typeof (IEnumerator<>).MakeGenericType(elementType);
-            var isGeneric = enumerableType.IsAssignableFrom(collection.Type);
+            var isGeneric = enumerableType.GetTypeInfo().IsAssignableFrom(collection.Type.GetTypeInfo());
             if (!isGeneric)
             {
                 enumerableType = typeof (IEnumerable);

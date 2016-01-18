@@ -38,7 +38,7 @@ namespace Mapster.Adapters
                 var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
 
                 Expression itemAssign = Expression.Assign(property.Setter, getter);
-                if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.IsValueType || property.Getter.Type.IsNullable()))
+                if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
                 {
                     var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);

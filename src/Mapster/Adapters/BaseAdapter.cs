@@ -51,8 +51,8 @@ namespace Mapster.Adapters
                 return false;
             if (arg.Settings.PreserveReference == true &&
                 arg.MapType != MapType.Projection &&
-                !arg.SourceType.IsValueType &&
-                !arg.DestinationType.IsValueType)
+                !arg.SourceType.GetTypeInfo().IsValueType &&
+                !arg.DestinationType.GetTypeInfo().IsValueType)
                 return false;
             return true;
         }
@@ -73,8 +73,8 @@ namespace Mapster.Adapters
 
             if (arg.Settings.PreserveReference == true &&
                 arg.MapType != MapType.Projection &&
-                !arg.SourceType.IsValueType &&
-                !arg.DestinationType.IsValueType)
+                !arg.SourceType.GetTypeInfo().IsValueType &&
+                !arg.DestinationType.GetTypeInfo().IsValueType)
             {
                 var dict = Expression.Parameter(typeof (Dictionary<object, object>));
                 var propInfo = typeof(MapContext).GetProperty("Context", BindingFlags.Static | BindingFlags.Public);
@@ -100,7 +100,7 @@ namespace Mapster.Adapters
             }
 
             if (arg.MapType != MapType.Projection && 
-                (!arg.SourceType.IsValueType || arg.SourceType.IsNullable()))
+                (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 set = Expression.IfThenElse(
@@ -116,7 +116,7 @@ namespace Mapster.Adapters
             var exp = CreateInlineExpression(source, arg);
 
             if (arg.MapType != MapType.Projection
-                && (!arg.SourceType.IsValueType || arg.SourceType.IsNullable()))
+                && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 exp = Expression.Condition(

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mapster.Models;
 
 namespace Mapster
@@ -53,8 +54,8 @@ namespace Mapster
 
             if (this.DestinationType == null 
                 || other.DestinationType == null 
-                || this.DestinationType.IsAssignableFrom(other.DestinationType) 
-                || other.DestinationType.IsAssignableFrom(this.DestinationType))
+                || this.DestinationType.GetTypeInfo().IsAssignableFrom(other.DestinationType.GetTypeInfo()) 
+                || other.DestinationType.GetTypeInfo().IsAssignableFrom(this.DestinationType.GetTypeInfo()))
             {
                 if (!this.NoInherit.GetValueOrDefault())
                 {

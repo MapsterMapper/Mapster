@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Mapster.Utils;
+using System.Reflection;
 
 namespace Mapster.Adapters
 {
@@ -32,8 +33,8 @@ namespace Mapster.Adapters
                 }
             }
             if (arg.MapType != MapType.Projection
-                && (!arg.SourceType.IsValueType || arg.SourceType.IsNullable()) 
-                && destinationType.IsValueType 
+                && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()) 
+                && destinationType.GetTypeInfo().IsValueType 
                 && !destinationType.IsNullable())
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));

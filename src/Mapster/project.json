@@ -1,0 +1,28 @@
+﻿{
+  "version": "2.0.0-*",
+  "description": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.",
+  "summary": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.",
+  "iconUrl": "http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png",
+  "authors": [ "chaowlert", "eric_swann" ],
+  "tags": [ "Mapper", "AutoMapper", "Fast", "Mapping" ],
+  "projectUrl": "https://github.com/chaowlert/Mapster",
+  "licenseUrl": "https://github.com/chaowlert/Mapster/blob/master/LICENSE",
+  "copyright": "Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann",
+
+  "frameworks": {
+    "net45": { },
+    "net451": { },
+    "net46": { },
+    "dotnet5.4": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-23516",
+        "System.Collections": "4.0.11-beta-23516",
+        "System.Collections.NonGeneric": "4.0.1-beta-23516",
+        "System.Linq": "4.0.1-beta-23516",
+        "System.Linq.Queryable": "4.0.1-beta-23516",
+        "System.Runtime": "4.0.21-beta-23516",
+        "System.Threading": "4.0.11-beta-23516"
+      }
+    }
+  }
+}
