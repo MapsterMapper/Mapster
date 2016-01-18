@@ -26,7 +26,7 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 | **Mapster 2.0** | **515** |       **1251** |      **950** |        **1037** |        **2455** |        **2342** |
 | Native          |     458 |            790 |          870 |            1253 |            3037 |            2754 |
 
-(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
+(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean the library did not supported.)
 
 And here are list of new features!
 - Projection is improved to generate nicer sql query
@@ -48,7 +48,7 @@ And here are list of new features!
 - [Mapping to a new object](#MappingNew)
 - [Mapping to an existing object](#MappingToTarget)
 - [Queryable Extensions](#Projection)
-- [Mapping instance](#UnitTest)
+- [Mapper instance](#UnitTest)
 
 [Conversion](#Conversion)
 - [Conversion of immutable types](#ConversionImmutable)
@@ -57,8 +57,8 @@ And here are list of new features!
 - [Mapping Lists](#ConversionList)
 
 [Setting](#Setting)
-- [Global Settings](#SettingGlobal)
 - [Setting per type](#SettingPerType)
+- [Global Settings](#SettingGlobal)
 - [Setting inheritance](#SettingInheritance)
 - [Rule based setting](#SettingRuleBased)
 - [Overload setting](#SettingOverload)
@@ -72,13 +72,13 @@ And here are list of new features!
 
 [Advance Customization](#Advance)
 - [Custom instance creation](#ConstructUsing)
-- [Destination transform](#Transform)
-- [Converter factory](#ConverterFactory)
+- [Type-Specific Destination Transforms](#Transform)
+- [Custom Type Resolvers](#ConverterFactory)
 
 [Validation](#Validate)
 - [Explicit Mapping](#ExplicitMapping)
 - [Checking Destination Member](#CheckDestinationMember)
-- [Compilation Validation](#Compile)
+- [Validating Mappings](#Compile)
 
 ####Mapping <a name="Mapping"></a>
 #####Mapping to a new object <a name="MappingNew"></a>
@@ -113,6 +113,16 @@ Mapster also provides extension to map queryable.
         })
         .ToList();
     }
+    
+#####Mapper Instance <a name="UnitTest"></a>
+In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container. Mapster has
+the IAdapter and Adapter to fill this need:
+
+    IAdapter adapter = new Adapter();
+
+And usage is the same with static method.
+
+    var result = adapter.Adapt<TDestination>(source);
 
 ####Conversion <a name="Conversion"></a>
 Mapster basically can map nearly all kind of objects. Here are some details.
@@ -161,11 +171,88 @@ In Mapster 2.0, POCO struct is also supported.
 This includes mapping among lists, arrays, collections, dictionary including various interface ie. IList<T>, ICollection<T>, IEnumerable<T> etc...
 
     var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
+    
+####Setting <a name="Setting"></a>
+#####Setting per type <a name="SettingPerType"></a>
+You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TDestination>().NewConfig()`
 
-####Customized Mapping
+    TypeAdapterConfig<TSource, TDestination>()
+        .NewConfig()
+        .Ignore(dest => dest.Age)
+        .Map(dest => dest.FullName, 
+             src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+#####Global Settings <a name="SettingGlobal"></a>
+If you would like to apply to all type mappings, you can set to global settings
+
+    TypeAdaptConfig.GlobalSettings.Default.PreserveReference(true);
+
+Then for some type mappings, you can opt-out the option.
+
+    TypeAdaptConfig<SimplePoco, SimpleDto>.NewConfig().PreserveReference(false);
+
+#####Setting inheritance <a name="SettingInheritance"></a>
+Type mapping will automatically inherit for source type. Ie. if you set up following config.
+
+    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+        .Map(dest => dest.Name, src => src.Name + "_Suffix");
+
+Derived type of `SimplePoco` will automatically apply above property mapping config.
+
+    var dest = TypeAdapt.Adapt<DerivedPoco, SimpleDto>(src); //dest.Name = src.Name + "_Suffix"
+
+If you don't wish a derived type to use the base mapping, just define `NoInherit` for that type.
+
+    TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig().NoInherit();
+
+    //or in global level
+    TypeAdapterConfig.GlobalSettings.Default.NoInherit();
+
+And by default, Mapster will not inherit destination type. You can turn on by `AllowImplicitDestinationInheritance`.
+
+    TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
+
+Finally, Mapster also provide method to inherit explicitly.
+
+    TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+        .Inherits<SimplePoco, SimpleDto>();
+
+#####Rule based setting <a name="SettingRuleBased"></a>
+To set the setting in more granular level. You can use `When` method in global setting. For example, when source type and destination type is the same, we will not copy `Id` property.
+
+    TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => srcType == destType)
+        .Ignore("Id");
+
+Another example, you may would like to apply config only for Query Expression.
+
+    TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => mapType == MapType.Projection)
+        .IgnoreAttribute(typeof(NotMapAttribute));
+
+#####Overload setting <a name="SettingOverload"></a>
+You may wish to have different settings in different scenarios. If you would not like to apply setting in static level, Mapster also provides setting instance.
+
+    var config = new TypeAdapterConfig();
+    config.Default.Ignore("Id");
+
+For type mapping, you can use `OfType` method.
+
+    config.OfType<TSource, TDestination>()
+          .Map(dest => dest.FullName, 
+               src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+You can apply setting instance by passing to `Adapt` method.
+
+    var result = TypeAdapt.Adapt<TDestination>(src, config);
+
+Or to Adapter instance.
+
+    var adapter = new Adapter(config);
+    var result = adapter.Adapt<TDestination>(src);
+
+####Basic Customization <a name="Basic"></a>
 When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
 
-#####Ignore Members & Attributes
+#####Ignore Members & Attributes <a name="Ignore"></a>
 Mapster will automatically map properties with the same names. You can ignore members by using `Ignore` method.
 
     TypeAdapterConfig<TSource, TDestination>()
@@ -178,7 +265,7 @@ You can ignore members annotated with specific attribute by using `IgnoreAttribu
         .NewConfig()
         .IgnoreAttribute(typeof(JsonIgnoreAttribute));
 
-#####Property mapping
+#####Property mapping <a name="Map"></a>
 You can customize how Mapster maps value to property.
 
     TypeAdapterConfig<TSource, TDestination>()
@@ -193,214 +280,72 @@ If the condition is not met, the mapping is skipped altogether.
         .NewConfig()
         .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
 
-You can map even type of source and destination properties are different.
+In Mapster 2.0, you can map even type of source and destination properties are different.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .Map(dest => dest.Gender,      //Genders.Male or Genders.Female
              src => src.GenderString); //"Male" or "Female"
 
-#####Merge object
+#####Merge object <a name="Merge"></a>
 By default, Mapster will map all properties, even source properties contains null value. You can copy only properties that have value by using `IgnoreNullValues` method.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .IgnoreNullValues(true);
 
-#####Shallow copy
+#####Shallow copy <a name="ShallowCopy"></a>
 By default, Mapster will recursively map nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. 
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .ShallowCopyForSameType(true);
 
-#####Preserve reference (preventing circular reference stackoverflow)
-When you map circular reference objects, there will be stackoverflow exception, because Mapster will try to recursively map all objects in circular. If you would like to map circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
+#####Preserve reference (preventing circular reference stackoverflow) <a name="PreserveReference"></a>
+When you map circular reference objects, there will be stackoverflow exception. This is because Mapster will try to recursively map all objects in circular. If you would like to map circular reference objects, or preserve references (such as 2 properties point to the same object), you can do it by setting `PreserveReference` to `true`
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .PreserveReference(true);
 
-####Implicit TSource Mapping Inheritance
-If a mapping configuration doesn't exist for a source ==> destination type, but a mapper does exist for a base source type 
-to the destination, that mapping will be used.  This allows mappings for less derived source types to be used to 
-satisfy multiple derived mappings.  FPR will search downward the source class hierarchy until it finds a matching configuration.   
-If no match exists, it will create a default configuration (the same behavior if no mapping was present).
-It **doesn't** combine derived configs, it will stop at the first match.  
-For example, if you have:
-
-    public class SimplePoco
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class DerivedPoco : SimplePoco
-    {...}
-
-    public class DerivedPoco2 : SimplePoco
-    {...}
-
-    public class SimpleDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
-
-The following mapping will be used when mapping the SimplePoco or either of the derived POCOs to the Simple DTO.
-
-    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-        .Map(dest => dest.Name, src => src.Name + "_Suffix");
-
-If you don't wish a derived type to use the base mapping, just define a new configuration for that type.
-
-    TypeAdapterConfig<DerivedPoco2, SimpleDto>.NewConfig();
-
-
-####Implicit TSource and TDestination Mapping Inheritance
-In some cases you may wish to derive a mapping based on both the source and destination types.  In such a case,
-setting the global configuration AllowImplicitDestinationInheritance setting to true will allow inheritance of a mapping
-based on both the source and destination types.  The source class hierarchy is traversed in an inside loop and the 
-destination class hierarchy is traversed in an outside loop until a match is found. 
-
-    public class SimplePoco
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class DerivedPoco : SimplePoco
-    {...}
-
-    public class SimpleDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class DerivedDto : DerivedDto
-    {...}
-
-The following mapping will be used for any permutation of Simple/Derived Poco to Simple/Derived Dto
-unless overridden by a specific configuration. 
-
-    TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
-    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-        .Map(dest => dest.Name, src => src.Name + "_Suffix");
-
-If you don't wish a specific permutation to use the base mapping, just define a new configuration for that permutation.
-
-    TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig();
-
-
-#### Explicit Mapping Inheritance
-In some cases, you may wish to have one mapping inherit from another mapping.  In this case, anything set on the derived mapping
-will override settings on the base mapping.  So unlike implicit mapping inheritance, where the goal is to find an applicable mapping
-configuration and configurations are not combined, with Explicit Inheritance, each derived mapping overrides the settings of the 
-inherited mapping.  Use the Inherits<TBaseSource, TBaseDestination> configuration method to accomplish this where TBaseSource and 
-TBaseDestination must be assignable from the derived configuration's TSource and TDestination respectively. 
-For example, if you have:
-
-    public class SimplePoco
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class DerivedPoco : SimplePoco
-    {...}
-
-    public class SimpleDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class DerivedDto : SimpleDto
-    {...}
-
-And you have the following base mapping:
-
-    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
-        .Map(dest => dest.Name, src => src.Name + "_Suffix");
-
-You can base the mapping of the derived classes on this base mapping:
-    
-    TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
-        .Inherits<SimplePoco, SimpleDto>();
-
-
-####Custom Destination Object Creation
+####Advance Customization <a name="Advance"></a>
+#####Custom Destination Object Creation <a name="ConstructUsing"></a>
 You can provide a function call to create your destination objects instead of using the default object creation 
-(which expects an empty constructor).  To do so, use the "ConstructUsing()" method when configuring.  This method expects
+(which expects an empty constructor). To do so, use the `ConstructUsing` method when configuring.  This method expects
 a function that will provide the destination instance. You can call your own constructor, a factory method, 
 or anything else that provides an object of the expected type.
 
     //Example using a non-default constructor
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .ConstructUsing(src => new TDestination("constructorValue"));
+                .ConstructUsing(src => new TDestination(src.Id, src.Name));
 
     //Example using an object initializer
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
                 .ConstructUsing(src => new TDestination{Unmapped = "unmapped"});
 
-####Custom Type Resolvers
-In some cases, you may want to have complete control over how an object is mapped.  In this case, you can
-register a custom type resolver.  It's important to note that when using a custom type resolver, that 
-all other mapping associated with the type is ignored.  So all mapping must take place within the resolver.
-The custom type resolver must implement the ITypeResolver interface and register it using MapWith().
-
-    //Example using MapWith resolver generic call.
-    TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .MapWith<TCustomTypeResolver>();
-
-    //Example using MapWith resolver factory function
-    TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .MapWith(() => new TCustomTypeResolver());
-
-    //Example using MapWith resolver instance
-    TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .MapWith(customResolverInstance);
-
-####Custom Value Resolvers
-In some cases, you may want to encapsulate a value conversion into a separate class.  In this case, you can 
-use a custom value resolver by registering it using Resolve().  The value resolver must implement the 
-IValueResolver interface.
-
-    //Example using MapWith resolver generic call.
-    TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .Resolve<TCustomValueResolver, string>(dest => dest.Name);
-
-    //Example using value resolver factory function
-    TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .Resolve(dest => dest.Name, () => new TCustomValueResolver());
-
-    //Example using value resolver instance
-    TypeAdapterConfig<TSource, TDestination>.NewConfig()
-                .Resolve(dest => dest.Name, customValueResolver);
-
-####Type-Specific Destination Transforms
-This allows transforms for all items of a type, such as trimming all strings.  But really any operation 
-can be performed on the destination value before assignment.  This can be set up at either a global
-or a mapping level.
+#####Type-Specific Destination Transforms <a name="Transform"></a>
+This allows transforms for all items of a type, such as trimming all strings. But really any operation 
+can be performed on the destination value before assignment.
 
     //Global
-    TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<string>(x => x.Trim());
+    TypeAdapterConfig.GlobalSettings.Default.AddDestinationTransforms((string x) => x.Trim());
 
     //Per mapping configuration
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
-        .DestinationTransforms.Upsert<string>(x => x.Trim());
-    
+        .AddDestinationTransforms((string x) => x.Trim());
 
-####Forcing Explicit Mapping
+#####Custom Type Resolvers <a name="ConverterFactory"></a>
+In some cases, you may want to have complete control over how an object is mapped. You can register transformation using `MapWith`
+method.
+
+    //Example of transforming string to char[].
+    TypeAdapterConfig<string, char[]>.NewConfig()
+                .MapWith(str => str.ToCharArray());
+
+####Validation <a name="Validate"></a>
 In order to help with "Fail Fast" situations, the following strict mapping modes have been added.
-An ArgumentOutOfRange exception will currently be thrown in the situations below if an appropriate mapping and/or source cannot be located.
 
-Forcing all destination properties to have a corresponding source member or explicit mapping/ignore:
-
-    //Default is "false"
-    TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
-
+#####Explicit Mapping <a name="ExplicitMapping"></a>
 Forcing all classes to be explicitly mapped:
 
     //Default is "false"
@@ -408,23 +353,21 @@ Forcing all classes to be explicitly mapped:
     //This means you have to have an explicit configuration for each class, even if it's just:
     TypeAdapterConfig<Source, Destination>.NewConfig();
 
-####Validating Mappings
-Both a specific TypeAdapterConfig<Source, Destination> or all current configurations can be validated.  This will throw
-and ArgumentOutOfRangeException that contains all of the existing missing destination mappings.  In addition, if Explicit Mappings (above)
-are enabled, it will also include errors for classes that are not registered at all with the mapper.
+#####Checking Destination Member <a name="CheckDestinationMember"></a>
+Forcing all destination properties to have a corresponding source member or explicit mapping/ignore:
+
+    //Default is "false"
+    TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+
+#####Validating Mappings <a name="Compile"></a>
+Both a specific TypeAdapterConfig<Source, Destination> or all current configurations can be validated. In addition, if Explicit Mappings (above) are enabled, it will also include errors for classes that are not registered at all with the mapper.
 
     //Validate a specific config
     var config = TypeAdapterConfig<Source, Destination>.NewConfig();
-    config.Validate();
+    config.Compile();
 
     //Validate globally
     TypeAdapterConfig<Source, Destination>.NewConfig();
     TypeAdapterConfig<Source2, Destination2>.NewConfig();
-    TypeAdapterConfig.Validate();
-
-####Mapper Instance Creation
-In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container.  Mapster has
-the IAdapter and Adapter to fill this need:
-
-    IAdapter instance = TypeAdapter.GetInstance();
+    TypeAdapterConfig.Compile();
 
