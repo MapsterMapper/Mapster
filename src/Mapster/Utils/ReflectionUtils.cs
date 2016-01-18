@@ -4,12 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Utils;
 
-namespace Mapster.Utils
+namespace Mapster
 {
     internal static class ReflectionUtils
     {
         private static readonly Type _stringType = typeof(string);
+
+#if NET4
+        public static Type GetTypeInfo(this Type type) {
+            return type;
+        }
+#endif
 
         public static bool IsNullable(this Type type)
         {

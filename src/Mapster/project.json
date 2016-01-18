@@ -10,9 +10,16 @@
   "copyright": "Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann",
 
   "frameworks": {
+    "net4": {
+      "compilationOptions": {
+        "define": [ "NET4" ]
+      }
+    },
     "net45": { },
     "net451": { },
+    "net452": { },
     "net46": { },
+    "net461": { },
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-beta-23516",
