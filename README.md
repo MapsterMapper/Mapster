@@ -26,7 +26,7 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 | **Mapster 2.0** | **515** |       **1251** |      **950** |        **1037** |        **2455** |        **2342** |
 | Native          |     458 |            790 |          870 |            1253 |            3037 |            2754 |
 
-(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
+(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean the library did not supported.)
 
 And here are list of new features!
 - Projection is improved to generate nicer sql query
@@ -115,7 +115,7 @@ Mapster also provides extension to map queryable.
     }
     
 #####Mapper Instance <a name="UnitTest"></a>
-In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container.  Mapster has
+In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container. Mapster has
 the IAdapter and Adapter to fill this need:
 
     IAdapter adapter = new Adapter();
@@ -183,11 +183,11 @@ You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TD
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 #####Global Settings <a name="SettingGlobal"></a>
-If you would like setting to turn on for every type mapping, you can set to global settings
+If you would like to apply to all type mappings, you can set to global settings
 
     TypeAdaptConfig.GlobalSettings.Default.PreserveReference(true);
 
-Then for some type mapping, you can opt-out the setting.
+Then for some type mappings, you can opt-out the option.
 
     TypeAdaptConfig<SimplePoco, SimpleDto>.NewConfig().PreserveReference(false);
 
@@ -205,8 +205,7 @@ If you don't wish a derived type to use the base mapping, just define `NoInherit
 
     TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig().NoInherit();
 
-If you wish not to automatically inherit, just set `NoInherit` in global settings.
-
+    //or in global level
     TypeAdapterConfig.GlobalSettings.Default.NoInherit();
 
 And by default, Mapster will not inherit destination type. You can turn on by `AllowImplicitDestinationInheritance`.
@@ -219,18 +218,18 @@ Finally, Mapster also provide method to inherit explicitly.
         .Inherits<SimplePoco, SimpleDto>();
 
 #####Rule based setting <a name="SettingRuleBased"></a>
-To set in more granular level. You can use `When` method in global setting. For example, when source type and destination type is the same, we will not copy `Id` property.
+To set the setting in more granular level. You can use `When` method in global setting. For example, when source type and destination type is the same, we will not copy `Id` property.
 
     TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => srcType == destType)
         .Ignore("Id");
 
-Another example, you may would like to apply config only Query Expression.
+Another example, you may would like to apply config only for Query Expression.
 
     TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => mapType == MapType.Projection)
         .IgnoreAttribute(typeof(NotMapAttribute));
 
 #####Overload setting <a name="SettingOverload"></a>
-You may wish to have different setting in different scenario. If you would not like to apply setting in static level, Mapster also provides setting instance.
+You may wish to have different settings in different scenarios. If you would not like to apply setting in static level, Mapster also provides setting instance.
 
     var config = new TypeAdapterConfig();
     config.Default.Ignore("Id");
@@ -281,7 +280,7 @@ If the condition is not met, the mapping is skipped altogether.
         .NewConfig()
         .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
 
-You can map even type of source and destination properties are different.
+In Mapster 2.0, you can map even type of source and destination properties are different.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
@@ -303,7 +302,7 @@ By default, Mapster will recursively map nested objects. You can do shallow copy
         .ShallowCopyForSameType(true);
 
 #####Preserve reference (preventing circular reference stackoverflow) <a name="PreserveReference"></a>
-When you map circular reference objects, there will be stackoverflow exception, because Mapster will try to recursively map all objects in circular. If you would like to map circular reference objects, or you would like to preserve references (such as 2 properties point to the same object), you can preserve reference by setting `PreserveReference` to `true`
+When you map circular reference objects, there will be stackoverflow exception. This is because Mapster will try to recursively map all objects in circular. If you would like to map circular reference objects, or preserve references (such as 2 properties point to the same object), you can do it by setting `PreserveReference` to `true`
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
