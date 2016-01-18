@@ -26,7 +26,21 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 | **Mapster 2.0** | **515** |       **1251** |      **950** |        **1037** |        **2455** |        **2342** |
 | Native          |     458 |            790 |          870 |            1253 |            3037 |            2754 |
 
-(NOTE: Benchmark runner is forked from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
+(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean library did not supported.)
+
+And here are list of new features!
+- Projection is improved to generate nicer sql query
+- Mapsters is now able to map struct
+- Flagged enum is supported
+- Setting is now much more flexible
+    - You can now both opt-in and opt-out setting
+    - Setting inheritance is able to inherit from interface
+    - Setting inheritance is now combined (it does not only pick from the closest parent)
+    - New rule based setting, you can defined your setting more granular level
+    - Setting is no more static, you can overload your setting to use different setting for your mapping
+- You can ignore properties by attributes
+- Now you can setup your map from different type ie `config.Map(dest => dest.AgeString, src => src.AgeInt)`
+- Mapster is now support circular reference mapping!
 
 ###Get started
 
@@ -34,6 +48,7 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 - [Mapping to a new object](#MappingNew)
 - [Mapping to an existing object](#MappingToTarget)
 - [Queryable Extensions](#Projection)
+- [Mapping instance](#UnitTest)
 
 [Conversion](#Conversion)
 - [Conversion of immutable types](#ConversionImmutable)
@@ -47,7 +62,6 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 - [Setting inheritance](#SettingInheritance)
 - [Rule based setting](#SettingRuleBased)
 - [Overload setting](#SettingOverload)
-- [For your unit testing](#UnitTest)
 
 [Basic Customization](#Basic)
 - [Ignore properties & attributes](#Ignore)
@@ -64,7 +78,7 @@ Mapster 2.0 is now become blistering fast! We upgraded the whole compilation uni
 [Validation](#Validate)
 - [Explicit Mapping](#ExplicitMapping)
 - [Checking Destination Member](#CheckDestinationMember)
-- [Validate Compilation](#Compile)
+- [Compilation Validation](#Compile)
 
 ####Mapping <a name="Mapping"></a>
 #####Mapping to a new object <a name="MappingNew"></a>
