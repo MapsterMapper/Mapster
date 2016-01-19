@@ -65,7 +65,13 @@ namespace Mapster.Adapters
         {
             if (destination.Type.IsArray)
             {
-                return CreateArraySet(source, destination, arg);
+                if (source.Type.IsArray && source.Type.GetElementType() == destination.Type.GetElementType())
+                {
+                    var method = typeof (Array).GetMethod("Copy", new[] {typeof (Array), typeof (int), typeof (Array), typeof (int), typeof (int)});
+                    return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), Expression.ArrayLength(source));
+                }
+                else
+                    return CreateArraySet(source, destination, arg);
             }
             else
             {

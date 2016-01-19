@@ -47,9 +47,9 @@ namespace Benchmark
 
             TestSimple(foo, 10000);
 
-            //TestSimple(foo, 100000);
+            TestSimple(foo, 100000);
 
-            //TestSimple(foo, 1000000);
+            TestSimple(foo, 1000000);
         }
 
         private static void TestComplexTypes()
@@ -112,11 +112,11 @@ namespace Benchmark
 
             TestMapsterAdapter<Foo, Foo>(item, iterations);
 
-            TestValueInjecter<Foo, Foo>(item, iterations);
+            //TestValueInjecter<Foo, Foo>(item, iterations);
 
             TestExpressMapper<Foo, Foo>(item, iterations);
 
-            TestAutoMapper<Foo, Foo>(item, iterations);
+            //TestAutoMapper<Foo, Foo>(item, iterations);
         }
 
 
