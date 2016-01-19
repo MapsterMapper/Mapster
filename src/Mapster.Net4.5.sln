@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Net4.5", "Mapster\Mapster.Net4.5.csproj", "{994A64A1-C542-4B4A-A4D6-4CC93A8B59BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster", "Mapster\Mapster.csproj", "{994A64A1-C542-4B4A-A4D6-4CC93A8B59BA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Tests", "Mapster.Tests\Mapster.Tests.csproj", "{7E1F904D-B410-417A-9212-66E55F0AAB91}"
 EndProject
