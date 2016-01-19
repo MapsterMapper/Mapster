@@ -27,7 +27,7 @@ namespace Mapster
             dynamic fn = _config.GetMapFunction(source.GetType(), typeof(TDestination));
             try
             {
-                return fn((dynamic)source);
+                return (TDestination)fn((dynamic)source);
             }
             finally
             {
