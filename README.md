@@ -84,9 +84,9 @@ And here are list of new features!
 Mapster makes the object and maps values to it.
 
     var destObject = TypeAdapter.Adapt<TSource, TDestination>(sourceObject);
-    
+
 or just
-    
+
     var destObject = TypeAdapter.Adapt<TDestination>(sourceObject);
 
 #####Mapping to an existing object <a name="MappingToTarget"></a>
@@ -112,7 +112,7 @@ Mapster also provides extension to map queryable.
         })
         .ToList();
     }
-    
+
 #####Mapper Instance <a name="UnitTest"></a>
 In some cases, you need an instance of a mapper (or a factory function) to pass into a DI container. Mapster has
 the IAdapter and Adapter to fill this need:
@@ -134,7 +134,7 @@ Converting between primitive types (ie. int, string, bool, double, decimal) are 
 #####Conversion from/to enum <a name="ConversionEnum"></a>
 Mapster maps enums to numerics automatically, but it also maps strings to and from enums automatically in a fast manner.  
 The default Enum.ToString() in .Net is quite slow. The implementation in Mapster is double the speed.  
-Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty, 
+Likewise, a fast conversion from strings to enums is also included.  If the string is null or empty,
 the enum will initialize to the first enum value.
 
 In Mapster 2.0, flagged enum is also supported.
@@ -156,7 +156,7 @@ In Mapster 2.0, POCO struct is also supported.
         public Staff Supervisor { get; set; }
         ...
     }
-    
+
     struct StaffDto {
         public string Name { get; set; }
         public int Age { get; set; }
@@ -170,7 +170,7 @@ In Mapster 2.0, POCO struct is also supported.
 This includes mapping among lists, arrays, collections, dictionary including various interface ie. IList<T>, ICollection<T>, IEnumerable<T> etc...
 
     var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
-    
+
 ####Setting <a name="Setting"></a>
 #####Setting per type <a name="SettingPerType"></a>
 You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TDestination>().NewConfig()`
@@ -178,7 +178,7 @@ You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TD
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
         .Ignore(dest => dest.Age)
-        .Map(dest => dest.FullName, 
+        .Map(dest => dest.FullName,
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 #####Global Settings <a name="SettingGlobal"></a>
@@ -202,10 +202,10 @@ Derived type of `SimplePoco` will automatically apply above property mapping con
 
 If you don't wish a derived type to use the base mapping, just define `NoInherit` for that type.
 
-    TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig().NoInherit();
+    TypeAdapterConfig<DerivedPoco, SimpleDto>.NewConfig().NoInherit(true);
 
     //or in global level
-    TypeAdapterConfig.GlobalSettings.Default.NoInherit();
+    TypeAdapterConfig.GlobalSettings.Default.NoInherit(true);
 
 And by default, Mapster will not inherit destination type. You can turn on by `AllowImplicitDestinationInheritance`.
 
@@ -236,10 +236,10 @@ You may wish to have different settings in different scenarios. If you would not
 For type mapping, you can use `OfType` method.
 
     config.OfType<TSource, TDestination>()
-          .Map(dest => dest.FullName, 
+          .Map(dest => dest.FullName,
                src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-You can apply setting instance by passing to `Adapt` method.
+You can apply setting instance by passing to `Adapt` method. (NOTE: please reuse your config instance to prevent recompilation)
 
     var result = TypeAdapter.Adapt<TDestination>(src, config);
 
@@ -269,7 +269,7 @@ You can customize how Mapster maps value to property.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
-        .Map(dest => dest.FullName, 
+        .Map(dest => dest.FullName,
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 The Map configuration can accept a third parameter that provides a condition based on the source.
@@ -294,7 +294,7 @@ By default, Mapster will map all properties, even source properties contains nul
         .IgnoreNullValues(true);
 
 #####Shallow copy <a name="ShallowCopy"></a>
-By default, Mapster will recursively map nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`. 
+By default, Mapster will recursively map nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`.
 
     TypeAdapterConfig<TSource, TDestination>()
         .NewConfig()
@@ -309,9 +309,9 @@ When you map circular reference objects, there will be stackoverflow exception. 
 
 ####Advance Customization <a name="Advance"></a>
 #####Custom Destination Object Creation <a name="ConstructUsing"></a>
-You can provide a function call to create your destination objects instead of using the default object creation 
+You can provide a function call to create your destination objects instead of using the default object creation
 (which expects an empty constructor). To do so, use the `ConstructUsing` method when configuring.  This method expects
-a function that will provide the destination instance. You can call your own constructor, a factory method, 
+a function that will provide the destination instance. You can call your own constructor, a factory method,
 or anything else that provides an object of the expected type.
 
     //Example using a non-default constructor
@@ -323,7 +323,7 @@ or anything else that provides an object of the expected type.
                 .ConstructUsing(src => new TDestination{Unmapped = "unmapped"});
 
 #####Type-Specific Destination Transforms <a name="Transform"></a>
-This allows transforms for all items of a type, such as trimming all strings. But really any operation 
+This allows transforms for all items of a type, such as trimming all strings. But really any operation
 can be performed on the destination value before assignment.
 
     //Global
@@ -342,7 +342,7 @@ method.
                 .MapWith(str => str.ToCharArray());
 
 ####Validation <a name="Validate"></a>
-In order to help with "Fail Fast" situations, the following strict mapping modes have been added.
+To validate your mapping in Unit Test and in order to help with "Fail Fast" situations, the following strict mapping modes have been added.
 
 #####Explicit Mapping <a name="ExplicitMapping"></a>
 Forcing all classes to be explicitly mapped:
@@ -368,5 +368,4 @@ Both a specific TypeAdapterConfig<Source, Destination> or all current configurat
     //Validate globally
     TypeAdapterConfig<Source, Destination>.NewConfig();
     TypeAdapterConfig<Source2, Destination2>.NewConfig();
-    TypeAdapterConfig.Compile();
-
+    TypeAdapterConfig.GlobalSettings.Compile();
