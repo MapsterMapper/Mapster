@@ -89,6 +89,10 @@ or just
 
     var destObject = TypeAdapter.Adapt<TDestination>(sourceObject);
 
+or using extension methods
+
+	var destObject = sourceObject.Adapt<TDestination>
+
 #####Mapping to an existing object <a name="MappingToTarget"></a>
 You make the object, Mapster maps to the object.
 
@@ -233,9 +237,9 @@ You may wish to have different settings in different scenarios. If you would not
     var config = new TypeAdapterConfig();
     config.Default.Ignore("Id");
 
-For type mapping, you can use `OfType` method.
+For type mapping, you can use `ForType` method.
 
-    config.OfType<TSource, TDestination>()
+    config.ForType<TSource, TDestination>()
           .Map(dest => dest.FullName,
                src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
