@@ -54,6 +54,20 @@ namespace Mapster.Tests
             simpleDto.Name.ShouldEqual(simplePoco.Name);
         }
 
+        [Test]
+        public void Mapped_Classes_Succeed_With_Child_Mapping()
+        {
+            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+
+            TypeAdapterConfig<CollectionPoco, CollectionDto>.NewConfig();
+
+            var collectionPoco = new CollectionPoco { Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco>() };
+
+            var collectionDto = TypeAdapter.Adapt<CollectionPoco, CollectionDto>(collectionPoco);
+
+            collectionDto.Name.ShouldEqual(collectionPoco.Name);
+        }
+
 
         #region TestClasses
 

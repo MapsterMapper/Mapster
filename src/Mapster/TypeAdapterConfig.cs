@@ -286,6 +286,10 @@ namespace Mapster
 
         private LambdaExpression CreateInvokeExpression(Type sourceType, Type destinationType)
         {
+            //ensure there is MapContext to prevent error on GetMergedSettings
+            if (this.RequireExplicitMapping)
+                MapContext.EnsureContext();
+
             Expression invoker;
             if (this == GlobalSettings)
             {
@@ -306,7 +310,7 @@ namespace Mapster
 
         internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
         {
-            if (this.RequireExplicitMapping && mapType != MapType.InlineMap)
+            if (this.RequireExplicitMapping && mapType != MapType.InlineMap && !MapContext.HasContext)
             {
                 if (!this.Dict.ContainsKey(new TypeTuple(sourceType, destinationType)))
                     throw new InvalidOperationException(
