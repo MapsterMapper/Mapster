@@ -18,7 +18,7 @@ namespace Mapster
             return RuntimeHelpers.GetHashCode(obj);
         }
     }
-    public class MapContext
+    internal class MapContext
     {
         [ThreadStatic]
         private static MapContext _context;

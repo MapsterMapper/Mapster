@@ -55,18 +55,35 @@ namespace Mapster.Tests
         }
 
         [Test]
-        public void Mapped_Classes_Succeed_With_Child_Mapping()
+        public void Mapped_List_Of_Classes_Succeed()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
 
-            TypeAdapterConfig<CollectionPoco, CollectionDto>.NewConfig();
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
 
-            var collectionPoco = new CollectionPoco { Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco>() };
+            var simplePocos = new[]
+            {
+                new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"}
+            };
 
-            var collectionDto = TypeAdapter.Adapt<CollectionPoco, CollectionDto>(collectionPoco);
+            var simpleDtos = TypeAdapter.Adapt<SimplePoco[], List<SimpleDto>>(simplePocos);
 
-            collectionDto.Name.ShouldEqual(collectionPoco.Name);
+            simpleDtos[0].Name.ShouldEqual(simplePocos[0].Name);
         }
+
+        //[Test]
+        //public void Mapped_Classes_Succeed_With_Child_Mapping()
+        //{
+        //    TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+
+        //    TypeAdapterConfig<CollectionPoco, CollectionDto>.NewConfig();
+
+        //    var collectionPoco = new CollectionPoco { Id = Guid.NewGuid(), Name = "TestName", Children = new List<ChildPoco>() };
+
+        //    var collectionDto = TypeAdapter.Adapt<CollectionPoco, CollectionDto>(collectionPoco);
+
+        //    collectionDto.Name.ShouldEqual(collectionPoco.Name);
+        //}
 
 
         #region TestClasses
