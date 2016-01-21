@@ -9,15 +9,25 @@ namespace Mapster
         /// </summary>
         /// <typeparam name="TDestination">Destination type.</typeparam>
         /// <param name="source">Source object to adapt.</param>
+        /// <returns>Adapted destination type.</returns>
+        public static TDestination Adapt<TDestination>(this object source)
+        {
+            return Adapt<TDestination>(source, TypeAdapterConfig.GlobalSettings);
+        }
+
+        /// <summary>
+        /// Adapte the source object to the destination type.
+        /// </summary>
+        /// <typeparam name="TDestination">Destination type.</typeparam>
+        /// <param name="source">Source object to adapt.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
-        public static TDestination Adapt<TDestination>(this object source, TypeAdapterConfig config = null)
+        public static TDestination Adapt<TDestination>(this object source, TypeAdapterConfig config)
         {
-            config = config ?? TypeAdapterConfig.GlobalSettings;
             dynamic fn = config.GetMapFunction(source.GetType(), typeof(TDestination));
             try
             {
-                return (TDestination)fn((dynamic) source);
+                return (TDestination)fn((dynamic)source);
             }
             finally
             {
@@ -72,11 +82,23 @@ namespace Mapster
         /// <typeparam name="TDestination">Destination type.</typeparam>
         /// <param name="source">Source object to adapt.</param>
         /// <param name="destination">The destination object to populate.</param>
+        /// <returns>Adapted destination type.</returns>
+        public static TDestination Adapt<TSource, TDestination>(this TSource source, TDestination destination)
+        {
+            return Adapt(source, destination, TypeAdapterConfig.GlobalSettings);
+        }
+
+        /// <summary>
+        /// Adapte the source object to the existing destination object.
+        /// </summary>
+        /// <typeparam name="TSource">Source type.</typeparam>
+        /// <typeparam name="TDestination">Destination type.</typeparam>
+        /// <param name="source">Source object to adapt.</param>
+        /// <param name="destination">The destination object to populate.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
-        public static TDestination Adapt<TSource, TDestination>(this TSource source, TDestination destination, TypeAdapterConfig config = null)
+        public static TDestination Adapt<TSource, TDestination>(this TSource source, TDestination destination, TypeAdapterConfig config)
         {
-            config = config ?? TypeAdapterConfig.GlobalSettings;
             var fn = config.GetMapToTargetFunction<TSource, TDestination>();
 
             try
@@ -95,15 +117,26 @@ namespace Mapster
         /// <param name="source">Source object to adapt.</param>
         /// <param name="sourceType">The type of the source object.</param>
         /// <param name="destinationType">The type of the destination object.</param>
+        /// <returns>Adapted destination type.</returns>
+        public static object Adapt(this object source, Type sourceType, Type destinationType)
+        {
+            return Adapt(source, sourceType, destinationType, TypeAdapterConfig.GlobalSettings);
+        }
+
+        /// <summary>
+        /// Adapte the source object to the destination type.
+        /// </summary>
+        /// <param name="source">Source object to adapt.</param>
+        /// <param name="sourceType">The type of the source object.</param>
+        /// <param name="destinationType">The type of the destination object.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
-        public static object Adapt(this object source, Type sourceType, Type destinationType, TypeAdapterConfig config = null)
+        public static object Adapt(this object source, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
-            config = config ?? TypeAdapterConfig.GlobalSettings;
             dynamic fn = config.GetMapFunction(sourceType, destinationType);
             try
             {
-                return fn((dynamic) source);
+                return fn((dynamic)source);
             }
             finally
             {
@@ -118,15 +151,27 @@ namespace Mapster
         /// <param name="destination">Destination object to populate.</param>
         /// <param name="sourceType">The type of the source object.</param>
         /// <param name="destinationType">The type of the destination object.</param>
+        /// <returns>Adapted destination type.</returns>
+        public static object Adapt(this object source, object destination, Type sourceType, Type destinationType)
+        {
+            return Adapt(source, destination, sourceType, destinationType, TypeAdapterConfig.GlobalSettings);
+        }
+
+        /// <summary>
+        /// Adapte the source object to an existing destination object.
+        /// </summary>
+        /// <param name="source">Source object to adapt.</param>
+        /// <param name="destination">Destination object to populate.</param>
+        /// <param name="sourceType">The type of the source object.</param>
+        /// <param name="destinationType">The type of the destination object.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
         public static object Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config = null)
         {
-            config = config ?? TypeAdapterConfig.GlobalSettings;
             dynamic fn = config.GetMapToTargetFunction(sourceType, destinationType);
             try
             {
-                return fn((dynamic) source, (dynamic) destination);
+                return fn((dynamic)source, (dynamic)destination);
             }
             finally
             {
