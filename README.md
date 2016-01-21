@@ -184,11 +184,11 @@ You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TD
 #####Global Settings <a name="SettingGlobal"></a>
 If you would like to apply to all type mappings, you can set to global settings
 
-    TypeAdaptConfig.GlobalSettings.Default.PreserveReference(true);
+    TypeAdapterConfig.GlobalSettings.Default.PreserveReference(true);
 
 Then for some type mappings, you can opt-out the option.
 
-    TypeAdaptConfig<SimplePoco, SimpleDto>.NewConfig().PreserveReference(false);
+    TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig().PreserveReference(false);
 
 #####Setting inheritance <a name="SettingInheritance"></a>
 Type mapping will automatically inherit for source type. Ie. if you set up following config.
