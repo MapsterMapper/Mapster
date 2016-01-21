@@ -235,8 +235,7 @@ namespace Mapster
 
         private LambdaExpression CreateMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
         {
-            bool invalidRequireExclicitMapping;
-            var setting = GetMergedSettings(sourceType, destinationType, mapType, out invalidRequireExclicitMapping);
+            var setting = GetMergedSettings(sourceType, destinationType, mapType);
             var fn = mapType == MapType.MapToTarget
                 ? setting.ConverterToTargetFactory
                 : setting.ConverterFactory;
@@ -256,7 +255,6 @@ namespace Mapster
                 MapType = mapType,
                 Context = context,
                 Settings = setting,
-                IsInvalidRequiredExplicitMapping = invalidRequireExclicitMapping,
             };
             return fn(arg);
         }
@@ -306,15 +304,8 @@ namespace Mapster
             return Expression.Lambda(invoke, p);
         }
 
-        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType, out bool invalidRequireExplicitMapping)
+        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
         {
-            invalidRequireExplicitMapping = false;
-            if (this.RequireExplicitMapping)
-            {
-                if (!this.Dict.ContainsKey(new TypeTuple(sourceType, destinationType)))
-                    invalidRequireExplicitMapping = true;
-            }
-
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
                             let priority = rule.Priority(sourceType, destinationType, mapType)
                             where priority != null

@@ -181,8 +181,7 @@ namespace Mapster.Tests
                 //.MaxDepth(5)
                 .Compile();
 
-            bool invalid;
-            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(SimpleDto), MapType.Map, out invalid);
+            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(SimpleDto), MapType.Map);
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.ShallowCopyForSameType.ShouldEqual(true);
@@ -199,8 +198,7 @@ namespace Mapster.Tests
                 //.MaxDepth(5)
                 .Compile();
 
-            bool invalid;
-            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map, out invalid);
+            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map);
 
             derivedConfig.IgnoreNullValues.ShouldEqual(true);
             derivedConfig.ShallowCopyForSameType.ShouldEqual(true);
@@ -217,8 +215,7 @@ namespace Mapster.Tests
                 //.MaxDepth(5)
                 .Compile();
 
-            bool invalid;
-            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map, out invalid);
+            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map);
 
             derivedConfig.IgnoreNullValues.ShouldBeNull();
             derivedConfig.ShallowCopyForSameType.ShouldBeNull();
