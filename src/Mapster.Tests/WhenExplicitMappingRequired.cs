@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using Should;
 
@@ -68,10 +67,28 @@ namespace Mapster.Tests
             collectionDto.Name.ShouldEqual(collectionPoco.Name);
         }
 
+		[Test]
+		public void Mapped_Classes_Succeed_When_Enumerable_Is_Mapped()
+		{
+			TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
 
-        #region TestClasses
+			TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
 
-        public class SimplePoco
+			var simplePoco = new List<SimplePoco>
+			{
+				new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"},
+				new SimplePoco {Id = Guid.NewGuid(), Name = "TestName2"}
+			};
+
+			var results = TypeAdapter.Adapt<IList<SimpleDto>>(simplePoco);
+
+			results.Count.ShouldEqual(2);
+		}
+
+
+		#region TestClasses
+
+		public class SimplePoco
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
