@@ -28,6 +28,17 @@ namespace Mapster.Adapters
             return -150;
         }
 
+        protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
+        {
+            if (arg.IsInvalidRequiredExplicitMapping)
+            {
+                throw new InvalidOperationException(
+                    $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+            }
+
+            return base.CreateExpressionBody(source, destination, arg);
+        }
+
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             var properties = CreateAdapterModel(source, destination, arg);

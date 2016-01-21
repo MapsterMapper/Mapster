@@ -235,7 +235,8 @@ namespace Mapster
 
         private LambdaExpression CreateMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
         {
-            var setting = GetMergedSettings(sourceType, destinationType, mapType);
+            bool invalidRequireExclicitMapping;
+            var setting = GetMergedSettings(sourceType, destinationType, mapType, out invalidRequireExclicitMapping);
             var fn = mapType == MapType.MapToTarget
                 ? setting.ConverterToTargetFactory
                 : setting.ConverterFactory;
@@ -255,6 +256,7 @@ namespace Mapster
                 MapType = mapType,
                 Context = context,
                 Settings = setting,
+                IsInvalidRequiredExplicitMapping = invalidRequireExclicitMapping,
             };
             return fn(arg);
         }
@@ -286,10 +288,6 @@ namespace Mapster
 
         private LambdaExpression CreateInvokeExpression(Type sourceType, Type destinationType)
         {
-            //ensure there is MapContext to prevent error on GetMergedSettings
-            if (this.RequireExplicitMapping)
-                MapContext.EnsureContext();
-
             Expression invoker;
             if (this == GlobalSettings)
             {
@@ -308,13 +306,13 @@ namespace Mapster
             return Expression.Lambda(invoke, p);
         }
 
-        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
+        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType, out bool invalidRequireExplicitMapping)
         {
-            if (this.RequireExplicitMapping && mapType != MapType.InlineMap && !MapContext.HasContext)
+            invalidRequireExplicitMapping = false;
+            if (this.RequireExplicitMapping)
             {
                 if (!this.Dict.ContainsKey(new TypeTuple(sourceType, destinationType)))
-                    throw new InvalidOperationException(
-                        $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {sourceType} TDestination: {destinationType}");
+                    invalidRequireExplicitMapping = true;
             }
 
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()

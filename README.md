@@ -89,6 +89,10 @@ or just
 
     var destObject = TypeAdapter.Adapt<TDestination>(sourceObject);
 
+or using extension methods
+
+	var destObject = sourceObject.Adapt<TDestination>();
+
 #####Mapping to an existing object <a name="MappingToTarget"></a>
 You make the object, Mapster maps to the object.
 
@@ -173,9 +177,9 @@ This includes mapping among lists, arrays, collections, dictionary including var
 
 ####Setting <a name="Setting"></a>
 #####Setting per type <a name="SettingPerType"></a>
-You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TDestination>().NewConfig()`
+You can easily create setting for type mapping by `TypeAdapterConfig<TSource, TDestination>.NewConfig()`
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .Ignore(dest => dest.Age)
         .Map(dest => dest.FullName,
@@ -233,9 +237,9 @@ You may wish to have different settings in different scenarios. If you would not
     var config = new TypeAdapterConfig();
     config.Default.Ignore("Id");
 
-For type mapping, you can use `OfType` method.
+For type mapping, you can use `ForType` method.
 
-    config.OfType<TSource, TDestination>()
+    config.ForType<TSource, TDestination>()
           .Map(dest => dest.FullName,
                src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
@@ -254,20 +258,20 @@ When the default convention mappings aren't enough to do the job, you can specif
 #####Ignore Members & Attributes <a name="Ignore"></a>
 Mapster will automatically map properties with the same names. You can ignore members by using `Ignore` method.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .Ignore(dest => dest.Id);
 
 You can ignore members annotated with specific attribute by using `IgnoreAttribute` method.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .IgnoreAttribute(typeof(JsonIgnoreAttribute));
 
 #####Property mapping <a name="Map"></a>
 You can customize how Mapster maps value to property.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .Map(dest => dest.FullName,
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
@@ -275,13 +279,13 @@ You can customize how Mapster maps value to property.
 The Map configuration can accept a third parameter that provides a condition based on the source.
 If the condition is not met, the mapping is skipped altogether.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
 
 In Mapster 2.0, you can map even type of source and destination properties are different.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .Map(dest => dest.Gender,      //Genders.Male or Genders.Female
              src => src.GenderString); //"Male" or "Female"
@@ -289,21 +293,21 @@ In Mapster 2.0, you can map even type of source and destination properties are d
 #####Merge object <a name="Merge"></a>
 By default, Mapster will map all properties, even source properties contains null value. You can copy only properties that have value by using `IgnoreNullValues` method.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .IgnoreNullValues(true);
 
 #####Shallow copy <a name="ShallowCopy"></a>
 By default, Mapster will recursively map nested objects. You can do shallow copying by setting `ShallowCopyForSameType` to `true`.
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .ShallowCopyForSameType(true);
 
 #####Preserve reference (preventing circular reference stackoverflow) <a name="PreserveReference"></a>
 When you map circular reference objects, there will be stackoverflow exception. This is because Mapster will try to recursively map all objects in circular. If you would like to map circular reference objects, or preserve references (such as 2 properties point to the same object), you can do it by setting `PreserveReference` to `true`
 
-    TypeAdapterConfig<TSource, TDestination>()
+    TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .PreserveReference(true);
 

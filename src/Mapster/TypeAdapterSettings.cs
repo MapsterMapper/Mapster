@@ -77,6 +77,7 @@ namespace Mapster
         public MapType MapType;
         public TypeAdapterSettings Settings;
         public CompileContext Context;
+        public bool IsInvalidRequiredExplicitMapping;
     }
 
     public class CompileContext
