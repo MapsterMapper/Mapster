@@ -19,18 +19,13 @@ namespace Mapster.Adapters
             var destinationType = arg.DestinationType;
             if (sourceType != destinationType)
             {
-                if (arg.MapType == MapType.Projection)
-                    convert = Expression.Convert(convert, destinationType);
-                else
+                if (sourceType.IsNullable())
                 {
-                    if (sourceType.IsNullable())
-                    {
-                        convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
-                    }
-                    convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
-                    if (convert.Type != destinationType)
-                        convert = Expression.Convert(convert, destinationType);
+                    convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
                 }
+                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
+                if (convert.Type != destinationType)
+                    convert = Expression.Convert(convert, destinationType);
             }
             if (arg.MapType != MapType.Projection
                 && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()) 
