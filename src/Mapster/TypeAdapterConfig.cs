@@ -312,9 +312,6 @@ namespace Mapster
         {
             if (this.RequireExplicitMapping && mapType != MapType.InlineMap && !MapContext.HasContext)
             {
-				if(sourceType.)
-
-
                 if (!this.Dict.ContainsKey(new TypeTuple(sourceType, destinationType)))
                     throw new InvalidOperationException(
                         $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {sourceType} TDestination: {destinationType}");
