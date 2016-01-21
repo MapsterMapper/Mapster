@@ -177,3 +177,4 @@ FakesAssemblies/
 deploy/archive
 deploy/output
 /src/.vs/config
+project.lock.json
