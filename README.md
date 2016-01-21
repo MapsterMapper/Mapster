@@ -2,6 +2,8 @@
 
 ##Mapster - The Mapper of Your Domain
 
+[![Build status](https://ci.appveyor.com/api/projects/status/krpp0nhspmklom1d?svg=true)](https://ci.appveyor.com/project/eswann/mapster)
+
 ### Basic usage
 ```
 var result = TypeAdapter.Adapt<NewType>(original);
