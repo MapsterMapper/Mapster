@@ -17,7 +17,7 @@ var result = original.Adapt<NewType>();
 PM> Install-Package Mapster
 ```
 ###Mapster 2.0 Released!
-Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while still maintaining its functionality. Here is the latest benchmark:
+Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while still maintaining its functionality. The benchmarks:
 
 | Engine          | Structs | Simple objects | Parent-Child | Parent-Children | Complex objects | Advance mapping |
 |-----------------|--------:|---------------:|-------------:|----------------:|----------------:|----------------:|
