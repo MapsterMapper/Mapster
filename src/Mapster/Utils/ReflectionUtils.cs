@@ -101,11 +101,6 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
         }
 
-        public static string ToString<T>(T item)
-        {
-            return item.ToString();
-        }
-
         private static Expression CreateConvertMethod(string name, Type srcType, Type destType, Expression source)
         {
             var method = typeof (Convert).GetMethod(name, new[] {srcType});
@@ -141,9 +136,8 @@ namespace Mapster
                 }
                 else
                 {
-                    var method = typeof(ReflectionUtils).GetMethods().First(m => m.Name == "ToString");
-                    method = method.MakeGenericMethod(srcType);
-                    return Expression.Call(method, source);
+                    var method = srcType.GetMethod("ToString", Type.EmptyTypes);
+                    return Expression.Call(source, method);
                 }
             }
 
