@@ -8,6 +8,10 @@
 ```
 var result = TypeAdapter.Adapt<NewType>(original);
 ```
+or with extensions
+```
+var result = original.Adapt<NewType>();
+```
 ### Get it
 ```
 PM> Install-Package Mapster
