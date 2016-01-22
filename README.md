@@ -33,19 +33,19 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 (NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean the library did not the test.)
 
 ###New Features
-- Projection is improved to generate nicer sql query
-- Mapster is now able to map struct
-- Flagged enum is supported
+- Projection is improved to generate better sql queries
+- Mapster is now able to map structs
+- Flagged enums are supported
 - Setting is now much more flexible
-    - You can now both opt-in and opt-out setting
-    - Setting inheritance is able to inherit from interface
-    - Setting inheritance is now combined (it does not only pick from the closest parent)
-    - New rule based setting, you can defined your setting more granular level
-    - Setting is no more static, you can overload your setting to use different setting for your mapping
+    - You can now both opt-in and opt-out of settings
+    - Settings inheritance is able to inherit from interfaces
+    - Settings inheritance is now combined (it does not only pick from the closest parent)
+    - New rule based settings, you can defined your settings at a more granular level
+    - Settings are no longer only static, you can use different setting configurations for particular mappings
 - You can ignore properties by attributes
-- Now you can setup your map from different type ie `config.Map(dest => dest.AgeString, src => src.AgeInt)`
-- Mapster is now support circular reference mapping!
-- Supported more frameworks (.NET 4.0, 4.5, .NET Core RC 5.4)
+- Now you can set up mapping between different types. Ex: `config.Map(dest => dest.AgeString, src => src.AgeInt)`
+- Mapster now supports circular reference mapping!
+- Supports more frameworks (.NET 4.0, 4.5, .NET Core RC 5.4)
 
 ###Get started
 
