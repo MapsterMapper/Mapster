@@ -18,18 +18,23 @@ namespace Mapster
             return RuntimeHelpers.GetHashCode(obj);
         }
     }
+
+    /// <summary>
+    /// This class is to send data between mapping process
+    /// </summary>
+    /// <remarks>
+    /// The idea of this class is similar to Transaction & TransactionScope
+    /// You can get context by MapContext.Current
+    /// And all mapping processes will having only one context
+    /// </remarks>
     internal class MapContext
     {
         [ThreadStatic]
-        private static MapContext _context;
-        public static MapContext Context
+        private static MapContext _current;
+        public static MapContext Current
         {
-            get { return _context ?? (_context = new MapContext()); }
-        }
-
-        public static bool HasContext
-        {
-            get { return _context != null; }
+            get { return _current; }
+            set { _current = value; }
         }
 
         private Dictionary<object, object> _references;
@@ -37,16 +42,26 @@ namespace Mapster
         {
             get { return _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default)); }
         }
+    }
+    internal class MapContextScope : IDisposable
+    {
+        public MapContext Context { get; }
 
-        public static void EnsureContext()
+        private bool _isRootScope;
+        public MapContextScope()
         {
-            if (_context == null)
-                _context = new MapContext();
+            this.Context = MapContext.Current;
+            if (this.Context == null)
+            {
+                _isRootScope = true;
+                this.Context = MapContext.Current = new MapContext();
+            }
         }
 
-        public static void Clear()
+        public void Dispose()
         {
-            _context = null;
+            if (_isRootScope && object.ReferenceEquals(MapContext.Current, this.Context))
+                MapContext.Current = null;
         }
     }
 }
