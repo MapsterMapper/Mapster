@@ -26,13 +26,13 @@ namespace Mapster.Adapters
             {
                 var countProperty = source.Type.GetProperty("Count");
                 if (countProperty != null)
-                    return Expression.Property(source, countProperty);
+                    return Expression.Property(source, countProperty);  //list.Count
                 if (!allowCountAll)
                     return null;
                 var countMethod = typeof(Enumerable).GetMethods()
                     .First(m => m.Name == "Count" && m.GetParameters().Length == 1)
                     .MakeGenericMethod(source.Type.ExtractCollectionType());
-                return Expression.Call(countMethod, source);
+                return Expression.Call(countMethod, source);            //list.Count()
             }
         }
 
@@ -59,19 +59,21 @@ namespace Mapster.Adapters
         {
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
             if (arg.DestinationType.IsArray)
-                return Expression.NewArrayBounds(destinationElementType, CreateCountExpression(source, true));
+                return Expression.NewArrayBounds(
+                    destinationElementType, 
+                    CreateCountExpression(source, true));   //new TDestinationElement[count]
 
             var count = CreateCountExpression(source, false);
             var listType = arg.DestinationType.GetTypeInfo().IsInterface
                 ? typeof (List<>).MakeGenericType(destinationElementType)
                 : arg.DestinationType;
             if (count == null)
-                return Expression.New(listType);
+                return Expression.New(listType);            //new List<T>()
             var ctor = listType.GetConstructor(new[] { typeof(int) });
             if (ctor == null)
-                return Expression.New(listType);
+                return Expression.New(listType);            //new List<T>()
             else
-                return Expression.New(ctor, count);
+                return Expression.New(ctor, count);         //new List<T>(count)
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
@@ -80,6 +82,7 @@ namespace Mapster.Adapters
             {
                 if (source.Type.IsArray && source.Type.GetElementType() == destination.Type.GetElementType())
                 {
+                    //Array.Copy(src, 0, dest, 0, src.Length)
                     var method = typeof (Array).GetMethod("Copy", new[] {typeof (Array), typeof (int), typeof (Array), typeof (int), typeof (int)});
                     return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), Expression.ArrayLength(source));
                 }
@@ -116,9 +119,12 @@ namespace Mapster.Adapters
             var adapt = CreateAdaptExpression(p1, destinationElementType, arg);
             if (adapt == p1)
                 return source;
+
+            //src.Select(item => convert(item))
             var exp = Expression.Call(method, source, Expression.Lambda(adapt, p1));
             if (exp.Type != arg.DestinationType)
             {
+                //src.Select(item => convert(item)).ToList()
                 var toList = (from m in typeof (Enumerable).GetMethods()
                               where m.Name == "ToList"
                               select m).First().MakeGenericMethod(destinationElementType);
@@ -129,6 +135,18 @@ namespace Mapster.Adapters
 
         private Expression CreateArraySet(Expression source, Expression destination, CompileArgument arg)
         {
+            //### IList<T>
+            //var v = 0
+            //for (var i = 0, len = src.Count; i < len; i++) {
+            //  var p = src[i];
+            //  dest[v++] = convert(p);
+            //}
+
+            //### IEnumerable<T>
+            //var v = 0;
+            //foreach (var p in src)
+            //  dest[v++] = convert(p);
+
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
@@ -136,15 +154,24 @@ namespace Mapster.Adapters
             var start = Expression.Assign(v, Expression.Constant(0));
             var getter = CreateAdaptExpression(p, destinationElementType, arg);
             var set = Expression.Assign(
-                Expression.ArrayAccess(destination, v),
+                Expression.ArrayAccess(destination, Expression.PostIncrementAssign(v)),
                 getter);
-            var inc = Expression.PostIncrementAssign(v);
-            var loop = ForLoop(source, p, set, inc);
+            var loop = ForLoop(source, p, set);
             return Expression.Block(new[] {v}, start, loop);
         }
 
         private Expression CreateListSet(Expression source, Expression destination, CompileArgument arg)
         {
+            //### IList<T>
+            //for (var i = 0, len = src.Count; i < len; i++) {
+            //  var p = src[i];
+            //  dest.Add(convert(p));
+            //}
+
+            //### IEnumerable<T>
+            //foreach (var p in src)
+            //  dest.Add(convert(p));
+
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
@@ -167,7 +194,7 @@ namespace Mapster.Adapters
             Expression current;
             if (collection.Type.IsArray)
             {
-                current = Expression.ArrayIndex(collection, Expression.PostIncrementAssign(i));
+                current = Expression.ArrayIndex(collection, i);
                 lenAssign = Expression.Assign(len, Expression.ArrayLength(collection));
             }
             else
@@ -182,7 +209,7 @@ namespace Mapster.Adapters
                 if (indexer == null || count == null)
                     return ForEach(collection, loopVar, loopContent);
 
-                current = Expression.Property(collection, indexer, Expression.PostIncrementAssign(i));
+                current = Expression.Property(collection, indexer, i);
                 lenAssign = Expression.Assign(len, Expression.Property(collection, count));
             }
 
@@ -197,7 +224,9 @@ namespace Mapster.Adapters
                     Expression.IfThenElse(
                         Expression.LessThan(i, len),
                         Expression.Block(new[] { loopVar },
-                            new[] { Expression.Assign(loopVar, current) }.Concat(loopContent)
+                            new[] { Expression.Assign(loopVar, current) }
+                                .Concat(loopContent)
+                                .Concat(new[] { Expression.PostIncrementAssign(i) })
                         ),
                         Expression.Break(breakLabel)
                     ),

@@ -25,14 +25,7 @@ namespace Mapster
         public static TDestination Adapt<TDestination>(this object source, TypeAdapterConfig config)
         {
             dynamic fn = config.GetMapFunction(source.GetType(), typeof(TDestination));
-            try
-            {
-                return (TDestination)fn((dynamic)source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return (TDestination)fn((dynamic)source);
         }
 
         /// <summary>
@@ -44,14 +37,7 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static TDestination Adapt<TSource, TDestination>(this TSource source)
         {
-            try
-            {
-                return TypeAdapter<TSource, TDestination>.Map(source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return TypeAdapter<TSource, TDestination>.Map(source);
         }
 
         /// <summary>
@@ -65,14 +51,7 @@ namespace Mapster
         public static TDestination Adapt<TSource, TDestination>(this TSource source, TypeAdapterConfig config)
         {
             var fn = config.GetMapFunction<TSource, TDestination>();
-            try
-            {
-                return fn(source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn(source);
         }
 
         /// <summary>
@@ -100,15 +79,7 @@ namespace Mapster
         public static TDestination Adapt<TSource, TDestination>(this TSource source, TDestination destination, TypeAdapterConfig config)
         {
             var fn = config.GetMapToTargetFunction<TSource, TDestination>();
-
-            try
-            {
-                return fn(source, destination);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn(source, destination);
         }
 
         /// <summary>
@@ -134,14 +105,7 @@ namespace Mapster
         public static object Adapt(this object source, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
             dynamic fn = config.GetMapFunction(sourceType, destinationType);
-            try
-            {
-                return fn((dynamic)source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn((dynamic)source);
         }
 
         /// <summary>
@@ -169,14 +133,7 @@ namespace Mapster
         public static object Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config = null)
         {
             dynamic fn = config.GetMapToTargetFunction(sourceType, destinationType);
-            try
-            {
-                return fn((dynamic)source, (dynamic)destination);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn((dynamic)source, (dynamic)destination);
         }
 
         /// <summary>

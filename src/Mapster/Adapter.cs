@@ -25,62 +25,31 @@ namespace Mapster
         public TDestination Adapt<TDestination>(object source)
         {
             dynamic fn = _config.GetMapFunction(source.GetType(), typeof(TDestination));
-            try
-            {
-                return (TDestination)fn((dynamic)source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return (TDestination)fn((dynamic)source);
         }
 
         public TDestination Adapt<TSource, TDestination>(TSource source)
         {
             var fn = _config.GetMapFunction<TSource, TDestination>();
-            try
-            {
-                return fn(source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn(source);
         }
 
         public TDestination Adapt<TSource, TDestination>(TSource source, TDestination destination)
         {
             var fn = _config.GetMapToTargetFunction<TSource, TDestination>();
-
-            try
-            {
-                return fn(source, destination);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn(source, destination);
         }
 
         public object Adapt(object source, Type sourceType, Type destinationType)
         {
             var fn = _config.GetMapFunction(sourceType, destinationType);
-            var result = fn.DynamicInvoke(source);
-            MapContext.Clear();
-            return result;
+            return fn.DynamicInvoke(source);
         }
 
         public object Adapt(object source, object destination, Type sourceType, Type destinationType)
         {
             dynamic fn = _config.GetMapFunction(sourceType, destinationType);
-            try
-            {
-                return fn((dynamic)source);
-            }
-            finally
-            {
-                MapContext.Clear();
-            }
+            return fn((dynamic)source);
         }
     }
 

@@ -42,6 +42,16 @@ namespace Mapster.Adapters
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
+            //### !IgnoreNullValues
+            //dest.Prop1 = convert(src.Prop1);
+            //dest.Prop2 = convert(src.Prop2);
+
+            //### IgnoreNullValues
+            //if (src.Prop1 != null)
+            //  dest.Prop1 = convert(src.Prop1);
+            //if (src.Prop2 != null)
+            //  dest.Prop2 = convert(src.Prop2);
+
             var properties = CreateAdapterModel(source, destination, arg);
 
             var lines = new List<Expression>();
@@ -63,10 +73,19 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
         {
-            var newInstance = (NewExpression)CreateInstantiationExpression(source, arg);
+            //new TDestination {
+            //  Prop1 = convert(src.Prop1),
+            //  Prop2 = convert(src.Prop2),
+            //}
+
+            var exp = CreateInstantiationExpression(source, arg);
+            var memberInit = exp as MemberInitExpression;
+            var newInstance = memberInit != null ? memberInit.NewExpression : (NewExpression)exp;
             var properties = CreateAdapterModel(source, newInstance, arg);
 
             var lines = new List<MemberBinding>();
+            if (memberInit != null)
+                lines.AddRange(memberInit.Bindings);
             foreach (var property in properties)
             {
                 var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);

@@ -26,14 +26,14 @@ namespace Mapster.Adapters
                 convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
                 if (convert.Type != destinationType)
                     convert = Expression.Convert(convert, destinationType);
-            }
-            if (arg.MapType != MapType.Projection
-                && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()) 
-                && destinationType.GetTypeInfo().IsValueType 
-                && !destinationType.IsNullable())
-            {
-                var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
-                convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
+
+                if (arg.MapType != MapType.Projection
+                    && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
+                {
+                    //src == null ? default(TDestination) : convert(src)
+                    var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
+                    convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
+                }
             }
 
             return convert;
