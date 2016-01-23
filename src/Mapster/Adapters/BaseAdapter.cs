@@ -47,7 +47,9 @@ namespace Mapster.Adapters
         {
             if (destination != null)
                 return false;
-            if (arg.Settings.ConstructUsing != null && arg.Settings.ConstructUsing.Body.NodeType != ExpressionType.New)
+            if (arg.Settings.ConstructUsing != null && 
+                arg.Settings.ConstructUsing.Body.NodeType != ExpressionType.New &&
+                arg.Settings.ConstructUsing.Body.NodeType != ExpressionType.MemberInit)
                 return false;
             if (arg.Settings.PreserveReference == true &&
                 arg.MapType != MapType.Projection &&
@@ -76,29 +78,53 @@ namespace Mapster.Adapters
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
             {
-                var dict = Expression.Parameter(typeof (Dictionary<object, object>));
-                var propInfo = typeof(MapContext).GetProperty("Context", BindingFlags.Static | BindingFlags.Public);
-                var refContext = Expression.Property(null, propInfo);
+                //using (var scope = new MapContextScope()) {
+                //  var dict = scope.Context.Reference;
+                //  object cache;
+                //  if (dict.TryGetValue(source, out cache))
+                //      result = (TDestination)cache;
+                //  else {
+                //      result = new TDestination();
+                //      dict.Add(source, (object)result);
+                //      result.Prop1 = adapt(source.Prop1);
+                //      result.Prop2 = adapt(source.Prop2);
+                //  }
+                //}
+
+                var scope = Expression.Variable(typeof(MapContextScope));
+                var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
+
+                var dict = Expression.Variable(typeof (Dictionary<object, object>));
+                var refContext = Expression.Property(scope, "Context");
                 var refDict = Expression.Property(refContext, "References");
+                var assignDict = Expression.Assign(dict, refDict);
 
                 var refAdd = Expression.Call(dict, "Add", null, Expression.Convert(source, typeof(object)), Expression.Convert(result, typeof(object)));
-                set = Expression.Block(assign, refAdd, set);
+                var setResultAndCache = Expression.Block(assign, refAdd, set);
 
                 var cached = Expression.Variable(typeof(object));
                 var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
                 var checkHasRef = Expression.Call(dict, tryGetMethod, source, cached);
-                var assignDict = Expression.Assign(dict, refDict);
-                set = Expression.IfThenElse(
+                var setResult = Expression.IfThenElse(
                     checkHasRef,
                     ExpressionEx.Assign(result, cached),
-                    set);
-                set = Expression.Block(new[] { cached, dict }, assignDict, set);
+                    setResultAndCache);
+                var usingBody = Expression.Block(new[] { cached, dict }, assignDict, setResult);
+
+                var dispose = Expression.Call(scope, "Dispose", null);
+                set = Expression.Block(new[] { scope }, newScope, Expression.TryFinally(usingBody, dispose));
             }
             else
             {
                 set = Expression.Block(assign, set);
             }
 
+            //TDestination result;
+            //if (source == null)
+            //  result = default(TDestination);
+            //else
+            //  result = adapt(source);
+            //return result;
             if (arg.MapType != MapType.Projection && 
                 (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
             {
@@ -113,6 +139,8 @@ namespace Mapster.Adapters
         }
         protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
+            //source == null ? default(TDestination) : convert(source)
+
             var exp = CreateInlineExpression(source, arg);
 
             if (arg.MapType != MapType.Projection
@@ -133,6 +161,8 @@ namespace Mapster.Adapters
 
         protected virtual Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
         {
+            //new TDestination()
+
             return arg.Settings.ConstructUsing != null 
                 ? arg.Settings.ConstructUsing.Apply(source).TrimConversion().To(arg.DestinationType) 
                 : Expression.New(arg.DestinationType);
