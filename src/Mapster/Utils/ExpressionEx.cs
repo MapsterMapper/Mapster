@@ -8,7 +8,7 @@ namespace Mapster.Utils
     {
         public static Expression Assign(Expression left, Expression right)
         {
-            var middle = left.Type == right.Type
+            var middle = left.Type.IsReferenceAssignableFrom(right.Type)
                 ? right
                 : Expression.Convert(right, left.Type);
             return Expression.Assign(left, middle);
@@ -31,7 +31,7 @@ namespace Mapster.Utils
 
         public static Expression To(this Expression exp, Type type)
         {
-            if (exp.Type != type)
+            if (!type.IsReferenceAssignableFrom(exp.Type))
                 return Expression.Convert(exp, type);
             else
                 return exp;

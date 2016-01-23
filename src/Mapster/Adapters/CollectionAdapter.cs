@@ -105,7 +105,7 @@ namespace Mapster.Adapters
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
         {
             if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(source.Type.GetTypeInfo()) && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
-                return source.To(arg.DestinationType);
+                return source;
 
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
