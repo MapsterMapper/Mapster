@@ -38,8 +38,21 @@ namespace Mapster.Adapters
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
         {
-            return base.CanInline(source, destination, arg)
-                   && (arg.DestinationType == typeof (IEnumerable) || arg.DestinationType.IsGenericEnumerableType());
+            if (!base.CanInline(source, destination, arg))
+                return false;
+
+            if (arg.MapType == MapType.Projection)
+            {
+                var destinationElementType = arg.DestinationType.ExtractCollectionType();
+                var listType = typeof (List<>).MakeGenericType(destinationElementType);
+                if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(listType))
+                    return true;
+            }
+
+            if (arg.DestinationType == typeof (IEnumerable) || arg.DestinationType.IsGenericEnumerableType())
+                return true;
+
+            return false;
         }
 
         protected override Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
@@ -103,7 +116,15 @@ namespace Mapster.Adapters
             var adapt = CreateAdaptExpression(p1, destinationElementType, arg);
             if (adapt == p1)
                 return source;
-            return Expression.Call(method, source, Expression.Lambda(adapt, p1));
+            var exp = Expression.Call(method, source, Expression.Lambda(adapt, p1));
+            if (exp.Type != arg.DestinationType)
+            {
+                var toList = (from m in typeof (Enumerable).GetMethods()
+                              where m.Name == "ToList"
+                              select m).First().MakeGenericMethod(destinationElementType);
+                exp = Expression.Call(toList, exp);
+            }
+            return exp;
         }
 
         private Expression CreateArraySet(Expression source, Expression destination, CompileArgument arg)
