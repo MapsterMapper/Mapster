@@ -61,8 +61,8 @@ namespace Mapster.Tests
         {
             var products = new[]
             {
-                new Product {Id = Guid.NewGuid(), Title = "ProductA", CreatedUser = new User {Name = "UserA"}},
-                new Product {Id = Guid.NewGuid(), Title = "ProductB", CreatedUser = null},
+                new Product {Id = Guid.NewGuid(), Title = "ProductA", CreatedUser = new User {Name = "UserA"}, OrderLines = new List<OrderLine>()},
+                new Product {Id = Guid.NewGuid(), Title = "ProductB", CreatedUser = null, OrderLines = new List<OrderLine>()},
             };
 
             var resultQuery = products.AsQueryable().Project().To<ProductDTO>();
@@ -72,6 +72,14 @@ namespace Mapster.Tests
                                     Id = Param_0.Id,
                                     Title = Param_0.Title,
                                     CreatedUserName = Param_0.CreatedUser.Name,
+                                    OrderLines = (from Param_1 in Param_0.OrderLines
+                                                  select new OrderLineListDTO
+                                                  {
+                                                      Id = Param_1.Id,
+                                                      UnitPrice = Param_1.UnitPrice,
+                                                      Amount = Param_1.Amount,
+                                                      Discount = Param_1.Discount,
+                                                  }).ToList()
                                 };
             resultQuery.ToString().ShouldEqual(expectedQuery.ToString());
         }

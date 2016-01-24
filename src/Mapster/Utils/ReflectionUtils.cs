@@ -263,5 +263,16 @@ namespace Mapster
             }
             return null;
         }
+
+        public static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
+        {
+            if (destType == srcType)
+                return true;
+
+            if (!destType.GetTypeInfo().IsValueType && !srcType.GetTypeInfo().IsValueType && destType.GetTypeInfo().IsAssignableFrom(srcType))
+                return true;
+
+            return false;
+        }
     }
 }
