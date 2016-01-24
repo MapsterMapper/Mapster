@@ -61,8 +61,8 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 - [Mapping POCO](#ConversionPOCO)
 - [Mapping Lists](#ConversionList)
 
-[Setting](#Setting)
-- [Setting per type](#SettingPerType)
+[Settings](#Settings)
+- [Settings per type](#SettingsPerType)
 - [Global Settings](#SettingGlobal)
 - [Setting inheritance](#SettingInheritance)
 - [Rule based setting](#SettingRuleBased)
@@ -187,10 +187,10 @@ This includes mapping among lists, arrays, collections, dictionary including var
 
     var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
 
-####Setting <a name="Setting"></a>
-#####Setting per type <a name="SettingPerType"></a>
-You can easily create settings for a type mapping by using: `TypeAdapterConfig<TSource, TDestination>.NewConfig()`
-When `NewConfig()` is called, any previous configuration for this particular TSource => TDestination mapping is dropped.
+####Settings <a name="Settings"></a>
+#####Settings per type <a name="SettingsPerType"></a>
+You can easily create settings for a type mapping by using: `TypeAdapterConfig<TSource, TDestination>.NewConfig()`.
+When `NewConfig` is called, any previous configuration for this particular TSource => TDestination mapping is dropped.
 
     TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
@@ -198,7 +198,7 @@ When `NewConfig()` is called, any previous configuration for this particular TSo
         .Map(dest => dest.FullName,
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-As an alternative to `NewConfig()`, you can use `ForType()` in the same way:
+As an alternative to `NewConfig`, you can use `ForType` in the same way:
 
 	TypeAdapterConfig<TSource, TDestination>
 			.ForType()
@@ -206,7 +206,7 @@ As an alternative to `NewConfig()`, you can use `ForType()` in the same way:
 			.Map(dest => dest.FullName,
 				 src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-`ForType()` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination 
+`ForType` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination 
 mapping does already exist, it will enhance the existing mapping instead of dropping and replacing it.  
 
 #####Global Settings <a name="SettingGlobal"></a>
@@ -298,7 +298,7 @@ Assembly scanning is simple, just create any number of IRegister implementations
 			
 			//OR to create or enhance an existing configuration
 
-			config.ForType<TSource, TDestination>
+			config.ForType<TSource, TDestination>();
 		}
 	}
 
