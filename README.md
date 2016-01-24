@@ -61,12 +61,12 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 - [Mapping POCO](#ConversionPOCO)
 - [Mapping Lists](#ConversionList)
 
-[Setting](#Setting)
-- [Setting per type](#SettingPerType)
-- [Global Settings](#SettingGlobal)
-- [Setting inheritance](#SettingInheritance)
-- [Rule based setting](#SettingRuleBased)
-- [Overload setting](#SettingOverload)
+[Settings](#Settings)
+- [Settings per type](#SettingsPerType)
+- [Global Settings](#SettingsGlobal)
+- [Settings inheritance](#SettingsInheritance)
+- [Rule based settings](#SettingsRuleBased)
+- [Overload settings](#SettingsOverload)
 - [Assembly scanning](#AssemblyScanning)
 
 [Basic Customization](#Basic)
@@ -187,10 +187,10 @@ This includes mapping among lists, arrays, collections, dictionary including var
 
     var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
 
-####Setting <a name="Setting"></a>
-#####Setting per type <a name="SettingPerType"></a>
-You can easily create settings for a type mapping by using: `TypeAdapterConfig<TSource, TDestination>.NewConfig()`
-When `NewConfig()` is called, any previous configuration for this particular TSource => TDestination mapping is dropped.
+####Settings <a name="Settings"></a>
+#####Settings per type <a name="SettingsPerType"></a>
+You can easily create settings for a type mapping by using: `TypeAdapterConfig<TSource, TDestination>.NewConfig()`.
+When `NewConfig` is called, any previous configuration for this particular TSource => TDestination mapping is dropped.
 
     TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
@@ -198,7 +198,7 @@ When `NewConfig()` is called, any previous configuration for this particular TSo
         .Map(dest => dest.FullName,
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-As an alternative to `NewConfig()`, you can use `ForType()` in the same way:
+As an alternative to `NewConfig`, you can use `ForType` in the same way:
 
 	TypeAdapterConfig<TSource, TDestination>
 			.ForType()
@@ -206,10 +206,10 @@ As an alternative to `NewConfig()`, you can use `ForType()` in the same way:
 			.Map(dest => dest.FullName,
 				 src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-`ForType()` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination 
+`ForType` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination 
 mapping does already exist, it will enhance the existing mapping instead of dropping and replacing it.  
 
-#####Global Settings <a name="SettingGlobal"></a>
+#####Global Settings <a name="SettingsGlobal"></a>
 Use global settings to apply policies to all mappings.
 
     TypeAdapterConfig.GlobalSettings.Default.PreserveReference(true);
@@ -218,7 +218,7 @@ Then for individual type mappings, you can easily override the global setting(s)
 
     TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig().PreserveReference(false);
 
-#####Setting inheritance <a name="SettingInheritance"></a>
+#####Settings inheritance <a name="SettingsInheritance"></a>
 Type mappings will automatically inherit for source types. Ie. if you set up following config.
 
     TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -244,7 +244,7 @@ Finally, Mapster also provides methods to inherit explicitly.
     TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
         .Inherits<SimplePoco, SimpleDto>();
 
-#####Rule based setting <a name="SettingRuleBased"></a>
+#####Rule based settings <a name="SettingsRuleBased"></a>
 To set the setting at a more granular level. You can use the `When` method in global settings. 
 In the example below, when any source type and destination type are the same, we will not the copy the `Id` property.
 
@@ -256,7 +256,7 @@ In this example, the config would only apply to Query Expressions (projections).
     TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => mapType == MapType.Projection)
         .IgnoreAttribute(typeof(NotMapAttribute));
 
-#####Overload setting <a name="SettingOverload"></a>
+#####Overload settings <a name="SettingsOverload"></a>
 You may wish to have different settings in different scenarios. 
 If you would not like to apply setting at a static level, Mapster also provides setting instance configurations.
 
@@ -298,7 +298,7 @@ Assembly scanning is simple, just create any number of IRegister implementations
 			
 			//OR to create or enhance an existing configuration
 
-			config.ForType<TSource, TDestination>
+			config.ForType<TSource, TDestination>();
 		}
 	}
 
