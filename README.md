@@ -67,6 +67,7 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 - [Setting inheritance](#SettingInheritance)
 - [Rule based setting](#SettingRuleBased)
 - [Overload setting](#SettingOverload)
+- [Assembly scanning](#AssemblyScanning)
 
 [Basic Customization](#Basic)
 - [Ignore properties & attributes](#Ignore)
@@ -189,12 +190,24 @@ This includes mapping among lists, arrays, collections, dictionary including var
 ####Setting <a name="Setting"></a>
 #####Setting per type <a name="SettingPerType"></a>
 You can easily create settings for a type mapping by using: `TypeAdapterConfig<TSource, TDestination>.NewConfig()`
+When `NewConfig()` is called, any previous configuration for this particular TSource => TDestination mapping is dropped.
 
     TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
         .Ignore(dest => dest.Age)
         .Map(dest => dest.FullName,
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+As an alternative to `NewConfig()`, you can use `ForType()` in the same way:
+
+	TypeAdapterConfig<TSource, TDestination>
+			.ForType()
+			.Ignore(dest => dest.Age)
+			.Map(dest => dest.FullName,
+				 src => string.Format("{0} {1}", src.FirstName, src.LastName));
+
+`ForType()` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination 
+mapping does already exist, it will enhance the existing mapping instead of dropping and replacing it.  
 
 #####Global Settings <a name="SettingGlobal"></a>
 Use global settings to apply policies to all mappings.
@@ -250,7 +263,12 @@ If you would not like to apply setting at a static level, Mapster also provides 
     var config = new TypeAdapterConfig();
     config.Default.Ignore("Id");
 
-For type mappings, you can use the `ForType` method.
+For instance configurations, you can use the same `NewConfig` and `ForType` methods that are used at the global level with
+the same behavior: `NewConfig` drops any existing configuration and `ForType` creates or enhances a configuration.
+
+    config.NewConfig<TSource, TDestination>()
+          .Map(dest => dest.FullName,
+               src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
     config.ForType<TSource, TDestination>()
           .Map(dest => dest.FullName,
@@ -264,6 +282,34 @@ Or to an Adapter instance.
 
     var adapter = new Adapter(config);
     var result = adapter.Adapt<TDestination>(src);
+
+#####Assembly scanning <a name="AssemblyScanning"></a>
+It's relatively common to have mapping configurations spread across a number of different assemblies.  
+Perhaps your domain assembly has some rules to map to domain objects and your web api has some specific rules to map to your 
+api contracts. In these cases, it can be helpful to allow assemblies to be scanned for these rules so you have some basic 
+method of organizing your rules and not forgetting to have the registration code called. In some cases, it may even be necessary to 
+register the assemblies in a particular order, so that some rules override others. Assembly scanning helps with this.
+Assembly scanning is simple, just create any number of IRegister implementations in your assembly, then call `Scan` from your TypeAdapterConfig class:
+
+	public class MyRegister : IRegister
+	{
+		public void Register(TypeAdapterConfig config){
+			config.NewConfig<TSource, TDestination>();
+			
+			//OR to create or enhance an existing configuration
+
+			config.ForType<TSource, TDestination>
+		}
+	}
+
+To scan and register with the Global settings:
+
+	TypeAdapterConfig.Global.Scan(assembly1, assembly2, assemblyN)
+
+For a specific config instance:
+
+	var config = new TypeAdapterConfig();
+	config.Scan(assembly1, assembly2, assemblyN);
 
 ####Basic Customization <a name="Basic"></a>
 When the default convention mappings aren't enough to do the job, you can specify complex source mappings.

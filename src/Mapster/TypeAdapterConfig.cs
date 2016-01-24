@@ -30,7 +30,8 @@ namespace Mapster
         public readonly List<TypeAdapterRule> Rules;
         public readonly TypeAdapterSetter Default;
         internal readonly Dictionary<TypeTuple, TypeAdapterRule> Dict = new Dictionary<TypeTuple, TypeAdapterRule>();
-        public TypeAdapterConfig()
+
+		public TypeAdapterConfig()
         {
             this.Rules = RulesTemplate.ToList();
             this.Default = new TypeAdapterSetter(new TypeAdapterSettings(), this);
@@ -52,7 +53,14 @@ namespace Mapster
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
-        public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
+	    public TypeAdapterSetter<TSource, TDestination> NewConfig<TSource, TDestination>()
+	    {
+			Remove(typeof(TSource), typeof(TDestination));
+		    return ForType<TSource, TDestination>();
+	    }
+
+
+		public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             TypeAdapterRule rule;
@@ -349,7 +357,7 @@ namespace Mapster
 
 			foreach (IRegister register in registers)
 			{
-				register.Register();
+				register.Register(this);
 			}
 			return registers;
 		}
@@ -387,11 +395,15 @@ namespace Mapster
     {
         public static TypeAdapterSetter<TSource, TDestination> NewConfig()
         {
-            Clear();
-            return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
+            return TypeAdapterConfig.GlobalSettings.NewConfig<TSource, TDestination>();
         }
 
-        public static void Clear()
+		public static TypeAdapterSetter<TSource, TDestination> ForType()
+		{
+			return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
+		}
+
+		public static void Clear()
         {
             TypeAdapterConfig.GlobalSettings.Remove(typeof(TSource), typeof(TDestination));
         }

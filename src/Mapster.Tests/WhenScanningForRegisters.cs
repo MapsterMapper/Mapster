@@ -34,18 +34,21 @@ namespace Mapster.Tests
 
 		public class TestRegister : IRegister
 		{
-			public void Register()
+			public void Register(TypeAdapterConfig config)
 			{
-				TypeAdapterConfig<Customer, CustomerDTO>.NewConfig();
-				TypeAdapterConfig<Product, ProductDTO>.NewConfig();
+				config.NewConfig<Customer, CustomerDTO>();
+				config.NewConfig<Product, ProductDTO>();
+
+				config.ForType<Product, ProductDTO>()
+					.Map(dest => dest.Title, src => src.Title + "_AppendSomething!");
 			}
 		}
 
 		public class TestRegister2 : IRegister
 		{
-			public void Register()
+			public void Register(TypeAdapterConfig config)
 			{
-				TypeAdapterConfig<Person, PersonDTO>.NewConfig();
+				config.ForType<Person, PersonDTO>();
 			}
 		}
 

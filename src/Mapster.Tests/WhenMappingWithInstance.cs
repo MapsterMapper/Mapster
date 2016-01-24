@@ -23,7 +23,7 @@ namespace Mapster.Tests
             destination.Name.ShouldEqual(source.Name);
         }
 
-        [Test]
+		[Test]
         public void False_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
