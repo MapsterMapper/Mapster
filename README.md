@@ -302,7 +302,7 @@ Assembly scanning is simple, just create any number of IRegister implementations
 		}
 	}
 
-To scan and register with the Global settings:
+To scan and register at the Global level:
 
 	TypeAdapterConfig.Global.Scan(assembly1, assembly2, assemblyN)
 
