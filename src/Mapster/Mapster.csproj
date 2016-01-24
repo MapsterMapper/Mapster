@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Adapter.cs" />
     <Compile Include="Adapters\BaseAdapter.cs" />
+    <Compile Include="IRegister.cs" />
     <Compile Include="MapContext.cs" />
     <Compile Include="Models\BlockExpressionDetector.cs" />
     <Compile Include="Models\ParameterExpressionReplacer.cs" />

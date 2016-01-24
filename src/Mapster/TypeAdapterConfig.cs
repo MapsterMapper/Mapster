@@ -30,7 +30,8 @@ namespace Mapster
         public readonly List<TypeAdapterRule> Rules;
         public readonly TypeAdapterSetter Default;
         internal readonly Dictionary<TypeTuple, TypeAdapterRule> Dict = new Dictionary<TypeTuple, TypeAdapterRule>();
-        public TypeAdapterConfig()
+
+		public TypeAdapterConfig()
         {
             this.Rules = RulesTemplate.ToList();
             this.Default = new TypeAdapterSetter(new TypeAdapterSettings(), this);
@@ -52,7 +53,14 @@ namespace Mapster
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
-        public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
+	    public TypeAdapterSetter<TSource, TDestination> NewConfig<TSource, TDestination>()
+	    {
+			Remove(typeof(TSource), typeof(TDestination));
+		    return ForType<TSource, TDestination>();
+	    }
+
+
+		public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             TypeAdapterRule rule;
@@ -340,32 +348,64 @@ namespace Mapster
             _projectionDict[tuple] = CreateProjectionExpression(tuple);
         }
 
-        internal void Clear(Type sourceType, Type destinationType)
-        {
-            var key = new TypeTuple(sourceType, destinationType);
-            TypeAdapterRule rule;
-            if (this.Dict.TryGetValue(key, out rule))
-            {
-                this.Dict.Remove(key);
-                this.Rules.Remove(rule);
-            }
-            _mapDict.Remove(key);
-            _mapToTargetDict.Remove(key);
-            _projectionDict.Remove(key);
-        }
-    }
+		public IList<IRegister> Scan(params Assembly[] assemblies)
+		{
+			List<IRegister> registers = assemblies.Select(assembly => assembly.GetTypes()
+				.Where(x => typeof(IRegister).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract))
+				.SelectMany(registerTypes =>
+					registerTypes.Select(registerType => (IRegister)Activator.CreateInstance(registerType))).ToList();
+
+			foreach (IRegister register in registers)
+			{
+				register.Register(this);
+			}
+			return registers;
+		}
+
+		internal void Clear()
+		{
+			var keys = Dict.Keys.ToList();
+			foreach (var key in keys)
+			{
+				Remove(key);
+			}
+		}
+
+		internal void Remove(Type sourceType, Type destinationType)
+		{
+			var key = new TypeTuple(sourceType, destinationType);
+			Remove(key);
+		}
+
+		private void Remove(TypeTuple key)
+		{
+			TypeAdapterRule rule;
+			if (this.Dict.TryGetValue(key, out rule))
+			{
+				this.Dict.Remove(key);
+				this.Rules.Remove(rule);
+			}
+			_mapDict.Remove(key);
+			_mapToTargetDict.Remove(key);
+			_projectionDict.Remove(key);
+		}
+	}
 
     public static class TypeAdapterConfig<TSource, TDestination>
     {
         public static TypeAdapterSetter<TSource, TDestination> NewConfig()
         {
-            Clear();
-            return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
+            return TypeAdapterConfig.GlobalSettings.NewConfig<TSource, TDestination>();
         }
 
-        public static void Clear()
+		public static TypeAdapterSetter<TSource, TDestination> ForType()
+		{
+			return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
+		}
+
+		public static void Clear()
         {
-            TypeAdapterConfig.GlobalSettings.Clear(typeof(TSource), typeof(TDestination));
+            TypeAdapterConfig.GlobalSettings.Remove(typeof(TSource), typeof(TDestination));
         }
     }
 

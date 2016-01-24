@@ -63,10 +63,17 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 
 [Settings](#Settings)
 - [Settings per type](#SettingsPerType)
+<<<<<<< HEAD
 - [Global Settings](#SettingsGlobal)
 - [Settings inheritance](#SettingsInheritance)
 - [Rule based settings](#SettingsRuleBased)
 - [Overload settings](#SettingsOverload)
+=======
+- [Global Settings](#SettingGlobal)
+- [Setting inheritance](#SettingInheritance)
+- [Rule based setting](#SettingRuleBased)
+- [Overload setting](#SettingOverload)
+>>>>>>> d955507e22a3499f34b46cea9cd5fe2841a615d9
 - [Assembly scanning](#AssemblyScanning)
 
 [Basic Customization](#Basic)
@@ -302,7 +309,7 @@ Assembly scanning is simple, just create any number of IRegister implementations
 		}
 	}
 
-To scan and register at the Global level:
+To scan and register with the Global settings:
 
 	TypeAdapterConfig.Global.Scan(assembly1, assembly2, assemblyN)
 
