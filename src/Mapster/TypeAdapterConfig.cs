@@ -340,20 +340,48 @@ namespace Mapster
             _projectionDict[tuple] = CreateProjectionExpression(tuple);
         }
 
-        internal void Clear(Type sourceType, Type destinationType)
-        {
-            var key = new TypeTuple(sourceType, destinationType);
-            TypeAdapterRule rule;
-            if (this.Dict.TryGetValue(key, out rule))
-            {
-                this.Dict.Remove(key);
-                this.Rules.Remove(rule);
-            }
-            _mapDict.Remove(key);
-            _mapToTargetDict.Remove(key);
-            _projectionDict.Remove(key);
-        }
-    }
+		public IList<IRegister> Scan(params Assembly[] assemblies)
+		{
+			List<IRegister> registers = assemblies.Select(assembly => assembly.GetTypes()
+				.Where(x => typeof(IRegister).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract))
+				.SelectMany(registerTypes =>
+					registerTypes.Select(registerType => (IRegister)Activator.CreateInstance(registerType))).ToList();
+
+			foreach (IRegister register in registers)
+			{
+				register.Register();
+			}
+			return registers;
+		}
+
+		internal void Clear()
+		{
+			var keys = Dict.Keys.ToList();
+			foreach (var key in keys)
+			{
+				Remove(key);
+			}
+		}
+
+		internal void Remove(Type sourceType, Type destinationType)
+		{
+			var key = new TypeTuple(sourceType, destinationType);
+			Remove(key);
+		}
+
+		private void Remove(TypeTuple key)
+		{
+			TypeAdapterRule rule;
+			if (this.Dict.TryGetValue(key, out rule))
+			{
+				this.Dict.Remove(key);
+				this.Rules.Remove(rule);
+			}
+			_mapDict.Remove(key);
+			_mapToTargetDict.Remove(key);
+			_projectionDict.Remove(key);
+		}
+	}
 
     public static class TypeAdapterConfig<TSource, TDestination>
     {
@@ -365,7 +393,7 @@ namespace Mapster
 
         public static void Clear()
         {
-            TypeAdapterConfig.GlobalSettings.Clear(typeof(TSource), typeof(TDestination));
+            TypeAdapterConfig.GlobalSettings.Remove(typeof(TSource), typeof(TDestination));
         }
     }
 
