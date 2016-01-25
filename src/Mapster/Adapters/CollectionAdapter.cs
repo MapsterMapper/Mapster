@@ -45,7 +45,7 @@ namespace Mapster.Adapters
             {
                 var destinationElementType = arg.DestinationType.ExtractCollectionType();
                 var listType = typeof (List<>).MakeGenericType(destinationElementType);
-                if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(listType))
+                if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo()))
                     return true;
             }
 
