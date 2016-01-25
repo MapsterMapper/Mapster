@@ -105,7 +105,7 @@ You make the object, Mapster maps to the object.
 
     TDestination destObject = new TDestination();
     destObject = TypeAdapter.Adapt(sourceObject, destObject);
-    
+
 or using extension methods
 
     TDestination destObject = new TDestination();
@@ -206,7 +206,7 @@ As an alternative to `NewConfig`, you can use `ForType` in the same way:
 			.Map(dest => dest.FullName,
 				 src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
-`ForType` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination 
+`ForType` differs in that it will create a new mapping if one doesn't exist, but if the specified TSource => TDestination
 mapping does already exist, it will enhance the existing mapping instead of dropping and replacing it.  
 
 #####Global Settings <a name="SettingsGlobal"></a>
@@ -245,7 +245,7 @@ Finally, Mapster also provides methods to inherit explicitly.
         .Inherits<SimplePoco, SimpleDto>();
 
 #####Rule based settings <a name="SettingsRuleBased"></a>
-To set the setting at a more granular level. You can use the `When` method in global settings. 
+To set the setting at a more granular level. You can use the `When` method in global settings.
 In the example below, when any source type and destination type are the same, we will not the copy the `Id` property.
 
     TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => srcType == destType)
@@ -257,7 +257,7 @@ In this example, the config would only apply to Query Expressions (projections).
         .IgnoreAttribute(typeof(NotMapAttribute));
 
 #####Overload settings <a name="SettingsOverload"></a>
-You may wish to have different settings in different scenarios. 
+You may wish to have different settings in different scenarios.
 If you would not like to apply setting at a static level, Mapster also provides setting instance configurations.
 
     var config = new TypeAdapterConfig();
@@ -285,9 +285,9 @@ Or to an Adapter instance.
 
 #####Assembly scanning <a name="AssemblyScanning"></a>
 It's relatively common to have mapping configurations spread across a number of different assemblies.  
-Perhaps your domain assembly has some rules to map to domain objects and your web api has some specific rules to map to your 
-api contracts. In these cases, it can be helpful to allow assemblies to be scanned for these rules so you have some basic 
-method of organizing your rules and not forgetting to have the registration code called. In some cases, it may even be necessary to 
+Perhaps your domain assembly has some rules to map to domain objects and your web api has some specific rules to map to your
+api contracts. In these cases, it can be helpful to allow assemblies to be scanned for these rules so you have some basic
+method of organizing your rules and not forgetting to have the registration code called. In some cases, it may even be necessary to
 register the assemblies in a particular order, so that some rules override others. Assembly scanning helps with this.
 Assembly scanning is simple, just create any number of IRegister implementations in your assembly, then call `Scan` from your TypeAdapterConfig class:
 
@@ -295,7 +295,7 @@ Assembly scanning is simple, just create any number of IRegister implementations
 	{
 		public void Register(TypeAdapterConfig config){
 			config.NewConfig<TSource, TDestination>();
-			
+
 			//OR to create or enhance an existing configuration
 
 			config.ForType<TSource, TDestination>();
@@ -304,12 +304,17 @@ Assembly scanning is simple, just create any number of IRegister implementations
 
 To scan and register at the Global level:
 
-	TypeAdapterConfig.Global.Scan(assembly1, assembly2, assemblyN)
+	TypeAdapterConfig.GlobalSettings.Scan(assembly1, assembly2, assemblyN)
 
 For a specific config instance:
 
 	var config = new TypeAdapterConfig();
 	config.Scan(assembly1, assembly2, assemblyN);
+
+If you use other assembly scanning library such as MEF, you can easily apply registration with `Apply` method.
+
+	var registers = container.Exports<IRegister>();
+  config.Apply(registers);
 
 ####Basic Customization <a name="Basic"></a>
 When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
@@ -350,7 +355,7 @@ In Mapster 2.0, you can even map when source and destination property types are 
              src => src.GenderString); //"Male" or "Female"
 
 #####Merge object <a name="Merge"></a>
-By default, Mapster will map all properties, even source properties containing null values. 
+By default, Mapster will map all properties, even source properties containing null values.
 You can copy only properties that have values by using `IgnoreNullValues` method.
 
     TypeAdapterConfig<TSource, TDestination>
@@ -365,8 +370,8 @@ By default, Mapster will recursively map nested objects. You can do shallow copy
         .ShallowCopyForSameType(true);
 
 #####Preserve reference (preventing circular reference stackoverflow) <a name="PreserveReference"></a>
-When mapping objects with circular references, a stackoverflow exception will result. 
-This is because Mapster will get stuck in a loop tring to recursively map the circular reference. 
+When mapping objects with circular references, a stackoverflow exception will result.
+This is because Mapster will get stuck in a loop tring to recursively map the circular reference.
 If you would like to map circular references or preserve references (such as 2 properties pointing to the same object), you can do it by setting `PreserveReference` to `true`
 
     TypeAdapterConfig<TSource, TDestination>
