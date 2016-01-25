@@ -313,8 +313,8 @@ For a specific config instance:
 
 If you use other assembly scanning library such as MEF, you can easily apply registration with `Apply` method.
 
-	var registers = container.Exports<IRegister>();
-  config.Apply(registers);
+	var registers = container.GetExports<IRegister>();
+	config.Apply(registers);
 
 ####Basic Customization <a name="Basic"></a>
 When the default convention mappings aren't enough to do the job, you can specify complex source mappings.
