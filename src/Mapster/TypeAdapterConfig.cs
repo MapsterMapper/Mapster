@@ -355,14 +355,24 @@ namespace Mapster
 				.SelectMany(registerTypes =>
 					registerTypes.Select(registerType => (IRegister)Activator.CreateInstance(registerType))).ToList();
 
-			foreach (IRegister register in registers)
-			{
-				register.Register(this);
-			}
-			return registers;
+            this.Apply(registers);
+            return registers;
 		}
 
-		internal void Clear()
+        public void Apply(IEnumerable<Lazy<IRegister>> registers)
+        {
+            this.Apply(registers.Select(register => register.Value));
+        }
+
+        public void Apply(IEnumerable<IRegister> registers)
+        {
+            foreach (IRegister register in registers)
+            {
+                register.Register(this);
+            }
+        }
+
+        internal void Clear()
 		{
 			var keys = Dict.Keys.ToList();
 			foreach (var key in keys)
