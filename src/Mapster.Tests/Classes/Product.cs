@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mapster.Tests.Classes
 {
@@ -66,6 +67,7 @@ namespace Mapster.Tests.Classes
         public Guid Id { get; set; }
         public string Title { get; set; }
         public string CreatedUserName { get; set; }
+        public UserDTO ModifiedUser { get; set; }
         public List<OrderLineListDTO> OrderLines { get; set; }
     }
 

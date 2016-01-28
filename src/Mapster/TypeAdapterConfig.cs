@@ -271,7 +271,12 @@ namespace Mapster
         {
             var tuple = new TypeTuple(sourceType, destinationType);
             if (context.Running.Contains(tuple))
+            {
+                if (mapType == MapType.Projection)
+                    throw new InvalidOperationException(
+                        $"Projection does not support circular reference: TSource: {sourceType} TDestination: {destinationType}");
                 return CreateInvokeExpression(sourceType, destinationType);
+            }
 
             context.Running.Add(tuple);
             try
