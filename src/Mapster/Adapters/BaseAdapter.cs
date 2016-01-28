@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mapster.Adapters
 {
@@ -143,8 +144,8 @@ namespace Mapster.Adapters
 
             var exp = CreateInlineExpression(source, arg);
 
-            if (arg.MapType != MapType.Projection
-                && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
+            if (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable() ||
+                (arg.MapType == MapType.Projection && arg.SourceType.GetCustomAttribute<ComplexTypeAttribute>() == null))
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 exp = Expression.Condition(
