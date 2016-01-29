@@ -378,6 +378,11 @@ If you would like to map circular references or preserve references (such as 2 p
         .NewConfig()
         .PreserveReference(true);
 
+NOTE: Projection doesn't support circular reference yet. To overcome, you might use `Adapt` instead of `Project`.
+
+    TypeAdaptConfig.GlobalSettings.Default.PreserveReference(true);
+    var students = context.Student.Include(p => p.Schools).Adapt<List<StudentDTO>>();
+
 ####Advance Customization <a name="Advance"></a>
 #####Custom Destination Object Creation <a name="ConstructUsing"></a>
 You can provide a function call to create your destination objects instead of using the default object creation
