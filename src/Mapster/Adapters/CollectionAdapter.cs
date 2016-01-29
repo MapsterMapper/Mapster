@@ -47,6 +47,9 @@ namespace Mapster.Adapters
                 var listType = typeof (List<>).MakeGenericType(destinationElementType);
                 if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo()))
                     return true;
+
+                throw new InvalidOperationException(
+                    $"{arg.DestinationType} is not supported for projection, please consider using List<>: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
             }
 
             if (arg.DestinationType == typeof (IEnumerable) || arg.DestinationType.IsGenericEnumerableType())

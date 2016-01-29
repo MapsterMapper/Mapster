@@ -72,6 +72,7 @@ namespace Mapster.Tests
                                     Id = Param_0.Id,
                                     Title = Param_0.Title,
                                     CreatedUserName = Param_0.CreatedUser.Name,
+                                    ModifiedUser = Param_0.ModifiedUser == null ? null : new UserDTO { Id = Param_0.ModifiedUser.Id, Email = Param_0.ModifiedUser.Email },
                                     OrderLines = (from Param_1 in Param_0.OrderLines
                                                   select new OrderLineListDTO
                                                   {

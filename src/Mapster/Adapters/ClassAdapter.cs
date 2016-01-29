@@ -80,7 +80,7 @@ namespace Mapster.Adapters
 
             var exp = CreateInstantiationExpression(source, arg);
             var memberInit = exp as MemberInitExpression;
-            var newInstance = memberInit != null ? memberInit.NewExpression : (NewExpression)exp;
+            var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
             var properties = CreateAdapterModel(source, newInstance, arg);
 
             var lines = new List<MemberBinding>();
@@ -89,6 +89,23 @@ namespace Mapster.Adapters
             foreach (var property in properties)
             {
                 var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+
+                //special null property check for projection
+                //if we don't set null to property, EF will create empty object
+                //except collection type & complex type which cannot be null
+                if (arg.MapType == MapType.Projection 
+                    && property.Getter.Type != property.Setter.Type
+                    && !property.Getter.Type.IsCollection()
+                    && !property.Setter.Type.IsCollection()
+                    && !property.Getter.Type.GetTypeInfo().GetCustomAttributes(true).Any(attr => attr.GetType().Name == "ComplexTypeAttribute")
+                    && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
+                {
+                    var compareNull = Expression.Equal(property.Getter, Expression.Constant(null, property.Getter.Type));
+                    getter = Expression.Condition(
+                        compareNull,
+                        Expression.Constant(property.Setter.Type.GetDefault(), property.Setter.Type),
+                        getter);
+                }
                 var bind = Expression.Bind(property.SetterProperty, getter);
                 lines.Add(bind);
             }
@@ -134,7 +151,7 @@ namespace Mapster.Adapters
                 }
                 else
                 {
-                    if (FlattenMethod(source, destination, destinationMember, properties)) continue;
+                    if (arg.MapType != MapType.Projection && FlattenMethod(source, destination, destinationMember, properties)) continue;
 
                     if (FlattenClass(source, destination, destinationMember, properties, arg.MapType == MapType.Projection)) continue;
 
