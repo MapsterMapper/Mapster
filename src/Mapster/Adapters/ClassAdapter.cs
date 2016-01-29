@@ -97,7 +97,7 @@ namespace Mapster.Adapters
                     && property.Getter.Type != property.Setter.Type
                     && !property.Getter.Type.IsCollection()
                     && !property.Setter.Type.IsCollection()
-                    && property.Getter.Type.GetTypeInfo().GetCustomAttributes(true).Any(attr => attr.GetType().Name == "ComplexTypeAttribute")
+                    && !property.Getter.Type.GetTypeInfo().GetCustomAttributes(true).Any(attr => attr.GetType().Name == "ComplexTypeAttribute")
                     && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
                 {
                     var compareNull = Expression.Equal(property.Getter, Expression.Constant(null, property.Getter.Type));
