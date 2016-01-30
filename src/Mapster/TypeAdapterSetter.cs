@@ -108,6 +108,13 @@ namespace Mapster
         public TypeAdapterSetter<TSource, TDestination> MapWith(Expression<Func<TSource, TDestination>> converterFactory)
         {
             Settings.ConverterFactory = arg => converterFactory;
+
+            if (Settings.ConverterToTargetFactory == null)
+            {
+                var dest = Expression.Parameter(typeof (TDestination));
+                Settings.ConverterToTargetFactory = arg => Expression.Lambda(converterFactory.Body, converterFactory.Parameters[0], dest);
+            }
+
             return this;
         }
 

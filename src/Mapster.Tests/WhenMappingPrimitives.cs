@@ -81,7 +81,6 @@ namespace Mapster.Tests
             TypeAdapterConfig.GlobalSettings.Clear();
             TypeAdapterConfig<ImmutableA, ImmutableB>.NewConfig()
                 .MapWith(src => new ImmutableB(src.Name))
-                .MapToTargetWith((src, dest) => new ImmutableB(src.Name))
                 .Compile();
         }
 
