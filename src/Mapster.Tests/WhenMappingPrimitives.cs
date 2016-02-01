@@ -60,6 +60,50 @@ namespace Mapster.Tests
             targetDto.Obj.ShouldBeSameAs(sourceDto.Obj);
         }
 
+        [Test]
+        public void Immutable_Class_With_No_Mapping_Should_Error()
+        {
+            try
+            {
+                TypeAdapterConfig.GlobalSettings.Clear();
+                TypeAdapterConfig<ImmutableA, ImmutableB>.NewConfig().Compile();
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                exception.ToString().Contains("MapWith").ShouldBeTrue();
+            }
+        }
+
+        [Test]
+        public void Able_To_Map_Immutable_Class_With_MapWith()
+        {
+            TypeAdapterConfig.GlobalSettings.Clear();
+            TypeAdapterConfig<ImmutableA, ImmutableB>.NewConfig()
+                .MapWith(src => new ImmutableB(src.Name))
+                .Compile();
+        }
+
+        public class ImmutableA
+        {
+            public ImmutableA(string name)
+            {
+                this.Name = name;
+            }
+
+            public string Name { get; }
+        }
+
+        public class ImmutableB
+        {
+            public ImmutableB(string name)
+            {
+                this.Name = name;
+            }
+
+            public string Name { get; }
+        }
+
         public class TestA
         {
             public Byte[] Bytes { get; set; }

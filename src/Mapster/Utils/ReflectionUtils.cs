@@ -163,6 +163,10 @@ namespace Mapster
             }
             catch { }
 
+            if (srcType.GetInterfaces().All(type => type != typeof (IConvertible)))
+                throw new InvalidOperationException(
+                    $"Cannot convert immutable type, please consider using 'MapWith' method to create mapping: TSource: {sourceType} TDestination: {destinationType}");
+
             //using Convert
             if (destType == typeof(bool))
                 return CreateConvertMethod("ToBoolean", srcType, destType, source);
