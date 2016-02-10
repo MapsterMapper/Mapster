@@ -122,11 +122,9 @@ namespace Mapster
         internal Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
-            object del = _mapDict[key];
-            if (del != null)
-                return (Func<TSource, TDestination>)del;
+            object del = _mapDict[key] ?? AddToHash(_mapDict, key, CreateMapFunction);
 
-            return (Func<TSource, TDestination>)AddToHash(_mapDict, key, CreateMapFunction);
+            return (Func<TSource, TDestination>) del;
         }
 
         private static object AddToHash(Hashtable hash, TypeTuple key, Func<TypeTuple, object> func)
@@ -144,51 +142,41 @@ namespace Mapster
         internal Delegate GetMapFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object del = _mapDict[key];
-            if (del != null)
-                return (Delegate)del;
+            object del = _mapDict[key] ?? AddToHash(_mapDict, key, CreateMapFunction);
 
-            return (Delegate)AddToHash(_mapDict, key, CreateMapFunction);
+            return (Delegate) del;
         }
 
         private readonly Hashtable _mapToTargetDict = new Hashtable();
         internal Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
-            object del = _mapToTargetDict[key];
-            if (del != null)
-                return (Func<TSource, TDestination, TDestination>)del;
+            object del = _mapToTargetDict[key] ?? AddToHash(_mapToTargetDict, key, CreateMapToTargetFunction);
 
-            return (Func<TSource, TDestination, TDestination>)AddToHash(_mapToTargetDict, key, CreateMapToTargetFunction);
+            return (Func<TSource, TDestination, TDestination>) del;
         }
         internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object del = _mapToTargetDict[key];
-            if (del != null)
-                return (Delegate)del;
+            object del = _mapToTargetDict[key] ?? AddToHash(_mapToTargetDict, key, CreateMapToTargetFunction);
 
-            return (Delegate)AddToHash(_mapToTargetDict, key, CreateMapToTargetFunction);
+            return (Delegate) del;
         }
 
         private readonly Hashtable _projectionDict = new Hashtable();
         internal Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
-            object del = _projectionDict[key];
-            if (del != null)
-                return (Expression<Func<TSource, TDestination>>)del;
+            object del = _projectionDict[key] ?? AddToHash(_projectionDict, key, CreateProjectionCallExpression);
 
-            return (Expression<Func<TSource, TDestination>>)AddToHash(_projectionDict, key, CreateProjectionExpression);
+            return (Expression<Func<TSource, TDestination>>)((UnaryExpression) ((MethodCallExpression) del).Arguments[1]).Operand;
         }
-        internal LambdaExpression GetProjectionExpression(Type sourceType, Type destinationType)
+        internal MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object del = _projectionDict[key];
-            if (del != null)
-                return (LambdaExpression)del;
+            object del = _projectionDict[key] ?? AddToHash(_projectionDict, key, CreateProjectionCallExpression);
 
-            return (LambdaExpression)AddToHash(_projectionDict, key, CreateProjectionExpression);
+            return (MethodCallExpression) del;
         }
 
         private Delegate CreateMapFunction(TypeTuple tuple)
@@ -227,13 +215,20 @@ namespace Mapster
             }
         }
 
-        private LambdaExpression CreateProjectionExpression(TypeTuple tuple)
+        private MethodCallExpression CreateProjectionCallExpression(TypeTuple tuple)
         {
             var context = new CompileContext(this);
             context.Running.Add(tuple);
             try
             {
-                return CreateMapExpression(tuple.Source, tuple.Destination, MapType.Projection, context);
+                var lambda = CreateMapExpression(tuple.Source, tuple.Destination, MapType.Projection, context);
+                var source = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(tuple.Source));
+                var methodInfo = (from method in typeof (Queryable).GetMethods()
+                                  where method.Name == "Select"
+                                  let p = method.GetParameters()[1]
+                                  where p.ParameterType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof (Func<,>)
+                                  select method).First().MakeGenericMethod(tuple.Source, tuple.Destination);
+                return Expression.Call(methodInfo, source, Expression.Quote(lambda));
             }
             finally
             {
@@ -341,7 +336,7 @@ namespace Mapster
             {
                 _mapDict[kvp.Key] = CreateMapFunction(kvp.Key);
                 _mapToTargetDict[kvp.Key] = CreateMapToTargetFunction(kvp.Key);
-                _projectionDict[kvp.Key] = CreateProjectionExpression(kvp.Key);
+                _projectionDict[kvp.Key] = CreateProjectionCallExpression(kvp.Key);
             }
         }
 
@@ -350,7 +345,7 @@ namespace Mapster
             var tuple = new TypeTuple(sourceType, destinationType);
             _mapDict[tuple] = CreateMapFunction(tuple);
             _mapToTargetDict[tuple] = CreateMapToTargetFunction(tuple);
-            _projectionDict[tuple] = CreateProjectionExpression(tuple);
+            _projectionDict[tuple] = CreateProjectionCallExpression(tuple);
         }
 
 		public IList<IRegister> Scan(params Assembly[] assemblies)
