@@ -20,7 +20,7 @@ namespace Mapster.Tests
 
             var list = new List<TypeTestClassA>() { testA };
 
-            var bList = list.AsQueryable().Project().To<TypeTestClassB>().ToList();
+            var bList = list.AsQueryable().ProjectToType<TypeTestClassB>().ToList();
 
             Assert.IsNotNull(bList);
 
@@ -46,7 +46,7 @@ namespace Mapster.Tests
                 .Map(dest => dest.B, src => Convert.ToInt32(src.B))
                 .Map(dest => dest.C, src => src.C.ToString());
 
-            var bList = list.AsQueryable().Project().To<ConfigTestClassB>().ToList();
+            var bList = list.AsQueryable().ProjectToType<ConfigTestClassB>().ToList();
 
             Assert.IsNotNull(bList);
 
@@ -65,7 +65,7 @@ namespace Mapster.Tests
                 new Product {Id = Guid.NewGuid(), Title = "ProductB", CreatedUser = null, OrderLines = new List<OrderLine>()},
             };
 
-            var resultQuery = products.AsQueryable().Project().To<ProductDTO>();
+            var resultQuery = products.AsQueryable().ProjectToType<ProductDTO>();
             var expectedQuery = from Param_0 in products.AsQueryable()
                                 select new ProductDTO
                                 {
