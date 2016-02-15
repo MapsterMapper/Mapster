@@ -28,6 +28,16 @@ namespace Mapster.Adapters
             return -150;
         }
 
+        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        {
+            if (!base.CanInline(source, destination, arg))
+                return false;
+            if (arg.MapType != MapType.Projection &&
+                arg.Settings.IgnoreNullValues == true)
+                return false;
+            return true;
+        }
+
         protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
             if (arg.Context.Config.RequireExplicitMapping 
