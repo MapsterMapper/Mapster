@@ -142,7 +142,7 @@ namespace Mapster
             {
             }
 
-            if (srcType.GetInterfaces().All(type => type != typeof (IConvertible)))
+            if (!srcType.IsConvertible())
                 throw new InvalidOperationException(
                     $"Cannot convert immutable type, please consider using 'MapWith' method to create mapping: TSource: {sourceType} TDestination: {destinationType}");
 
@@ -256,12 +256,36 @@ namespace Mapster
 
         public static bool IsRecordType(this Type type)
         {
+            //not collection
+            if (type.IsCollection())
+                return false;
+
+            //not nullable
+            if (type.IsNullable())
+                return false;
+
+            //not primitives
+            if (type.IsConvertible())
+                return false;
+
+            //no setter
             var props = type.GetPublicFieldsAndProperties();
             if (props.Any(p => p.HasSetter))
                 return false;
 
+            //1 non-empty constructor
+            var ctors = type.GetConstructors().Where(ctor => ctor.GetParameters().Length > 0).ToList();
+            if (ctors.Count != 1)
+                return false;
+
+            //all parameters should match getter
             var names = props.Select(p => p.Name).ToHashSet();
-            return type.GetConstructors().Any(ctor => ctor.GetParameters().Length > 0 && names.IsSupersetOf(ctor.GetParameters().Select(p => p.Name.ToProperCase())));
+            return names.SetEquals(ctors[0].GetParameters().Select(p => p.Name.ToProperCase()));
+        }
+
+        public static bool IsConvertible(this Type type)
+        {
+            return type.GetInterfaces().Any(t => t == typeof (IConvertible));
         }
 
         public static IMemberModel CreateModel(this PropertyInfo propertyInfo)

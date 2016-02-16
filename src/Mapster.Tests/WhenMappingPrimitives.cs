@@ -98,10 +98,10 @@ namespace Mapster.Tests
         {
             public ImmutableB(string name)
             {
-                this.Name = name;
+                this.NameX = name;
             }
 
-            public string Name { get; }
+            public string NameX { get; }
         }
 
         public class TestA

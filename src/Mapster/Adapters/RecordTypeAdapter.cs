@@ -30,6 +30,8 @@ namespace Mapster.Adapters
                     $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
             }
 
+            if (arg.SourceType == arg.DestinationType)
+                return source;
             return base.CreateExpressionBody(source, destination, arg);
         }
 
@@ -61,7 +63,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            return Expression.Block();
+            return Expression.Empty();
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
