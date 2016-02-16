@@ -60,6 +60,7 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 - [Conversion from/to enum](#ConversionEnum)
 - [Mapping POCO](#ConversionPOCO)
 - [Mapping Lists](#ConversionList)
+- [Mapping generic Dictionaries](#ConversionDictionary)
 
 [Settings](#Settings)
 - [Settings per type](#SettingsPerType)
@@ -186,6 +187,20 @@ In Mapster 2.0, POCO structs are also supported.
 This includes mapping among lists, arrays, collections, dictionary including various interfaces: IList<T>, ICollection<T>, IEnumerable<T> etc...
 
     var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
+
+
+#####Mapping Dictionaries <a name="ConversionDictionary"></a>
+To map a generic `Dictionary<string, Foo>` to `Dictionary<string, Bar >` we need to define simple mapping using MapWith
+	
+```
+    TypeAdapterConfig<Dictionary<string, Foo>, Dictionary<string, Bar>>
+        .NewConfig() // or .ForType()
+        .MapWith(x => x.ToDictionary(k => k.Key, v => v.Value.Adapt<Bar>()))
+``` 
+    
+    var target = TypeAdapter.Adapt<Dictionary<string, Foo>, Dictionary<string, Bar>>(source);  
+
+
 
 ####Settings <a name="Settings"></a>
 #####Settings per type <a name="SettingsPerType"></a>
