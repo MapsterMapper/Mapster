@@ -47,7 +47,7 @@ namespace Mapster.Adapters
             foreach (var property in properties)
             {
                 var parameterInfo = (ParameterInfo) property.SetterInfo;
-                var defaultValue = parameterInfo.IsOptional ? parameterInfo.RawDefaultValue : parameterInfo.ParameterType.GetDefault();
+                var defaultValue = parameterInfo.IsOptional ? parameterInfo.DefaultValue : parameterInfo.ParameterType.GetDefault();
 
                 Expression getter;
                 if (property.Getter == null)

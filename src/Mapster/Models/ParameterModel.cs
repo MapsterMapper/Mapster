@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Utils;
@@ -23,7 +24,7 @@ namespace Mapster.Models
             return Expression.Variable(this.Type);
         }
 
-        public object[] GetCustomAttributes(bool inherit)
+        public IEnumerable<object> GetCustomAttributes(bool inherit)
         {
             return _parameterInfo.GetCustomAttributes(inherit);
         }

@@ -22,7 +22,7 @@ namespace Mapster.Models
         {
             return Expression.Field(source, _fieldInfo);
         }
-        public object[] GetCustomAttributes(bool inherit)
+        public IEnumerable<object> GetCustomAttributes(bool inherit)
         {
             return _fieldInfo.GetCustomAttributes(inherit);
         }

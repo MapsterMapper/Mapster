@@ -13,6 +13,6 @@ namespace Mapster.Models
         bool HasSetter { get; }
 
         Expression GetExpression(Expression source);
-        object[] GetCustomAttributes(bool inherit);
+        IEnumerable<object> GetCustomAttributes(bool inherit);
     }
 }

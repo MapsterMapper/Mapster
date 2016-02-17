@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -21,7 +22,7 @@ namespace Mapster.Models
         {
             return Expression.Property(source, _propertyInfo);
         }
-        public object[] GetCustomAttributes(bool inherit)
+        public IEnumerable<object> GetCustomAttributes(bool inherit)
         {
             return _propertyInfo.GetCustomAttributes(inherit);
         }
