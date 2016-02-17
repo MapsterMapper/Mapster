@@ -30,8 +30,6 @@ namespace Mapster.Adapters
                     $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
             }
 
-            if (arg.SourceType == arg.DestinationType)
-                return source;
             return base.CreateExpressionBody(source, destination, arg);
         }
 
@@ -48,12 +46,23 @@ namespace Mapster.Adapters
             var arguments = new List<Expression>();
             foreach (var property in properties)
             {
-                var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+                var parameterInfo = (ParameterInfo) property.SetterInfo;
+                var defaultValue = parameterInfo.IsOptional ? parameterInfo.RawDefaultValue : parameterInfo.ParameterType.GetDefault();
 
-                if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
+                Expression getter;
+                if (property.Getter == null)
                 {
-                    var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
-                    getter = Expression.Condition(condition, getter, Expression.Constant(((ParameterInfo)property.SetterInfo).RawDefaultValue, property.Setter.Type));
+                    getter = Expression.Constant(defaultValue, property.Setter.Type);
+                }
+                else
+                {
+                    getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+
+                    if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
+                    {
+                        var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
+                        getter = Expression.Condition(condition, getter, Expression.Constant(defaultValue, property.Setter.Type));
+                    }
                 }
                 arguments.Add(getter);
             }

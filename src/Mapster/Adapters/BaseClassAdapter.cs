@@ -49,6 +49,19 @@ namespace Mapster.Adapters
 
                     if (FlattenClass(source, destination, destinationMember, properties, arg.MapType == MapType.Projection)) continue;
 
+                    if (classModel.ConstructorInfo != null)
+                    {
+                        var propertyModel = new MemberConverter
+                        {
+                            ConvertType = 0,
+                            Getter = null,
+                            Setter = destinationMember.GetExpression(destination),
+                            SetterInfo = destinationMember.Info,
+                        };
+                        properties.Add(propertyModel);
+                        continue;
+                    }
+
                     if (destinationMember.HasSetter)
                     {
                         unmappedDestinationMembers.Add(destinationMember.Name);
