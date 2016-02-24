@@ -1,15 +1,31 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class PropertyModel
+    internal class PropertyModel : IMemberModel
     {
-        public Expression Getter;
-        public Expression Setter;
+        private readonly PropertyInfo _propertyInfo;
+        public PropertyModel(PropertyInfo propertyInfo)
+        {
+            _propertyInfo = propertyInfo;
+        }
 
-        public byte ConvertType; //Primitive = 1, FlatteningGetMethod = 2, FlatteningDeep = 3, Adapter = 4, CustomResolve = 5;
+        public Type Type => _propertyInfo.PropertyType;
+        public string Name => _propertyInfo.Name;
+        public object Info => _propertyInfo;
+        public bool HasSetter => _propertyInfo.GetSetMethod() != null;
 
-        public MemberInfo SetterProperty;
+        public Expression GetExpression(Expression source)
+        {
+            return Expression.Property(source, _propertyInfo);
+        }
+        public IEnumerable<object> GetCustomAttributes(bool inherit)
+        {
+            return _propertyInfo.GetCustomAttributes(inherit);
+        }
+
     }
 }

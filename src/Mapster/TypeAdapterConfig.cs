@@ -18,6 +18,7 @@ namespace Mapster
             return new List<TypeAdapterRule>
             {
                 new PrimitiveAdapter().CreateRule(),
+                new RecordTypeAdapter().CreateRule(),
                 new ClassAdapter().CreateRule(),
                 new CollectionAdapter().CreateRule(),
             };
