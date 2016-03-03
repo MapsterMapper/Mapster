@@ -31,7 +31,7 @@ namespace Mapster.Adapters
                 if (ProcessIgnores(arg.Settings, destinationMember)) continue;
                 if (ProcessCustomResolvers(source, destination, arg.Settings, destinationMember, properties)) continue;
 
-                var sourceMember = ReflectionUtils.GetMemberModel(sourceType, destinationMember.Name);
+                var sourceMember = ReflectionUtils.GetMemberModel(sourceType, destinationMember.Name, arg.Settings.IgnoreCaseSensitiveNames ?? false);
                 if (sourceMember != null)
                 {
                     var propertyModel = new MemberConverter

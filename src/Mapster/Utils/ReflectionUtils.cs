@@ -41,13 +41,14 @@ namespace Mapster
             return results;
         }
 
-        public static IMemberModel GetMemberModel(Type type, string name)
+        public static IMemberModel GetMemberModel(Type type, string name, bool ignoreCaseSensitiveNames)
         {
-            var prop = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
+            var nameComparsonOption = ignoreCaseSensitiveNames ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            var prop = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(p=>p.Name.Equals(name, nameComparsonOption));
             if (prop != null)
                 return new PropertyModel(prop);
 
-            var field = type.GetField(name, BindingFlags.Public | BindingFlags.Instance);
+            var field = type.GetFields(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(f=>f.Name.Equals(name, nameComparsonOption));
             if (field != null)
                 return new FieldModel(field);
 
