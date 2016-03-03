@@ -19,7 +19,7 @@ namespace Mapster.Tests
                 Value_A = 123,
                 VALUE_B = "abc"
             };
-
+            TypeAdapterConfig<ClassA, ClassB>.NewConfig();
             var b = a.Adapt<ClassB>();
             Assert.AreEqual(a.Value_A, b.Value_A);
             Assert.AreNotEqual(a.VALUE_B, b.Value_B);
