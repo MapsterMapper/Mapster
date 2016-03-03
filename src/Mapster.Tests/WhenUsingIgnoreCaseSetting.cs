@@ -19,7 +19,10 @@ namespace Mapster.Tests
                 Value_A = 123,
                 VALUE_B = "abc"
             };
+
+            TypeAdapterConfig.GlobalSettings.IgnoreCaseSensitiveNames = false;
             TypeAdapterConfig<ClassA, ClassB>.NewConfig();
+
             var b = a.Adapt<ClassB>();
             Assert.AreEqual(a.Value_A, b.Value_A);
             Assert.AreNotEqual(a.VALUE_B, b.Value_B);
@@ -34,10 +37,46 @@ namespace Mapster.Tests
                 VALUE_B = "abc"
             };
 
+            TypeAdapterConfig.GlobalSettings.IgnoreCaseSensitiveNames = false;
             TypeAdapterConfig<ClassA, ClassB>.NewConfig().Settings.IgnoreCaseSensitiveNames = true;
+
             var b = a.Adapt<ClassB>();
             Assert.AreEqual(a.Value_A, b.Value_A);
             Assert.AreEqual(a.VALUE_B, b.Value_B);
+        }
+
+        [Test]
+        public void MapWithGlobalCaseSensitiveSetting()
+        {
+            var a = new ClassA()
+            {
+                Value_A = 123,
+                VALUE_B = "abc"
+            };
+
+            TypeAdapterConfig.GlobalSettings.IgnoreCaseSensitiveNames = true;
+            TypeAdapterConfig<ClassA, ClassB>.NewConfig();
+
+            var b = a.Adapt<ClassB>();
+            Assert.AreEqual(a.Value_A, b.Value_A);
+            Assert.AreEqual(a.VALUE_B, b.Value_B);
+        }
+
+        [Test]
+        public void MapWithOverwrittenGlobalSettings()
+        {
+            var a = new ClassA()
+            {
+                Value_A = 123,
+                VALUE_B = "abc"
+            };
+
+            TypeAdapterConfig.GlobalSettings.IgnoreCaseSensitiveNames = true;
+            TypeAdapterConfig<ClassA, ClassB>.NewConfig().Settings.IgnoreCaseSensitiveNames = false;
+
+            var b = a.Adapt<ClassB>();
+            Assert.AreEqual(a.Value_A, b.Value_A);
+            Assert.AreNotEqual(a.VALUE_B, b.Value_B);
         }
     }
 
