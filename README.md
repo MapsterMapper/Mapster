@@ -369,6 +369,17 @@ In Mapster 2.0, you can even map when source and destination property types are 
         .Map(dest => dest.Gender,      //Genders.Male or Genders.Female
              src => src.GenderString); //"Male" or "Female"
 
+Mapster can also match properties with a different case sensitivity for a special configuration or on global level. 
+
+    TypeAdapterConfig<TSource, TDestination>
+        .NewConfig()
+        .Settings
+        .IgnoreCaseSensitiveNames = true;
+
+    TypeAdapterConfig
+        .GlobalSettings
+        .IgnoreCaseSensitiveNames = true;
+
 #####Merge object <a name="Merge"></a>
 By default, Mapster will map all properties, even source properties containing null values.
 You can copy only properties that have values by using `IgnoreNullValues` method.

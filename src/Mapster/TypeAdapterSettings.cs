@@ -23,6 +23,7 @@ namespace Mapster
         public bool? PreserveReference;
         public bool? ShallowCopyForSameType;
         public bool? IgnoreNullValues;
+        public bool? IgnoreCaseSensitiveNames;
         public bool? NoInherit;
         public Type DestinationType;
 
@@ -44,6 +45,9 @@ namespace Mapster
                     this.ShallowCopyForSameType = other.ShallowCopyForSameType;
                 if (this.IgnoreNullValues == null)
                     this.IgnoreNullValues = other.IgnoreNullValues;
+                if (this.IgnoreCaseSensitiveNames == null)
+                    this.IgnoreCaseSensitiveNames = other.IgnoreCaseSensitiveNames;
+
 
                 this.IgnoreMembers.UnionWith(other.IgnoreMembers);
                 this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);

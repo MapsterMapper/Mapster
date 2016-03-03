@@ -27,6 +27,7 @@ namespace Mapster
         public bool RequireDestinationMemberSource;
         public bool RequireExplicitMapping;
         public bool AllowImplicitDestinationInheritance;
+        public bool IgnoreCaseSensitiveNames;
 
         public readonly List<TypeAdapterRule> Rules;
         public readonly TypeAdapterSetter Default;

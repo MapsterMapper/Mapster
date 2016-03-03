@@ -95,6 +95,7 @@
     <Compile Include="WhenRunningOnMultipleThreads.cs" />
     <Compile Include="WhenScanningForRegisters.cs" />
     <Compile Include="WhenUsingConverterFactory.cs" />
+    <Compile Include="WhenUsingIgnoreCaseSetting.cs" />
     <Compile Include="WhenUsingRuleBasedSetting.cs" />
     <Compile Include="WhenUsingNonDefaultConstructor.cs" />
   </ItemGroup>
