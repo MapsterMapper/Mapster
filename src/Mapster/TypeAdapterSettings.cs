@@ -32,7 +32,7 @@ namespace Mapster
         public Func<CompileArgument, LambdaExpression> ConstructUsingFactory { get; set; }
         public Func<CompileArgument, LambdaExpression> ConverterFactory { get; set; }
         public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory { get; set; }
-        public Func<CompileArgument, LambdaExpression> AfterMappingFactory { get; set; }
+        public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories { get; protected set; } = new List<Func<CompileArgument, LambdaExpression>>();
 
         internal bool Compiled { get; set; }
 
@@ -57,13 +57,12 @@ namespace Mapster
             this.IgnoreMembers.UnionWith(other.IgnoreMembers);
             this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
             this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
+            this.AfterMappingFactories.AddRange(other.AfterMappingFactories);
 
             this.Resolvers.AddRange(other.Resolvers);
 
             if (this.ConstructUsingFactory == null)
                 this.ConstructUsingFactory = other.ConstructUsingFactory;
-            if (this.AfterMappingFactory == null)
-                this.AfterMappingFactory = other.AfterMappingFactory;
             if (this.ConverterFactory == null)
                 this.ConverterFactory = other.ConverterFactory;
             if (this.ConverterToTargetFactory == null)

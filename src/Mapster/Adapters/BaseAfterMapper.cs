@@ -26,13 +26,12 @@ namespace Mapster.Adapters
 
         public TypeAdapterRule CreateRule()
         {
+            var settings = new TypeAdapterSettings();
+            settings.AfterMappingFactories.Add(this.CreateAfterMapFunc);
             var rule = new TypeAdapterRule
             {
                 Priority = this.Priority,
-                Settings = new TypeAdapterSettings
-                {
-                    AfterMappingFactory = this.CreateAfterMapFunc,
-                }
+                Settings = settings,
             };
             DecorateRule(rule);
             return rule;

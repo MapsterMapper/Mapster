@@ -69,7 +69,7 @@ namespace Mapster.Adapters
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
                 return false;
-            if (arg.Settings.AfterMappingFactory != null &&
+            if (arg.Settings.AfterMappingFactories.Count > 0 &&
                 arg.MapType != MapType.Projection)
                 return false;
             return true;
@@ -93,24 +93,31 @@ namespace Mapster.Adapters
 
             var set = CreateBlockExpression(source, result, arg);
 
-            if (arg.Settings.AfterMappingFactory != null)
+            if (arg.Settings.AfterMappingFactories.Count > 0)
             {
                 //var result = adapt(source);
                 //action(source, result);
 
-                var afterMapping = arg.Settings.AfterMappingFactory(arg);
-                var args = afterMapping.Parameters;
-                if (args[0].Type == source.Type && args[1].Type == result.Type)
+                var actions = new List<Expression> {set};
+
+                foreach (var afterMappingFactory in arg.Settings.AfterMappingFactories)
                 {
-                    var replacer = new ParameterExpressionReplacer(args, source, result);
-                    var invoke = replacer.Visit(afterMapping.Body);
-                    set = Expression.Block(set, invoke);
+                    var afterMapping = afterMappingFactory(arg);
+                    var args = afterMapping.Parameters;
+                    Expression invoke;
+                    if (args[0].Type == source.Type && args[1].Type == result.Type)
+                    {
+                        var replacer = new ParameterExpressionReplacer(args, source, result);
+                        invoke = replacer.Visit(afterMapping.Body);
+                    }
+                    else
+                    {
+                        invoke = Expression.Invoke(afterMapping, source.To(args[0].Type), result.To(args[1].Type));
+                    }
+                    actions.Add(invoke);
                 }
-                else
-                {
-                    var invoke = Expression.Invoke(afterMapping, source.To(args[0].Type), result.To(args[1].Type));
-                    set = Expression.Block(set, invoke);
-                }
+
+                set = Expression.Block(actions);
             }
 
             if (arg.Settings.PreserveReference == true &&
