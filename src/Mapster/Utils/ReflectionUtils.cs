@@ -35,9 +35,9 @@ namespace Mapster
 
             results.AddRange(
                 type.GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(x => (allowNoSetter || x.IsInitOnly))
+                    .Where(x => (allowNoSetter || !x.IsInitOnly))
                     .Select(CreateModel));
-
+            
             return results;
         }
 
@@ -140,6 +140,7 @@ namespace Mapster
             }
             catch
             {
+                // ignored
             }
 
             if (!srcType.IsConvertible())
@@ -254,6 +255,14 @@ namespace Mapster
             return false;
         }
 
+        public static bool IsPoco(this Type type)
+        {
+            if (type.GetTypeInfo().IsEnum)
+                return false;
+
+            return type.GetPublicFieldsAndProperties(allowNoSetter: false).Count > 0;
+        }
+
         public static bool IsRecordType(this Type type)
         {
             //not collection
@@ -301,6 +310,31 @@ namespace Mapster
         public static IMemberModel CreateModel(this ParameterInfo propertyInfo)
         {
             return new ParameterModel(propertyInfo);
+        }
+
+        public static bool IsAssignableFromList(this Type type)
+        {
+            var elementType = type.ExtractCollectionType();
+            var listType = typeof(List<>).MakeGenericType(elementType);
+            return type.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo());
+        }
+
+        public static bool IsListCompatible(this Type type)
+        {
+            if (type.IsInterface)
+                return type.IsAssignableFromList();
+
+            if (type.IsAbstract)
+                return false;
+
+            var elementType = type.ExtractCollectionType();
+            if (typeof(ICollection<>).MakeGenericType(elementType).GetTypeInfo().IsAssignableFrom(type))
+                return true;
+
+            if (typeof(IList).GetTypeInfo().IsAssignableFrom(type))
+                return true;
+
+            return false;
         }
     }
 }

@@ -3,9 +3,9 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class ClassConverter
+    internal class ClassMapping
     {
         public ConstructorInfo ConstructorInfo { get; set; }
-        public List<MemberConverter> Members { get; set; }
+        public List<MemberMapping> Members { get; set; }
     }
 }

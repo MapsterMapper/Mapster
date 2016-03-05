@@ -10,12 +10,13 @@ namespace Mapster.Adapters
 {
     internal class CollectionAdapter : BaseAdapter
     {
-        public override int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        protected override int Score => -125;
+
+        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
         {
-            if (sourceType.IsCollection() && destinationType.IsCollection())
-                return -125;
-            else
-                return null;
+            return sourceType.IsCollection()
+                   && destinationType.IsCollection()
+                   && destinationType.IsListCompatible();
         }
 
         private static Expression CreateCountExpression(Expression source, bool allowCountAll)
@@ -43,9 +44,7 @@ namespace Mapster.Adapters
 
             if (arg.MapType == MapType.Projection)
             {
-                var destinationElementType = arg.DestinationType.ExtractCollectionType();
-                var listType = typeof (List<>).MakeGenericType(destinationElementType);
-                if (arg.DestinationType.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo()))
+                if (arg.DestinationType.IsAssignableFromList())
                     return true;
 
                 throw new InvalidOperationException(
@@ -72,7 +71,10 @@ namespace Mapster.Adapters
                 : arg.DestinationType;
             if (count == null)
                 return Expression.New(listType);            //new List<T>()
-            var ctor = listType.GetConstructor(new[] { typeof(int) });
+            var ctor = (from c in listType.GetConstructors()
+                        let args = c.GetParameters()
+                        where args.Length == 1 && args[0].ParameterType == typeof (int)
+                        select c).FirstOrDefault();
             if (ctor == null)
                 return Expression.New(listType);            //new List<T>()
             else

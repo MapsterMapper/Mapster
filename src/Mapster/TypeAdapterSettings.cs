@@ -16,57 +16,55 @@ namespace Mapster
 
     public class TypeAdapterSettings
     {
-        public readonly HashSet<string> IgnoreMembers = new HashSet<string>();
-        public readonly HashSet<Type> IgnoreAttributes = new HashSet<Type>();
-        public readonly TransformsCollection DestinationTransforms = new TransformsCollection();
+        public HashSet<string> IgnoreMembers { get; protected set; } = new HashSet<string>();
+        public HashSet<Type> IgnoreAttributes { get; protected set; } = new HashSet<Type>();
+        public HashSet<string> IncludeMembers { get; protected set; } = new HashSet<string>();
+        public HashSet<Type> IncludeAttributes { get; protected set; } = new HashSet<Type>(); 
+        public TransformsCollection DestinationTransforms { get; protected set; } = new TransformsCollection();
 
-        public bool? PreserveReference;
-        public bool? ShallowCopyForSameType;
-        public bool? IgnoreNullValues;
-        public bool? NoInherit;
-        public Type DestinationType;
+        public bool? PreserveReference { get; set; }
+        public bool? ShallowCopyForSameType { get; set; }
+        public bool? IgnoreNullValues { get; set; }
+        public bool? NoInherit { get; set; }
+        public Type DestinationType { get; set; }
 
-        public readonly List<InvokerModel> Resolvers = new List<InvokerModel>();
-        public LambdaExpression ConstructUsing;
-        public Func<CompileArgument, LambdaExpression> ConverterFactory;
-        public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory;
+        public List<InvokerModel> Resolvers { get; protected set; } = new List<InvokerModel>();
+        public LambdaExpression ConstructUsing { get; set; }
+        public Func<CompileArgument, LambdaExpression> ConverterFactory { get; set; }
+        public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory { get; set; }
+
+        internal bool Compiled { get; set; }
 
         public void Apply(TypeAdapterSettings other)
         {
             if (this.NoInherit == null)
                 this.NoInherit = other.NoInherit;
 
-            if (!this.NoInherit.GetValueOrDefault())
+            if (this.NoInherit == true)
             {
-                if (this.PreserveReference == null)
-                    this.PreserveReference = other.PreserveReference;
-                if (this.ShallowCopyForSameType == null)
-                    this.ShallowCopyForSameType = other.ShallowCopyForSameType;
-                if (this.IgnoreNullValues == null)
-                    this.IgnoreNullValues = other.IgnoreNullValues;
-
-                this.IgnoreMembers.UnionWith(other.IgnoreMembers);
-                this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
-                this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
-
-                this.Resolvers.AddRange(other.Resolvers);
+                if (this.DestinationType != null && other.DestinationType != null)
+                    return;
             }
 
-            if (this.DestinationType == null 
-                || other.DestinationType == null 
-                || this.DestinationType.GetTypeInfo().IsAssignableFrom(other.DestinationType.GetTypeInfo()) 
-                || other.DestinationType.GetTypeInfo().IsAssignableFrom(this.DestinationType.GetTypeInfo()))
-            {
-                if (!this.NoInherit.GetValueOrDefault())
-                {
-                    if (this.ConstructUsing == null)
-                        this.ConstructUsing = other.ConstructUsing;
-                }
-                if (this.ConverterFactory == null)
-                    this.ConverterFactory = other.ConverterFactory;
-                if (this.ConverterToTargetFactory == null)
-                    this.ConverterToTargetFactory = other.ConverterToTargetFactory;
-            }
+            if (this.PreserveReference == null)
+                this.PreserveReference = other.PreserveReference;
+            if (this.ShallowCopyForSameType == null)
+                this.ShallowCopyForSameType = other.ShallowCopyForSameType;
+            if (this.IgnoreNullValues == null)
+                this.IgnoreNullValues = other.IgnoreNullValues;
+
+            this.IgnoreMembers.UnionWith(other.IgnoreMembers);
+            this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
+            this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
+
+            this.Resolvers.AddRange(other.Resolvers);
+
+            if (this.ConstructUsing == null)
+                this.ConstructUsing = other.ConstructUsing;
+            if (this.ConverterFactory == null)
+                this.ConverterFactory = other.ConverterFactory;
+            if (this.ConverterToTargetFactory == null)
+                this.ConverterToTargetFactory = other.ConverterToTargetFactory;
         }
     }
 

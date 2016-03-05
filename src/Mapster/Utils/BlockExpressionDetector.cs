@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Mapster.Models
+namespace Mapster.Utils
 {
     sealed class BlockExpressionDetector : ExpressionVisitor
     {

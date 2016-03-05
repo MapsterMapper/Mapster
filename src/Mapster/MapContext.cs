@@ -47,7 +47,7 @@ namespace Mapster
     {
         public MapContext Context { get; }
 
-        private bool _isRootScope;
+        private readonly bool _isRootScope;
         public MapContextScope()
         {
             this.Context = MapContext.Current;
@@ -60,7 +60,7 @@ namespace Mapster
 
         public void Dispose()
         {
-            if (_isRootScope && object.ReferenceEquals(MapContext.Current, this.Context))
+            if (_isRootScope && ReferenceEquals(MapContext.Current, this.Context))
                 MapContext.Current = null;
         }
     }

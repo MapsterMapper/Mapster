@@ -16,7 +16,7 @@ namespace Mapster.Models
         public Type Type => _fieldInfo.FieldType;
         public string Name => _fieldInfo.Name;
         public object Info => _fieldInfo;
-        public bool HasSetter => _fieldInfo.IsPublic;
+        public bool HasSetter => !_fieldInfo.IsInitOnly;
 
         public Expression GetExpression(Expression source)
         {

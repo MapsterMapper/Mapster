@@ -6,13 +6,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
+using Mapster.Utils;
 
 namespace Mapster
 {
     public class TypeAdapterConfig
     {
-        public static readonly List<TypeAdapterRule> RulesTemplate = CreateRuleTemplate();
-        public static readonly TypeAdapterConfig GlobalSettings = new TypeAdapterConfig();
+        public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
+
+        private static TypeAdapterConfig _globalSettings;
+        public static TypeAdapterConfig GlobalSettings
+        {
+            get { return _globalSettings ?? (_globalSettings = new TypeAdapterConfig()); }
+        }
+
         private static List<TypeAdapterRule> CreateRuleTemplate()
         {
             return new List<TypeAdapterRule>
@@ -24,13 +31,13 @@ namespace Mapster
             };
         }
 
-        public bool RequireDestinationMemberSource;
-        public bool RequireExplicitMapping;
-        public bool AllowImplicitDestinationInheritance;
+        public bool RequireDestinationMemberSource { get; set; }
+        public bool RequireExplicitMapping { get; set; }
+        public bool AllowImplicitDestinationInheritance { get; set; }
 
-        public readonly List<TypeAdapterRule> Rules;
-        public readonly TypeAdapterSetter Default;
-        internal readonly Dictionary<TypeTuple, TypeAdapterRule> Dict = new Dictionary<TypeTuple, TypeAdapterRule>();
+        public List<TypeAdapterRule> Rules { get; protected set; }
+        public TypeAdapterSetter Default { get; protected set; }
+        public Dictionary<TypeTuple, TypeAdapterRule> RuleMap { get; protected set; } = new Dictionary<TypeTuple, TypeAdapterRule>();
 
 		public TypeAdapterConfig()
         {
@@ -59,41 +66,46 @@ namespace Mapster
 			Remove(typeof(TSource), typeof(TDestination));
 		    return ForType<TSource, TDestination>();
 	    }
-
-
+        
 		public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof (TSource), typeof (TDestination));
+		    var settings = GetSettings(key);
+            return new TypeAdapterSetter<TSource, TDestination>(settings, this);
+        }
+
+        private TypeAdapterSettings GetSettings(TypeTuple key)
+        {
             TypeAdapterRule rule;
-            if (!this.Dict.TryGetValue(key, out rule))
+            if (!this.RuleMap.TryGetValue(key, out rule))
             {
-                lock(this.Dict)
+                lock (this.RuleMap)
                 {
-                    if (!this.Dict.TryGetValue(key, out rule))
+                    if (!this.RuleMap.TryGetValue(key, out rule))
                     {
                         rule = new TypeAdapterRule
                         {
                             Priority = (sourceType, destinationType, mapType) =>
                             {
-                                var score1 = GetSubclassDistance(destinationType, typeof(TDestination), this.AllowImplicitDestinationInheritance);
+                                var score1 = GetSubclassDistance(destinationType, key.Destination, this.AllowImplicitDestinationInheritance);
                                 if (score1 == null)
                                     return null;
-                                var score2 = GetSubclassDistance(sourceType, typeof(TSource), true);
+                                var score2 = GetSubclassDistance(sourceType, key.Source, true);
                                 if (score2 == null)
                                     return null;
                                 return score1.Value + score2.Value;
                             },
                             Settings = new TypeAdapterSettings
                             {
-                                DestinationType = typeof(TDestination)
+                                DestinationType = key.Destination,
                             },
                         };
                         this.Rules.Add(rule);
-                        this.Dict.Add(key, rule);
+                        this.RuleMap.Add(key, rule);
                     }
                 }
             }
-            return new TypeAdapterSetter<TSource, TDestination>(rule.Settings, this);
+            return rule.Settings;
         }
 
         private static int? GetSubclassDistance(Type type1, Type type2, bool allowInheritance)
@@ -128,15 +140,19 @@ namespace Mapster
             return (Func<TSource, TDestination>) del;
         }
 
-        private static object AddToHash(Hashtable hash, TypeTuple key, Func<TypeTuple, object> func)
+        private object AddToHash(Hashtable hash, TypeTuple key, Func<TypeTuple, object> func)
         {
             lock (hash)
             {
                 var del = hash[key];
                 if (del != null)
                     return del;
+
                 del = func(key);
                 hash[key] = del;
+
+                var settings = GetSettings(key);
+                settings.Compiled = true;
                 return del;
             }
         }
@@ -333,7 +349,7 @@ namespace Mapster
 
         public void Compile()
         {
-            foreach (var kvp in Dict)
+            foreach (var kvp in RuleMap)
             {
                 _mapDict[kvp.Key] = CreateMapFunction(kvp.Key);
                 _mapToTargetDict[kvp.Key] = CreateMapToTargetFunction(kvp.Key);
@@ -375,7 +391,7 @@ namespace Mapster
 
         internal void Clear()
 		{
-			var keys = Dict.Keys.ToList();
+			var keys = RuleMap.Keys.ToList();
 			foreach (var key in keys)
 			{
 				Remove(key);
@@ -391,16 +407,28 @@ namespace Mapster
 		private void Remove(TypeTuple key)
 		{
 			TypeAdapterRule rule;
-			if (this.Dict.TryGetValue(key, out rule))
+			if (this.RuleMap.TryGetValue(key, out rule))
 			{
-				this.Dict.Remove(key);
+				this.RuleMap.Remove(key);
 				this.Rules.Remove(rule);
 			}
 			_mapDict.Remove(key);
 			_mapToTargetDict.Remove(key);
 			_projectionDict.Remove(key);
 		}
-	}
+
+        private static TypeAdapterConfig _cloneConfig;
+        public TypeAdapterConfig Clone()
+        {
+            if (_cloneConfig == null)
+            {
+                _cloneConfig = new TypeAdapterConfig();
+                _cloneConfig.Default.Settings.PreserveReference = true;
+            }
+            var fn = _cloneConfig.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
+            return fn(this);
+        }
+    }
 
     public static class TypeAdapterConfig<TSource, TDestination>
     {

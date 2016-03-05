@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -16,15 +15,17 @@ namespace Mapster.Adapters
     /// </remarks>
     internal class ClassAdapter : BaseClassAdapter
     {
-        public override int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        protected override int Score => -150;
+
+        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
         {
             if (sourceType == typeof (string) || sourceType == typeof (object))
-                return null;
+                return false;
 
-            if (destinationType.GetPublicFieldsAndProperties(allowNoSetter: false).Count == 0)
-                return null;
+            if (!destinationType.IsPoco())
+                return false;
 
-            return -150;
+            return true;
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -40,7 +41,7 @@ namespace Mapster.Adapters
         protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
             if (arg.Context.Config.RequireExplicitMapping 
-                && !arg.Context.Config.Dict.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
+                && !arg.Context.Config.RuleMap.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
             {
                 throw new InvalidOperationException(
                     $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
