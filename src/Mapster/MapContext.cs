@@ -42,6 +42,12 @@ namespace Mapster
         {
             get { return _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default)); }
         }
+
+        private Dictionary<string, object> _parameters;
+        public Dictionary<string, object> Parameters
+        {
+            get { return _parameters ?? (_parameters = new Dictionary<string, object>(ReferenceComparer.Default)); }
+        }
     }
     internal class MapContextScope : IDisposable
     {

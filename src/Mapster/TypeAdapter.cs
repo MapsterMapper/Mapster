@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Mapster
 {
     public static class TypeAdapter
     {
+        public static TypeAdapter<TSource> BuildAdapter<TSource>(this TSource source)
+        {
+            return new TypeAdapter<TSource>(source);
+        }
+
         /// <summary>
-        /// Adapte the source object to the destination type.
+        /// Adapt the source object to the destination type.
         /// </summary>
         /// <typeparam name="TDestination">Destination type.</typeparam>
         /// <param name="source">Source object to adapt.</param>
@@ -16,7 +22,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the destination type.
+        /// Adapt the source object to the destination type.
         /// </summary>
         /// <typeparam name="TDestination">Destination type.</typeparam>
         /// <param name="source">Source object to adapt.</param>
@@ -29,7 +35,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the destination type.
+        /// Adapt the source object to the destination type.
         /// </summary>
         /// <typeparam name="TSource">Source type.</typeparam>
         /// <typeparam name="TDestination">Destination type.</typeparam>
@@ -41,7 +47,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the destination type.
+        /// Adapt the source object to the destination type.
         /// </summary>
         /// <typeparam name="TSource">Source type.</typeparam>
         /// <typeparam name="TDestination">Destination type.</typeparam>
@@ -55,7 +61,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the existing destination object.
+        /// Adapt the source object to the existing destination object.
         /// </summary>
         /// <typeparam name="TSource">Source type.</typeparam>
         /// <typeparam name="TDestination">Destination type.</typeparam>
@@ -68,7 +74,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the existing destination object.
+        /// Adapt the source object to the existing destination object.
         /// </summary>
         /// <typeparam name="TSource">Source type.</typeparam>
         /// <typeparam name="TDestination">Destination type.</typeparam>
@@ -83,7 +89,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the destination type.
+        /// Adapt the source object to the destination type.
         /// </summary>
         /// <param name="source">Source object to adapt.</param>
         /// <param name="sourceType">The type of the source object.</param>
@@ -95,7 +101,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to the destination type.
+        /// Adapt the source object to the destination type.
         /// </summary>
         /// <param name="source">Source object to adapt.</param>
         /// <param name="sourceType">The type of the source object.</param>
@@ -109,7 +115,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to an existing destination object.
+        /// Adapt the source object to an existing destination object.
         /// </summary>
         /// <param name="source">Source object to adapt.</param>
         /// <param name="destination">Destination object to populate.</param>
@@ -122,7 +128,7 @@ namespace Mapster
         }
 
         /// <summary>
-        /// Adapte the source object to an existing destination object.
+        /// Adapt the source object to an existing destination object.
         /// </summary>
         /// <param name="source">Source object to adapt.</param>
         /// <param name="destination">Destination object to populate.</param>
@@ -150,5 +156,79 @@ namespace Mapster
     internal static class TypeAdapter<TSource, TDestination>
     {
         public static Func<TSource, TDestination> Map = TypeAdapterConfig.GlobalSettings.GetMapFunction<TSource, TDestination>();
+    }
+
+    public class TypeAdapter<TSource>
+    {
+        TSource Source { get; }
+        TypeAdapterConfig Config { get; set; }
+
+        private Dictionary<string, object> _parameters;
+        Dictionary<string, object> Parameters
+        {
+            get { return _parameters ?? (_parameters = new Dictionary<string, object>(ReferenceComparer.Default)); }
+        }
+
+        public TypeAdapter(TSource source)
+        {
+            this.Source = source;
+            this.Config = TypeAdapterConfig.GlobalSettings;
+        }
+
+        public TypeAdapter<TSource> UseConfig(TypeAdapterConfig config)
+        {
+            this.Config = config;
+            return this;
+        }
+
+        public TypeAdapter<TSource> AddParameters(string name, object value)
+        {
+            this.Parameters.Add(name, value);
+            return this;
+        }
+
+        public TDestination AdaptToType<TDestination>()
+        {
+            if (_parameters == null)
+                return Map<TDestination>();
+
+            using (var scope = new MapContextScope())
+            {
+                var parameters = scope.Context.Parameters;
+                foreach (var kvp in _parameters)
+                {
+                    parameters[kvp.Key] = kvp.Value;
+                }
+                return Map<TDestination>();
+            }
+        }
+
+        private TDestination Map<TDestination>()
+        {
+            var fn = this.Config.GetMapFunction<TSource, TDestination>();
+            return fn(this.Source);
+        }
+
+        public TDestination AdaptTo<TDestination>(TDestination destination)
+        {
+            if (_parameters == null)
+                return MapToTarget(destination);
+
+            using (var scope = new MapContextScope())
+            {
+                var parameters = scope.Context.Parameters;
+                foreach (var kvp in _parameters)
+                {
+                    parameters[kvp.Key] = kvp.Value;
+                }
+                return MapToTarget(destination);
+            }
+        }
+
+        private TDestination MapToTarget<TDestination>(TDestination destination)
+        {
+            var fn = this.Config.GetMapToTargetFunction<TSource, TDestination>();
+            return fn(this.Source, destination);
+        }
     }
 }
