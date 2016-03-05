@@ -124,7 +124,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            Settings.ConstructUsing = constructUsing;
+            Settings.ConstructUsingFactory = arg => constructUsing;
 
             return this;
         }
@@ -149,6 +149,22 @@ namespace Mapster
             this.CheckCompiled();
 
             Settings.ConverterToTargetFactory = arg => converterFactory;
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> AfterMapping(Action<TSource, TDestination> action)
+        {
+            this.CheckCompiled();
+
+            Settings.AfterMappingFactory = arg =>
+            {
+                var p1 = Expression.Parameter(typeof(TSource));
+                var p2 = Expression.Parameter(typeof(TDestination));
+                var actionType = action.GetType();
+                var actionExp = Expression.Constant(action, actionType);
+                var invoke = Expression.Call(actionExp, "Invoke", null, p1, p2);
+                return Expression.Lambda(invoke, p1, p2);
+            };
             return this;
         }
 

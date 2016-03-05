@@ -54,9 +54,10 @@ namespace Mapster.Adapters
         {
             if (arg.MapType == MapType.MapToTarget)
                 return false;
-            if (arg.Settings.ConstructUsing != null &&
-                arg.Settings.ConstructUsing.Body.NodeType != ExpressionType.New &&
-                arg.Settings.ConstructUsing.Body.NodeType != ExpressionType.MemberInit)
+            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
+            if (constructUsing != null &&
+                constructUsing.Body.NodeType != ExpressionType.New &&
+                constructUsing.Body.NodeType != ExpressionType.MemberInit)
             {
                 if (arg.MapType == MapType.Projection)
                     throw new InvalidOperationException(
@@ -67,6 +68,9 @@ namespace Mapster.Adapters
                 arg.MapType != MapType.Projection &&
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
+                return false;
+            if (arg.Settings.AfterMappingFactory != null &&
+                arg.MapType != MapType.Projection)
                 return false;
             return true;
         }
@@ -88,6 +92,26 @@ namespace Mapster.Adapters
             Expression assign = Expression.Assign(result, destination ?? CreateInstantiationExpression(source, arg));
 
             var set = CreateBlockExpression(source, result, arg);
+
+            if (arg.Settings.AfterMappingFactory != null)
+            {
+                //var result = adapt(source);
+                //action(source, result);
+
+                var afterMapping = arg.Settings.AfterMappingFactory(arg);
+                var args = afterMapping.Parameters;
+                if (args[0].Type == source.Type && args[1].Type == result.Type)
+                {
+                    var replacer = new ParameterExpressionReplacer(args, source, result);
+                    var invoke = replacer.Visit(afterMapping.Body);
+                    set = Expression.Block(set, invoke);
+                }
+                else
+                {
+                    var invoke = Expression.Invoke(afterMapping, source.To(args[0].Type), result.To(args[1].Type));
+                    set = Expression.Block(set, invoke);
+                }
+            }
 
             if (arg.Settings.PreserveReference == true &&
                 !arg.SourceType.GetTypeInfo().IsValueType &&
@@ -177,8 +201,9 @@ namespace Mapster.Adapters
         {
             //new TDestination()
 
-            return arg.Settings.ConstructUsing != null 
-                ? arg.Settings.ConstructUsing.Apply(source).TrimConversion().To(arg.DestinationType) 
+            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
+            return constructUsing != null 
+                ? constructUsing.Apply(source).TrimConversion().To(arg.DestinationType) 
                 : Expression.New(arg.DestinationType);
         }
 
