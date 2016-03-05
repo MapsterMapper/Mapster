@@ -27,6 +27,7 @@ namespace Mapster
                 new PrimitiveAdapter().CreateRule(),
                 new RecordTypeAdapter().CreateRule(),
                 new ClassAdapter().CreateRule(),
+                new DictionaryAdapter().CreateRule(),
                 new CollectionAdapter().CreateRule(),
             };
         }

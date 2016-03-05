@@ -61,21 +61,28 @@ namespace Mapster
 
         public static Type ExtractCollectionType(this Type collectionType)
         {
-            if (collectionType.IsGenericEnumerableType())
-            {
-                return collectionType.GetGenericArguments()[0];
-            }
-            var enumerableType = collectionType.GetInterfaces().FirstOrDefault(IsGenericEnumerableType);
-            if (enumerableType != null)
-            {
-                return enumerableType.GetGenericArguments()[0];
-            }
-            return typeof (object);
+            var enumerableType = collectionType.GetGenericEnumerableType();
+            return enumerableType != null 
+                ? enumerableType.GetGenericArguments()[0] 
+                : typeof (object);
         }
 
         public static bool IsGenericEnumerableType(this Type type)
         {
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+        }
+
+        public static Type GetInterface(this Type type, Func<Type, bool> predicate)
+        {
+            if (predicate(type))
+                return type;
+            
+            return type.GetInterfaces().FirstOrDefault(predicate);
+        }
+
+        public static Type GetGenericEnumerableType(this Type type)
+        {
+            return type.GetInterface(IsGenericEnumerableType);
         }
 
         private static Expression CreateConvertMethod(string name, Type srcType, Type destType, Expression source)
@@ -294,7 +301,7 @@ namespace Mapster
 
         public static bool IsConvertible(this Type type)
         {
-            return type.GetInterfaces().Any(t => t == typeof (IConvertible));
+            return typeof (IConvertible).GetTypeInfo().IsAssignableFrom(type);
         }
 
         public static IMemberModel CreateModel(this PropertyInfo propertyInfo)

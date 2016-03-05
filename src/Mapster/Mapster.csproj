@@ -53,6 +53,7 @@
     <Compile Include="Adapter.cs" />
     <Compile Include="Adapters\BaseAdapter.cs" />
     <Compile Include="Adapters\BaseClassAdapter.cs" />
+    <Compile Include="Adapters\DictionaryAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
     <Compile Include="IRegister.cs" />
     <Compile Include="MapContext.cs" />
