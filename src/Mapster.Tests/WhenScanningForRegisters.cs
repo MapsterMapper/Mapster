@@ -23,7 +23,7 @@ namespace Mapster.Tests
 			IList<IRegister> registers = TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 			registers.Count.ShouldEqual(2);
 
-			var typeTuples = TypeAdapterConfig.GlobalSettings.Dict.Keys.ToList();
+			var typeTuples = TypeAdapterConfig.GlobalSettings.RuleMap.Keys.ToList();
 
 			typeTuples.Any(x => x.Equals(new TypeTuple(typeof(Customer), typeof(CustomerDTO)))).ShouldBeTrue();
 			typeTuples.Any(x => x.Equals(new TypeTuple(typeof(Product), typeof(ProductDTO)))).ShouldBeTrue();

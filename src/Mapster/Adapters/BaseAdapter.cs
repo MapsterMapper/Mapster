@@ -9,7 +9,14 @@ namespace Mapster.Adapters
 {
     public abstract class BaseAdapter
     {
-        public abstract int? Priority(Type sourceType, Type destinationType, MapType mapType);
+        protected virtual int Score => 0;
+
+        public virtual int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        {
+            return CanMap(sourceType, destinationType, mapType) ? this.Score : (int?)null;
+        }
+
+        protected abstract bool CanMap(Type sourceType, Type destinationType, MapType mapType);
 
         public LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
@@ -73,13 +80,16 @@ namespace Mapster.Adapters
 
         protected Expression CreateBlockExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
+            if (arg.MapType == MapType.Projection)
+                throw new InvalidOperationException(
+                    $"Mapping is invalid for projection: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+
             var result = Expression.Variable(arg.DestinationType);
             Expression assign = Expression.Assign(result, destination ?? CreateInstantiationExpression(source, arg));
 
             var set = CreateBlockExpression(source, result, arg);
 
             if (arg.Settings.PreserveReference == true &&
-                arg.MapType != MapType.Projection &&
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
             {
@@ -130,8 +140,7 @@ namespace Mapster.Adapters
             //else
             //  result = adapt(source);
             //return result;
-            if (arg.MapType != MapType.Projection && 
-                (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
+            if (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable())
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 set = Expression.IfThenElse(

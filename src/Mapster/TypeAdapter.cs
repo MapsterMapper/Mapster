@@ -130,7 +130,7 @@ namespace Mapster
         /// <param name="destinationType">The type of the destination object.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
-        public static object Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config = null)
+        public static object Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
             dynamic fn = config.GetMapToTargetFunction(sourceType, destinationType);
             return fn((dynamic)source, (dynamic)destination);

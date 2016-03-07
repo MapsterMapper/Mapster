@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Mapster.Utils;
 using System.Reflection;
 
 namespace Mapster.Adapters
 {
     internal class PrimitiveAdapter : BaseAdapter
     {
-        public override int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        protected override int Score => -200;
+
+        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
         {
-            return -200;
+            return true;
         }
 
         protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)

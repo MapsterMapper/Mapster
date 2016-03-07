@@ -13,7 +13,7 @@ namespace Mapster.Tests
         public void TearDown()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
-			TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
+			TypeAdapterConfig.GlobalSettings.Clear();
 		}
 
 

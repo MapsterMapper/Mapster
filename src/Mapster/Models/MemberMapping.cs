@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class MemberConverter
+    internal class MemberMapping
     {
         public Expression Getter;
         public Expression Setter;

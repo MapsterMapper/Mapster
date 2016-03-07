@@ -14,7 +14,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassConverter CreateClassConverter(Expression source, Expression destination, CompileArgument arg)
+        protected ClassMapping CreateClassConverter(Expression source, Expression destination, CompileArgument arg)
         {
             Type sourceType = source.Type;
             var classModel = GetClassModel(arg.DestinationType);
@@ -22,7 +22,7 @@ namespace Mapster.Adapters
 
             var unmappedDestinationMembers = new List<string>();
 
-            var properties = new List<MemberConverter>();
+            var properties = new List<MemberMapping>();
 
             for (int i = 0; i < destinationMembers.Count; i++)
             {
@@ -34,7 +34,7 @@ namespace Mapster.Adapters
                 var sourceMember = ReflectionUtils.GetMemberModel(sourceType, destinationMember.Name);
                 if (sourceMember != null)
                 {
-                    var propertyModel = new MemberConverter
+                    var propertyModel = new MemberMapping
                     {
                         ConvertType = 1,
                         Getter = sourceMember.GetExpression(source),
@@ -51,7 +51,7 @@ namespace Mapster.Adapters
 
                     if (classModel.ConstructorInfo != null)
                     {
-                        var propertyModel = new MemberConverter
+                        var propertyModel = new MemberMapping
                         {
                             ConvertType = 0,
                             Getter = null,
@@ -74,7 +74,7 @@ namespace Mapster.Adapters
                 throw new ArgumentOutOfRangeException($"The following members of destination class {arg.DestinationType} do not have a corresponding source member mapped or ignored:{string.Join(",", unmappedDestinationMembers)}");
             }
 
-            return new ClassConverter
+            return new ClassMapping
             {
                 ConstructorInfo = classModel.ConstructorInfo,
                 Members = properties,
@@ -85,13 +85,13 @@ namespace Mapster.Adapters
             Expression source,
             Expression destination,
             IMemberModel destinationMember,
-            List<MemberConverter> properties,
+            List<MemberMapping> properties,
             bool isProjection)
         {
             var getter = ReflectionUtils.GetDeepFlattening(source, destinationMember.Name, isProjection);
             if (getter != null)
             {
-                var propertyModel = new MemberConverter
+                var propertyModel = new MemberMapping
                 {
                     ConvertType = 3,
                     Getter = getter,
@@ -109,12 +109,12 @@ namespace Mapster.Adapters
             Expression source,
             Expression destination,
             IMemberModel destinationMember,
-            List<MemberConverter> properties)
+            List<MemberMapping> properties)
         {
-            var getMethod = source.Type.GetMethod(string.Concat("Get", destinationMember.Name));
+            var getMethod = source.Type.GetMethod(string.Concat("Get", destinationMember.Name), BindingFlags.Public | BindingFlags.Instance);
             if (getMethod != null)
             {
-                var propertyModel = new MemberConverter
+                var propertyModel = new MemberMapping
                 {
                     ConvertType = 2,
                     Getter = Expression.Call(source, getMethod),
@@ -134,13 +134,13 @@ namespace Mapster.Adapters
             Expression destination,
             TypeAdapterSettings config,
             IMemberModel destinationMember,
-            List<MemberConverter> properties)
+            List<MemberMapping> properties)
         {
             bool isAdded = false;
             var resolvers = config.Resolvers;
             if (resolvers != null && resolvers.Count > 0)
             {
-                MemberConverter memberConverter = null;
+                MemberMapping memberConverter = null;
                 LambdaExpression lastCondition = null;
                 for (int j = 0; j < resolvers.Count; j++)
                 {
@@ -149,7 +149,7 @@ namespace Mapster.Adapters
                     {
                         if (memberConverter == null)
                         {
-                            memberConverter = new MemberConverter
+                            memberConverter = new MemberMapping
                             {
                                 ConvertType = 5,
                                 Setter = destinationMember.GetExpression(destination),
