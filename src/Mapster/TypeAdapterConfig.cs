@@ -75,6 +75,13 @@ namespace Mapster
             return new TypeAdapterSetter<TSource, TDestination>(settings, this);
         }
 
+        public TypeAdapterSetter<TDestination> ForDestinationType<TDestination>()
+        {
+            var key = new TypeTuple(typeof(void), typeof(TDestination));
+            var settings = GetSettings(key);
+            return new TypeAdapterSetter<TDestination>(settings, this);
+        }
+
         private TypeAdapterSettings GetSettings(TypeTuple key)
         {
             TypeAdapterRule rule;
@@ -84,29 +91,48 @@ namespace Mapster
                 {
                     if (!this.RuleMap.TryGetValue(key, out rule))
                     {
-                        rule = new TypeAdapterRule
-                        {
-                            Priority = (sourceType, destinationType, mapType) =>
-                            {
-                                var score1 = GetSubclassDistance(destinationType, key.Destination, this.AllowImplicitDestinationInheritance);
-                                if (score1 == null)
-                                    return null;
-                                var score2 = GetSubclassDistance(sourceType, key.Source, true);
-                                if (score2 == null)
-                                    return null;
-                                return score1.Value + score2.Value;
-                            },
-                            Settings = new TypeAdapterSettings
-                            {
-                                DestinationType = key.Destination,
-                            },
-                        };
+                        rule = key.Source == typeof (void) 
+                            ? CreateDestinationTypeRule(key) 
+                            : CreateTypeTupleRule(key);
                         this.Rules.Add(rule);
                         this.RuleMap.Add(key, rule);
                     }
                 }
             }
             return rule.Settings;
+        }
+
+        private TypeAdapterRule CreateTypeTupleRule(TypeTuple key)
+        {
+            return new TypeAdapterRule
+            {
+                Priority = (sourceType, destinationType, mapType) =>
+                {
+                    var score1 = GetSubclassDistance(destinationType, key.Destination, this.AllowImplicitDestinationInheritance);
+                    if (score1 == null)
+                        return null;
+                    var score2 = GetSubclassDistance(sourceType, key.Source, true);
+                    if (score2 == null)
+                        return null;
+                    return score1.Value + score2.Value;
+                },
+                Settings = new TypeAdapterSettings
+                {
+                    DestinationType = key.Destination,
+                },
+            };
+        }
+
+        private static TypeAdapterRule CreateDestinationTypeRule(TypeTuple key)
+        {
+            return new TypeAdapterRule
+            {
+                Priority = (sourceType, destinationType, mapType) => GetSubclassDistance(destinationType, key.Destination, true),
+                Settings = new TypeAdapterSettings
+                {
+                    DestinationType = key.Destination,
+                },
+            };
         }
 
         private static int? GetSubclassDistance(Type type1, Type type2, bool allowInheritance)

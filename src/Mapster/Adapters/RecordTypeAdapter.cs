@@ -27,7 +27,7 @@ namespace Mapster.Adapters
         {
             //new TDestination(src.Prop1, src.Prop2)
 
-            if (arg.Settings.ConstructUsing != null)
+            if (arg.Settings.ConstructUsingFactory != null)
                 return base.CreateInstantiationExpression(source, arg);
 
             var classConverter = CreateClassConverter(source, null, arg);
