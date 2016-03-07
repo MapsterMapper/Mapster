@@ -29,9 +29,10 @@ namespace Mapster
         public Type DestinationType { get; set; }
 
         public List<InvokerModel> Resolvers { get; protected set; } = new List<InvokerModel>();
-        public LambdaExpression ConstructUsing { get; set; }
+        public Func<CompileArgument, LambdaExpression> ConstructUsingFactory { get; set; }
         public Func<CompileArgument, LambdaExpression> ConverterFactory { get; set; }
         public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory { get; set; }
+        public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories { get; protected set; } = new List<Func<CompileArgument, LambdaExpression>>();
 
         internal bool Compiled { get; set; }
 
@@ -56,11 +57,12 @@ namespace Mapster
             this.IgnoreMembers.UnionWith(other.IgnoreMembers);
             this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
             this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
+            this.AfterMappingFactories.AddRange(other.AfterMappingFactories);
 
             this.Resolvers.AddRange(other.Resolvers);
 
-            if (this.ConstructUsing == null)
-                this.ConstructUsing = other.ConstructUsing;
+            if (this.ConstructUsingFactory == null)
+                this.ConstructUsingFactory = other.ConstructUsingFactory;
             if (this.ConverterFactory == null)
                 this.ConverterFactory = other.ConverterFactory;
             if (this.ConverterToTargetFactory == null)
