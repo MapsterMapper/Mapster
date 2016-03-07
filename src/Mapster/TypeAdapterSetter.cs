@@ -80,7 +80,67 @@ namespace Mapster
             return setter;
         }
     }
-    public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter
+
+    public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
+    {
+        internal TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
+            : base(settings, parentConfig)
+        { }
+
+        public TypeAdapterSetter<TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        {
+            this.CheckCompiled();
+
+            Settings.IgnoreMembers.UnionWith(members.Select(member => ReflectionUtils.GetMemberInfo(member).Member.Name));
+            return this;
+        }
+
+
+        public TypeAdapterSetter<TDestination> Map<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSourceMember>> source)
+        {
+            this.CheckCompiled();
+
+            var memberExp = ReflectionUtils.GetMemberInfo(member);
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)), source.Parameters[0]);
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                MemberName = memberExp.Member.Name,
+                Invoker = invoker,
+                Condition = null
+            });
+            return this;
+        }
+
+        public TypeAdapterSetter<TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
+        {
+            this.CheckCompiled();
+
+            Settings.ConstructUsingFactory = arg => constructUsing;
+
+            return this;
+        }
+
+        public TypeAdapterSetter<TDestination> AfterMapping(Action<TDestination> action)
+        {
+            this.CheckCompiled();
+
+            Settings.AfterMappingFactories.Add(arg =>
+            {
+                var p1 = Expression.Parameter(arg.SourceType);
+                var p2 = Expression.Parameter(arg.DestinationType);
+                var actionType = action.GetType();
+                var actionExp = Expression.Constant(action, actionType);
+                var invoke = Expression.Call(actionExp, "Invoke", null, p2);
+                return Expression.Lambda(invoke, p1, p2);
+            });
+            return this;
+        }
+
+    }
+
+    public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TDestination>
     {
         internal TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
             : base(settings, parentConfig)
@@ -100,17 +160,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            var memberExp = member.Body as MemberExpression;
-
-            if (memberExp == null)
-            {
-                var ubody = (UnaryExpression)member.Body;
-                memberExp = ubody.Operand as MemberExpression;
-            }
-
-            if (memberExp == null)
-                throw new ArgumentException("argument must be member access", nameof(member));
-
+            var memberExp = ReflectionUtils.GetMemberInfo(member);
             Settings.Resolvers.Add(new InvokerModel
             {
                 MemberName = memberExp.Member.Name,
@@ -124,7 +174,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            Settings.ConstructUsing = constructUsing;
+            Settings.ConstructUsingFactory = arg => constructUsing;
 
             return this;
         }
@@ -149,6 +199,22 @@ namespace Mapster
             this.CheckCompiled();
 
             Settings.ConverterToTargetFactory = arg => converterFactory;
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> AfterMapping(Action<TSource, TDestination> action)
+        {
+            this.CheckCompiled();
+
+            Settings.AfterMappingFactories.Add(arg =>
+            {
+                var p1 = Expression.Parameter(arg.SourceType);
+                var p2 = Expression.Parameter(arg.DestinationType);
+                var actionType = action.GetType();
+                var actionExp = Expression.Constant(action, actionType);
+                var invoke = Expression.Call(actionExp, "Invoke", null, p1, p2);
+                return Expression.Lambda(invoke, p1, p2);
+            });
             return this;
         }
 
