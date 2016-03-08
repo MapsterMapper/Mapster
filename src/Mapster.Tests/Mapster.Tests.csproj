@@ -72,6 +72,7 @@
     <Compile Include="WhenMappingIgnoreNullValues.cs" />
     <Compile Include="WhenMappingWithExtensionMethods.cs" />
     <Compile Include="WhenPerformingAfterMapping.cs" />
+    <Compile Include="WhenPassingRuntimeValue.cs" />
     <Compile Include="WhenPreserveReferences.cs" />
     <Compile Include="WhenAddingCustomMappings.cs" />
     <Compile Include="WhenHandlingUnmappedMembers.cs" />
