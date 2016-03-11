@@ -58,7 +58,9 @@ namespace Mapster
         private static Expression PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
             var members = source.Type.GetPublicFieldsAndProperties();
-            return members.Where(member => member.Name == destinationMember.Name)
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();
         }
@@ -73,7 +75,9 @@ namespace Mapster
 
         private static Expression FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
-            return ReflectionUtils.GetDeepFlattening(source, destinationMember.Name, arg);
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            return ReflectionUtils.GetDeepFlattening(source, destinationMemberName, arg);
         }
 
         private static Expression DictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)

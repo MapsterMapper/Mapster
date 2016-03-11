@@ -17,9 +17,8 @@ namespace Mapster
     {
         public HashSet<string> IgnoreMembers { get; internal set; } = new HashSet<string>();
         public HashSet<Type> IgnoreAttributes { get; internal set; } = new HashSet<Type>();
-        public HashSet<string> IncludeMembers { get; internal set; } = new HashSet<string>();
-        public HashSet<Type> IncludeAttributes { get; internal set; } = new HashSet<Type>(); 
         public TransformsCollection DestinationTransforms { get; internal set; } = new TransformsCollection();
+        public NameMatchingStrategy NameMatchingStrategy { get; internal set; } = new NameMatchingStrategy();
 
         public bool? PreserveReference { get; set; }
         public bool? ShallowCopyForSameType { get; set; }
@@ -56,6 +55,7 @@ namespace Mapster
 
             this.IgnoreMembers.UnionWith(other.IgnoreMembers);
             this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
+            this.NameMatchingStrategy.Apply(other.NameMatchingStrategy);
             this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
             this.AfterMappingFactories.AddRange(other.AfterMappingFactories);
 

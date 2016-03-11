@@ -207,15 +207,17 @@ namespace Mapster
 
         public static Expression GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
         {
+            var strategy = arg.Settings.NameMatchingStrategy;
             var properties = source.Type.GetPublicFieldsAndProperties();
             foreach (var property in properties)
             {
+                var sourceMemberName = strategy.SourceMemberNameConverter(property.Name);
                 var propertyType = property.Type;
                 if (propertyType.GetTypeInfo().IsClass && propertyType != _stringType
-                    && propertyName.StartsWith(property.Name))
+                    && propertyName.StartsWith(sourceMemberName))
                 {
                     var exp = property.GetExpression(source);
-                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'), arg);
+                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
                     if (ifTrue == null)
                         return null;
                     if (arg.MapType == MapType.Projection)
@@ -225,7 +227,7 @@ namespace Mapster
                         Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type),
                         ifTrue);
                 }
-                else if (string.Equals(propertyName, property.Name))
+                else if (string.Equals(propertyName, sourceMemberName))
                 {
                     return property.GetExpression(source);
                 }
