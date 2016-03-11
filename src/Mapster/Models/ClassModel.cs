@@ -6,6 +6,6 @@ namespace Mapster.Models
     internal class ClassModel
     {
         public ConstructorInfo ConstructorInfo { get; set; }
-        public List<IMemberModel> Members { get; set; } 
+        public IEnumerable<IMemberModel> Members { get; set; } 
     }
 }

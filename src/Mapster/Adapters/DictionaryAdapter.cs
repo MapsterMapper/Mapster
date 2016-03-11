@@ -15,12 +15,8 @@ namespace Mapster.Adapters
             if (sourceType == typeof (string) || sourceType == typeof (object))
                 return false;
 
-            return GetDictionaryType(destinationType) != null;
-        }
-
-        private static Type GetDictionaryType(Type destinationType)
-        {
-            return destinationType.GetInterface(type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+            var dictType = destinationType.GetDictionaryType();
+            return dictType?.GetGenericArguments()[0] == typeof (string);
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -45,10 +41,8 @@ namespace Mapster.Adapters
             //if (src.Prop2 != null)
             //  dict.Add("Prop2", convert(src.Prop2));
 
-            var dictType = GetDictionaryType(destination.Type);
-            var dictTypeArgs = dictType.GetGenericArguments();
-            var keyType = dictTypeArgs[0];
-            var valueType = dictTypeArgs[1];
+            var dictType = destination.Type.GetDictionaryType();
+            var valueType = dictType.GetGenericArguments()[1];
             var indexer = dictType.GetProperties().First(item => item.GetIndexParameters().Length > 0);
             var lines = new List<Expression>();
 
@@ -62,7 +56,6 @@ namespace Mapster.Adapters
                 var value = CreateAdaptExpression(getter, valueType, arg);
 
                 Expression key = Expression.Constant(property.Name);
-                key = CreateAdaptExpression(key, keyType, arg);
 
                 Expression itemSet = Expression.Assign(Expression.Property(dict, indexer, key), value);
                 if (arg.Settings.IgnoreNullValues == true && (!getter.Type.GetTypeInfo().IsValueType || getter.Type.IsNullable()))
@@ -87,7 +80,7 @@ namespace Mapster.Adapters
             var listInit = exp as ListInitExpression;
             var newInstance = listInit?.NewExpression ?? (NewExpression)exp;
 
-            var dictType = GetDictionaryType(arg.DestinationType);
+            var dictType = arg.DestinationType.GetDictionaryType();
             var dictTypeArgs = dictType.GetGenericArguments();
             var keyType = dictTypeArgs[0];
             var valueType = dictTypeArgs[1];
@@ -95,7 +88,7 @@ namespace Mapster.Adapters
             var lines = new List<ElementInit>();
             if (listInit != null)
                 lines.AddRange(listInit.Initializers);
-
+            
             var properties = source.Type.GetPublicFieldsAndProperties();
             foreach (var property in properties)
             {

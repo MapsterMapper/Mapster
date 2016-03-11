@@ -81,7 +81,7 @@ namespace Mapster.Adapters
                     select new ClassModel
                     {
                         ConstructorInfo = ctor,
-                        Members = ps.Select(ReflectionUtils.CreateModel).ToList()
+                        Members = ps.Select(ReflectionUtils.CreateModel)
                     }).First();
         }
 

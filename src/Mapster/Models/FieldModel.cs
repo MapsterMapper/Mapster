@@ -16,7 +16,10 @@ namespace Mapster.Models
         public Type Type => _fieldInfo.FieldType;
         public string Name => _fieldInfo.Name;
         public object Info => _fieldInfo;
-        public bool HasSetter => !_fieldInfo.IsInitOnly;
+        public AccessModifier SetterModifier
+        {
+            get { return _fieldInfo.IsInitOnly ? AccessModifier.None : AccessModifier.Public; }
+        }
 
         public Expression GetExpression(Expression source)
         {

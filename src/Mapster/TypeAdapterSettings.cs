@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
 using Mapster.Models;
 
 namespace Mapster
@@ -16,11 +15,11 @@ namespace Mapster
 
     public class TypeAdapterSettings
     {
-        public HashSet<string> IgnoreMembers { get; protected set; } = new HashSet<string>();
-        public HashSet<Type> IgnoreAttributes { get; protected set; } = new HashSet<Type>();
-        public HashSet<string> IncludeMembers { get; protected set; } = new HashSet<string>();
-        public HashSet<Type> IncludeAttributes { get; protected set; } = new HashSet<Type>(); 
-        public TransformsCollection DestinationTransforms { get; protected set; } = new TransformsCollection();
+        public HashSet<string> IgnoreMembers { get; internal set; } = new HashSet<string>();
+        public HashSet<Type> IgnoreAttributes { get; internal set; } = new HashSet<Type>();
+        public HashSet<string> IncludeMembers { get; internal set; } = new HashSet<string>();
+        public HashSet<Type> IncludeAttributes { get; internal set; } = new HashSet<Type>(); 
+        public TransformsCollection DestinationTransforms { get; internal set; } = new TransformsCollection();
 
         public bool? PreserveReference { get; set; }
         public bool? ShallowCopyForSameType { get; set; }
@@ -28,11 +27,12 @@ namespace Mapster
         public bool? NoInherit { get; set; }
         public Type DestinationType { get; set; }
 
-        public List<InvokerModel> Resolvers { get; protected set; } = new List<InvokerModel>();
+        public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies { get; internal set; } = new List<Func<Expression, IMemberModel, CompileArgument, Expression>>();
+        public List<InvokerModel> Resolvers { get; internal set; } = new List<InvokerModel>();
         public Func<CompileArgument, LambdaExpression> ConstructUsingFactory { get; set; }
         public Func<CompileArgument, LambdaExpression> ConverterFactory { get; set; }
         public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory { get; set; }
-        public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories { get; protected set; } = new List<Func<CompileArgument, LambdaExpression>>();
+        public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories { get; internal set; } = new List<Func<CompileArgument, LambdaExpression>>();
 
         internal bool Compiled { get; set; }
 
@@ -59,6 +59,7 @@ namespace Mapster
             this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
             this.AfterMappingFactories.AddRange(other.AfterMappingFactories);
 
+            this.ValueAccessingStrategies.AddRange(other.ValueAccessingStrategies);
             this.Resolvers.AddRange(other.Resolvers);
 
             if (this.ConstructUsingFactory == null)

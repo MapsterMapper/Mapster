@@ -5,7 +5,7 @@ using Should;
 
 namespace Mapster.Tests
 {
-    public class WhenMappingObjectToDictionary
+    public class WhenMappingWithDictionary
     {
         [TearDown]
         public void TearDown()
@@ -45,6 +45,20 @@ namespace Mapster.Tests
 
             dict.Count.ShouldEqual(1);
             dict["Id"].ShouldEqual(poco.Id);
+        }
+
+        [Test]
+        public void Dictionary_To_Object()
+        {
+            var dict = new Dictionary<string, object>
+            {
+                ["Id"] = Guid.NewGuid(),
+                ["Foo"] = "test",
+            };
+
+            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            poco.Id.ShouldEqual(dict["Id"]);
+            poco.Name.ShouldBeNull();
         }
 
         public class SimplePoco
