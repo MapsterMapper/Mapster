@@ -16,21 +16,21 @@ namespace Mapster.Tests
                 .Compile();
 
             IAdapter instance = TypeAdapter.GetInstance();
-            var source = new SimplePoco { Id = new Guid(), Name = "Test" };
+            var source = new SimplePoco {Id = new Guid(), Name = "Test"};
 
             var destination = instance.Adapt<SimpleDto>(source);
 
             destination.Name.ShouldEqual(source.Name);
         }
 
-		[Test]
+        [Test]
         public void False_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name, cond => false)
                 .Compile();
 
-            var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+            var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
             IAdapter instance = TypeAdapter.GetInstance();
             SimpleDto dto = instance.Adapt<SimplePoco, SimpleDto>(poco);
@@ -47,7 +47,7 @@ namespace Mapster.Tests
                 .Map(dest => dest.Name, src => src.Name, cond => cond.Name == "TestName")
                 .Compile();
 
-            var poco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+            var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
             IAdapter instance = TypeAdapter.GetInstance();
             SimpleDto dto = instance.Adapt<SimplePoco, SimpleDto>(poco);

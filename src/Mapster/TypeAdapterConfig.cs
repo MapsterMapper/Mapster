@@ -15,6 +15,7 @@ namespace Mapster
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
 
         private static TypeAdapterConfig _globalSettings;
+
         public static TypeAdapterConfig GlobalSettings
         {
             get { return _globalSettings ?? (_globalSettings = new TypeAdapterConfig()); }
@@ -39,7 +40,7 @@ namespace Mapster
         public TypeAdapterSetter Default { get; protected set; }
         public Dictionary<TypeTuple, TypeAdapterRule> RuleMap { get; protected set; } = new Dictionary<TypeTuple, TypeAdapterRule>();
 
-		public TypeAdapterConfig()
+        public TypeAdapterConfig()
         {
             this.Rules = RulesTemplate.ToList();
             this.Default = new TypeAdapterSetter(new TypeAdapterSettings(), this);
@@ -54,29 +55,29 @@ namespace Mapster
         {
             var rule = new TypeAdapterRule
             {
-                Priority = (srcType, destType, mapType) => canMap(srcType, destType, mapType) ? (int?)25 : null,
+                Priority = (srcType, destType, mapType) => canMap(srcType, destType, mapType) ? (int?) 25 : null,
                 Settings = new TypeAdapterSettings(),
             };
             this.Rules.Add(rule);
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
-	    public TypeAdapterSetter<TSource, TDestination> NewConfig<TSource, TDestination>()
-	    {
-			Remove(typeof(TSource), typeof(TDestination));
-		    return ForType<TSource, TDestination>();
-	    }
-        
-		public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
+        public TypeAdapterSetter<TSource, TDestination> NewConfig<TSource, TDestination>()
+        {
+            Remove(typeof (TSource), typeof (TDestination));
+            return ForType<TSource, TDestination>();
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof (TSource), typeof (TDestination));
-		    var settings = GetSettings(key);
+            var settings = GetSettings(key);
             return new TypeAdapterSetter<TSource, TDestination>(settings, this);
         }
 
         public TypeAdapterSetter<TDestination> ForDestinationType<TDestination>()
         {
-            var key = new TypeTuple(typeof(void), typeof(TDestination));
+            var key = new TypeTuple(typeof (void), typeof (TDestination));
             var settings = GetSettings(key);
             return new TypeAdapterSetter<TDestination>(settings, this);
         }
@@ -90,8 +91,8 @@ namespace Mapster
                 {
                     if (!this.RuleMap.TryGetValue(key, out rule))
                     {
-                        rule = key.Source == typeof (void) 
-                            ? CreateDestinationTypeRule(key) 
+                        rule = key.Source == typeof (void)
+                            ? CreateDestinationTypeRule(key)
                             : CreateTypeTupleRule(key);
                         this.Rules.Add(rule);
                         this.RuleMap.Add(key, rule);
@@ -144,7 +145,7 @@ namespace Mapster
             if (type2.GetTypeInfo().IsInterface)
             {
                 return type2.GetTypeInfo().IsAssignableFrom(type1.GetTypeInfo())
-                    ? (int?)25
+                    ? (int?) 25
                     : null;
             }
 
@@ -154,13 +155,14 @@ namespace Mapster
                 score--;
                 type1 = type1.GetTypeInfo().BaseType;
             }
-            return type1 == null ? null : (int?)score;
+            return type1 == null ? null : (int?) score;
         }
 
         private readonly Hashtable _mapDict = new Hashtable();
+
         internal Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
-            var key = new TypeTuple(typeof(TSource), typeof(TDestination));
+            var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             object del = _mapDict[key] ?? AddToHash(_mapDict, key, CreateMapFunction);
 
             return (Func<TSource, TDestination>) del;
@@ -182,6 +184,7 @@ namespace Mapster
                 return del;
             }
         }
+
         internal Delegate GetMapFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
@@ -191,13 +194,15 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapToTargetDict = new Hashtable();
+
         internal Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
-            var key = new TypeTuple(typeof(TSource), typeof(TDestination));
+            var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             object del = _mapToTargetDict[key] ?? AddToHash(_mapToTargetDict, key, CreateMapToTargetFunction);
 
             return (Func<TSource, TDestination, TDestination>) del;
         }
+
         internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
@@ -207,13 +212,15 @@ namespace Mapster
         }
 
         private readonly Hashtable _projectionDict = new Hashtable();
+
         internal Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
         {
-            var key = new TypeTuple(typeof(TSource), typeof(TDestination));
+            var key = new TypeTuple(typeof (TSource), typeof (TDestination));
             object del = _projectionDict[key] ?? AddToHash(_projectionDict, key, CreateProjectionCallExpression);
 
-            return (Expression<Func<TSource, TDestination>>)((UnaryExpression) ((MethodCallExpression) del).Arguments[1]).Operand;
+            return (Expression<Func<TSource, TDestination>>) ((UnaryExpression) ((MethodCallExpression) del).Arguments[1]).Operand;
         }
+
         internal MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
@@ -265,7 +272,7 @@ namespace Mapster
             try
             {
                 var lambda = CreateMapExpression(tuple.Source, tuple.Destination, MapType.Projection, context);
-                var source = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(tuple.Source));
+                var source = Expression.Parameter(typeof (IQueryable<>).MakeGenericType(tuple.Source));
                 var methodInfo = (from method in typeof (Queryable).GetMethods()
                                   where method.Name == "Select"
                                   let p = method.GetParameters()[1]
@@ -346,8 +353,8 @@ namespace Mapster
             else
             {
                 var method = (from m in typeof (TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
-                    where m.Name == "GetMapFunction"
-                    select m).First().MakeGenericMethod(sourceType, destinationType);
+                              where m.Name == "GetMapFunction"
+                              select m).First().MakeGenericMethod(sourceType, destinationType);
                 invoker = Expression.Call(Expression.Constant(this), method);
             }
             var p = Expression.Parameter(sourceType);
@@ -391,16 +398,16 @@ namespace Mapster
             _projectionDict[tuple] = CreateProjectionCallExpression(tuple);
         }
 
-		public IList<IRegister> Scan(params Assembly[] assemblies)
-		{
-			List<IRegister> registers = assemblies.Select(assembly => assembly.GetTypes()
-				.Where(x => typeof(IRegister).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo()) && x.GetTypeInfo().IsClass && !x.GetTypeInfo().IsAbstract))
-				.SelectMany(registerTypes =>
-					registerTypes.Select(registerType => (IRegister)Activator.CreateInstance(registerType))).ToList();
+        public IList<IRegister> Scan(params Assembly[] assemblies)
+        {
+            List<IRegister> registers = assemblies.Select(assembly => assembly.GetTypes()
+                .Where(x => typeof (IRegister).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo()) && x.GetTypeInfo().IsClass && !x.GetTypeInfo().IsAbstract))
+                .SelectMany(registerTypes =>
+                    registerTypes.Select(registerType => (IRegister) Activator.CreateInstance(registerType))).ToList();
 
             this.Apply(registers);
             return registers;
-		}
+        }
 
         public void Apply(IEnumerable<Lazy<IRegister>> registers)
         {
@@ -416,34 +423,35 @@ namespace Mapster
         }
 
         internal void Clear()
-		{
-			var keys = RuleMap.Keys.ToList();
-			foreach (var key in keys)
-			{
-				Remove(key);
-			}
-		}
+        {
+            var keys = RuleMap.Keys.ToList();
+            foreach (var key in keys)
+            {
+                Remove(key);
+            }
+        }
 
-		internal void Remove(Type sourceType, Type destinationType)
-		{
-			var key = new TypeTuple(sourceType, destinationType);
-			Remove(key);
-		}
+        internal void Remove(Type sourceType, Type destinationType)
+        {
+            var key = new TypeTuple(sourceType, destinationType);
+            Remove(key);
+        }
 
-		private void Remove(TypeTuple key)
-		{
-			TypeAdapterRule rule;
-			if (this.RuleMap.TryGetValue(key, out rule))
-			{
-				this.RuleMap.Remove(key);
-				this.Rules.Remove(rule);
-			}
-			_mapDict.Remove(key);
-			_mapToTargetDict.Remove(key);
-			_projectionDict.Remove(key);
-		}
+        private void Remove(TypeTuple key)
+        {
+            TypeAdapterRule rule;
+            if (this.RuleMap.TryGetValue(key, out rule))
+            {
+                this.RuleMap.Remove(key);
+                this.Rules.Remove(rule);
+            }
+            _mapDict.Remove(key);
+            _mapToTargetDict.Remove(key);
+            _projectionDict.Remove(key);
+        }
 
         private static TypeAdapterConfig _cloneConfig;
+
         public TypeAdapterConfig Clone()
         {
             if (_cloneConfig == null)
@@ -463,14 +471,14 @@ namespace Mapster
             return TypeAdapterConfig.GlobalSettings.NewConfig<TSource, TDestination>();
         }
 
-		public static TypeAdapterSetter<TSource, TDestination> ForType()
-		{
-			return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
-		}
-
-		public static void Clear()
+        public static TypeAdapterSetter<TSource, TDestination> ForType()
         {
-            TypeAdapterConfig.GlobalSettings.Remove(typeof(TSource), typeof(TDestination));
+            return TypeAdapterConfig.GlobalSettings.ForType<TSource, TDestination>();
+        }
+
+        public static void Clear()
+        {
+            TypeAdapterConfig.GlobalSettings.Remove(typeof (TSource), typeof (TDestination));
         }
     }
 

@@ -9,13 +9,13 @@ using Omu.ValueInjecter;
 
 namespace Benchmark
 {
-    class Program
+    internal class Program
     {
         private static double AutomapperTime;
         private static double MapsterTime;
         private static double ExpressMapperTime;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             try
             {
@@ -84,8 +84,8 @@ namespace Benchmark
             Test(customer, 10000000);
 
             Console.WriteLine();
-            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime / MapsterTime).ToString("###.00") + " X slower");
-            Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime / MapsterTime).ToString("###.00") + " X slower");
+            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");
+            Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime/MapsterTime).ToString("###.00") + " X slower");
             Console.WriteLine();
         }
 
@@ -125,25 +125,25 @@ namespace Benchmark
             Console.WriteLine("Handwritten Mapper:\t" + Loop<Customer>(item, get =>
             {
                 var dto = new CustomerDTO();
-  
+
                 dto.Id = get.Id;
                 dto.Name = get.Name;
                 dto.AddressCity = get.Address.City;
 
-                dto.Address = new Address() { Id = get.Address.Id, Street = get.Address.Street, Country = get.Address.Country, City = get.Address.City };
-             
-                dto.HomeAddress = new AddressDTO() { Id = get.HomeAddress.Id, Country = get.HomeAddress.Country, City = get.HomeAddress.City };
-               
+                dto.Address = new Address() {Id = get.Address.Id, Street = get.Address.Street, Country = get.Address.Country, City = get.Address.City};
+
+                dto.HomeAddress = new AddressDTO() {Id = get.HomeAddress.Id, Country = get.HomeAddress.Country, City = get.HomeAddress.City};
+
                 dto.Addresses = new AddressDTO[get.Addresses.Length];
                 for (int i = 0; i < get.Addresses.Length; i++)
                 {
-                    dto.Addresses[i] = new AddressDTO() { Id = get.Addresses[i].Id, Country = get.Addresses[i].Country, City = get.Addresses[i].City };
+                    dto.Addresses[i] = new AddressDTO() {Id = get.Addresses[i].Id, Country = get.Addresses[i].Country, City = get.Addresses[i].City};
                 }
 
                 dto.WorkAddresses = new List<AddressDTO>();
                 foreach (var workAddress in get.WorkAddresses)
-	            {
-                    dto.WorkAddresses.Add(new AddressDTO() { Id = workAddress.Id, Country = workAddress.Country, City = workAddress.City });
+                {
+                    dto.WorkAddresses.Add(new AddressDTO() {Id = workAddress.Id, Country = workAddress.Country, City = workAddress.City});
                 }
 
             }, iterations));
@@ -166,7 +166,7 @@ namespace Benchmark
             if (iterations > 50000)
                 Console.WriteLine("ValueInjecter still working please wait...");
 
-            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<FastDeepCloneInjection>(item), iterations));  
+            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<FastDeepCloneInjection>(item), iterations));
         }
 
         private static void TestExpressMapper<TSrc, TDest>(TSrc item, int iterations)
@@ -215,18 +215,20 @@ namespace Benchmark
         {
             Customer c = new Customer()
             {
-                Address = new Address() { City = "istanbul", Country = "turkey", Id = 1, Street = "istiklal cad." },
-                HomeAddress = new Address() { City = "istanbul", Country = "turkey", Id = 2, Street = "istiklal cad." },
+                Address = new Address() {City = "istanbul", Country = "turkey", Id = 1, Street = "istiklal cad."},
+                HomeAddress = new Address() {City = "istanbul", Country = "turkey", Id = 2, Street = "istiklal cad."},
                 Id = 1,
                 Name = "Eduardo Najera",
                 Credit = 234.7m,
-                WorkAddresses = new List<Address>() { 
-                    new Address() { City = "istanbul", Country = "turkey", Id = 5, Street = "istiklal cad." },
-                    new Address() { City = "izmir", Country = "turkey", Id = 6, Street = "konak" }
+                WorkAddresses = new List<Address>()
+                {
+                    new Address() {City = "istanbul", Country = "turkey", Id = 5, Street = "istiklal cad."},
+                    new Address() {City = "izmir", Country = "turkey", Id = 6, Street = "konak"}
                 },
-                Addresses = new List<Address>() { 
-                    new Address() { City = "istanbul", Country = "turkey", Id = 3, Street = "istiklal cad." },
-                    new Address() { City = "izmir", Country = "turkey", Id = 4, Street = "konak" }
+                Addresses = new List<Address>()
+                {
+                    new Address() {City = "istanbul", Country = "turkey", Id = 3, Street = "istiklal cad."},
+                    new Address() {City = "izmir", Country = "turkey", Id = 4, Street = "konak"}
                 }.ToArray()
             };
 
@@ -243,21 +245,21 @@ namespace Benchmark
                 NullInt = 16,
                 DateTime = DateTime.Now,
                 Doublen = 2312112,
-                Foo1 = new Foo { Name = "foo one" },
+                Foo1 = new Foo {Name = "foo one"},
                 Foos = new List<Foo>
-                                       {
-                                           new Foo {Name = "j1", Int64 = 123, NullInt = 321},
-                                           new Foo {Name = "j2", Int32 = 12345, NullInt = 54321},
-                                           new Foo {Name = "j3", Int32 = 12345, NullInt = 54321},
-                                       },
+                {
+                    new Foo {Name = "j1", Int64 = 123, NullInt = 321},
+                    new Foo {Name = "j2", Int32 = 12345, NullInt = 54321},
+                    new Foo {Name = "j3", Int32 = 12345, NullInt = 54321},
+                },
                 FooArr = new[]
-                                         {
-                                             new Foo {Name = "a1"},
-                                             new Foo {Name = "a2"},
-                                             new Foo {Name = "a3"},
-                                         },
-                IntArr = new[] { 1, 2, 3, 4, 5 },
-                Ints = new[] { 7, 8, 9 },
+                {
+                    new Foo {Name = "a1"},
+                    new Foo {Name = "a2"},
+                    new Foo {Name = "a3"},
+                },
+                IntArr = new[] {1, 2, 3, 4, 5},
+                Ints = new[] {7, 8, 9},
             };
 
             return o;
