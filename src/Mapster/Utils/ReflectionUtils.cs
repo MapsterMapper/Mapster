@@ -283,7 +283,7 @@ namespace Mapster
 
         public static bool IsConvertible(this Type type)
         {
-            return typeof (IConvertible).GetTypeInfo().IsAssignableFrom(type);
+            return typeof (IConvertible).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
 
         public static IMemberModel CreateModel(this PropertyInfo propertyInfo)
@@ -310,17 +310,18 @@ namespace Mapster
 
         public static bool IsListCompatible(this Type type)
         {
-            if (type.IsInterface)
+            var typeInfo = type.GetTypeInfo();
+            if (typeInfo.IsInterface)
                 return type.IsAssignableFromList();
 
-            if (type.IsAbstract)
+            if (typeInfo.IsAbstract)
                 return false;
 
             var elementType = type.ExtractCollectionType();
-            if (typeof(ICollection<>).MakeGenericType(elementType).GetTypeInfo().IsAssignableFrom(type))
+            if (typeof(ICollection<>).MakeGenericType(elementType).GetTypeInfo().IsAssignableFrom(typeInfo))
                 return true;
 
-            if (typeof(IList).GetTypeInfo().IsAssignableFrom(type))
+            if (typeof(IList).GetTypeInfo().IsAssignableFrom(typeInfo))
                 return true;
 
             return false;
