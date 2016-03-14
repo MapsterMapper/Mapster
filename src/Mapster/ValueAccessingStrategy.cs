@@ -69,7 +69,10 @@ namespace Mapster
         {
             if (arg.MapType == MapType.Projection)
                 return null;
-            var getMethod = source.Type.GetMethod(string.Concat("Get", destinationMember.Name), BindingFlags.Public | BindingFlags.Instance);
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = "Get" + strategy.DestinationMemberNameConverter(destinationMember.Name);
+            var getMethod = source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName);
             return getMethod != null ? Expression.Call(source, getMethod) : null;
         }
 
