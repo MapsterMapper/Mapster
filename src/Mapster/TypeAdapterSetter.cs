@@ -154,7 +154,7 @@ namespace Mapster
             : base(settings, parentConfig)
         { }
 
-        public TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
         {
             this.CheckCompiled();
 

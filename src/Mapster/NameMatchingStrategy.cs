@@ -31,40 +31,60 @@ namespace Mapster
 
         private static string Identity(string s) => s;
 
-        private static string ToPascalCase(string s) => string.Join("", BreakWords(s).Select(ToProperCase));
+        internal static string ToPascalCase(string s) => string.Join("", BreakWords(s).Select(ToProperCase));
 
         private static string ToProperCase(string s) => s.Length == 0 ? s : (char.ToUpper(s[0]) + s.Substring(1).ToLower());
 
-        private static IEnumerable<string> BreakWords(string s)
+        enum WordType
         {
-            var words = new List<string>();
-
-            foreach (var word in s.Split('_'))
-            {
-                if (word.All(char.IsUpper))
-                    words.Add(word);
-                else
-                    words.AddRange(SplitWord(word));
-            }
-
-            return words;
+            Unknown,
+            UpperCase,
+            LowerCase,
+            ProperCase,
         }
-
-        private static IEnumerable<string> SplitWord(string s)
+        private static IEnumerable<string> BreakWords(string s)
         {
             var len = s.Length;
             var pos = 0;
             var last = 0;
+            var type = WordType.Unknown;
 
             while (pos < len)
             {
                 var c = s[pos];
-                if (char.IsUpper(c))
+                if (c == '_')
                 {
                     if (last < pos)
                     {
                         yield return s.Substring(last, pos - last);
                         last = pos;
+                        type = WordType.Unknown;
+                    }
+                    last++;
+                }
+                else if (char.IsUpper(c))
+                {
+                    if (type == WordType.Unknown)
+                        type = WordType.UpperCase;
+                    else if (type != WordType.UpperCase && last < pos)
+                    {
+                        yield return s.Substring(last, pos - last);
+                        last = pos;
+                        type = WordType.UpperCase;
+                    }
+                }
+                else  //lower
+                {
+                    if (type == WordType.Unknown)
+                        type = WordType.LowerCase;
+                    else if (type == WordType.UpperCase)
+                    {
+                        if (last < pos - 1)
+                        {
+                            yield return s.Substring(last, pos - last - 1);
+                            last = pos - 1;
+                        }
+                        type = WordType.ProperCase;
                     }
                 }
                 pos++;
