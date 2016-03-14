@@ -279,8 +279,8 @@ namespace Mapster
                 return false;
 
             //all parameters should match getter
-            var names = props.Select(p => p.Name).ToHashSet();
-            return names.SetEquals(ctors[0].GetParameters().Select(p => p.Name.ToProperCase()));
+            var names = props.Select(p => p.Name.ToPascalCase()).ToHashSet();
+            return names.SetEquals(ctors[0].GetParameters().Select(p => p.Name.ToPascalCase()));
         }
 
         public static bool IsConvertible(this Type type)

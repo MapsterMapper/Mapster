@@ -9,9 +9,9 @@ namespace Mapster.Utils
             return new HashSet<T>(source);
         }
 
-        public static string ToProperCase(this string name)
+        public static string ToPascalCase(this string name)
         {
-            return name.Substring(0, 1).ToUpper() + name.Substring(1);
+            return NameMatchingStrategy.ToPascalCase(name);
         }
 
         public static U GetValueOrDefault<T, U>(this IDictionary<T, U> dict, T key)
