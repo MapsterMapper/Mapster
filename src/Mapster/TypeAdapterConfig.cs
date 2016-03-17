@@ -13,6 +13,7 @@ namespace Mapster
     public class TypeAdapterConfig
     {
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
+        public static List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategiesTemplate { get; } = ValueAccessingStrategy.GetDefaultStrategies();
 
         private static TypeAdapterConfig _globalSettings;
 
@@ -28,7 +29,18 @@ namespace Mapster
                 new PrimitiveAdapter().CreateRule(),
                 new RecordTypeAdapter().CreateRule(),
                 new ClassAdapter().CreateRule(),
+                new DictionaryAdapter().CreateRule(),
                 new CollectionAdapter().CreateRule(),
+
+                //dictionary accessor
+                new TypeAdapterRule
+                {
+                    Priority = (srcType, destType, mapType) => srcType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -149 : (int?)null,
+                    Settings = new TypeAdapterSettings
+                    {
+                        ValueAccessingStrategies = new[] { ValueAccessingStrategy.Dictionary }.ToList(),
+                    }
+                }
             };
         }
 
@@ -43,11 +55,15 @@ namespace Mapster
         public TypeAdapterConfig()
         {
             this.Rules = RulesTemplate.ToList();
-            this.Default = new TypeAdapterSetter(new TypeAdapterSettings(), this);
+            var settings = new TypeAdapterSettings
+            {
+                ValueAccessingStrategies = ValueAccessingStrategiesTemplate.ToList()
+            };
+            this.Default = new TypeAdapterSetter(settings, this);
             this.Rules.Add(new TypeAdapterRule
             {
                 Priority = (sourceType, destinationType, mapType) => -100,
-                Settings = this.Default.Settings,
+                Settings = settings,
             });
         }
 

@@ -10,6 +10,7 @@ namespace Mapster.Adapters
     public abstract class BaseAdapter
     {
         protected virtual int Score => 0;
+        protected virtual bool CheckExplicitMapping => true;
 
         public virtual int? Priority(Type sourceType, Type destinationType, MapType mapType)
         {
@@ -77,6 +78,14 @@ namespace Mapster.Adapters
 
         protected virtual Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
+            if (this.CheckExplicitMapping
+                && arg.Context.Config.RequireExplicitMapping
+                && !arg.Context.Config.RuleMap.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
+            {
+                throw new InvalidOperationException(
+                    $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+            }
+
             return CanInline(source, destination, arg) 
                 ? CreateInlineExpressionBody(source, arg).To(arg.DestinationType) 
                 : CreateBlockExpressionBody(source, destination, arg);

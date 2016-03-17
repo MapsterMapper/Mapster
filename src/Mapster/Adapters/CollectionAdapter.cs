@@ -11,6 +11,7 @@ namespace Mapster.Adapters
     internal class CollectionAdapter : BaseAdapter
     {
         protected override int Score => -125;
+        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
         {
@@ -97,7 +98,7 @@ namespace Mapster.Adapters
             else
             {
                 var destinationElementType = destination.Type.ExtractCollectionType();
-                var listType = destination.Type.IsGenericEnumerableType() || destination.Type.GetInterfaces().Any(ReflectionUtils.IsGenericEnumerableType)
+                var listType = destination.Type.GetGenericEnumerableType() != null
                     ? typeof(ICollection<>).MakeGenericType(destinationElementType)
                     : typeof(IList);
                 var tmp = Expression.Variable(listType);

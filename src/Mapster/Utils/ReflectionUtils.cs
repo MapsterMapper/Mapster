@@ -24,34 +24,17 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
         }
 
-        public static List<IMemberModel> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
+        public static IEnumerable<IMemberModel> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
         {
-            var results = new List<IMemberModel>();
+            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null))
+                .Select(CreateModel);
 
-            results.AddRange(
-                type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null))
-                    .Select(CreateModel));
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => (allowNoSetter || !x.IsInitOnly))
+                .Select(CreateModel);
 
-            results.AddRange(
-                type.GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(x => (allowNoSetter || !x.IsInitOnly))
-                    .Select(CreateModel));
-            
-            return results;
-        }
-
-        public static IMemberModel GetMemberModel(Type type, string name)
-        {
-            var prop = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
-            if (prop != null)
-                return new PropertyModel(prop);
-
-            var field = type.GetField(name, BindingFlags.Public | BindingFlags.Instance);
-            if (field != null)
-                return new FieldModel(field);
-
-            return null;
+            return properties.Concat(fields);
         }
 
         public static bool IsCollection(this Type type)
@@ -61,21 +44,28 @@ namespace Mapster
 
         public static Type ExtractCollectionType(this Type collectionType)
         {
-            if (collectionType.IsGenericEnumerableType())
-            {
-                return collectionType.GetGenericArguments()[0];
-            }
-            var enumerableType = collectionType.GetInterfaces().FirstOrDefault(IsGenericEnumerableType);
-            if (enumerableType != null)
-            {
-                return enumerableType.GetGenericArguments()[0];
-            }
-            return typeof (object);
+            var enumerableType = collectionType.GetGenericEnumerableType();
+            return enumerableType != null 
+                ? enumerableType.GetGenericArguments()[0] 
+                : typeof (object);
         }
 
         public static bool IsGenericEnumerableType(this Type type)
         {
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+        }
+
+        public static Type GetInterface(this Type type, Func<Type, bool> predicate)
+        {
+            if (predicate(type))
+                return type;
+            
+            return type.GetInterfaces().FirstOrDefault(predicate);
+        }
+
+        public static Type GetGenericEnumerableType(this Type type)
+        {
+            return type.GetInterface(IsGenericEnumerableType);
         }
 
         private static Expression CreateConvertMethod(string name, Type srcType, Type destType, Expression source)
@@ -215,21 +205,20 @@ namespace Mapster
             return memberExpr;
         }
 
-        public static Expression GetDeepFlattening(Expression source, string propertyName, bool isProjection)
+        public static Expression GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
         {
             var properties = source.Type.GetPublicFieldsAndProperties();
-            for (int j = 0; j < properties.Count; j++)
+            foreach (var property in properties)
             {
-                var property = properties[j];
                 var propertyType = property.Type;
                 if (propertyType.GetTypeInfo().IsClass && propertyType != _stringType
                     && propertyName.StartsWith(property.Name))
                 {
                     var exp = property.GetExpression(source);
-                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'), isProjection);
+                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(property.Name.Length).TrimStart('_'), arg);
                     if (ifTrue == null)
                         return null;
-                    if (isProjection)
+                    if (arg.MapType == MapType.Projection)
                         return ifTrue;
                     return Expression.Condition(
                         Expression.Equal(exp, Expression.Constant(null, exp.Type)),
@@ -260,7 +249,7 @@ namespace Mapster
             if (type.GetTypeInfo().IsEnum)
                 return false;
 
-            return type.GetPublicFieldsAndProperties(allowNoSetter: false).Count > 0;
+            return type.GetPublicFieldsAndProperties(allowNoSetter: false).Any();
         }
 
         public static bool IsRecordType(this Type type)
@@ -278,8 +267,8 @@ namespace Mapster
                 return false;
 
             //no setter
-            var props = type.GetPublicFieldsAndProperties();
-            if (props.Any(p => p.HasSetter))
+            var props = type.GetPublicFieldsAndProperties().ToList();
+            if (props.Any(p => p.SetterModifier != AccessModifier.None))
                 return false;
 
             //1 non-empty constructor
@@ -294,7 +283,7 @@ namespace Mapster
 
         public static bool IsConvertible(this Type type)
         {
-            return type.GetInterfaces().Any(t => t == typeof (IConvertible));
+            return typeof (IConvertible).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
 
         public static IMemberModel CreateModel(this PropertyInfo propertyInfo)
@@ -321,20 +310,26 @@ namespace Mapster
 
         public static bool IsListCompatible(this Type type)
         {
-            if (type.IsInterface)
+            var typeInfo = type.GetTypeInfo();
+            if (typeInfo.IsInterface)
                 return type.IsAssignableFromList();
 
-            if (type.IsAbstract)
+            if (typeInfo.IsAbstract)
                 return false;
 
             var elementType = type.ExtractCollectionType();
-            if (typeof(ICollection<>).MakeGenericType(elementType).GetTypeInfo().IsAssignableFrom(type))
+            if (typeof(ICollection<>).MakeGenericType(elementType).GetTypeInfo().IsAssignableFrom(typeInfo))
                 return true;
 
-            if (typeof(IList).GetTypeInfo().IsAssignableFrom(type))
+            if (typeof(IList).GetTypeInfo().IsAssignableFrom(typeInfo))
                 return true;
 
             return false;
+        }
+
+        public static Type GetDictionaryType(this Type destinationType)
+        {
+            return destinationType.GetInterface(type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>));
         }
     }
 }

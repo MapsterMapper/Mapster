@@ -38,18 +38,6 @@ namespace Mapster.Adapters
             return true;
         }
 
-        protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
-        {
-            if (arg.Context.Config.RequireExplicitMapping 
-                && !arg.Context.Config.RuleMap.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
-            {
-                throw new InvalidOperationException(
-                    $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
-            }
-
-            return base.CreateExpressionBody(source, destination, arg);
-        }
-
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             //### !IgnoreNullValues

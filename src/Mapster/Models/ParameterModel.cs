@@ -17,7 +17,7 @@ namespace Mapster.Models
         public Type Type => _parameterInfo.ParameterType;
         public string Name => _parameterInfo.Name.ToProperCase();
         public object Info => _parameterInfo;
-        public bool HasSetter => false;
+        public AccessModifier SetterModifier => AccessModifier.None;
 
         public Expression GetExpression(Expression source)
         {

@@ -68,6 +68,7 @@
     <Compile Include="Classes\TypeTestClass.cs" />
     <Compile Include="WhenCloningConfig.cs" />
     <Compile Include="WhenCreatingConfigInstance.cs" />
+    <Compile Include="WhenMappingWithDictionary.cs" />
     <Compile Include="WhenMappingRecordTypes.cs" />
     <Compile Include="WhenMappingIgnoreNullValues.cs" />
     <Compile Include="WhenMappingWithExtensionMethods.cs" />
