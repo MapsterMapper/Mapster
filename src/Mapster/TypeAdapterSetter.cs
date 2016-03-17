@@ -79,6 +79,14 @@ namespace Mapster
             setter.Settings.NoInherit = value;
             return setter;
         }
+
+        public static TSetter NameMatchingStrategy<TSetter>(this TSetter setter, NameMatchingStrategy value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.NameMatchingStrategy = value;
+            return setter;
+        }
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -146,7 +154,7 @@ namespace Mapster
             : base(settings, parentConfig)
         { }
 
-        public TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
         {
             this.CheckCompiled();
 

@@ -15,7 +15,7 @@ namespace Mapster.Models
         }
 
         public Type Type => _parameterInfo.ParameterType;
-        public string Name => _parameterInfo.Name.ToProperCase();
+        public string Name => _parameterInfo.Name.ToPascalCase();
         public object Info => _parameterInfo;
         public AccessModifier SetterModifier => AccessModifier.None;
 

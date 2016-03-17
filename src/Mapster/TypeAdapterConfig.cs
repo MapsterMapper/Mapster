@@ -57,7 +57,8 @@ namespace Mapster
             this.Rules = RulesTemplate.ToList();
             var settings = new TypeAdapterSettings
             {
-                ValueAccessingStrategies = ValueAccessingStrategiesTemplate.ToList()
+                ValueAccessingStrategies = ValueAccessingStrategiesTemplate.ToList(),
+                NameMatchingStrategy = NameMatchingStrategy.Exact,
             };
             this.Default = new TypeAdapterSetter(settings, this);
             this.Rules.Add(new TypeAdapterRule

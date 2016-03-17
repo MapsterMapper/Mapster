@@ -73,10 +73,10 @@ namespace Mapster.Adapters
         protected override ClassModel GetClassModel(Type destinationType)
         {
             var props = destinationType.GetPublicFieldsAndProperties();
-            var names = props.Select(p => p.Name).ToHashSet();
+            var names = props.Select(p => p.Name.ToPascalCase()).ToHashSet();
             return (from ctor in destinationType.GetConstructors()
                     let ps = ctor.GetParameters()
-                    where ps.Length > 0 && names.IsSupersetOf(ps.Select(p => p.Name.ToProperCase()))
+                    where ps.Length > 0 && names.IsSupersetOf(ps.Select(p => p.Name.ToPascalCase()))
                     orderby ps.Length descending
                     select new ClassModel
                     {

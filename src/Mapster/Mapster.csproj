@@ -58,6 +58,7 @@
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
     <Compile Include="IRegister.cs" />
     <Compile Include="MapContext.cs" />
+    <Compile Include="NameMatchingStrategy.cs" />
     <Compile Include="ValueAccessingStrategy.cs" />
     <Compile Include="Models\AccessModifier.cs" />
     <Compile Include="Utils\BlockExpressionDetector.cs" />

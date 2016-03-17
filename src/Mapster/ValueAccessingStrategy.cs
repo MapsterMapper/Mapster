@@ -58,7 +58,9 @@ namespace Mapster
         private static Expression PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
             var members = source.Type.GetPublicFieldsAndProperties();
-            return members.Where(member => member.Name == destinationMember.Name)
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();
         }
@@ -67,13 +69,18 @@ namespace Mapster
         {
             if (arg.MapType == MapType.Projection)
                 return null;
-            var getMethod = source.Type.GetMethod(string.Concat("Get", destinationMember.Name), BindingFlags.Public | BindingFlags.Instance);
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = "Get" + strategy.DestinationMemberNameConverter(destinationMember.Name);
+            var getMethod = source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName);
             return getMethod != null ? Expression.Call(source, getMethod) : null;
         }
 
         private static Expression FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
-            return ReflectionUtils.GetDeepFlattening(source, destinationMember.Name, arg);
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            return ReflectionUtils.GetDeepFlattening(source, destinationMemberName, arg);
         }
 
         private static Expression DictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
