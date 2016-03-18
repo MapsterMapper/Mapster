@@ -60,14 +60,15 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 - [Conversion from/to enum](#ConversionEnum)
 - [Mapping POCO](#ConversionPOCO)
 - [Mapping Lists](#ConversionList)
-- [Mapping generic Dictionaries](#ConversionDictionary)
+- [Conversion from/to Dictionary](#ConversionDictionary)
+- [Conversion from/to Record Types](#ConversionRecordType)
 
 [Settings](#Settings)
 - [Settings per type](#SettingsPerType)
 - [Global Settings](#SettingsGlobal)
 - [Settings inheritance](#SettingsInheritance)
 - [Rule based settings](#SettingsRuleBased)
-- [Overload settings](#SettingsOverload)
+- [Setting instance](#SettingsOverload)
 - [Assembly scanning](#AssemblyScanning)
 
 [Basic Customization](#Basic)
@@ -79,6 +80,8 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 
 [Advance Customization](#Advance)
 - [Custom instance creation](#ConstructUsing)
+- [After mapping action](#AfterMapping)
+- [Passing runtime value](#RuntimeValue)
 - [Type-Specific Destination Transforms](#Transform)
 - [Custom Type Resolvers](#ConverterFactory)
 
@@ -99,7 +102,7 @@ or just
 
 or using extension methods
 
-	var destObject = sourceObject.Adapt<TDestination>();
+    var destObject = sourceObject.Adapt<TDestination>();
 
 #####Mapping to an existing object <a name="MappingToTarget"></a>
 You make the object, Mapster maps to the object.
@@ -118,7 +121,7 @@ Mapster also provides extensions to map queryables.
     using(MyDbContext context = new MyDbContext())
     {
         // Build a Select Expression from DTO
-        var destinations = context.Sources.Project().To<Destination>().ToList();
+        var destinations = context.Sources.ProjectToType<Destination>().ToList();
 
         // Versus creating by hand:
         var destinations = context.Sources.Select(c => new Destination(){
@@ -188,19 +191,34 @@ This includes mapping among lists, arrays, collections, dictionary including var
 
     var target = TypeAdapter.Adapt<List<Source>, IEnumerable<Destination>>(list);  
 
+#####Conversion from/to Dictionary <a name="ConversionDictionary"></a>
+Mapster supports conversion from object to dictionary and dictionary to object.
 
-#####Mapping Dictionaries <a name="ConversionDictionary"></a>
-To map a generic `Dictionary<string, Foo>` to `Dictionary<string, Bar >` we need to define simple mapping using MapWith
+```
+var point = new { X = 2, Y = 3 };
+var dict = src.Adapt<Dictionary<string, int>>();
+dict["Y"].ShouldBe(3);
+```
+
+#####Conversion from/to Record Types <a name="ConversionRecordType"></a>
+Record types are types with no setter, all parameters will be initiated from constructor. 
 	
 ```
-    TypeAdapterConfig<Dictionary<string, Foo>, Dictionary<string, Bar>>
-        .NewConfig() // or .ForType()
-        .MapWith(x => x.ToDictionary(k => k.Key, v => v.Value.Adapt<Bar>()))
+class Person {
+    public string Name { get; }
+    public int Age { get; }
+
+    public Person(string name, int age) {
+        this.Name = name;
+        this.Age = age;
+    }
+}
+
+var src = new { Name = "Mapster", Age = 3 };
+var target = src.Adapt<Person>();
 ``` 
-    
-    var target = TypeAdapter.Adapt<Dictionary<string, Foo>, Dictionary<string, Bar>>(source);  
 
-
+There is limitation on record type mapping. Record type must not have setting and have only one non-empty constructor. And all parameter names must match with properties.
 
 ####Settings <a name="Settings"></a>
 #####Settings per type <a name="SettingsPerType"></a>
@@ -271,7 +289,7 @@ In this example, the config would only apply to Query Expressions (projections).
     TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => mapType == MapType.Projection)
         .IgnoreAttribute(typeof(NotMapAttribute));
 
-#####Overload settings <a name="SettingsOverload"></a>
+#####Setting instance <a name="SettingsOverload"></a>
 You may wish to have different settings in different scenarios.
 If you would not like to apply setting at a static level, Mapster also provides setting instance configurations.
 
@@ -297,6 +315,14 @@ Or to an Adapter instance.
 
     var adapter = new Adapter(config);
     var result = adapter.Adapt<TDestination>(src);
+
+If you would like to create configuration instance from existing configuration, you can use `Clone` method. For example, if you would like to clone from global setting.
+
+    var newConfig = TypeAdapterConfig.GlobalSettings.Clone();
+    
+Or clone from existing configuration instance
+
+    var newConfig = oldConfig.Clone();
 
 #####Assembly scanning <a name="AssemblyScanning"></a>
 It's relatively common to have mapping configurations spread across a number of different assemblies.  
@@ -369,6 +395,19 @@ In Mapster 2.0, you can even map when source and destination property types are 
         .Map(dest => dest.Gender,      //Genders.Male or Genders.Female
              src => src.GenderString); //"Male" or "Female"
 
+By default, Mapster will map property with case sensitive name. You can adjust to flexible name mapping by setting `NameMatchingStrategy.Flexible` to `NameMatchingStrategy` method. This setting will allow matching between `PascalCase`, `camelCase`, `lower_case`, and `UPPER_CASE`. 
+
+This setting will apply flexible naming globally.
+```
+TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
+```
+
+or by specific type mapping.
+
+```
+TypeAdapterConfig<Foo, Bar>.NewConfig().NameMatchingStrategy(NameMatchingStrategy.Flexible);
+```
+
 #####Merge object <a name="Merge"></a>
 By default, Mapster will map all properties, even source properties containing null values.
 You can copy only properties that have values by using `IgnoreNullValues` method.
@@ -393,7 +432,7 @@ If you would like to map circular references or preserve references (such as 2 p
         .NewConfig()
         .PreserveReference(true);
 
-NOTE: Projection doesn't support circular reference yet. To overcome, you might use `Adapt` instead of `Project`.
+NOTE: Projection doesn't support circular reference yet. To overcome, you might use `Adapt` instead of `ProjectToType`.
 
     TypeAdaptConfig.GlobalSettings.Default.PreserveReference(true);
     var students = context.Student.Include(p => p.Schools).Adapt<List<StudentDTO>>();
@@ -412,6 +451,37 @@ or anything else that provides an object of the expected type.
     //Example using an object initializer
     TypeAdapterConfig<TSource, TDestination>.NewConfig()
                 .ConstructUsing(src => new TDestination{Unmapped = "unmapped"});
+
+#####After mapping action <a name="AfterMapping"></a>
+You can perform actions after each mapping by using `AfterMapping` method. For instance, you might would like to validate object after each mapping.
+
+```
+TypeAdapterConfig<Foo, Bar>.ForType().AfterMapping((src, dest) => dest.Validate());
+```
+
+Or you can set for all mappings to types which implemented a specific interface by using `ForDestinationType` method.
+
+```
+TypeAdapterConfig.GlobalSettings.ForDestinationType<IValidatable>()
+                                .AfterMapping(dest => dest.Validate());
+```
+
+#####Passing runtime value <a name="RuntimeValue"></a>
+In some cases, you might would like to pass runtime values (for instance, current use). On configuration, we can receive run-time value by `MapContext.Current.Parameters`.
+
+```
+TypeAdapterConfig<Poco, Dto>.NewConfig()
+                            .Map(dest => dest.CreatedBy,
+                                 src => MapContext.Current.Parameters["user"]);
+```
+
+To pass run-time value, we need to use `BuildAdapter` method.
+
+```
+var dto = poco.BuildAdapter()
+              .AddParameters("user", this.User.Identity.Name)
+              .AdaptToType<SimpleDto>();
+```
 
 #####Type-Specific Destination Transforms <a name="Transform"></a>
 This allows transforms for all items of a type, such as trimming all strings. But really any operation
