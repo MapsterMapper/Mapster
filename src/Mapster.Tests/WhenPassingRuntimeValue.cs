@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -22,7 +22,7 @@ namespace Mapster.Tests
                 .AddParameters("user", this.User)
                 .AdaptToType<SimpleDto>();
 
-            dto.CreatedBy.ShouldEqual(this.User);
+            dto.CreatedBy.ShouldBe(this.User);
         }
 
         private string User { get; } = Guid.NewGuid().ToString("N");

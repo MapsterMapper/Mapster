@@ -39,6 +39,12 @@
     </DocumentationFile>
     <BaseAddress>1124073472</BaseAddress>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -93,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Mapster.nuspec" />
+    <None Include="Mapster.snk" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -20,9 +20,9 @@ namespace Mapster.Tests
             };
             var dest = source.Adapt<Dictionary<string, SimpleDto>>();
 
-            dest.Count.ShouldEqual(source.Count);
-            dest["a"].Id.ShouldEqual(source["a"].Id);
-            dest["a"].Name.ShouldEqual(source["a"].Name);
+            dest.Count.ShouldBe(source.Count);
+            dest["a"].Id.ShouldBe(source["a"].Id);
+            dest["a"].Name.ShouldBe(source["a"].Name);
         }
 
         [Test]
@@ -31,10 +31,10 @@ namespace Mapster.Tests
             var source = new SimplePoco {Id = Guid.NewGuid(), Name = "bar"};
             var dest = source.Adapt<RecordType>();
 
-            dest.Id.ShouldEqual(source.Id);
-            dest.Name.ShouldEqual(source.Name);
-            dest.Day.ShouldEqual(default(DayOfWeek));
-            dest.Age.ShouldEqual(10);
+            dest.Id.ShouldBe(source.Id);
+            dest.Name.ShouldBe(source.Name);
+            dest.Day.ShouldBe(default(DayOfWeek));
+            dest.Age.ShouldBe(10);
         }
 
         public class SimplePoco

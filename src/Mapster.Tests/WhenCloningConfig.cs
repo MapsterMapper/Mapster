@@ -2,7 +2,7 @@
 using System.Linq;
 using Mapster.Models;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -27,7 +27,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
             var result = TypeAdapter.Adapt<SimpleDto>(poco);
-            result.Name.ShouldEqual("a");
+            result.Name.ShouldBe("a");
 
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 TypeAdapterConfig<SimplePoco, SimpleDto>.ForType()
@@ -47,7 +47,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
             var result = TypeAdapter.Adapt<SimpleDto>(poco);
-            result.Name.ShouldEqual("a");
+            result.Name.ShouldBe("a");
 
             var config = TypeAdapterConfig.GlobalSettings.Clone();
             var global = TypeAdapterConfig.GlobalSettings;

@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -35,8 +35,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<DerivedDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name + "_Suffix");
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name + "_Suffix");
 
             var source2 = new DerivedPoco
             {
@@ -46,7 +46,7 @@ namespace Mapster.Tests
 
             var dto2 = TypeAdapter.Adapt<DerivedDto>(source2);
 
-            dto2.Id.ShouldEqual(source.Id);
+            dto2.Id.ShouldBe(source.Id);
             dto2.Name.ShouldBeNull();
         }
 
@@ -69,8 +69,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<DerivedDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name.Trim());
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name.Trim());
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<DerivedDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
+            dto.Id.ShouldBe(source.Id);
             dto.Name.ShouldBeNull();
         }
 
@@ -108,9 +108,9 @@ namespace Mapster.Tests
             var derivedConfig = TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
                 .Inherits<SimplePoco, SimpleDto>().Settings;
 
-            derivedConfig.IgnoreNullValues.ShouldEqual(true);
-            derivedConfig.ShallowCopyForSameType.ShouldEqual(true);
-            //derivedConfig.MaxDepth.ShouldEqual(5);
+            derivedConfig.IgnoreNullValues.ShouldBe(true);
+            derivedConfig.ShallowCopyForSameType.ShouldBe(true);
+            //derivedConfig.MaxDepth.ShouldBe(5);
         }
 
 

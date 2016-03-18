@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -50,7 +50,7 @@ namespace Mapster.Tests
 
             var simpleDto = TypeAdapter.Adapt<SimpleEnumPoco, SimpleDto>(simpleEnumPoco);
 
-            simpleDto.Name.ShouldEqual(simpleEnumPoco.Name.ToString());
+            simpleDto.Name.ShouldBe(simpleEnumPoco.Name.ToString());
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace Mapster.Tests
             var simpleEnumPoco = new SimpleEnumPoco {Id = Guid.NewGuid(), Name = NameEnum.Martha};
             var simpleDto = TypeAdapter.Adapt<SimpleEnumPoco, SimpleDto>(simpleEnumPoco);
 
-            simpleDto.Name.ShouldEqual(simpleEnumPoco.Name.ToString());
+            simpleDto.Name.ShouldBe(simpleEnumPoco.Name.ToString());
         }
 
         [Test]
@@ -78,7 +78,7 @@ namespace Mapster.Tests
 
             var simpleDto = TypeAdapter.Adapt<SimplePoco, SimpleDto>(simplePoco);
 
-            simpleDto.Name.ShouldEqual(simplePoco.Name);
+            simpleDto.Name.ShouldBe(simplePoco.Name);
         }
 
         [Test]
@@ -96,7 +96,7 @@ namespace Mapster.Tests
 
             var simpleDtos = TypeAdapter.Adapt<SimplePoco[], List<SimpleDto>>(simplePocos);
 
-            simpleDtos[0].Name.ShouldEqual(simplePocos[0].Name);
+            simpleDtos[0].Name.ShouldBe(simplePocos[0].Name);
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace Mapster.Tests
 
             var collectionDto = TypeAdapter.Adapt<CollectionPoco, CollectionDto>(collectionPoco);
 
-            collectionDto.Name.ShouldEqual(collectionPoco.Name);
+            collectionDto.Name.ShouldBe(collectionPoco.Name);
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace Mapster.Tests
 
             var results = TypeAdapter.Adapt<IList<SimpleDto>>(simplePoco);
 
-            results.Count.ShouldEqual(2);
+            results.Count.ShouldBe(2);
         }
 
         #region TestClasses

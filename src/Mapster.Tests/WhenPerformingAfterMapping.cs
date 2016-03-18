@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -26,8 +26,8 @@ namespace Mapster.Tests
             };
             var result = TypeAdapter.Adapt<SimpleDto>(poco);
 
-            result.Id.ShouldEqual(poco.Id);
-            result.Name.ShouldEqual(poco.Name + "xxx");
+            result.Id.ShouldBe(poco.Id);
+            result.Name.ShouldBe(poco.Name + "xxx");
         }
 
         [Test]

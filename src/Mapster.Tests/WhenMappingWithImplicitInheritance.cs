@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -32,8 +32,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name + "_Suffix");
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name + "_Suffix");
         }
 
         [Test]
@@ -52,8 +52,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name + "_Suffix");
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name + "_Suffix");
 
             var source2 = new DerivedPoco
             {
@@ -63,7 +63,7 @@ namespace Mapster.Tests
 
             dto = TypeAdapter.Adapt<SimpleDto>(source2);
 
-            dto.Id.ShouldEqual(source.Id);
+            dto.Id.ShouldBe(source.Id);
             dto.Name.ShouldBeNull();
         }
 
@@ -83,8 +83,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name.Trim());
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name.Trim());
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
+            dto.Id.ShouldBe(source.Id);
             dto.Name.ShouldBeNull();
         }
 
@@ -125,8 +125,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name);
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name);
         }
 
         [Test]
@@ -144,8 +144,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name + "_Suffix");
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name + "_Suffix");
         }
 
         [Test]
@@ -168,8 +168,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name + "_Derived");
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name + "_Derived");
         }
 
         [Test]
@@ -183,9 +183,9 @@ namespace Mapster.Tests
 
             var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(SimpleDto), MapType.Map);
 
-            derivedConfig.IgnoreNullValues.ShouldEqual(true);
-            derivedConfig.ShallowCopyForSameType.ShouldEqual(true);
-            //derivedConfig.MaxDepth.ShouldEqual(5);
+            derivedConfig.IgnoreNullValues.ShouldBe(true);
+            derivedConfig.ShallowCopyForSameType.ShouldBe(true);
+            //derivedConfig.MaxDepth.ShouldBe(5);
         }
 
         [Test]
@@ -200,9 +200,9 @@ namespace Mapster.Tests
 
             var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map);
 
-            derivedConfig.IgnoreNullValues.ShouldEqual(true);
-            derivedConfig.ShallowCopyForSameType.ShouldEqual(true);
-            //derivedConfig.MaxDepth.ShouldEqual(5);
+            derivedConfig.IgnoreNullValues.ShouldBe(true);
+            derivedConfig.ShallowCopyForSameType.ShouldBe(true);
+            //derivedConfig.MaxDepth.ShouldBe(5);
         }
 
         [Test]
@@ -237,8 +237,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<DerivedDto>(source);
 
-            dto.Id.ShouldEqual(source.Id);
-            dto.Name.ShouldEqual(source.Name + "_Suffix");
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name + "_Suffix");
         }
 
         #region Test Classes

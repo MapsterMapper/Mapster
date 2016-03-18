@@ -4,7 +4,7 @@ using System.Reflection;
 using Mapster.Models;
 using Mapster.Tests.Classes;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -21,7 +21,7 @@ namespace Mapster.Tests
         public void Registers_Are_Found()
         {
             IList<IRegister> registers = TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
-            registers.Count.ShouldEqual(2);
+            registers.Count.ShouldBe(2);
 
             var typeTuples = TypeAdapterConfig.GlobalSettings.RuleMap.Keys.ToList();
 

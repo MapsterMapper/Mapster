@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -16,12 +16,12 @@ namespace Mapster.Tests
 
             var chars = TypeAdapter.Adapt<char[]>("Hello");
 
-            chars.Length.ShouldEqual(5);
-            chars[0].ShouldEqual('H');
-            chars[1].ShouldEqual('e');
-            chars[2].ShouldEqual('l');
-            chars[3].ShouldEqual('l');
-            chars[4].ShouldEqual('o');
+            chars.Length.ShouldBe(5);
+            chars[0].ShouldBe('H');
+            chars[1].ShouldBe('e');
+            chars[2].ShouldBe('l');
+            chars[3].ShouldBe('l');
+            chars[4].ShouldBe('o');
         }
     }
 }

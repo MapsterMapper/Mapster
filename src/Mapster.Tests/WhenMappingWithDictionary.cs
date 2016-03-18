@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -24,9 +24,9 @@ namespace Mapster.Tests
 
             var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
 
-            dict.Count.ShouldEqual(2);
-            dict["Id"].ShouldEqual(poco.Id);
-            dict["Name"].ShouldEqual(poco.Name);
+            dict.Count.ShouldBe(2);
+            dict["Id"].ShouldBe(poco.Id);
+            dict["Name"].ShouldBe(poco.Name);
         }
 
         [Test]
@@ -43,8 +43,8 @@ namespace Mapster.Tests
 
             var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
 
-            dict.Count.ShouldEqual(1);
-            dict["Id"].ShouldEqual(poco.Id);
+            dict.Count.ShouldBe(1);
+            dict["Id"].ShouldBe(poco.Id);
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace Mapster.Tests
             };
 
             var poco = TypeAdapter.Adapt<SimplePoco>(dict);
-            poco.Id.ShouldEqual(dict["Id"]);
+            poco.Id.ShouldBe(dict["Id"]);
             poco.Name.ShouldBeNull();
         }
 

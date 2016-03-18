@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -25,9 +25,9 @@ namespace Mapster.Tests
 
             var simpleDto = TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
 
-            simpleDto.Name.ShouldEqual("TestName");
+            simpleDto.Name.ShouldBe("TestName");
             simpleDto.UnmappedMember.ShouldBeNull();
-            simpleDto.UnmappedMember2.ShouldEqual(0);
+            simpleDto.UnmappedMember2.ShouldBe(0);
         }
 
         [Test]
@@ -58,9 +58,9 @@ namespace Mapster.Tests
 
             var destination = TypeAdapter.Adapt<ParentPoco, ParentDto>(source);
 
-            destination.Name.ShouldEqual("TestName");
+            destination.Name.ShouldBe("TestName");
             destination.UnmappedChildren.ShouldBeNull();
-            destination.Children.Count.ShouldEqual(1);
+            destination.Children.Count.ShouldBe(1);
         }
 
         [Test]

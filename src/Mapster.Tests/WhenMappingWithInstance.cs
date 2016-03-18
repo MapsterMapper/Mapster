@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -20,7 +20,7 @@ namespace Mapster.Tests
 
             var destination = instance.Adapt<SimpleDto>(source);
 
-            destination.Name.ShouldEqual(source.Name);
+            destination.Name.ShouldBe(source.Name);
         }
 
         [Test]
@@ -35,7 +35,7 @@ namespace Mapster.Tests
             IAdapter instance = TypeAdapter.GetInstance();
             SimpleDto dto = instance.Adapt<SimplePoco, SimpleDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
+            dto.Id.ShouldBe(poco.Id);
             dto.Name.ShouldBeNull();
         }
 
@@ -52,8 +52,8 @@ namespace Mapster.Tests
             IAdapter instance = TypeAdapter.GetInstance();
             SimpleDto dto = instance.Adapt<SimplePoco, SimpleDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual("TestName");
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe("TestName");
         }
 
         #region TestClasses

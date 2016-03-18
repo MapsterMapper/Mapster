@@ -1,6 +1,6 @@
 ﻿using Mapster.Tests.Classes;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -24,9 +24,9 @@ namespace Mapster.Tests
 
             var customerDto = customer.Adapt<CustomerDTO>(config);
 
-            customerDto.Id.ShouldEqual(12345);
-            customerDto.Name.ShouldEqual("TestName");
-            customerDto.Address_Country.ShouldEqual("TestAddressCountry");
+            customerDto.Id.ShouldBe(12345);
+            customerDto.Name.ShouldBe("TestName");
+            customerDto.Address_Country.ShouldBe("TestAddressCountry");
         }
 
         [Test]
@@ -48,9 +48,9 @@ namespace Mapster.Tests
 
             var customerDto = customer.Adapt<CustomerDTO>(config);
 
-            customerDto.Id.ShouldEqual(12345);
-            customerDto.Name.ShouldEqual("TestName_Enhanced");
-            customerDto.Address_Country.ShouldEqual("TestAddressCountry");
+            customerDto.Id.ShouldBe(12345);
+            customerDto.Name.ShouldBe("TestName_Enhanced");
+            customerDto.Address_Country.ShouldBe("TestAddressCountry");
         }
 
         [Test]
@@ -72,9 +72,9 @@ namespace Mapster.Tests
 
             var customerDto = customer.Adapt<CustomerDTO>(config);
 
-            customerDto.Id.ShouldEqual(12345);
-            customerDto.Name.ShouldEqual("TestName");
-            customerDto.Address_Country.ShouldEqual("TestAddressCountry");
+            customerDto.Id.ShouldBe(12345);
+            customerDto.Name.ShouldBe("TestName");
+            customerDto.Address_Country.ShouldBe("TestAddressCountry");
         }
     }
 }

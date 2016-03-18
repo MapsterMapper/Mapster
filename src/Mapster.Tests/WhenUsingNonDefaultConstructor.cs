@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -20,9 +20,9 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDtoWithDefaultConstructor>(simplePoco);
 
-            dto.Id.ShouldEqual(simplePoco.Id);
-            dto.Name.ShouldEqual(simplePoco.Name);
-            dto.Unmapped.ShouldEqual("unmapped");
+            dto.Id.ShouldBe(simplePoco.Id);
+            dto.Name.ShouldBe(simplePoco.Name);
+            dto.Unmapped.ShouldBe("unmapped");
         }
 
         [Test]
@@ -37,9 +37,9 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimpleDtoWithDefaultConstructor>(simplePoco);
 
-            dto.Id.ShouldEqual(simplePoco.Id);
-            dto.Name.ShouldEqual(simplePoco.Name);
-            dto.Unmapped.ShouldEqual("unmapped");
+            dto.Id.ShouldBe(simplePoco.Id);
+            dto.Name.ShouldBe(simplePoco.Name);
+            dto.Unmapped.ShouldBe("unmapped");
         }
 
 

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -68,9 +68,9 @@ namespace Mapster.Tests
 
             dto.ShouldNotBeNull();
 
-            dto.Id.ShouldEqual(employee.Id);
-            dto.Name.ShouldEqual(employee.Name);
-            dto.Department.ShouldEqual(Departments.IT);
+            dto.Id.ShouldBe(employee.Id);
+            dto.Name.ShouldBe(employee.Name);
+            dto.Department.ShouldBe(Departments.IT);
         }
 
         [Test]
@@ -85,9 +85,9 @@ namespace Mapster.Tests
 
             dto.ShouldNotBeNull();
 
-            dto.Id.ShouldEqual(employee.Id);
-            dto.Name.ShouldEqual(employee.Name);
-            dto.Department.ShouldEqual(Departments.Finance);
+            dto.Id.ShouldBe(employee.Id);
+            dto.Name.ShouldBe(employee.Name);
+            dto.Department.ShouldBe(Departments.Finance);
         }
 
         [Test]
@@ -102,9 +102,9 @@ namespace Mapster.Tests
 
             dto.ShouldNotBeNull();
 
-            dto.Id.ShouldEqual(employee.Id);
-            dto.Name.ShouldEqual(employee.Name);
-            dto.Department.ShouldEqual(Departments.Finance);
+            dto.Id.ShouldBe(employee.Id);
+            dto.Name.ShouldBe(employee.Name);
+            dto.Department.ShouldBe(Departments.Finance);
 
         }
 
@@ -117,9 +117,9 @@ namespace Mapster.Tests
 
             poco.ShouldNotBeNull();
 
-            poco.Id.ShouldEqual(employeeDto.Id);
-            poco.Name.ShouldEqual(employeeDto.Name);
-            poco.Department.ShouldEqual(employeeDto.Department.ToString());
+            poco.Id.ShouldBe(employeeDto.Id);
+            poco.Name.ShouldBe(employeeDto.Name);
+            poco.Department.ShouldBe(employeeDto.Department.ToString());
         }
 
         [Test]
@@ -142,9 +142,9 @@ namespace Mapster.Tests
         {
             var e = (Flags) value;
             var str = TypeAdapter.Adapt<Flags, string>(e);
-            str.ShouldEqual(result);
+            str.ShouldBe(result);
             var e2 = TypeAdapter.Adapt<string, Flags>(str);
-            e2.ShouldEqual(e);
+            e2.ShouldBe(e);
         }
 
         [Test, Explicit]

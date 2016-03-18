@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -56,7 +56,7 @@ namespace Mapster.Tests
                 }
             });
 
-            exception.InnerException.ShouldBeType(typeof(ArgumentOutOfRangeException));
+            exception.InnerException.ShouldBeOfType(typeof(ArgumentOutOfRangeException));
 
         }
 

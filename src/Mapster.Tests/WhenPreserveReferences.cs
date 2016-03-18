@@ -1,7 +1,6 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {

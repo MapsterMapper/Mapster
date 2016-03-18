@@ -1,7 +1,7 @@
 ﻿using System;
 using Mapster.Tests.Classes;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -23,7 +23,7 @@ namespace Mapster.Tests
             var dto = product.Adapt<Product, ProductDTO>();
 
             dto.ShouldNotBeNull();
-            dto.Id.ShouldEqual(product.Id);
+            dto.Id.ShouldBe(product.Id);
         }
 
         [Test]
@@ -38,7 +38,7 @@ namespace Mapster.Tests
             var dto = product.Adapt<Product, ProductDTO>(config);
 
             dto.ShouldNotBeNull();
-            dto.Id.ShouldEqual(product.Id);
+            dto.Id.ShouldBe(product.Id);
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace Mapster.Tests
             var dto = product.Adapt<ProductDTO>();
 
             dto.ShouldNotBeNull();
-            dto.Id.ShouldEqual(product.Id);
+            dto.Id.ShouldBe(product.Id);
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace Mapster.Tests
             var dto = product.Adapt<ProductDTO>(config);
 
             dto.ShouldNotBeNull();
-            dto.Id.ShouldEqual(product.Id);
+            dto.Id.ShouldBe(product.Id);
         }
     }
 }

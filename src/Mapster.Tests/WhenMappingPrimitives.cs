@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -27,7 +27,7 @@ namespace Mapster.Tests
 
             var resultString = Encoding.ASCII.GetString(resultArray);
 
-            testString.ShouldEqual(resultString);
+            testString.ShouldBe(resultString);
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Mapster.Tests
 
             var resultString = Encoding.ASCII.GetString(testB.Bytes);
 
-            testString.ShouldEqual(resultString);
+            testString.ShouldBe(resultString);
         }
 
         [Test]
@@ -55,8 +55,8 @@ namespace Mapster.Tests
             };
             var targetDto = TypeAdapter.Adapt<PrimitivePoco, PrimitivePoco>(sourceDto);
 
-            targetDto.Id.ShouldEqual(sourceDto.Id);
-            targetDto.Time.ShouldEqual(sourceDto.Time);
+            targetDto.Id.ShouldBe(sourceDto.Id);
+            targetDto.Time.ShouldBe(sourceDto.Time);
             targetDto.Obj.ShouldBeSameAs(sourceDto.Obj);
         }
 

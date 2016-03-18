@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mapster.Tests.Classes;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -82,7 +82,7 @@ namespace Mapster.Tests
                                                       Discount = Param_1.Discount,
                                                   }).ToList()
                                 };
-            resultQuery.ToString().ShouldEqual(expectedQuery.ToString());
+            resultQuery.ToString().ShouldBe(expectedQuery.ToString());
         }
     }
 }

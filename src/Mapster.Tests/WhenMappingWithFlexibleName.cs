@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -27,7 +27,7 @@ namespace Mapster.Tests
 
             var simple = TypeAdapter.Adapt<SimpleName>(mix);
 
-            simple.PascalCase.ShouldEqual(mix.PascalCase);
+            simple.PascalCase.ShouldBe(mix.PascalCase);
             simple.CamelCase.ShouldBeNull();
             simple.UnderScore.ShouldBeNull();
             simple.LowerCase.ShouldBeNull();
@@ -52,25 +52,25 @@ namespace Mapster.Tests
 
             var simple = TypeAdapter.Adapt<SimpleName>(mix);
 
-            simple.PascalCase.ShouldEqual(mix.PascalCase);
-            simple.CamelCase.ShouldEqual(mix.camelCase);
-            simple.UnderScore.ShouldEqual(mix.__under__SCORE__);
-            simple.LowerCase.ShouldEqual(mix.lower_case);
-            simple.UpperCase.ShouldEqual(mix.UPPER_CASE);
-            simple.MixUnder_SCORE.ShouldEqual(mix.MIX_UnderScore);
+            simple.PascalCase.ShouldBe(mix.PascalCase);
+            simple.CamelCase.ShouldBe(mix.camelCase);
+            simple.UnderScore.ShouldBe(mix.__under__SCORE__);
+            simple.LowerCase.ShouldBe(mix.lower_case);
+            simple.UpperCase.ShouldBe(mix.UPPER_CASE);
+            simple.MixUnder_SCORE.ShouldBe(mix.MIX_UnderScore);
         }
 
         [Test]
         public void Test_Name()
         {
-            NameMatchingStrategy.ToPascalCase("PascalCase").ShouldEqual("PascalCase");
-            NameMatchingStrategy.ToPascalCase("camelCase").ShouldEqual("CamelCase");
-            NameMatchingStrategy.ToPascalCase("lower_case").ShouldEqual("LowerCase");
-            NameMatchingStrategy.ToPascalCase("UPPER_CASE").ShouldEqual("UpperCase");
-            NameMatchingStrategy.ToPascalCase("IPAddress").ShouldEqual("IpAddress");
-            NameMatchingStrategy.ToPascalCase("ItemID").ShouldEqual("ItemId");
-            NameMatchingStrategy.ToPascalCase("__under__SCORE__").ShouldEqual("UnderScore");
-            NameMatchingStrategy.ToPascalCase("__MixMIXMix_mix").ShouldEqual("MixMixMixMix");
+            NameMatchingStrategy.ToPascalCase("PascalCase").ShouldBe("PascalCase");
+            NameMatchingStrategy.ToPascalCase("camelCase").ShouldBe("CamelCase");
+            NameMatchingStrategy.ToPascalCase("lower_case").ShouldBe("LowerCase");
+            NameMatchingStrategy.ToPascalCase("UPPER_CASE").ShouldBe("UpperCase");
+            NameMatchingStrategy.ToPascalCase("IPAddress").ShouldBe("IpAddress");
+            NameMatchingStrategy.ToPascalCase("ItemID").ShouldBe("ItemId");
+            NameMatchingStrategy.ToPascalCase("__under__SCORE__").ShouldBe("UnderScore");
+            NameMatchingStrategy.ToPascalCase("__MixMIXMix_mix").ShouldBe("MixMixMixMix");
         }
 
         public class MixName

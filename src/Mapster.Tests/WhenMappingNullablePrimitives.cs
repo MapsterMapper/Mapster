@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -20,8 +20,8 @@ namespace Mapster.Tests
 
             dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeFalse();
         }
 
@@ -34,8 +34,8 @@ namespace Mapster.Tests
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeFalse();
         }
 
@@ -46,8 +46,8 @@ namespace Mapster.Tests
 
             NullablePrimitivesPoco2 dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NullablePrimitivesPoco2>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeNull();
             dto.Amount.ShouldBeNull();
         }
@@ -65,8 +65,8 @@ namespace Mapster.Tests
 
             TypeAdapter.Adapt(poco, dto);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeNull();
             dto.Amount.ShouldBeNull();
         }
@@ -80,10 +80,10 @@ namespace Mapster.Tests
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeTrue();
-            dto.Amount.ShouldEqual(10);
+            dto.Amount.ShouldBe(10);
         }
 
         [Test]
@@ -95,10 +95,10 @@ namespace Mapster.Tests
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeFalse();
-            dto.Amount.ShouldEqual(0);
+            dto.Amount.ShouldBe(0);
         }
 
         [Test]
@@ -114,11 +114,11 @@ namespace Mapster.Tests
 
             NonNullablePrimitivesDto dto = TypeAdapter.Adapt<NullablePrimitivesPoco, NonNullablePrimitivesDto>(poco);
 
-            dto.Id.ShouldEqual(poco.Id);
-            dto.Name.ShouldEqual(poco.Name);
+            dto.Id.ShouldBe(poco.Id);
+            dto.Name.ShouldBe(poco.Name);
             dto.IsImport.ShouldBeTrue();
-            dto.Amount.ShouldEqual(10);
-            dto.MyFee.ShouldEqual(20);
+            dto.Amount.ShouldBe(10);
+            dto.MyFee.ShouldBe(20);
         }
 
         [Test]
@@ -128,8 +128,8 @@ namespace Mapster.Tests
 
             NullablePrimitivesPoco poco = TypeAdapter.Adapt<NonNullablePrimitivesDto, NullablePrimitivesPoco>(dto);
 
-            poco.Id.ShouldEqual(dto.Id);
-            poco.Name.ShouldEqual(dto.Name);
+            poco.Id.ShouldBe(dto.Id);
+            poco.Name.ShouldBe(dto.Name);
             poco.IsImport.GetValueOrDefault().ShouldBeTrue();
         }
 

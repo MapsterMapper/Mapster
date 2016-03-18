@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Should;
+using Shouldly;
 
 namespace Mapster.Tests
 {
@@ -18,8 +18,8 @@ namespace Mapster.Tests
 
             var dto = TypeAdapter.Adapt<SimplePoco>(simplePoco);
 
-            dto.Id.ShouldEqual(Guid.Empty);
-            dto.Name.ShouldEqual(simplePoco.Name);
+            dto.Id.ShouldBe(Guid.Empty);
+            dto.Name.ShouldBe(simplePoco.Name);
         }
 
         #region TestClasses
