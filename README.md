@@ -73,7 +73,8 @@ Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while
 
 [Basic Customization](#Basic)
 - [Ignore properties & attributes](#Ignore)
-- [Property Mapping](#Map)
+- [Custom Property Mapping](#Map)
+- [Flexible Name Mapping](#NameMatchingStrategy)
 - [Merge Objects](#Merge)
 - [Shallow Copy](#ShallowCopy)
 - [Preserve reference (preventing circular reference stackoverflow)](#PreserveReference)
@@ -218,7 +219,7 @@ var src = new { Name = "Mapster", Age = 3 };
 var target = src.Adapt<Person>();
 ``` 
 
-There is limitation on record type mapping. Record type must not have setting and have only one non-empty constructor. And all parameter names must match with properties.
+There is limitation on record type mapping. Record type must not have setter and have only one non-empty constructor. And all parameter names must match with properties.
 
 ####Settings <a name="Settings"></a>
 #####Settings per type <a name="SettingsPerType"></a>
@@ -373,7 +374,7 @@ You can ignore members annotated with specific attributes by using the `IgnoreAt
         .NewConfig()
         .IgnoreAttribute(typeof(JsonIgnoreAttribute));
 
-#####Property mapping <a name="Map"></a>
+#####Custom property mapping <a name="Map"></a>
 You can customize how Mapster maps values to a property.
 
     TypeAdapterConfig<TSource, TDestination>
@@ -395,6 +396,7 @@ In Mapster 2.0, you can even map when source and destination property types are 
         .Map(dest => dest.Gender,      //Genders.Male or Genders.Female
              src => src.GenderString); //"Male" or "Female"
 
+#####Flexible name mapping <a name="NameMatchingStrategy"></a>
 By default, Mapster will map property with case sensitive name. You can adjust to flexible name mapping by setting `NameMatchingStrategy.Flexible` to `NameMatchingStrategy` method. This setting will allow matching between `PascalCase`, `camelCase`, `lower_case`, and `UPPER_CASE`. 
 
 This setting will apply flexible naming globally.
@@ -467,7 +469,7 @@ TypeAdapterConfig.GlobalSettings.ForDestinationType<IValidatable>()
 ```
 
 #####Passing runtime value <a name="RuntimeValue"></a>
-In some cases, you might would like to pass runtime values (for instance, current use). On configuration, we can receive run-time value by `MapContext.Current.Parameters`.
+In some cases, you might would like to pass runtime values (ie, current user). On configuration, we can receive run-time value by `MapContext.Current.Parameters`.
 
 ```
 TypeAdapterConfig<Poco, Dto>.NewConfig()
@@ -475,7 +477,7 @@ TypeAdapterConfig<Poco, Dto>.NewConfig()
                                  src => MapContext.Current.Parameters["user"]);
 ```
 
-To pass run-time value, we need to use `BuildAdapter` method.
+To pass run-time value, we need to use `BuildAdapter` method, and call `AddParameters` method to add each parameter.
 
 ```
 var dto = poco.BuildAdapter()
