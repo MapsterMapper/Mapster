@@ -69,5 +69,15 @@ namespace Mapster.Tests
             dto.ShouldNotBeNull();
             dto.Id.ShouldBe(product.Id);
         }
+
+        [Test]
+        public void Map_From_Null_Should_Be_Null()
+        {
+            Product product = null;
+
+            var dto = product.Adapt<ProductDTO>();
+
+            dto.ShouldBeNull();
+        }
     }
 }

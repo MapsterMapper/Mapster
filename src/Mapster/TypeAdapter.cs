@@ -30,6 +30,8 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static TDestination Adapt<TDestination>(this object source, TypeAdapterConfig config)
         {
+            if (source == null)
+                return default(TDestination);
             dynamic fn = config.GetMapFunction(source.GetType(), typeof(TDestination));
             return (TDestination)fn((dynamic)source);
         }
