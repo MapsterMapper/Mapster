@@ -1,28 +1,32 @@
 ﻿{
-    "version": "2.3.0",
+    "version": "2.4.0",
     "description": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.",
-    "summary": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.",
-    "iconUrl": "http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png",
+    "packOptions": {
+        "summary": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.",
+        "iconUrl": "http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png",
+        "tags": [ "Mapper", "AutoMapper", "Fast", "Mapping" ],
+        "projectUrl": "https://github.com/chaowlert/Mapster",
+        "licenseUrl": "https://github.com/chaowlert/Mapster/blob/master/LICENSE"
+    },
     "authors": [ "chaowlert", "eric_swann" ],
-    "tags": [ "Mapper", "AutoMapper", "Fast", "Mapping" ],
-    "projectUrl": "https://github.com/chaowlert/Mapster",
-    "licenseUrl": "https://github.com/chaowlert/Mapster/blob/master/LICENSE",
     "copyright": "Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann",
-    "compilationOptions": {
+    "buildOptions": {
         "keyFile": "Mapster.snk"
     },
     "frameworks": {
         "net4": {
-            "compilationOptions": {
+            "buildOptions": {
                 "define": [ "NET4" ]
             }
         },
         "net45": { },
-        "dotnet5.4": {
+        "netstandard1.3": {
             "dependencies": {
-                "Microsoft.CSharp": "4.0.0",
-                "System.Collections.NonGeneric": "4.0.0",
-                "System.Linq.Queryable": "4.0.0"
+                "Microsoft.CSharp": "4.0.1-rc2-24027",
+                "NETStandard.Library": "1.5.0-rc2-24027",
+                "System.Collections.NonGeneric": "4.0.1-rc2-24027",
+                "System.Linq.Queryable": "4.0.1-rc2-24027",
+                "System.Reflection.TypeExtensions": "4.1.0-rc2-24027"
             }
         }
     }
