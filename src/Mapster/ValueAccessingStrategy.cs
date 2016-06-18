@@ -88,9 +88,21 @@ namespace Mapster
             var dictType = source.Type.GetDictionaryType();
             if (dictType == null)
                 return null;
+
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            var key = Expression.Constant(destinationMemberName);
             var args = dictType.GetGenericArguments();
-            var method = typeof (Extensions).GetMethods().First(m => m.Name == "GetValueOrDefault").MakeGenericMethod(args);
-            return Expression.Call(method, source.To(dictType), Expression.Constant(destinationMember.Name));
+            if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
+            {
+                var method = typeof (Extensions).GetMethods().First(m => m.Name == "FlexibleGet").MakeGenericMethod(args[1]);
+                return Expression.Call(method, source.To(dictType), key, Expression.Constant(strategy.SourceMemberNameConverter));
+            }
+            else
+            {
+                var method = typeof(Extensions).GetMethods().First(m => m.Name == "GetValueOrDefault").MakeGenericMethod(args);
+                return Expression.Call(method, source.To(dictType), key);
+            }
         }
     }
 }

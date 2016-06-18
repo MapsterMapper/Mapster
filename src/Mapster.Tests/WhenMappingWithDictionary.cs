@@ -11,6 +11,7 @@ namespace Mapster.Tests
         public void TearDown()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
+            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Exact);
         }
 
         [Test]
@@ -26,6 +27,45 @@ namespace Mapster.Tests
 
             dict.Count.ShouldBe(2);
             dict["Id"].ShouldBe(poco.Id);
+            dict["Name"].ShouldBe(poco.Name);
+        }
+
+        [Test]
+        public void Object_To_Dictionary_CamelCase()
+        {
+            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.ToCamelCase);
+            var poco = new SimplePoco
+            {
+                Id = Guid.NewGuid(),
+                Name = "test",
+            };
+
+            var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
+
+            dict.Count.ShouldBe(2);
+            dict["id"].ShouldBe(poco.Id);
+            dict["name"].ShouldBe(poco.Name);
+        }
+
+        [Test]
+        public void Object_To_Dictionary_Flexible()
+        {
+            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
+            var poco = new SimplePoco
+            {
+                Id = Guid.NewGuid(),
+                Name = "test",
+            };
+
+            var dict = new Dictionary<string, object>
+            {
+                ["id"] = Guid.NewGuid()
+            };
+
+            TypeAdapter.Adapt(poco, dict);
+
+            dict.Count.ShouldBe(2);
+            dict["id"].ShouldBe(poco.Id);
             dict["Name"].ShouldBe(poco.Name);
         }
 
@@ -59,6 +99,38 @@ namespace Mapster.Tests
             var poco = TypeAdapter.Adapt<SimplePoco>(dict);
             poco.Id.ShouldBe(dict["Id"]);
             poco.Name.ShouldBeNull();
+        }
+
+        [Test]
+        public void Dictionary_To_Object_CamelCase()
+        {
+            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.FromCamelCase);
+            var dict = new Dictionary<string, object>
+            {
+                ["id"] = Guid.NewGuid(),
+                ["Name"] = "bar",
+                ["foo"] = "test",
+            };
+
+            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            poco.Id.ShouldBe(dict["id"]);
+            poco.Name.ShouldBeNull();
+        }
+
+        [Test]
+        public void Dictionary_To_Object_Flexible()
+        {
+            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
+            var dict = new Dictionary<string, object>
+            {
+                ["id"] = Guid.NewGuid(),
+                ["Name"] = "bar",
+                ["foo"] = "test",
+            };
+
+            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            poco.Id.ShouldBe(dict["id"]);
+            poco.Name.ShouldBe(dict["Name"]);
         }
 
         public class SimplePoco

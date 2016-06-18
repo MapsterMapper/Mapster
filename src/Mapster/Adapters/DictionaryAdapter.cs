@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -49,15 +50,26 @@ namespace Mapster.Adapters
             var dict = Expression.Variable(dictType);
             lines.Add(Expression.Assign(dict, destination));
 
+            MethodInfo setMethod = null;
+            var strategy = arg.Settings.NameMatchingStrategy;
+            if (arg.MapType == MapType.MapToTarget && strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
+            {
+                var args = dictType.GetGenericArguments();
+                setMethod = typeof (Extensions).GetMethods().First(m => m.Name == "FlexibleSet")
+                    .MakeGenericMethod(args[1]);
+            }
             var properties = source.Type.GetPublicFieldsAndProperties();
             foreach (var property in properties)
             {
                 var getter = property.GetExpression(source);
                 var value = CreateAdaptExpression(getter, valueType, arg);
 
-                Expression key = Expression.Constant(property.Name);
+                var sourceMemberName = strategy.SourceMemberNameConverter(property.Name);
+                Expression key = Expression.Constant(sourceMemberName);
 
-                Expression itemSet = Expression.Assign(Expression.Property(dict, indexer, key), value);
+                var itemSet = setMethod != null
+                    ? (Expression)Expression.Call(setMethod, dict, key, Expression.Constant(strategy.DestinationMemberNameConverter), value)
+                    : Expression.Assign(Expression.Property(dict, indexer, key), value);
                 if (arg.Settings.IgnoreNullValues == true && (!getter.Type.GetTypeInfo().IsValueType || getter.Type.IsNullable()))
                 {
                     var condition = Expression.NotEqual(getter, Expression.Constant(null, getter.Type));
@@ -88,14 +100,15 @@ namespace Mapster.Adapters
             var lines = new List<ElementInit>();
             if (listInit != null)
                 lines.AddRange(listInit.Initializers);
-            
+
+            var nameMatching = arg.Settings.NameMatchingStrategy;
             var properties = source.Type.GetPublicFieldsAndProperties();
             foreach (var property in properties)
             {
                 var getter = property.GetExpression(source);
                 var value = CreateAdaptExpression(getter, valueType, arg);
 
-                Expression key = Expression.Constant(property.Name);
+                Expression key = Expression.Constant(nameMatching.SourceMemberNameConverter(property.Name));
                 key = CreateAdaptExpression(key, keyType, arg);
 
                 var itemInit = Expression.ElementInit(add, key, value);

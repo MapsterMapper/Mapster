@@ -63,14 +63,14 @@ namespace Mapster.Tests
         [Test]
         public void Test_Name()
         {
-            NameMatchingStrategy.ToPascalCase("PascalCase").ShouldBe("PascalCase");
-            NameMatchingStrategy.ToPascalCase("camelCase").ShouldBe("CamelCase");
-            NameMatchingStrategy.ToPascalCase("lower_case").ShouldBe("LowerCase");
-            NameMatchingStrategy.ToPascalCase("UPPER_CASE").ShouldBe("UpperCase");
-            NameMatchingStrategy.ToPascalCase("IPAddress").ShouldBe("IpAddress");
-            NameMatchingStrategy.ToPascalCase("ItemID").ShouldBe("ItemId");
-            NameMatchingStrategy.ToPascalCase("__under__SCORE__").ShouldBe("UnderScore");
-            NameMatchingStrategy.ToPascalCase("__MixMIXMix_mix").ShouldBe("MixMixMixMix");
+            NameMatchingStrategy.PascalCase("PascalCase").ShouldBe("PascalCase");
+            NameMatchingStrategy.PascalCase("camelCase").ShouldBe("CamelCase");
+            NameMatchingStrategy.PascalCase("lower_case").ShouldBe("LowerCase");
+            NameMatchingStrategy.PascalCase("UPPER_CASE").ShouldBe("UpperCase");
+            NameMatchingStrategy.PascalCase("IPAddress").ShouldBe("IpAddress");
+            NameMatchingStrategy.PascalCase("ItemID").ShouldBe("ItemId");
+            NameMatchingStrategy.PascalCase("__under__SCORE__").ShouldBe("UnderScore");
+            NameMatchingStrategy.PascalCase("__MixMIXMix_mix").ShouldBe("MixMixMixMix");
         }
 
         public class MixName

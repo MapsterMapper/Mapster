@@ -25,15 +25,28 @@ namespace Mapster
 
         public static readonly NameMatchingStrategy Flexible = new NameMatchingStrategy
         {
-            SourceMemberNameConverter = ToPascalCase,
-            DestinationMemberNameConverter = ToPascalCase,
+            SourceMemberNameConverter = PascalCase,
+            DestinationMemberNameConverter = PascalCase,
         };
 
-        private static string Identity(string s) => s;
+        public static readonly NameMatchingStrategy ToCamelCase = new NameMatchingStrategy
+        {
+            SourceMemberNameConverter = CamelCase,
+            DestinationMemberNameConverter = Identity,
+        };
 
-        internal static string ToPascalCase(string s) => string.Join("", BreakWords(s).Select(ToProperCase));
+        public static readonly NameMatchingStrategy FromCamelCase = new NameMatchingStrategy
+        {
+            SourceMemberNameConverter = Identity,
+            DestinationMemberNameConverter = CamelCase,
+        };
 
-        private static string ToProperCase(string s) => s.Length == 0 ? s : (char.ToUpper(s[0]) + s.Substring(1).ToLower());
+        public static string Identity(string s) => s;
+
+        internal static string PascalCase(string s) => string.Join("", BreakWords(s).Select(ProperCase));
+        internal static string CamelCase(string s) => string.Join("", BreakWords(s).Select((w, i) => i == 0 ? w.ToLower() : ProperCase(w)));
+
+        private static string ProperCase(string s) => s.Length == 0 ? s : (char.ToUpper(s[0]) + s.Substring(1).ToLower());
 
         enum WordType
         {
