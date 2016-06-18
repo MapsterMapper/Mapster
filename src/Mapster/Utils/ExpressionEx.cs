@@ -29,12 +29,13 @@ namespace Mapster.Utils
             return exp;
         }
 
-        public static Expression To(this Expression exp, Type type)
+        public static Expression To(this Expression exp, Type type, bool force = false)
         {
-            if (!type.IsReferenceAssignableFrom(exp.Type))
-                return Expression.Convert(exp, type);
-            else
+            bool sameType = force ? type == exp.Type : type.IsReferenceAssignableFrom(exp.Type);
+            if (sameType)
                 return exp;
+            else
+                return Expression.Convert(exp, type);
         }
     }
 }

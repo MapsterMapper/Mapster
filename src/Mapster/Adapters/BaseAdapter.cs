@@ -60,10 +60,10 @@ namespace Mapster.Adapters
                 constructUsing.Body.NodeType != ExpressionType.New &&
                 constructUsing.Body.NodeType != ExpressionType.MemberInit)
             {
-                if (arg.MapType == MapType.Projection)
-                    throw new InvalidOperationException(
-                        $"Input ConstructUsing is invalid for projection: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
-                return false;
+                    if (arg.MapType == MapType.Projection)
+                        throw new InvalidOperationException(
+                            $"Input ConstructUsing is invalid for projection: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+                    return false;
             }
             if (arg.Settings.PreserveReference == true &&
                 arg.MapType != MapType.Projection &&
@@ -86,8 +86,8 @@ namespace Mapster.Adapters
                     $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
             }
 
-            return CanInline(source, destination, arg) 
-                ? CreateInlineExpressionBody(source, arg).To(arg.DestinationType) 
+            return CanInline(source, destination, arg)
+                ? CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true)
                 : CreateBlockExpressionBody(source, destination, arg);
         }
 
@@ -107,14 +107,14 @@ namespace Mapster.Adapters
                 //var result = adapt(source);
                 //action(source, result);
 
-                var actions = new List<Expression> {set};
+                var actions = new List<Expression> { set };
 
                 foreach (var afterMappingFactory in arg.Settings.AfterMappingFactories)
                 {
                     var afterMapping = afterMappingFactory(arg);
                     var args = afterMapping.Parameters;
                     Expression invoke;
-                    if (args[0].Type == source.Type && args[1].Type == result.Type)
+                    if (args[0].Type.IsReferenceAssignableFrom(source.Type) && args[1].Type.IsReferenceAssignableFrom(result.Type))
                     {
                         var replacer = new ParameterExpressionReplacer(args, source, result);
                         invoke = replacer.Visit(afterMapping.Body);
@@ -149,7 +149,7 @@ namespace Mapster.Adapters
                 var scope = Expression.Variable(typeof(MapContextScope));
                 var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
 
-                var dict = Expression.Variable(typeof (Dictionary<object, object>));
+                var dict = Expression.Variable(typeof(Dictionary<object, object>));
                 var refContext = Expression.Property(scope, "Context");
                 var refDict = Expression.Property(refContext, "References");
                 var assignDict = Expression.Assign(dict, refDict);
@@ -218,15 +218,15 @@ namespace Mapster.Adapters
             //new TDestination()
 
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
-            return constructUsing != null 
-                ? constructUsing.Apply(source).TrimConversion().To(arg.DestinationType) 
+            return constructUsing != null
+                ? constructUsing.Apply(source).TrimConversion().To(arg.DestinationType)
                 : Expression.New(arg.DestinationType);
         }
 
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)
         {
             if (source.Type == destinationType && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
-                return source.To(destinationType);
+                return source;
 
             var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destinationType, arg.MapType, arg.Context);
             var exp = lambda.Apply(source);

@@ -42,6 +42,23 @@ namespace Mapster.Tests
             dto.Unmapped.ShouldBe("unmapped");
         }
 
+        [Test]
+        public void Construct_From_Interface()
+        {
+            TypeAdapterConfig<SimplePoco, ISimpleDtoWithDefaultConstructor>.NewConfig()
+                .IgnoreNullValues(true)
+                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor {Unmapped = "unmapped"})
+                .Compile();
+
+            var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            var dto = TypeAdapter.Adapt<ISimpleDtoWithDefaultConstructor>(simplePoco);
+
+            dto.Id.ShouldBe(simplePoco.Id);
+            dto.Name.ShouldBe(simplePoco.Name);
+            dto.Unmapped.ShouldBe("unmapped");
+        }
+
 
         #region TestClasses
 
@@ -51,7 +68,14 @@ namespace Mapster.Tests
             public string Name { get; set; }
         }
 
-        public class SimpleDtoWithDefaultConstructor
+        public interface ISimpleDtoWithDefaultConstructor
+        {
+            Guid Id { get; set; }
+            string Name { get; set; }
+            string Unmapped { get; set; }
+        }
+
+        public class SimpleDtoWithDefaultConstructor : ISimpleDtoWithDefaultConstructor
         {
             public SimpleDtoWithDefaultConstructor()
             {

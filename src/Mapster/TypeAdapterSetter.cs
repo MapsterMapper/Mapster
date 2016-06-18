@@ -251,5 +251,10 @@ namespace Mapster
         {
             this.ParentConfig.Compile(typeof(TSource), typeof(TDestination));
         }
+
+        public void CompileProjection()
+        {
+            this.ParentConfig.CompileProjection(typeof(TSource), typeof(TDestination));
+        }
     }
 }
