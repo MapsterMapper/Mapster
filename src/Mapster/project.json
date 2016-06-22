@@ -1,5 +1,5 @@
 ﻿{
-    "version": "2.4.0",
+    "version": "2.4.1",
     "description": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.",
     "packOptions": {
         "summary": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.",

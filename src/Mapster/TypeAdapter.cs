@@ -1,13 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Mapster
 {
     public static class TypeAdapter
     {
-        public static TypeAdapter<TSource> BuildAdapter<TSource>(this TSource source)
+        public static TypeAdapterBuiler<TSource> BuildAdapter<TSource>(this TSource source)
         {
-            return new TypeAdapter<TSource>(source);
+            return BuildAdapter(source, TypeAdapterConfig.GlobalSettings);
+        }
+
+        public static TypeAdapterBuiler<TSource> BuildAdapter<TSource>(this TSource source, TypeAdapterConfig config)
+        {
+            return new TypeAdapterBuiler<TSource>(source, config);
         }
 
         /// <summary>
@@ -158,79 +162,5 @@ namespace Mapster
     internal static class TypeAdapter<TSource, TDestination>
     {
         public static Func<TSource, TDestination> Map = TypeAdapterConfig.GlobalSettings.GetMapFunction<TSource, TDestination>();
-    }
-
-    public class TypeAdapter<TSource>
-    {
-        TSource Source { get; }
-        TypeAdapterConfig Config { get; set; }
-
-        private Dictionary<string, object> _parameters;
-        Dictionary<string, object> Parameters
-        {
-            get { return _parameters ?? (_parameters = new Dictionary<string, object>(ReferenceComparer.Default)); }
-        }
-
-        public TypeAdapter(TSource source)
-        {
-            this.Source = source;
-            this.Config = TypeAdapterConfig.GlobalSettings;
-        }
-
-        public TypeAdapter<TSource> UseConfig(TypeAdapterConfig config)
-        {
-            this.Config = config;
-            return this;
-        }
-
-        public TypeAdapter<TSource> AddParameters(string name, object value)
-        {
-            this.Parameters.Add(name, value);
-            return this;
-        }
-
-        public TDestination AdaptToType<TDestination>()
-        {
-            if (_parameters == null)
-                return Map<TDestination>();
-
-            using (var scope = new MapContextScope())
-            {
-                var parameters = scope.Context.Parameters;
-                foreach (var kvp in _parameters)
-                {
-                    parameters[kvp.Key] = kvp.Value;
-                }
-                return Map<TDestination>();
-            }
-        }
-
-        private TDestination Map<TDestination>()
-        {
-            var fn = this.Config.GetMapFunction<TSource, TDestination>();
-            return fn(this.Source);
-        }
-
-        public TDestination AdaptTo<TDestination>(TDestination destination)
-        {
-            if (_parameters == null)
-                return MapToTarget(destination);
-
-            using (var scope = new MapContextScope())
-            {
-                var parameters = scope.Context.Parameters;
-                foreach (var kvp in _parameters)
-                {
-                    parameters[kvp.Key] = kvp.Value;
-                }
-                return MapToTarget(destination);
-            }
-        }
-
-        private TDestination MapToTarget<TDestination>(TDestination destination)
-        {
-            var fn = this.Config.GetMapToTargetFunction<TSource, TDestination>();
-            return fn(this.Source, destination);
-        }
     }
 }

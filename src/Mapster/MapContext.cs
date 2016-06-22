@@ -27,7 +27,7 @@ namespace Mapster
     /// You can get context by MapContext.Current
     /// And all mapping processes will having only one context
     /// </remarks>
-    internal class MapContext
+    public class MapContext
     {
         [ThreadStatic]
         private static MapContext _current;
@@ -49,7 +49,7 @@ namespace Mapster
             get { return _parameters ?? (_parameters = new Dictionary<string, object>(ReferenceComparer.Default)); }
         }
     }
-    internal class MapContextScope : IDisposable
+    public class MapContextScope : IDisposable
     {
         public MapContext Context { get; }
 

@@ -19,6 +19,6 @@ namespace Mapster
             var mockCall = config.GetProjectionCallExpression(source.ElementType, typeof(TDestination));
             var sourceCall = Expression.Call(mockCall.Method, source.Expression, mockCall.Arguments[1]);
             return source.Provider.CreateQuery<TDestination>(sourceCall);
-        } 
+        }
     }
 }

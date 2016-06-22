@@ -4,7 +4,7 @@ namespace Mapster
 {
     public interface IAdapter
     {
-        TypeAdapter<TSource> BuildAdapter<TSource>(TSource source);
+        TypeAdapterBuiler<TSource> BuildAdapter<TSource>(TSource source);
         TDestination Adapt<TDestination>(object source);
         TDestination Adapt<TSource, TDestination>(TSource source);
         TDestination Adapt<TSource, TDestination>(TSource source, TDestination destination);
@@ -23,9 +23,9 @@ namespace Mapster
             _config = config;
         }
 
-        public TypeAdapter<TSource> BuildAdapter<TSource>(TSource source)
+        public TypeAdapterBuiler<TSource> BuildAdapter<TSource>(TSource source)
         {
-            return new TypeAdapter<TSource>(source).UseConfig(_config);
+            return new TypeAdapterBuiler<TSource>(source, _config);
         }
 
         public TDestination Adapt<TDestination>(object source)
