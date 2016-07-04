@@ -399,10 +399,11 @@ namespace Mapster
 
         public void Compile()
         {
-            foreach (var kvp in RuleMap)
+            var keys = RuleMap.Keys.ToList();
+            foreach (var key in keys)
             {
-                _mapDict[kvp.Key] = CreateMapFunction(kvp.Key);
-                _mapToTargetDict[kvp.Key] = CreateMapToTargetFunction(kvp.Key);
+                _mapDict[key] = CreateMapFunction(key);
+                _mapToTargetDict[key] = CreateMapToTargetFunction(key);
             }
         }
 
@@ -415,9 +416,10 @@ namespace Mapster
 
         public void CompileProjection()
         {
-            foreach (var kvp in RuleMap)
+            var keys = RuleMap.Keys.ToList();
+            foreach (var key in keys)
             {
-                _projectionDict[kvp.Key] = CreateProjectionCallExpression(kvp.Key);
+                _projectionDict[key] = CreateProjectionCallExpression(key);
             }
         }
 
