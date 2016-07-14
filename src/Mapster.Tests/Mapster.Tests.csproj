@@ -72,6 +72,7 @@
     <Compile Include="WhenCloningConfig.cs" />
     <Compile Include="WhenCompilingConfig.cs" />
     <Compile Include="WhenCreatingConfigInstance.cs" />
+    <Compile Include="WhenMappingDerived.cs" />
     <Compile Include="WhenMappingWithDictionary.cs" />
     <Compile Include="WhenMappingRecordTypes.cs" />
     <Compile Include="WhenMappingIgnoreNullValues.cs" />
