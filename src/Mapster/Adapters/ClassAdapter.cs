@@ -19,7 +19,7 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
         {
-            if (sourceType == typeof (string) || sourceType == typeof (object))
+            if (sourceType == typeof(string) || sourceType == typeof(object))
                 return false;
 
             if (!destinationType.IsPoco())
@@ -67,7 +67,7 @@ namespace Mapster.Adapters
                 lines.Add(itemAssign);
             }
 
-            return Expression.Block(lines);
+            return lines.Any() ? (Expression)Expression.Block(lines) : Expression.Empty();
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
@@ -94,7 +94,7 @@ namespace Mapster.Adapters
                 //special null property check for projection
                 //if we don't set null to property, EF will create empty object
                 //except collection type & complex type which cannot be null
-                if (arg.MapType == MapType.Projection 
+                if (arg.MapType == MapType.Projection
                     && property.Getter.Type != property.Setter.Type
                     && !property.Getter.Type.IsCollection()
                     && !property.Setter.Type.IsCollection()
