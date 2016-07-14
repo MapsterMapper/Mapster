@@ -67,7 +67,7 @@ namespace Mapster.Adapters
                 lines.Add(itemAssign);
             }
 
-            return lines.Any() ? (Expression)Expression.Block(lines) : Expression.Empty();
+            return lines.Count > 0 ? (Expression)Expression.Block(lines) : Expression.Empty();
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
