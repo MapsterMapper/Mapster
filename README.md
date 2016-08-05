@@ -383,11 +383,12 @@ You can customize how Mapster maps values to a property.
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 The Map configuration can accept a third parameter that provides a condition based on the source.
-If the condition is not met, the mapping is skipped altogether.
+If the condition is not met, Mapster will retry with different conditions, otherwise null value will be assigned.
 
     TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
-        .Map(dest => dest.FullName, src => src.FullName, srcCond => srcCond.City == "Victoria");
+        .Map(dest => dest.FullName, src => "Mr. " + src.FullName, srcCond => srcCond.Country == "USA")
+        .Map(dest => dest.FullName, src => "Sr. " + src.FullName, srcCond => srcCond.Country == "Spain");
 
 In Mapster 2.0, you can even map when source and destination property types are different.
 
