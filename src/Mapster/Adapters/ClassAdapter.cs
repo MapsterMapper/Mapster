@@ -4,13 +4,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
     /// <summary>
     /// Maps one class to another.
     /// </summary>
-    /// <remarks>The operations in this class must be extremely fast.  Make sure to benchmark before making **any** changes in here.  
+    /// <remarks>The operations in this class must be extremely fast.  Make sure to benchmark before making **any** changes in here.
     /// The core Adapt method is critically important to performance.
     /// </remarks>
     internal class ClassAdapter : BaseClassAdapter
@@ -63,6 +64,11 @@ namespace Mapster.Adapters
                 {
                     var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);
+                }
+
+                if (property.SetterCondition != null)
+                {
+                    itemAssign = Expression.IfThen(Expression.Not(property.SetterCondition.Apply(source, destination)), itemAssign);
                 }
                 lines.Add(itemAssign);
             }

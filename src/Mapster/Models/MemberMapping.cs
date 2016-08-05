@@ -8,5 +8,6 @@ namespace Mapster.Models
         public Expression Setter;
 
         public object SetterInfo;
+        public LambdaExpression SetterCondition;
     }
 }
