@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -23,7 +24,8 @@ namespace Mapster.Adapters
 
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg.Settings, destinationMember)) continue;
+                LambdaExpression setterCondition;
+                if (ProcessIgnores(arg.Settings, destinationMember, source, out setterCondition)) continue;
 
                 var member = destinationMember;
                 var getter = arg.Settings.ValueAccessingStrategies
@@ -37,6 +39,7 @@ namespace Mapster.Adapters
                         Getter = getter,
                         Setter = destinationMember.GetExpression(destination),
                         SetterInfo = destinationMember.Info,
+                        SetterCondition = setterCondition,
                     };
                     properties.Add(propertyModel);
                 }
@@ -68,10 +71,16 @@ namespace Mapster.Adapters
             };
         }
 
-        private static bool ProcessIgnores(TypeAdapterSettings config, IMemberModel destinationMember)
+        private static bool ProcessIgnores(
+            TypeAdapterSettings config,
+            IMemberModel destinationMember,
+            Expression source,
+            out LambdaExpression condition)
         {
-            if (config.IgnoreMembers.Contains(destinationMember.Name))
-                return true;
+            if (config.IgnoreMembers.TryGetValue(destinationMember.Name, out condition)) {
+                return condition == null;
+            }
+
             var attributes = destinationMember.GetCustomAttributes(true).Select(attr => attr.GetType());
             return config.IgnoreAttributes.Overlaps(attributes);
         }

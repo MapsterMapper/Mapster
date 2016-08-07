@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
+using System.Linq;
 
 namespace Mapster.Adapters
 {
@@ -54,6 +55,8 @@ namespace Mapster.Adapters
         protected virtual bool CanInline(Expression source, Expression destination, CompileArgument arg)
         {
             if (arg.MapType == MapType.MapToTarget)
+                return false;
+            if (arg.Settings.IgnoreMembers.Any(item => item.Value != null))
                 return false;
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
             if (constructUsing != null &&

@@ -15,7 +15,7 @@ namespace Mapster
 
     public class TypeAdapterSettings
     {
-        public HashSet<string> IgnoreMembers { get; internal set; } = new HashSet<string>();
+        public Dictionary<string, LambdaExpression> IgnoreMembers { get; internal set; } = new Dictionary<string, LambdaExpression>();
         public HashSet<Type> IgnoreAttributes { get; internal set; } = new HashSet<Type>();
         public TransformsCollection DestinationTransforms { get; internal set; } = new TransformsCollection();
         public NameMatchingStrategy NameMatchingStrategy { get; internal set; } = new NameMatchingStrategy();
@@ -53,7 +53,10 @@ namespace Mapster
             if (this.IgnoreNullValues == null)
                 this.IgnoreNullValues = other.IgnoreNullValues;
 
-            this.IgnoreMembers.UnionWith(other.IgnoreMembers);
+            foreach (var member in other.IgnoreMembers)
+            {
+                this.IgnoreMembers[member.Key] = member.Value;
+            }
             this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
             this.NameMatchingStrategy.Apply(other.NameMatchingStrategy);
             this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);

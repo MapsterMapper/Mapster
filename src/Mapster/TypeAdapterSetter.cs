@@ -36,7 +36,10 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.IgnoreMembers.UnionWith(names);
+            foreach (var name in names)
+            {
+                setter.Settings.IgnoreMembers[name] = null;
+            }
             return setter;
         }
 
@@ -99,10 +102,12 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            Settings.IgnoreMembers.UnionWith(members.Select(member => ReflectionUtils.GetMemberInfo(member).Member.Name));
+            foreach (var member in members)
+            {
+                Settings.IgnoreMembers[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
+            }
             return this;
         }
-
 
         public TypeAdapterSetter<TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
@@ -158,7 +163,23 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            Settings.IgnoreMembers.UnionWith(members.Select(member => ReflectionUtils.GetMemberInfo(member).Member.Name));
+            foreach (var member in members)
+            {
+                Settings.IgnoreMembers[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
+            }
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> IgnoreIf(
+            Expression<Func<TSource, TDestination, bool>> condition,
+            params Expression<Func<TDestination, object>>[] members)
+        {
+            this.CheckCompiled();
+
+            foreach (var member in members)
+            {
+                Settings.IgnoreMembers[ReflectionUtils.GetMemberInfo(member).Member.Name] = condition;
+            }
             return this;
         }
 

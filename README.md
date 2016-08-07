@@ -368,6 +368,14 @@ Mapster will automatically map properties with the same names. You can ignore me
         .NewConfig()
         .Ignore(dest => dest.Id);
 
+You can ignore members conditionally, with condition based on source or target. When the condition is met, mapping of the property
+will be skipped altogether. This is the difference from custom `Map` with condition, where destination is set to `null`
+when condition is met.
+
+    TypeAdapterConfig<TSource, TDestination>
+        .NewConfig()
+        .IgnoreIf((src, dest) => !string.IsNullOrEmpty(dest.Name), dest => dest.Name);
+
 You can ignore members annotated with specific attributes by using the `IgnoreAttribute` method.
 
     TypeAdapterConfig<TSource, TDestination>
