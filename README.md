@@ -391,12 +391,13 @@ You can customize how Mapster maps values to a property.
              src => string.Format("{0} {1}", src.FirstName, src.LastName));
 
 The Map configuration can accept a third parameter that provides a condition based on the source.
-If the condition is not met, Mapster will retry with different conditions, otherwise null value will be assigned.
+If the condition is not met, Mapster will retry with next conditions. Default condition should be added at the end without specifying condition. If you do not specify default condition, null or default value will be assigned.
 
     TypeAdapterConfig<TSource, TDestination>
         .NewConfig()
-        .Map(dest => dest.FullName, src => "Mr. " + src.FullName, srcCond => srcCond.Country == "USA")
-        .Map(dest => dest.FullName, src => "Sr. " + src.FullName, srcCond => srcCond.Country == "Spain");
+        .Map(dest => dest.FullName, src => "Sig. " + src.FullName, srcCond => srcCond.Country == "Italy")
+        .Map(dest => dest.FullName, src => "Sr. " + src.FullName, srcCond => srcCond.Country == "Spain")
+        .Map(dest => dest.FullName, src => "Mr. " + src.FullName);
 
 In Mapster 2.0, you can even map when source and destination property types are different.
 
@@ -409,6 +410,7 @@ In Mapster 2.0, you can even map when source and destination property types are 
 By default, Mapster will map property with case sensitive name. You can adjust to flexible name mapping by setting `NameMatchingStrategy.Flexible` to `NameMatchingStrategy` method. This setting will allow matching between `PascalCase`, `camelCase`, `lower_case`, and `UPPER_CASE`. 
 
 This setting will apply flexible naming globally.
+
 ```
 TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
 ```
@@ -443,7 +445,7 @@ If you would like to map circular references or preserve references (such as 2 p
         .NewConfig()
         .PreserveReference(true);
 
-NOTE: Projection doesn't support circular reference yet. To overcome, you might use `Adapt` instead of `ProjectToType`.
+NOTE: Projection doesn't support circular reference. To overcome, you might use `Adapt` instead of `ProjectToType`.
 
     TypeAdaptConfig.GlobalSettings.Default.PreserveReference(true);
     var students = context.Student.Include(p => p.Schools).Adapt<List<StudentDTO>>();
@@ -506,12 +508,16 @@ can be performed on the destination value before assignment.
         .AddDestinationTransforms((string x) => x.Trim());
 
 #####Custom Type Resolvers <a name="ConverterFactory"></a>
-In some cases, you may want to have complete control over how an object is mapped. You can register specific transformations using the `MapWith`
-method.
+In some cases, you may want to have complete control over how an object is mapped. You can register specific transformations using the `MapWith` method.
 
     //Example of transforming string to char[].
     TypeAdapterConfig<string, char[]>.NewConfig()
                 .MapWith(str => str.ToCharArray());
+
+`MapWith` also useful if you would like to copy instance rather than deep copy the object, for instance, `JObject` or `DbGeography`, these should treat as primitive types rather than POCO.
+
+    TypeAdapterConfig<JObject, JObject>.NewConfig()
+                .MapWith(json => json);
 
 ####Validation <a name="Validate"></a>
 To validate your mapping in unit tests and in order to help with "Fail Fast" situations, the following strict mapping modes have been added.
