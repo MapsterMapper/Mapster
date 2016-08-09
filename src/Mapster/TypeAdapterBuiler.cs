@@ -8,10 +8,7 @@ namespace Mapster
         TypeAdapterConfig Config { get; }
 
         private Dictionary<string, object> _parameters;
-        Dictionary<string, object> Parameters
-        {
-            get { return _parameters ?? (_parameters = new Dictionary<string, object>(ReferenceComparer.Default)); }
-        }
+        Dictionary<string, object> Parameters => _parameters ?? (_parameters = new Dictionary<string, object>());
 
         internal TypeAdapterBuiler(TSource source, TypeAdapterConfig config)
         {

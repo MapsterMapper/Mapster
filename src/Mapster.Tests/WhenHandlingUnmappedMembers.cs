@@ -42,9 +42,9 @@ namespace Mapster.Tests
 
                 TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (InvalidOperationException ex)
             {
-                ex.Message.ShouldContain("UnmappedMember");
+                ex.ToString().ShouldContain("UnmappedMember");
             }
         }
 
@@ -76,9 +76,9 @@ namespace Mapster.Tests
                 TypeAdapter.Adapt<ParentPoco, ParentDto>(source);
                 Assert.Fail();
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (InvalidOperationException ex)
             {
-                ex.Message.ShouldContain("UnmappedChildren");
+                ex.ToString().ShouldContain("UnmappedChildren");
             }
         }
 

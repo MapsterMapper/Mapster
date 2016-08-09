@@ -48,8 +48,7 @@ namespace Mapster.Adapters
                 if (arg.DestinationType.IsAssignableFromList())
                     return true;
 
-                throw new InvalidOperationException(
-                    $"{arg.DestinationType} is not supported for projection, please consider using List<>: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+                throw new InvalidOperationException($"{arg.DestinationType} is not supported for projection, please consider using List<>");
             }
 
             if (arg.DestinationType == typeof (IEnumerable) || arg.DestinationType.IsGenericEnumerableType())

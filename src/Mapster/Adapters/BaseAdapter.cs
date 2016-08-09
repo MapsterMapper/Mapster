@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
-using System.Linq;
 
 namespace Mapster.Adapters
 {
@@ -64,8 +64,7 @@ namespace Mapster.Adapters
                 constructUsing.Body.NodeType != ExpressionType.MemberInit)
             {
                     if (arg.MapType == MapType.Projection)
-                        throw new InvalidOperationException(
-                            $"Input ConstructUsing is invalid for projection: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+                        throw new InvalidOperationException("Input ConstructUsing is invalid for projection");
                     return false;
             }
             if (arg.Settings.PreserveReference == true &&
@@ -85,8 +84,7 @@ namespace Mapster.Adapters
                 && arg.Context.Config.RequireExplicitMapping
                 && !arg.Context.Config.RuleMap.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
             {
-                throw new InvalidOperationException(
-                    $"Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists for the following mapping: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+                throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
             }
 
             return CanInline(source, destination, arg)
@@ -97,8 +95,7 @@ namespace Mapster.Adapters
         protected Expression CreateBlockExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
             if (arg.MapType == MapType.Projection)
-                throw new InvalidOperationException(
-                    $"Mapping is invalid for projection: TSource: {arg.SourceType} TDestination: {arg.DestinationType}");
+                throw new InvalidOperationException("Mapping is invalid for projection");
 
             var result = Expression.Variable(arg.DestinationType);
             Expression assign = Expression.Assign(result, destination ?? CreateInstantiationExpression(source, arg));

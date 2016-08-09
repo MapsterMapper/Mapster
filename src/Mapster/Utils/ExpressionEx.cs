@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Mapster.Models;
 using System;
 
 namespace Mapster.Utils
@@ -36,6 +35,21 @@ namespace Mapster.Utils
                 return exp;
             else
                 return Expression.Convert(exp, type);
+        }
+
+        public static Delegate Compile(this LambdaExpression exp, CompileArgument arg)
+        {
+            try
+            {
+                return exp.Compile();
+            }
+            catch (Exception ex)
+            {
+                throw new CompileException(arg, ex)
+                {
+                    Expression = exp,
+                };
+            }
         }
     }
 }

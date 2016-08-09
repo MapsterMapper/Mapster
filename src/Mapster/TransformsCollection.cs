@@ -63,10 +63,6 @@ namespace Mapster
             _transforms.Clear();
         }
 
-        internal IDictionary<Type, LambdaExpression> Transforms
-        {
-            get { return _transforms; }
-        } 
-
+        internal IDictionary<Type, LambdaExpression> Transforms => _transforms;
     }
 }

@@ -16,11 +16,7 @@ namespace Mapster
         public static List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategiesTemplate { get; } = ValueAccessingStrategy.GetDefaultStrategies();
 
         private static TypeAdapterConfig _globalSettings;
-
-        public static TypeAdapterConfig GlobalSettings
-        {
-            get { return _globalSettings ?? (_globalSettings = new TypeAdapterConfig()); }
-        }
+        public static TypeAdapterConfig GlobalSettings => _globalSettings ?? (_globalSettings = new TypeAdapterConfig());
 
         private static List<TypeAdapterRule> CreateRuleTemplate()
         {
@@ -252,11 +248,12 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                var result = CreateMapExpression(tuple.Source, tuple.Destination, MapType.Map, context);
-                var compiled = result.Compile();
+                var arg = GetCompileArgument(tuple.Source, tuple.Destination, MapType.Map, context);
+                var result = CreateMapExpression(arg);
+                var compiled = result.Compile(arg);
                 if (this == GlobalSettings)
                 {
-                    var field = typeof(TypeAdapter<,>).MakeGenericType(tuple.Source, tuple.Destination).GetField("Map");
+                    var field = typeof (TypeAdapter<,>).MakeGenericType(tuple.Source, tuple.Destination).GetField("Map");
                     field.SetValue(null, compiled);
                 }
                 return compiled;
@@ -273,8 +270,9 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                var result = CreateMapExpression(tuple.Source, tuple.Destination, MapType.MapToTarget, context);
-                return result.Compile();
+                var arg = GetCompileArgument(tuple.Source, tuple.Destination, MapType.MapToTarget, context);
+                var result = CreateMapExpression(arg);
+                return result.Compile(arg);
             }
             finally
             {
@@ -288,7 +286,8 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                var lambda = CreateMapExpression(tuple.Source, tuple.Destination, MapType.Projection, context);
+                var arg = GetCompileArgument(tuple.Source, tuple.Destination, MapType.Projection, context);
+                var lambda = CreateMapExpression(arg);
                 var source = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(tuple.Source));
                 var methodInfo = (from method in typeof(Queryable).GetMethods()
                                   where method.Name == "Select"
@@ -303,47 +302,44 @@ namespace Mapster
             }
         }
 
-        private LambdaExpression CreateMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
+        private static LambdaExpression CreateMapExpression(CompileArgument arg)
         {
-            var setting = GetMergedSettings(sourceType, destinationType, mapType);
-            var fn = mapType == MapType.MapToTarget
-                ? setting.ConverterToTargetFactory
-                : setting.ConverterFactory;
+            var fn = arg.MapType == MapType.MapToTarget
+                ? arg.Settings.ConverterToTargetFactory
+                : arg.Settings.ConverterFactory;
             if (fn == null)
             {
-                if (mapType == MapType.InlineMap)
+                if (arg.MapType == MapType.InlineMap)
                     return null;
                 else
-                    throw new InvalidOperationException(
-                        $"ConverterFactory is not found for the following mapping: TSource: {sourceType} TDestination: {destinationType}");
+                    throw new CompileException(arg, 
+                        new InvalidOperationException("ConverterFactory is not found"));
             }
-
-            var arg = new CompileArgument
+            try
             {
-                SourceType = sourceType,
-                DestinationType = destinationType,
-                MapType = mapType,
-                Context = context,
-                Settings = setting,
-            };
-            return fn(arg);
+                return fn(arg);
+            }
+            catch (Exception ex)
+            {
+                throw new CompileException(arg, ex);
+            }
         }
 
-        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
+        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType parentMapType, CompileContext context)
         {
             var tuple = new TypeTuple(sourceType, destinationType);
             if (context.Running.Contains(tuple))
             {
-                if (mapType == MapType.Projection)
-                    throw new InvalidOperationException(
-                        $"Projection does not support circular reference: TSource: {sourceType} TDestination: {destinationType}");
+                if (parentMapType == MapType.Projection)
+                    throw new InvalidOperationException("Projection does not support circular reference");
                 return CreateInvokeExpression(sourceType, destinationType);
             }
 
             context.Running.Add(tuple);
             try
             {
-                var exp = CreateMapExpression(sourceType, destinationType, mapType == MapType.Projection ? MapType.Projection : MapType.InlineMap, context);
+                var arg = GetCompileArgument(tuple.Source, tuple.Destination, parentMapType == MapType.Projection ? MapType.Projection : MapType.InlineMap, context);
+                var exp = CreateMapExpression(arg);
                 if (exp != null)
                 {
                     var detector = new BlockExpressionDetector();
@@ -395,6 +391,20 @@ namespace Mapster
                 result.Apply(setting);
             }
             return result;
+        }
+
+        CompileArgument GetCompileArgument(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
+        {
+            var setting = GetMergedSettings(sourceType, destinationType, mapType);
+            var arg = new CompileArgument
+            {
+                SourceType = sourceType,
+                DestinationType = destinationType,
+                MapType = mapType,
+                Context = context,
+                Settings = setting,
+            };
+            return arg;
         }
 
         public void Compile()

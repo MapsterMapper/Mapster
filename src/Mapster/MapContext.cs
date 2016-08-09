@@ -38,16 +38,10 @@ namespace Mapster
         }
 
         private Dictionary<object, object> _references;
-        public Dictionary<object, object> References
-        {
-            get { return _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default)); }
-        }
+        public Dictionary<object, object> References => _references ?? (_references = new Dictionary<object, object>(ReferenceComparer.Default));
 
         private Dictionary<string, object> _parameters;
-        public Dictionary<string, object> Parameters
-        {
-            get { return _parameters ?? (_parameters = new Dictionary<string, object>(ReferenceComparer.Default)); }
-        }
+        public Dictionary<string, object> Parameters => _parameters ?? (_parameters = new Dictionary<string, object>());
     }
     public class MapContextScope : IDisposable
     {

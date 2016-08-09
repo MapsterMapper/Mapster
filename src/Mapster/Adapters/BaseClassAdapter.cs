@@ -61,7 +61,7 @@ namespace Mapster.Adapters
 
             if (arg.Context.Config.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
             {
-                throw new ArgumentOutOfRangeException($"The following members of destination class {arg.DestinationType} do not have a corresponding source member mapped or ignored:{string.Join(",", unmappedDestinationMembers)}");
+                throw new InvalidOperationException($"The following members of destination class {arg.DestinationType} do not have a corresponding source member mapped or ignored:{string.Join(",", unmappedDestinationMembers)}");
             }
 
             return new ClassMapping

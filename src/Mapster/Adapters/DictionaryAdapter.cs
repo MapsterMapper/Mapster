@@ -93,10 +93,8 @@ namespace Mapster.Adapters
             var newInstance = listInit?.NewExpression ?? (NewExpression)exp;
 
             var dictType = arg.DestinationType.GetDictionaryType();
-            var dictTypeArgs = dictType.GetGenericArguments();
-            var keyType = dictTypeArgs[0];
-            var valueType = dictTypeArgs[1];
-            var add = dictType.GetMethod("Add", new[] { keyType, valueType });
+            var valueType = dictType.GetGenericArguments()[1];
+            var add = dictType.GetMethod("Add", new[] { typeof(string), valueType });
             var lines = new List<ElementInit>();
             if (listInit != null)
                 lines.AddRange(listInit.Initializers);
@@ -109,8 +107,6 @@ namespace Mapster.Adapters
                 var value = CreateAdaptExpression(getter, valueType, arg);
 
                 Expression key = Expression.Constant(nameMatching.SourceMemberNameConverter(property.Name));
-                key = CreateAdaptExpression(key, keyType, arg);
-
                 var itemInit = Expression.ElementInit(add, key, value);
                 lines.Add(itemInit);
             }

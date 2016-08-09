@@ -62,6 +62,7 @@
     <Compile Include="Adapters\BaseClassAdapter.cs" />
     <Compile Include="Adapters\DictionaryAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
+    <Compile Include="CompileException.cs" />
     <Compile Include="IRegister.cs" />
     <Compile Include="MapContext.cs" />
     <Compile Include="NameMatchingStrategy.cs" />

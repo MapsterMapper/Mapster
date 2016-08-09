@@ -134,8 +134,7 @@ namespace Mapster
             }
 
             if (!srcType.IsConvertible())
-                throw new InvalidOperationException(
-                    $"Cannot convert immutable type, please consider using 'MapWith' method to create mapping: TSource: {sourceType} TDestination: {destinationType}");
+                throw new InvalidOperationException("Cannot convert immutable type, please consider using 'MapWith' method to create mapping");
 
             //using Convert
             if (destType == typeof (bool))
