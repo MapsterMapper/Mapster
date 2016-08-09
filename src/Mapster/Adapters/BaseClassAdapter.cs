@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -50,6 +49,7 @@ namespace Mapster.Adapters
                         Getter = null,
                         Setter = destinationMember.GetExpression(destination),
                         SetterInfo = destinationMember.Info,
+                        SetterCondition = setterCondition,
                     };
                     properties.Add(propertyModel);
                 }

@@ -38,11 +38,12 @@ namespace Mapster.Adapters
             {
                 var parameterInfo = (ParameterInfo) property.SetterInfo;
                 var defaultValue = parameterInfo.IsOptional ? parameterInfo.DefaultValue : parameterInfo.ParameterType.GetDefault();
+                var defaultConst = Expression.Constant(defaultValue, property.Setter.Type);
 
                 Expression getter;
                 if (property.Getter == null)
                 {
-                    getter = Expression.Constant(defaultValue, property.Setter.Type);
+                    getter = defaultConst;
                 }
                 else
                 {
@@ -51,7 +52,12 @@ namespace Mapster.Adapters
                     if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
                     {
                         var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
-                        getter = Expression.Condition(condition, getter, Expression.Constant(defaultValue, property.Setter.Type));
+                        getter = Expression.Condition(condition, getter, defaultConst);
+                    }
+                    if (property.SetterCondition != null)
+                    {
+                        var condition = Expression.Not(property.SetterCondition.Apply(source, Expression.Constant(arg.DestinationType.GetDefault(), arg.DestinationType)));
+                        getter = Expression.Condition(condition, getter, defaultConst);
                     }
                 }
                 arguments.Add(getter);

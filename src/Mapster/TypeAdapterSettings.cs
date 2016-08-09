@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Mapster.Models;
+using Mapster.Utils;
+using System.Linq;
 
 namespace Mapster
 {
@@ -55,7 +57,7 @@ namespace Mapster
 
             foreach (var member in other.IgnoreMembers)
             {
-                this.IgnoreMembers[member.Key] = member.Value;
+                this.MergeIgnoreMembers(member.Key, member.Value);
             }
             this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
             this.NameMatchingStrategy.Apply(other.NameMatchingStrategy);
@@ -71,6 +73,23 @@ namespace Mapster
                 this.ConverterFactory = other.ConverterFactory;
             if (this.ConverterToTargetFactory == null)
                 this.ConverterToTargetFactory = other.ConverterToTargetFactory;
+        }
+
+        internal void MergeIgnoreMembers(string name, LambdaExpression condition)
+        {
+            LambdaExpression lambda;
+            if (this.IgnoreMembers.TryGetValue(name, out lambda))
+            {
+                if (lambda == null)
+                    return;
+
+                var param = lambda.Parameters.ToArray();
+                lambda = Expression.Lambda(Expression.OrElse(lambda.Body, condition.Apply(param[0], param[1])), param);
+                this.IgnoreMembers[name] = lambda;
+            }
+            else
+                this.IgnoreMembers[name] = condition;
+
         }
     }
 

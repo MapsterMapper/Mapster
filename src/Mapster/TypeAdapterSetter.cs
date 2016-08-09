@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
@@ -90,6 +89,21 @@ namespace Mapster
             setter.Settings.NameMatchingStrategy = value;
             return setter;
         }
+
+        public static TSetter Map<TSetter, TSource, TSourceMember>(
+            this TSetter setter, string memberName,
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.Resolvers.Add(new InvokerModel
+            {
+                MemberName = memberName,
+                Invoker = source,
+                Condition = shouldMap
+            });
+            return setter;
+        }
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -178,7 +192,8 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreMembers[ReflectionUtils.GetMemberInfo(member).Member.Name] = condition;
+                var name = ReflectionUtils.GetMemberInfo(member).Member.Name;
+                Settings.MergeIgnoreMembers(name, condition);
             }
             return this;
         }
@@ -193,6 +208,21 @@ namespace Mapster
             Settings.Resolvers.Add(new InvokerModel
             {
                 MemberName = memberExp.Member.Name,
+                Invoker = source,
+                Condition = shouldMap
+            });
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> Map<TSourceMember>(
+            string memberName,
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+        {
+            this.CheckCompiled();
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                MemberName = memberName,
                 Invoker = source,
                 Condition = shouldMap
             });

@@ -125,6 +125,51 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("DtoName");
         }
 
+        [Test]
+        public void False_Condition_Does_Not_Ignore()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .IgnoreIf((src, dest) => src.Name == "TestName", dest => dest.Name)
+                .Compile();
+
+            var poco = new SimplePoco { Id = 1, Name = "NotTestName" };
+            var dto = new SimpleDto { Id = 999, Name = "DtoName" };
+            TypeAdapter.Adapt(poco, dto);
+
+            dto.Id.ShouldBe(1);
+            dto.Name.ShouldBe("NotTestName");
+        }
+
+        [Test]
+        public void IgnoreIf_Can_Be_Combined()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .IgnoreIf((src, dest) => src.Name == "NotTestName", dest => dest.Name)
+                .IgnoreIf((src, dest) => src.Name == "TestName", dest => dest.Name)
+                .Compile();
+
+            var poco = new SimplePoco { Id = 1, Name = "NotTestName" };
+            var dto = new SimpleDto { Id = 999, Name = "DtoName" };
+            TypeAdapter.Adapt(poco, dto);
+
+            dto.Id.ShouldBe(1);
+            dto.Name.ShouldBe("DtoName");
+        }
+
+        [Test]
+        public void IgnoreIf_Apply_To_RecordType()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleRecord>.NewConfig()
+                .IgnoreIf((src, dest) => src.Name == "TestName", dest => dest.Name)
+                .Compile();
+
+            var poco = new SimplePoco { Id = 1, Name = "TestName" };
+            var dto = TypeAdapter.Adapt<SimplePoco, SimpleRecord>(poco);
+
+            dto.Id.ShouldBe(1);
+            dto.Name.ShouldBeNull();
+        }
+
         #endregion
 
 
@@ -140,6 +185,18 @@ namespace Mapster.Tests
         {
             public int Id { get; set; }
             public string Name { get; set; }
+        }
+
+        public class SimpleRecord
+        {
+            public int Id { get; }
+            public string Name { get; }
+
+            public SimpleRecord(int id, string name)
+            {
+                this.Id = id;
+                this.Name = name;
+            }
         }
 
         #endregion
