@@ -37,6 +37,19 @@ namespace Mapster
             return properties.Concat(fields);
         }
 
+        public static IEnumerable<IMemberModel> GetPrivateFieldsAndProperties(this Type type, bool allowNoSetter = true)
+        {
+            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(x => allowNoSetter || x.CanWrite)
+                .Select(CreateModel);
+
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(x => (allowNoSetter || !x.IsInitOnly))
+                .Select(CreateModel);
+
+            return properties.Concat(fields);
+        }
+
         public static bool IsCollection(this Type type)
         {
             return typeof (IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != _stringType;

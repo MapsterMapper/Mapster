@@ -11,7 +11,8 @@ namespace Mapster
     public static class ValueAccessingStrategy
     {
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> CustomResolver = CustomResolverFn;
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrField = PropertyOrFieldFn;
+        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrField = PropertyOrFieldFn(false);
+        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PrivatePropertyOrField = PropertyOrFieldFn(true);
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> GetMethod = GetMethodFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> FlattenMember = FlattenMemberFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> Dictionary = DictionaryFn;
@@ -55,14 +56,19 @@ namespace Mapster
             return getter;
         }
 
-        private static Expression PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrFieldFn(bool privatePropertyOrField)
         {
-            var members = source.Type.GetPublicFieldsAndProperties();
-            var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
-            return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)
-                .Select(member => member.GetExpression(source))
-                .FirstOrDefault();
+            return (source, destinationMember, arg) =>
+            {
+                var members = privatePropertyOrField ?
+                    source.Type.GetPrivateFieldsAndProperties() :
+                    source.Type.GetPublicFieldsAndProperties();
+                var strategy = arg.Settings.NameMatchingStrategy;
+                var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+                return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)
+                    .Select(member => member.GetExpression(source))
+                    .FirstOrDefault();
+            };
         }
 
         private static Expression GetMethodFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
