@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Mapster.Models;
 using Mapster.Utils;
 
@@ -44,10 +45,15 @@ namespace Mapster
                 .Select(CreateModel);
 
             var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(x => (allowNoSetter || !x.IsInitOnly))
+                .Where(x => (allowNoSetter || !x.IsInitOnly) && !IsBackingField(x))
                 .Select(CreateModel);
 
             return properties.Concat(fields);
+        }
+
+        private static bool IsBackingField(FieldInfo field)
+        {
+            return field.CustomAttributes.Any(a => a.AttributeType == typeof(CompilerGeneratedAttribute));
         }
 
         public static bool IsCollection(this Type type)
@@ -257,14 +263,6 @@ namespace Mapster
                 return true;
 
             return false;
-        }
-
-        public static bool IsPoco(this Type type)
-        {
-            if (type.GetTypeInfo().IsEnum)
-                return false;
-
-            return type.GetPublicFieldsAndProperties(allowNoSetter: false).Any();
         }
 
         public static bool IsRecordType(this Type type)
