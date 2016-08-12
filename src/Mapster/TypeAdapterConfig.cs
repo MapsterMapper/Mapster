@@ -238,7 +238,7 @@ namespace Mapster
             return (Expression<Func<TSource, TDestination>>)((UnaryExpression)((MethodCallExpression)del).Arguments[1]).Operand;
         }
 
-        internal MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
+        public MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
             object del = _projectionDict[key] ?? AddToHash(_projectionDict, key, CreateProjectionCallExpression);
