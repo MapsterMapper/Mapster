@@ -26,8 +26,8 @@ namespace Mapster.Adapters
             if (destinationType.GetTypeInfo().IsEnum || destinationType.Namespace.StartsWith("System"))
                 return false;
 
-            return (destinationType.GetPublicFieldsAndProperties(allowNoSetter: false).Any() ||
-                    destinationType.GetPrivateFieldsAndProperties(allowNoSetter: false).Any());
+            return (destinationType.GetFieldsAndProperties(allowNoSetter: false).Any() ||
+                    destinationType.GetFieldsAndProperties(allowNoSetter: false, isNonPublic: true).Any());
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -37,7 +37,7 @@ namespace Mapster.Adapters
             if (arg.MapType != MapType.Projection &&
                 arg.Settings.IgnoreNullValues == true)
                 return false;
-            if (arg.DestinationType.GetPrivateFieldsAndProperties().Any())
+            if (arg.DestinationType.GetFieldsAndProperties(isNonPublic: true).Any())
                 return false;            
             return true;
         }
@@ -127,8 +127,8 @@ namespace Mapster.Adapters
         {
             return new ClassModel
             {
-                Members = destinationType.GetPublicFieldsAndProperties(allowNoSetter: false)
-                    .Concat(destinationType.GetPrivateFieldsAndProperties(allowNoSetter: false))
+                Members = destinationType.GetFieldsAndProperties(allowNoSetter: false)
+                    .Concat(destinationType.GetFieldsAndProperties(allowNoSetter: false, isNonPublic: true))
             };
         }
     }

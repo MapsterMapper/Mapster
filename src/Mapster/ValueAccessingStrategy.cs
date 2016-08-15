@@ -12,7 +12,7 @@ namespace Mapster
     {
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> CustomResolver = CustomResolverFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrField = PropertyOrFieldFn(false);
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PrivatePropertyOrField = PropertyOrFieldFn(true);
+        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> NonPublicPropertyOrField = PropertyOrFieldFn(true);
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> GetMethod = GetMethodFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> FlattenMember = FlattenMemberFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> Dictionary = DictionaryFn;
@@ -56,13 +56,13 @@ namespace Mapster
             return getter;
         }
 
-        private static Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrFieldFn(bool privatePropertyOrField)
+        private static Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrFieldFn(bool nonPublicPropertyOrField)
         {
             return (source, destinationMember, arg) =>
             {
-                var members = privatePropertyOrField ?
-                    source.Type.GetPrivateFieldsAndProperties() :
-                    source.Type.GetPublicFieldsAndProperties();
+                var members = nonPublicPropertyOrField ?
+                    source.Type.GetFieldsAndProperties(isNonPublic: true) :
+                    source.Type.GetFieldsAndProperties();
                 var strategy = arg.Settings.NameMatchingStrategy;
                 var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
                 return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)

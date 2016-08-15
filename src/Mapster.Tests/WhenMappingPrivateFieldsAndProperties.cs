@@ -41,7 +41,7 @@ namespace Mapster.Tests
         [Test]
         public void Should_Map_Private_Field_To_New_Object_Correctly()
         {
-            SetUpMappingPrivateFields<CustomerWithPrivateField, CustomerDTO>();
+            SetUpMappingNonPublicFields<CustomerWithPrivateField, CustomerDTO>();
 
             var customerId = 1;
             var customerName = "Customer 1";
@@ -57,7 +57,7 @@ namespace Mapster.Tests
         [Test]
         public void Should_Map_Private_Property_To_New_Object_Correctly()
         {
-            SetUpMappingPrivateProperties<CustomerWithPrivateProperty, CustomerDTO>();
+            SetUpMappingNonPublicProperties<CustomerWithPrivateProperty, CustomerDTO>();
 
             var customerId = 1;
             var customerName = "Customer 1";
@@ -73,7 +73,7 @@ namespace Mapster.Tests
         [Test]
         public void Should_Map_To_Private_Fields_Correctly()
         {
-            SetUpMappingPrivateFields<CustomerDTO, CustomerWithPrivateField>();
+            SetUpMappingNonPublicFields<CustomerDTO, CustomerWithPrivateField>();
             
             var dto = new CustomerDTO
             {
@@ -91,7 +91,7 @@ namespace Mapster.Tests
         [Test]
         public void Should_Map_To_Private_Properties_Correctly()
         {
-            SetUpMappingPrivateFields<CustomerDTO, CustomerWithPrivateProperty>();
+            SetUpMappingNonPublicFields<CustomerDTO, CustomerWithPrivateProperty>();
 
             var dto = new CustomerDTO
             {
@@ -106,18 +106,18 @@ namespace Mapster.Tests
             Assert.IsTrue(customer.HasName(dto.Name));
         }
 
-        private void SetUpMappingPrivateFields<TSource, TDestination>()
+        private void SetUpMappingNonPublicFields<TSource, TDestination>()
         {
             var config = TypeAdapterConfig<TSource, TDestination>.NewConfig();
-            config.Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.PrivatePropertyOrField);
+            config.Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
             config.NameMatchingStrategy(NameMatchingStrategy.Flexible);
         }
 
-        private void SetUpMappingPrivateProperties<TSource, TDestination>()
+        private void SetUpMappingNonPublicProperties<TSource, TDestination>()
         {
             TypeAdapterConfig<TSource, TDestination>
                   .NewConfig()
-                      .Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.PrivatePropertyOrField);
+                      .Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
 
         }
 

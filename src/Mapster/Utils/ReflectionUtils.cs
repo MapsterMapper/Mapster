@@ -25,26 +25,16 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
         }
 
-        public static IEnumerable<IMemberModel> GetPublicFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true)
+        public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true, bool isNonPublic = false)
         {
-            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            var bindingFlags = BindingFlags.Instance |
+                               (isNonPublic ? BindingFlags.NonPublic : BindingFlags.Public);
+
+            var properties = type.GetProperties(bindingFlags)
                 .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null))
                 .Select(CreateModel);
 
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
-                .Where(x => (allowNoSetter || !x.IsInitOnly))
-                .Select(CreateModel);
-
-            return properties.Concat(fields);
-        }
-
-        public static IEnumerable<IMemberModel> GetPrivateFieldsAndProperties(this Type type, bool allowNoSetter = true)
-        {
-            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(x => allowNoSetter || x.CanWrite)
-                .Select(CreateModel);
-
-            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+            var fields = type.GetFields(bindingFlags)
                 .Where(x => (allowNoSetter || !x.IsInitOnly) && !IsBackingField(x))
                 .Select(CreateModel);
 
@@ -227,7 +217,7 @@ namespace Mapster
         public static Expression GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var properties = source.Type.GetPublicFieldsAndProperties();
+            var properties = source.Type.GetFieldsAndProperties();
             foreach (var property in properties)
             {
                 var sourceMemberName = strategy.SourceMemberNameConverter(property.Name);
@@ -280,7 +270,7 @@ namespace Mapster
                 return false;
 
             //no setter
-            var props = type.GetPublicFieldsAndProperties().ToList();
+            var props = type.GetFieldsAndProperties().ToList();
             if (props.Any(p => p.SetterModifier != AccessModifier.None))
                 return false;
 
