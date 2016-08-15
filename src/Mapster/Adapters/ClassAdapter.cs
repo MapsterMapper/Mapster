@@ -23,11 +23,10 @@ namespace Mapster.Adapters
             if (sourceType == typeof(string) || sourceType == typeof(object))
                 return false;
 
-            if (destinationType.GetTypeInfo().IsEnum || destinationType.Namespace.StartsWith("System"))
+            if (!destinationType.IsPoco())
                 return false;
 
-            return (destinationType.GetFieldsAndProperties(allowNoSetter: false).Any() ||
-                    destinationType.GetFieldsAndProperties(allowNoSetter: false, isNonPublic: true).Any());
+            return true;
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -37,8 +36,6 @@ namespace Mapster.Adapters
             if (arg.MapType != MapType.Projection &&
                 arg.Settings.IgnoreNullValues == true)
                 return false;
-            if (arg.DestinationType.GetFieldsAndProperties(isNonPublic: true).Any())
-                return false;            
             return true;
         }
 
@@ -128,7 +125,6 @@ namespace Mapster.Adapters
             return new ClassModel
             {
                 Members = destinationType.GetFieldsAndProperties(allowNoSetter: false)
-                    .Concat(destinationType.GetFieldsAndProperties(allowNoSetter: false, isNonPublic: true))
             };
         }
     }

@@ -109,7 +109,7 @@ namespace Mapster.Tests
         private void SetUpMappingNonPublicFields<TSource, TDestination>()
         {
             var config = TypeAdapterConfig<TSource, TDestination>.NewConfig();
-            config.Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
+            config.ParentConfig.EnableNonPublicMembers();
             config.NameMatchingStrategy(NameMatchingStrategy.Flexible);
         }
 
@@ -117,7 +117,8 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<TSource, TDestination>
                   .NewConfig()
-                      .Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
+                  .ParentConfig
+                  .EnableNonPublicMembers();
 
         }
 

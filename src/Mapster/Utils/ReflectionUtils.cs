@@ -25,6 +25,14 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
         }
 
+        public static bool IsPoco(this Type type)
+        {
+            if (type.GetTypeInfo().IsEnum)
+                return false;
+
+            return type.GetFieldsAndProperties(allowNoSetter: false).Any();
+        }
+
         public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true, bool isNonPublic = false)
         {
             var bindingFlags = BindingFlags.Instance |
