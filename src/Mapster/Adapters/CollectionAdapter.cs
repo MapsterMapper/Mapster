@@ -85,7 +85,9 @@ namespace Mapster.Adapters
         {
             if (destination.Type.IsArray)
             {
-                if (source.Type.IsArray && source.Type.GetElementType() == destination.Type.GetElementType())
+                if (source.Type.IsArray && 
+                    source.Type.GetElementType() == destination.Type.GetElementType() &&
+                    source.Type.GetElementType().UnwrapNullable().IsConvertible())
                 {
                     //Array.Copy(src, 0, dest, 0, src.Length)
                     var method = typeof (Array).GetMethod("Copy", new[] {typeof (Array), typeof (int), typeof (Array), typeof (int), typeof (int)});

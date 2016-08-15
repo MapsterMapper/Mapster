@@ -85,10 +85,15 @@ namespace Mapster
                 : null;
         }
 
+        public static Type UnwrapNullable(this Type type)
+        {
+            return type.IsNullable() ? type.GetGenericArguments()[0] : type;
+        }
+
         public static Expression BuildUnderlyingTypeConvertExpression(Expression source, Type sourceType, Type destinationType)
         {
-            var srcType = sourceType.IsNullable() ? sourceType.GetGenericArguments()[0] : sourceType;
-            var destType = destinationType.IsNullable() ? destinationType.GetGenericArguments()[0] : destinationType;
+            var srcType = sourceType.UnwrapNullable();
+            var destType = destinationType.UnwrapNullable();
 
             if (srcType == destType)
                 return source;
