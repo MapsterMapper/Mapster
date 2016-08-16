@@ -58,7 +58,7 @@ namespace Mapster.Adapters
                 setMethod = typeof (Extensions).GetMethods().First(m => m.Name == "FlexibleSet")
                     .MakeGenericMethod(args[1]);
             }
-            var properties = source.Type.GetPublicFieldsAndProperties();
+            var properties = source.Type.GetFieldsAndProperties();
             foreach (var property in properties)
             {
                 var getter = property.GetExpression(source);
@@ -100,7 +100,7 @@ namespace Mapster.Adapters
                 lines.AddRange(listInit.Initializers);
 
             var nameMatching = arg.Settings.NameMatchingStrategy;
-            var properties = source.Type.GetPublicFieldsAndProperties();
+            var properties = source.Type.GetFieldsAndProperties();
             foreach (var property in properties)
             {
                 var getter = property.GetExpression(source);

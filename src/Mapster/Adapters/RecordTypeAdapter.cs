@@ -78,7 +78,7 @@ namespace Mapster.Adapters
 
         protected override ClassModel GetClassModel(Type destinationType)
         {
-            var props = destinationType.GetPublicFieldsAndProperties();
+            var props = destinationType.GetFieldsAndProperties();
             var names = props.Select(p => p.Name.ToPascalCase()).ToHashSet();
             return (from ctor in destinationType.GetConstructors()
                     let ps = ctor.GetParameters()

@@ -124,7 +124,7 @@ namespace Mapster.Adapters
         {
             return new ClassModel
             {
-                Members = destinationType.GetPublicFieldsAndProperties(allowNoSetter: false)
+                Members = destinationType.GetFieldsAndProperties(allowNoSetter: false)
             };
         }
     }
