@@ -60,9 +60,7 @@ namespace Mapster
         {
             return (source, destinationMember, arg) =>
             {
-                var members = nonPublicPropertyOrField ?
-                    source.Type.GetFieldsAndProperties(isNonPublic: true) :
-                    source.Type.GetFieldsAndProperties();
+                var members = source.Type.GetFieldsAndProperties(accessorFlags: nonPublicPropertyOrField ? BindingFlags.NonPublic : BindingFlags.Public);
                 var strategy = arg.Settings.NameMatchingStrategy;
                 var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
                 return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)

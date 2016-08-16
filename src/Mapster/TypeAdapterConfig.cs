@@ -493,13 +493,6 @@ namespace Mapster
             var fn = _cloneConfig.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
             return fn(this);
         }
-
-        public void EnableNonPublicMembers()
-        {
-            var rule = new ClassWithNonPublicMemberAdapter().CreateRule();
-            rule.Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
-            this.Rules.Add(rule);
-        }
     }
 
     public static class TypeAdapterConfig<TSource, TDestination>

@@ -33,25 +33,19 @@ namespace Mapster
             return type.GetFieldsAndProperties(allowNoSetter: false).Any();
         }
 
-        public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true, bool isNonPublic = false)
+        public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
         {
-            var bindingFlags = BindingFlags.Instance |
-                               (isNonPublic ? BindingFlags.NonPublic : BindingFlags.Public);
+            var bindingFlags = BindingFlags.Instance | accessorFlags;
 
             var properties = type.GetProperties(bindingFlags)
                 .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null))
                 .Select(CreateModel);
 
             var fields = type.GetFields(bindingFlags)
-                .Where(x => (allowNoSetter || !x.IsInitOnly) && !IsBackingField(x))
+                .Where(x => (allowNoSetter || !x.IsInitOnly))
                 .Select(CreateModel);
 
             return properties.Concat(fields);
-        }
-
-        private static bool IsBackingField(FieldInfo field)
-        {
-            return field.CustomAttributes.Any(a => a.AttributeType == typeof(CompilerGeneratedAttribute));
         }
 
         public static bool IsCollection(this Type type)

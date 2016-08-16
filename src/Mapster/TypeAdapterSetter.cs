@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Adapters;
 using Mapster.Models;
 
 namespace Mapster
@@ -196,6 +197,18 @@ namespace Mapster
                 Invoker = source,
                 Condition = shouldMap
             });
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> EnableNonPublicMembers()
+        {
+            this.CheckCompiled();
+
+            var adapter = new ClassWithNonPublicMemberAdapter();
+            Settings.ConverterFactory = adapter.CreateAdaptFunc;
+            Settings.ConverterToTargetFactory = adapter.CreateAdaptToTargetFunc;
+            Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
+
             return this;
         }
 
