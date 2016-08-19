@@ -6,47 +6,12 @@
 
 ### Basic usage
 ```
-var result = TypeAdapter.Adapt<NewType>(original);
-```
-or with extensions
-```
 var result = original.Adapt<NewType>();
 ```
 ### Get it
 ```
 PM> Install-Package Mapster
 ```
-###Mapster 2.0 Released!
-Mapster 2.0 is now blistering fast! We upgraded the whole compilation unit while maintaining all functionality. The benchmarks:
-
-| Engine          | Structs | Simple objects | Parent-Child | Parent-Children | Complex objects | Advance mapping |
-|-----------------|--------:|---------------:|-------------:|----------------:|----------------:|----------------:|
-| AutoMapper      |   10871 |          27075 |        20895 |           19199 |           19333 |           21496 |
-| ExpressMapper   |     690 |           1350 |         1195 |            1678 |            3130 |            3920 |
-| OoMapper        |       - |           2043 |         1277 |            1416 |            2777 |               - |
-| ValueInjector   |    8534 |          21089 |        17008 |           12355 |           16876 |           19970 |
-| TinyMapper      |       - |           1282 |            - |               - |               - |               - |
-| Mapster         |       - |           2382 |         1892 |            1626 |            4287 |            6756 |
-| **Mapster 2.0** | **515** |       **1251** |      **950** |        **1037** |        **2455** |        **2342** |
-| Native          |     458 |            790 |          870 |            1253 |            3037 |            2754 |
-
-(NOTE: Benchmark runner is from [ExpressMapper](https://github.com/Expressmapper/ExpressMapper). Benchmark was run against largest set of data, times are in milliseconds, lower is better. Blank values mean the library did not the test.)
-
-###New Features
-- Projection is improved to generate better sql queries
-- Mapster is now able to map structs
-- Flagged enums are supported
-- Setting is now much more flexible
-    - You can now both opt-in and opt-out of settings
-    - Settings inheritance is able to inherit from interfaces
-    - Settings inheritance is now combined (it does not only pick from the closest parent)
-    - New rule based settings, you can defined your settings at a more granular level
-    - Settings are no longer only static, you can use different setting configurations for particular mappings
-- You can ignore properties by attributes
-- Now you can set up mapping between different types. Ex: `config.Map(dest => dest.AgeString, src => src.AgeInt)`
-- Mapster now supports circular reference mapping!
-- Supports more frameworks (.NET 4.0, 4.5, .NET Core RC 5.4)
-
 ###Get started
 
 [Mapping](#Mapping)
