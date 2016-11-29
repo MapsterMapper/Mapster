@@ -116,18 +116,26 @@ namespace Mapster.Adapters
 
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
-            var method = (from m in typeof (Enumerable).GetMethods()
-                          where m.Name == "Select"
-                          let p = m.GetParameters()[1]
-                          where p.ParameterType.GetGenericTypeDefinition() == typeof (Func<,>)
-                          select m).First().MakeGenericMethod(sourceElementType, destinationElementType);
 
             var p1 = Expression.Parameter(sourceElementType);
             var adapt = CreateAdaptExpression(p1, destinationElementType, arg);
             if (adapt == p1)
-                return source;
+            {
+                if (arg.MapType == MapType.Projection)
+                    return source;
+
+                var toEnum = (from m in typeof(ReflectionUtils).GetMethods()
+                              where m.Name == "ToEnumerable"
+                              select m).First().MakeGenericMethod(destinationElementType);
+                return Expression.Call(toEnum, source);
+            }
 
             //src.Select(item => convert(item))
+            var method = (from m in typeof(Enumerable).GetMethods()
+                          where m.Name == "Select"
+                          let p = m.GetParameters()[1]
+                          where p.ParameterType.GetGenericTypeDefinition() == typeof(Func<,>)
+                          select m).First().MakeGenericMethod(sourceElementType, destinationElementType);
             var exp = Expression.Call(method, source, Expression.Lambda(adapt, p1));
             if (exp.Type != arg.DestinationType)
             {

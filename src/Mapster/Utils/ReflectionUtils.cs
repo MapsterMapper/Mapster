@@ -339,5 +339,33 @@ namespace Mapster
         {
             return destinationType.GetInterface(type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>));
         }
+
+        public static IEnumerable<T> ToEnumerable<T>(this IEnumerable<T> source)
+        {
+            var array = source as T[];
+            if (array != null)
+            {
+                for (int i = 0, count = array.Length; i < count; i++)
+                {
+                    yield return array[i];
+                }
+                yield break;
+            }
+
+            var list = source as IList<T>;
+            if (list != null)
+            {
+                for (int i = 0, count = list.Count; i < count; i++)
+                {
+                    yield return list[i];
+                }
+                yield break;
+            }
+
+            foreach (var item in source)
+            {
+                yield return item;
+            }
+        }
     }
 }
