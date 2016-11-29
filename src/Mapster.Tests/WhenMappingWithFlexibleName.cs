@@ -61,6 +61,21 @@ namespace Mapster.Tests
         }
 
         [Test]
+        public void Map_IgnoreCase()
+        {
+            TypeAdapterConfig<MixName, SimpleName>.NewConfig().NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
+
+            var mix = new MixName
+            {
+                FOOBAR = "foo"
+            };
+
+            var simple = TypeAdapter.Adapt<SimpleName>(mix);
+
+            simple.FooBar.ShouldBe(mix.FOOBAR);
+        }
+
+        [Test]
         public void Test_Name()
         {
             NameMatchingStrategy.PascalCase("PascalCase").ShouldBe("PascalCase");
@@ -81,6 +96,7 @@ namespace Mapster.Tests
             public string lower_case { get; set; }
             public string UPPER_CASE { get; set; }
             public string MIX_UnderScore { get; set; }
+            public string FOOBAR { get; set; }
         }
 
         public class SimpleName
@@ -91,6 +107,7 @@ namespace Mapster.Tests
             public string LowerCase { get; set; }
             public string UpperCase { get; set; }
             public string MixUnder_SCORE { get; set; }
+            public string FooBar { get; set; }
         }
     }
 }

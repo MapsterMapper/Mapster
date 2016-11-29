@@ -29,6 +29,12 @@ namespace Mapster
             DestinationMemberNameConverter = PascalCase,
         };
 
+        public static readonly NameMatchingStrategy IgnoreCase = new NameMatchingStrategy
+        {
+            SourceMemberNameConverter = LowerCase,
+            DestinationMemberNameConverter = LowerCase,
+        };
+
         public static readonly NameMatchingStrategy ToCamelCase = new NameMatchingStrategy
         {
             SourceMemberNameConverter = CamelCase,
@@ -45,6 +51,7 @@ namespace Mapster
 
         internal static string PascalCase(string s) => string.Join("", BreakWords(s).Select(ProperCase));
         internal static string CamelCase(string s) => string.Join("", BreakWords(s).Select((w, i) => i == 0 ? w.ToLower() : ProperCase(w)));
+        internal static string LowerCase(string s) => s.ToLower();
 
         private static string ProperCase(string s) => s.Length == 0 ? s : (char.ToUpper(s[0]) + s.Substring(1).ToLower());
 
