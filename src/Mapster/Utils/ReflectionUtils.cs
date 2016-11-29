@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Mapster.Models;
 using Mapster.Utils;
 
@@ -234,7 +233,7 @@ namespace Mapster
                     var exp = property.GetExpression(source);
                     var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
                     if (ifTrue == null)
-                        return null;
+                        continue;
                     if (arg.MapType == MapType.Projection)
                         return ifTrue;
                     return Expression.Condition(
