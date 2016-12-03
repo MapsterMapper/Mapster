@@ -212,6 +212,10 @@ namespace Mapster.Adapters
                 current = Expression.ArrayIndex(collection, i);
                 lenAssign = Expression.Assign(len, Expression.ArrayLength(collection));
             }
+            else if (collection.Type.GetDictionaryType() != null)
+            {
+                return ForEach(collection, loopVar, loopContent);
+            }
             else
             {
                 var indexer = (from p in collection.Type.GetDefaultMembers().OfType<PropertyInfo>()

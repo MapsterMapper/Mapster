@@ -133,10 +133,22 @@ namespace Mapster.Tests
             poco.Name.ShouldBe(dict["Name"]);
         }
 
+        [Test]
+        public void Dictionary_Of_Int()
+        {
+            var result = TypeAdapter.Adapt<A, A>(new A { Prop = new Dictionary<int, decimal> { { 1, 2m } } });
+            result.Prop[1].ShouldBe(2m);
+        }
+
         public class SimplePoco
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
+        }
+
+        public class A
+        {
+            public Dictionary<int, decimal> Prop { get; set; }
         }
     }
 }
