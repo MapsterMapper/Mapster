@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
 
 namespace Mapster
 {
@@ -12,8 +11,6 @@ namespace Mapster
         {
             this.Argument = argument;
         }
-
-        protected CompileException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         public override string Message => 
             "Error while compiling\n" +

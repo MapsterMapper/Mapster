@@ -1,5 +1,5 @@
 ﻿{
-    "version": "2.5.0",
+    "version": "2.6.0",
     "description": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.",
     "packOptions": {
         "summary": "A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, but simpler and way faster.",
@@ -19,7 +19,7 @@
                 "define": [ "NET4" ]
             }
         },
-        "net45": { },
+        "net45": {},
         "netstandard1.3": {
             "dependencies": {
                 "Microsoft.CSharp": "4.0.1",
