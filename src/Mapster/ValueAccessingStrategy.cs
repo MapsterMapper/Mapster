@@ -76,8 +76,12 @@ namespace Mapster
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = "Get" + strategy.DestinationMemberNameConverter(destinationMember.Name);
             var getMethod = source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName);
-            return getMethod != null ? Expression.Call(source, getMethod) : null;
+                .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
+            if (getMethod == null)
+                return null;
+            if (getMethod.Name == "GetType" && destinationMember.Type != typeof (Type))
+                return null;
+            return Expression.Call(source, getMethod);
         }
 
         private static Expression FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
