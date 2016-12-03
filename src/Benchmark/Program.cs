@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AutoMapper;
 using Benchmark.Classes;
 using DeepCloning;
@@ -14,6 +15,7 @@ namespace Benchmark
         private static double AutomapperTime;
         private static double MapsterTime;
         private static double ExpressMapperTime;
+
 
         private static void Main(string[] args)
         {
@@ -32,12 +34,18 @@ namespace Benchmark
 
         private static void TestSimpleTypes()
         {
+            AutomapperTime = 0;
+            MapsterTime = 0;
+            ExpressMapperTime = 0;
+
             Console.WriteLine("Test 1 : Simple Types");
-            Console.WriteLine("Competitors : Mapster, Fast Mapper, Value Injecter, AutoMapper");
+            Console.WriteLine("Competitors : Mapster, ExpressMapper, AutoMapper");
 
             var foo = GetFoo();
 
-            Mapper.CreateMap<Foo, Foo>();
+            Mapper.Initialize(cfg => cfg.CreateMap<Foo, Foo>());
+            Mapper.Map<Foo, Foo>(foo);
+            //Mapper.Configuration
 
             TypeAdapter.Adapt<Foo, Foo>(foo); // cache mapping strategy
 
@@ -50,22 +58,36 @@ namespace Benchmark
             TestSimple(foo, 100000);
 
             TestSimple(foo, 1000000);
+
+            Console.WriteLine();
+            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime / MapsterTime).ToString("###.00") + " X slower");
+            Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime / MapsterTime).ToString("###.00") + " X slower");
+            Console.WriteLine();
+
         }
 
         private static void TestComplexTypes()
         {
+            AutomapperTime = 0;
+            MapsterTime = 0;
+            ExpressMapperTime = 0;
+
             Console.WriteLine();
             Console.WriteLine();
 
             Console.WriteLine("Test 2 : Complex Types");
-            Console.WriteLine("Competitors : Handwriting Mapper, Mapster, FastMapper, AutoMapper");
-            Console.WriteLine("(Value Injecter cannot convert complex type, Value injecter need a custom injecter)");
+            Console.WriteLine("Competitors : Mapster, ExpressMapper, AutoMapper");
 
             var customer = GetCustomer();
 
-            Mapper.CreateMap<Address, Address>();
-            Mapper.CreateMap<Address, AddressDTO>();
-            Mapper.CreateMap<Customer, CustomerDTO>();
+            Mapper.Initialize(cfg =>
+            {
+                cfg.CreateMap<Address, Address>();
+                cfg.CreateMap<Address, AddressDTO>();
+                cfg.CreateMap<Customer, CustomerDTO>();
+
+            });
+            Mapper.Map<Customer, CustomerDTO>(customer);
 
             //TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<Guid>(x => x);
             TypeAdapter.Adapt<Customer, CustomerDTO>(customer); // cache mapping strategy
@@ -81,7 +103,7 @@ namespace Benchmark
 
             Test(customer, 1000000);
 
-            Test(customer, 10000000);
+            //Test(customer, 10000000);
 
             Console.WriteLine();
             Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");
@@ -101,7 +123,7 @@ namespace Benchmark
 
             TestExpressMapper<Customer, CustomerDTO>(item, iterations);
 
-            //TestAutoMapper<Customer, CustomerDTO>(item, iterations);
+            TestAutoMapper<Customer, CustomerDTO>(item, iterations);
         }
 
         private static void TestSimple(Foo item, int iterations)
@@ -116,7 +138,7 @@ namespace Benchmark
 
             TestExpressMapper<Foo, Foo>(item, iterations);
 
-            //TestAutoMapper<Foo, Foo>(item, iterations);
+            TestAutoMapper<Foo, Foo>(item, iterations);
         }
 
 
@@ -181,8 +203,8 @@ namespace Benchmark
             where TSrc : class
             where TDest : class, new()
         {
-            if (iterations > 50000)
-                Console.WriteLine("AutoMapper still working please wait...");
+            //if (iterations > 50000)
+            //    Console.WriteLine("AutoMapper still working please wait...");
 
             AutomapperTime = Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
             Console.WriteLine("AutoMapper:\t\t" + AutomapperTime);
