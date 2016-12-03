@@ -4,6 +4,7 @@ using Shouldly;
 
 namespace Mapster.Tests
 {
+    [TestFixture]
     public class WhenMappingNullablePrimitives
     {
 
