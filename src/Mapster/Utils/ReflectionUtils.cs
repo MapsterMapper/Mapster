@@ -13,6 +13,24 @@ namespace Mapster
     {
         private static readonly Type _stringType = typeof (string);
 
+        // Primitive types with their conversion methods from System.Convert class.
+        private static Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
+            { typeof(bool), "ToBoolean" },
+            { typeof(short), "ToInt16" },
+            { typeof(int), "ToInt32" },
+            { typeof(long), "ToInt64" },
+            { typeof(float), "ToSingle" },
+            { typeof(double), "ToDouble" },
+            { typeof(decimal), "ToDecimal" },
+            { typeof(ushort), "ToUInt16" },
+            { typeof(uint), "ToUInt32" },
+            { typeof(ulong), "ToUInt64" },
+            { typeof(byte), "ToByte" },
+            { typeof(sbyte), "ToSByte" },
+            { typeof(DateTime), "ToDateTime" }
+        };
+
+
 #if NET4
         public static Type GetTypeInfo(this Type type) {
             return type;
@@ -55,8 +73,8 @@ namespace Mapster
         public static Type ExtractCollectionType(this Type collectionType)
         {
             var enumerableType = collectionType.GetGenericEnumerableType();
-            return enumerableType != null 
-                ? enumerableType.GetGenericArguments()[0] 
+            return enumerableType != null
+                ? enumerableType.GetGenericArguments()[0]
                 : typeof (object);
         }
 
@@ -69,7 +87,7 @@ namespace Mapster
         {
             if (predicate(type))
                 return type;
-            
+
             return type.GetInterfaces().FirstOrDefault(predicate);
         }
 
@@ -138,6 +156,11 @@ namespace Mapster
                 }
             }
 
+            if (IsObjectToPrimitiveConversion(srcType, destType))
+            {
+                return CreateConvertMethod(_primitiveTypes[destType], srcType, destType, source);
+            }
+
             //try using type casting
             try
             {
@@ -152,47 +175,18 @@ namespace Mapster
                 throw new InvalidOperationException("Cannot convert immutable type, please consider using 'MapWith' method to create mapping");
 
             //using Convert
-            if (destType == typeof (bool))
-                return CreateConvertMethod("ToBoolean", srcType, destType, source);
-
-            if (destType == typeof (int))
-                return CreateConvertMethod("ToInt32", srcType, destType, source);
-
-            if (destType == typeof (long))
-                return CreateConvertMethod("ToInt64", srcType, destType, source);
-
-            if (destType == typeof (short))
-                return CreateConvertMethod("ToInt16", srcType, destType, source);
-
-            if (destType == typeof (decimal))
-                return CreateConvertMethod("ToDecimal", srcType, destType, source);
-
-            if (destType == typeof (double))
-                return CreateConvertMethod("ToDouble", srcType, destType, source);
-
-            if (destType == typeof (float))
-                return CreateConvertMethod("ToSingle", srcType, destType, source);
-
-            if (destType == typeof (DateTime))
-                return CreateConvertMethod("ToDateTime", srcType, destType, source);
-
-            if (destType == typeof (ulong))
-                return CreateConvertMethod("ToUInt64", srcType, destType, source);
-
-            if (destType == typeof (uint))
-                return CreateConvertMethod("ToUInt32", srcType, destType, source);
-
-            if (destType == typeof (ushort))
-                return CreateConvertMethod("ToUInt16", srcType, destType, source);
-
-            if (destType == typeof (byte))
-                return CreateConvertMethod("ToByte", srcType, destType, source);
-
-            if (destType == typeof (sbyte))
-                return CreateConvertMethod("ToSByte", srcType, destType, source);
+            if (_primitiveTypes.ContainsKey(destType))
+            {
+                return CreateConvertMethod(_primitiveTypes[destType], srcType, destType, source);
+            }
 
             var changeTypeMethod = typeof (Convert).GetMethod("ChangeType", new[] {typeof (object), typeof (Type)});
             return Expression.Convert(Expression.Call(changeTypeMethod, Expression.Convert(source, typeof (object)), Expression.Constant(destType)), destType);
+        }
+
+        private static bool IsObjectToPrimitiveConversion(Type sourceType, Type destinationType)
+        {
+            return (sourceType == typeof(object)) && _primitiveTypes.ContainsKey(destinationType);
         }
 
         public static MemberExpression GetMemberInfo(Expression method)
