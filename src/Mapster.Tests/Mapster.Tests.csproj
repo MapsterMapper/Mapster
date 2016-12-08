@@ -71,6 +71,7 @@
     <Compile Include="Classes\TypeTestClass.cs" />
     <Compile Include="WhenCloningConfig.cs" />
     <Compile Include="WhenCompilingConfig.cs" />
+    <Compile Include="WhenConvertingFromObjects.cs" />
     <Compile Include="WhenCreatingConfigInstance.cs" />
     <Compile Include="WhenIgnoringConditionally.cs" />
     <Compile Include="WhenMappingDerived.cs" />
