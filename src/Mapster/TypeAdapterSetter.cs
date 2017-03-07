@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
@@ -47,7 +48,18 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.IgnoreAttributes.UnionWith(types);
+            foreach (var type in types)
+            {
+                setter.Settings.Ignores.Add(member => member.GetCustomAttributes(true).Any(attr => attr.GetType() == type));
+            }
+            return setter;
+        }
+
+        public static TSetter IgnoreWhen<TSetter>(this TSetter setter, Func<IMemberModel, bool> predicate) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.Ignores.Add(predicate);
             return setter;
         }
 

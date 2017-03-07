@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
+    <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
+    <VersionPrefix>2.6.1</VersionPrefix>
+    <Authors>chaowlert;eric_swann</Authors>
+    <TargetFrameworks>net40;net45;netstandard1.3</TargetFrameworks>
+    <AssemblyName>Mapster</AssemblyName>
+    <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>Mapster</PackageId>
+    <PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
+    <PackageIconUrl>http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/chaowlert/Mapster</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/chaowlert/Mapster/blob/master/LICENSE</PackageLicenseUrl>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <DefineConstants>$(DefineConstants);NET4</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="Microsoft.CSharp" Version="4.0.1" />
+    <PackageReference Include="System.Collections.NonGeneric" Version="4.0.1" />
+    <PackageReference Include="System.Linq.Queryable" Version="4.0.1" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>

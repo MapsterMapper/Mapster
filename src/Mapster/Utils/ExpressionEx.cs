@@ -19,17 +19,22 @@ namespace Mapster.Utils
             return replacer.Visit(lambda.Body);
         }
 
-        public static Expression TrimConversion(this Expression exp)
+        public static Expression TrimConversion(this Expression exp, bool force = false)
         {
             while (exp.NodeType == ExpressionType.Convert || exp.NodeType == ExpressionType.ConvertChecked)
             {
-                exp = ((UnaryExpression)exp).Operand;
+                var unary = (UnaryExpression) exp;
+                if (force || unary.Type.IsReferenceAssignableFrom(unary.Operand.Type))
+                    exp = unary.Operand;
+                else 
+                    break;
             }
             return exp;
         }
 
         public static Expression To(this Expression exp, Type type, bool force = false)
         {
+            exp = exp.TrimConversion();
             bool sameType = force ? type == exp.Type : type.IsReferenceAssignableFrom(exp.Type);
             if (sameType)
                 return exp;

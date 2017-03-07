@@ -17,8 +17,8 @@ namespace Mapster
 
     public class TypeAdapterSettings
     {
+        public List<Func<IMemberModel, bool>> Ignores { get; internal set; } = new List<Func<IMemberModel, bool>>();
         public Dictionary<string, LambdaExpression> IgnoreMembers { get; internal set; } = new Dictionary<string, LambdaExpression>();
-        public HashSet<Type> IgnoreAttributes { get; internal set; } = new HashSet<Type>();
         public TransformsCollection DestinationTransforms { get; internal set; } = new TransformsCollection();
         public NameMatchingStrategy NameMatchingStrategy { get; internal set; } = new NameMatchingStrategy();
 
@@ -59,7 +59,7 @@ namespace Mapster
             {
                 this.MergeIgnoreMembers(member.Key, member.Value);
             }
-            this.IgnoreAttributes.UnionWith(other.IgnoreAttributes);
+            this.Ignores.AddRange(other.Ignores);
             this.NameMatchingStrategy.Apply(other.NameMatchingStrategy);
             this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
             this.AfterMappingFactories.AddRange(other.AfterMappingFactories);
@@ -78,7 +78,7 @@ namespace Mapster
         internal void MergeIgnoreMembers(string name, LambdaExpression condition)
         {
             LambdaExpression lambda;
-            if (this.IgnoreMembers.TryGetValue(name, out lambda))
+            if (condition != null && this.IgnoreMembers.TryGetValue(name, out lambda))
             {
                 if (lambda == null)
                     return;

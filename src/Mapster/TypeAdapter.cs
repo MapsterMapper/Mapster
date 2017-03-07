@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Mapster
 {
@@ -36,7 +37,10 @@ namespace Mapster
         {
             if (source == null)
                 return default(TDestination);
-            dynamic fn = config.GetMapFunction(source.GetType(), typeof(TDestination));
+            var type = source.GetType();
+            if (!type.GetTypeInfo().IsVisible)
+                throw new NotSupportedException("source Type must be public, or you can use src.BuildAdapter().AdaptToType<TDest>() instead");
+            dynamic fn = config.GetMapFunction(type, typeof(TDestination));
             return (TDestination)fn((dynamic)source);
         }
 

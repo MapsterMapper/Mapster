@@ -81,11 +81,24 @@ namespace Mapster
             return ForType<TSource, TDestination>();
         }
 
+        public TypeAdapterSetter NewConfig(Type sourceType, Type destinationType)
+        {
+            Remove(sourceType, destinationType);
+            return ForType(sourceType, destinationType);
+        }
+
         public TypeAdapterSetter<TSource, TDestination> ForType<TSource, TDestination>()
         {
             var key = new TypeTuple(typeof(TSource), typeof(TDestination));
             var settings = GetSettings(key);
             return new TypeAdapterSetter<TSource, TDestination>(settings, this);
+        }
+
+        public TypeAdapterSetter ForType(Type sourceType, Type destinationType)
+        {
+            var key = new TypeTuple(sourceType, destinationType);
+            var settings = GetSettings(key);
+            return new TypeAdapterSetter(settings, this);
         }
 
         public TypeAdapterSetter<TDestination> ForDestinationType<TDestination>()
@@ -155,20 +168,33 @@ namespace Mapster
             if (!allowInheritance)
                 return null;
 
-            if (type2.GetTypeInfo().IsInterface)
+            //generic type definition
+            int score = 35;
+            if (type2.GetTypeInfo().IsGenericTypeDefinition)
             {
-                return type2.GetTypeInfo().IsAssignableFrom(type1.GetTypeInfo())
-                    ? (int?)25
-                    : null;
+                while (type1 != null && type1.GetGenericTypeDefinition() != type2)
+                {
+                    score--;
+                    type1 = type1.GetTypeInfo().BaseType;
+                }
+                return type1 == null ? null : (int?) score;
             }
 
-            int score = 50;
+            if (!type2.GetTypeInfo().IsAssignableFrom(type1.GetTypeInfo()))
+                return null;
+
+            //interface
+            if (type2.GetTypeInfo().IsInterface)
+                return 25;
+
+            //base type
+            score = 50;
             while (type1 != null && type1 != type2)
             {
                 score--;
                 type1 = type1.GetTypeInfo().BaseType;
             }
-            return type1 == null ? null : (int?)score;
+            return score;
         }
 
         private readonly Hashtable _mapDict = new Hashtable();

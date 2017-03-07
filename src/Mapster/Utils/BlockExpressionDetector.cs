@@ -18,7 +18,6 @@ namespace Mapster.Utils
                 case ExpressionType.DebugInfo:
                 case ExpressionType.Goto:
                 case ExpressionType.Label:
-                case ExpressionType.RuntimeVariables:
                 case ExpressionType.Loop:
                 case ExpressionType.Switch:
                 case ExpressionType.Throw:

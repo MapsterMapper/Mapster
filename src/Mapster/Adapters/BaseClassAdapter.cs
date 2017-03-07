@@ -24,7 +24,7 @@ namespace Mapster.Adapters
             foreach (var destinationMember in destinationMembers)
             {
                 LambdaExpression setterCondition;
-                if (ProcessIgnores(arg.Settings, destinationMember, source, out setterCondition)) continue;
+                if (ProcessIgnores(arg.Settings, destinationMember, out setterCondition)) continue;
 
                 var member = destinationMember;
                 var getter = arg.Settings.ValueAccessingStrategies
@@ -74,15 +74,14 @@ namespace Mapster.Adapters
         private static bool ProcessIgnores(
             TypeAdapterSettings config,
             IMemberModel destinationMember,
-            Expression source,
             out LambdaExpression condition)
         {
-            if (config.IgnoreMembers.TryGetValue(destinationMember.Name, out condition)) {
-                return condition == null;
-            }
+            condition = null;
+            if (config.Ignores.Any(ignore => ignore(destinationMember)))
+                return true;
 
-            var attributes = destinationMember.GetCustomAttributes(true).Select(attr => attr.GetType());
-            return config.IgnoreAttributes.Overlaps(attributes);
+            return config.IgnoreMembers.TryGetValue(destinationMember.Name, out condition)
+                   && condition == null;
         }
 
         #endregion

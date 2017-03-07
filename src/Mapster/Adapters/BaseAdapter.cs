@@ -219,7 +219,7 @@ namespace Mapster.Adapters
 
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
             return constructUsing != null
-                ? constructUsing.Apply(source).TrimConversion().To(arg.DestinationType)
+                ? constructUsing.Apply(source).TrimConversion(true).To(arg.DestinationType)
                 : Expression.New(arg.DestinationType);
         }
 

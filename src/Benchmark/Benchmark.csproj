@@ -40,8 +40,8 @@
       <HintPath>..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ExpressMapper, Version=1.8.3.0, Culture=neutral, PublicKeyToken=ac363faa09311ba0, processorArchitecture=MSIL">
-      <HintPath>..\packages\Expressmapper.1.8.3\lib\net45\ExpressMapper.dll</HintPath>
+    <Reference Include="ExpressMapper, Version=1.9.0.0, Culture=neutral, PublicKeyToken=ac363faa09311ba0, processorArchitecture=MSIL">
+      <HintPath>..\packages\Expressmapper.1.9.0\lib\net45\ExpressMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FastMember">
