@@ -10,16 +10,14 @@ namespace Mapster
 
         public Expression<Func<T, T>> Get<T>()
         {
-            LambdaExpression found;
-            _transforms.TryGetValue(typeof(T), out found);
+            _transforms.TryGetValue(typeof(T), out var found);
 
             return (Expression<Func<T, T>>)found;
         }
 
         public LambdaExpression Get(Type type)
         {
-            LambdaExpression found;
-            _transforms.TryGetValue(type, out found);
+            _transforms.TryGetValue(type, out var found);
 
             return found;
         }

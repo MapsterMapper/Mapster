@@ -54,8 +54,7 @@ namespace Mapster.Utils
         {
             if (!_isFlag)
             {
-                string ret;
-                if (_reverseLookup.TryGetValue(val, out ret))
+                if (_reverseLookup.TryGetValue(val, out var ret))
                     return ret;
                 return _toIntString(val);
             }
@@ -108,8 +107,7 @@ namespace Mapster.Utils
 
         private static TEnum MatchByString(string val)
         {
-            TEnum match;
-            if (!_lookup.TryGetValue(val.Trim().ToUpperInvariant(), out match))
+            if (!_lookup.TryGetValue(val.Trim().ToUpperInvariant(), out var match))
                 return _toIntEnum(val);
 
             return match;

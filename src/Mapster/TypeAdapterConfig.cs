@@ -110,8 +110,7 @@ namespace Mapster
 
         private TypeAdapterSettings GetSettings(TypeTuple key)
         {
-            TypeAdapterRule rule;
-            if (!this.RuleMap.TryGetValue(key, out rule))
+            if (!this.RuleMap.TryGetValue(key, out var rule))
             {
                 lock (this.RuleMap)
                 {
@@ -506,8 +505,7 @@ namespace Mapster
 
         private void Remove(TypeTuple key)
         {
-            TypeAdapterRule rule;
-            if (this.RuleMap.TryGetValue(key, out rule))
+            if (this.RuleMap.TryGetValue(key, out var rule))
             {
                 this.RuleMap.Remove(key);
                 this.Rules.Remove(rule);

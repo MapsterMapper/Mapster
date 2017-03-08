@@ -23,8 +23,7 @@ namespace Mapster.Adapters
 
             foreach (var destinationMember in destinationMembers)
             {
-                LambdaExpression setterCondition;
-                if (ProcessIgnores(arg.Settings, destinationMember, out setterCondition)) continue;
+                if (ProcessIgnores(arg.Settings, destinationMember, out var setterCondition)) continue;
 
                 var member = destinationMember;
                 var getter = arg.Settings.ValueAccessingStrategies

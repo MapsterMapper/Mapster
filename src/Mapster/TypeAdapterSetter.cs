@@ -315,8 +315,7 @@ namespace Mapster
             if (!baseDestinationType.GetTypeInfo().IsAssignableFrom(typeof(TDestination).GetTypeInfo()))
                 throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
 
-            TypeAdapterRule rule;
-            if (ParentConfig.RuleMap.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out rule))
+            if (ParentConfig.RuleMap.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out var rule))
             {
                 Settings.Apply(rule.Settings);
             }

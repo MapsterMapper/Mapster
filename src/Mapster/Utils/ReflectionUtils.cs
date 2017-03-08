@@ -336,8 +336,7 @@ namespace Mapster
 
         public static IEnumerable<T> ToEnumerable<T>(this IEnumerable<T> source)
         {
-            var array = source as T[];
-            if (array != null)
+            if (source is T[] array)
             {
                 for (int i = 0, count = array.Length; i < count; i++)
                 {
@@ -346,8 +345,7 @@ namespace Mapster
                 yield break;
             }
 
-            var list = source as IList<T>;
-            if (list != null)
+            if (source is IList<T> list)
             {
                 for (int i = 0, count = list.Count; i < count; i++)
                 {

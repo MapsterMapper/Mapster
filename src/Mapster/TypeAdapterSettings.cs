@@ -77,8 +77,7 @@ namespace Mapster
 
         internal void MergeIgnoreMembers(string name, LambdaExpression condition)
         {
-            LambdaExpression lambda;
-            if (condition != null && this.IgnoreMembers.TryGetValue(name, out lambda))
+            if (condition != null && this.IgnoreMembers.TryGetValue(name, out var lambda))
             {
                 if (lambda == null)
                     return;
