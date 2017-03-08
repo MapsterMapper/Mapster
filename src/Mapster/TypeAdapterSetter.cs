@@ -55,7 +55,7 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter IgnoreWhen<TSetter>(this TSetter setter, Func<IMemberModel, bool> predicate) where TSetter : TypeAdapterSetter
+        public static TSetter IgnoreMember<TSetter>(this TSetter setter, Func<IMemberModel, bool> predicate) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 

@@ -179,3 +179,4 @@ deploy/output
 /src/.vs/config
 project.lock.json
 /src/.vs
+/.vs
