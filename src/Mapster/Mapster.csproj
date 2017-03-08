@@ -101,7 +101,6 @@
     <Compile Include="Utils\ReflectionUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Mapster.nuspec" />
     <None Include="Mapster.snk" />
   </ItemGroup>
   <ItemGroup />

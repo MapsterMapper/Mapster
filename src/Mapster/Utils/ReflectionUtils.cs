@@ -31,7 +31,7 @@ namespace Mapster
         };
 
 
-#if NET4
+#if NET40
         public static Type GetTypeInfo(this Type type) {
             return type;
         }
