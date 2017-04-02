@@ -156,6 +156,15 @@ namespace Mapster
                 }
             }
 
+            if (destType.GetTypeInfo().IsEnum && srcType.GetTypeInfo().IsEnum)
+            {
+                var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
+                var tostring = Expression.Call(method, source);
+                var methodParse = typeof(Enum<>).MakeGenericType(destType).GetMethod("Parse", new[] { typeof(string) });
+
+                return Expression.Call(methodParse, tostring);
+            }
+
             if (IsObjectToPrimitiveConversion(srcType, destType))
             {
                 return CreateConvertMethod(_primitiveTypes[destType], srcType, destType, source);

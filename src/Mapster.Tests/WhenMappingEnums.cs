@@ -15,6 +15,13 @@ namespace Mapster.Tests
         Sales = 2
     }
 
+    public enum EmployeeDepartments
+    {
+        Finance = 0,
+        IT = 1,
+        Sales = 2
+    }
+
     public class Employee
     {
         public Guid Id { get; set; }
@@ -28,6 +35,13 @@ namespace Mapster.Tests
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Department { get; set; }
+    }
+
+    public class EmployeeWithEnum
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public EmployeeDepartments Department { get; set; }
     }
 
     public class EmployeeDTO
@@ -65,6 +79,20 @@ namespace Mapster.Tests
             var employee = new EmployeeWithStringEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = Departments.IT.ToString() };
 
             var dto = TypeAdapter.Adapt<EmployeeWithStringEnum, EmployeeDTO>(employee);
+
+            dto.ShouldNotBeNull();
+
+            dto.Id.ShouldBe(employee.Id);
+            dto.Name.ShouldBe(employee.Name);
+            dto.Department.ShouldBe(Departments.IT);
+        }
+
+        [Test]
+        public void Enum_Is_Mapped_To_Enum()
+        {
+            var employee = new EmployeeWithEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = EmployeeDepartments.IT };
+
+            var dto = TypeAdapter.Adapt<EmployeeWithEnum, EmployeeDTO>(employee);
 
             dto.ShouldNotBeNull();
 
