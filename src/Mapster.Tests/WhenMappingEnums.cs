@@ -17,9 +17,9 @@ namespace Mapster.Tests
 
     public enum EmployeeDepartments
     {
-        Finance = 0,
-        IT = 1,
-        Sales = 2
+        Finance = 2,
+        IT = 3,
+        Sales = 4
     }
 
     public class Employee

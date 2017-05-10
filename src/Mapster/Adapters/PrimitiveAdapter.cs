@@ -25,7 +25,7 @@ namespace Mapster.Adapters
                 {
                     convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
                 }
-                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType);
+                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType, arg.Settings);
                 if (convert.Type != destinationType)
                     convert = Expression.Convert(convert, destinationType);
 

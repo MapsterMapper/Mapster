@@ -38,10 +38,18 @@ namespace Mapster
             if (source == null)
                 return default(TDestination);
             var type = source.GetType();
-            if (!type.GetTypeInfo().IsVisible)
-                throw new NotSupportedException("source Type must be public, or you can use src.BuildAdapter().AdaptToType<TDest>() instead");
-            dynamic fn = config.GetMapFunction(type, typeof(TDestination));
-            return (TDestination)fn((dynamic)source);
+            var del = config.GetMapFunction(type, typeof(TDestination));
+            if (type.GetTypeInfo().IsVisible)
+            {
+                dynamic fn = del;
+                return (TDestination)fn((dynamic)source);
+            }
+            else
+            {
+                //NOTE: if type is non-public, we cannot use dynamic
+                //DynamicInvoke is slow, but works with non-public
+                return (TDestination)del.DynamicInvoke(source);
+            }
         }
 
         /// <summary>

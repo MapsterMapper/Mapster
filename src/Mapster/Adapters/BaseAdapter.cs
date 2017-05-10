@@ -56,16 +56,16 @@ namespace Mapster.Adapters
         {
             if (arg.MapType == MapType.MapToTarget)
                 return false;
-            if (arg.Settings.IgnoreMembers.Any(item => item.Value != null))
+            if (arg.Settings.IgnoreIfs.Any(item => item.Value != null))
                 return false;
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
             if (constructUsing != null &&
                 constructUsing.Body.NodeType != ExpressionType.New &&
                 constructUsing.Body.NodeType != ExpressionType.MemberInit)
             {
-                    if (arg.MapType == MapType.Projection)
-                        throw new InvalidOperationException("Input ConstructUsing is invalid for projection");
-                    return false;
+                if (arg.MapType == MapType.Projection)
+                    throw new InvalidOperationException("Input ConstructUsing is invalid for projection");
+                return false;
             }
             if (arg.Settings.PreserveReference == true &&
                 arg.MapType != MapType.Projection &&

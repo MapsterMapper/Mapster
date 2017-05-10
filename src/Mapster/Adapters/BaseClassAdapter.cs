@@ -79,7 +79,7 @@ namespace Mapster.Adapters
             if (config.Ignores.Any(ignore => ignore(destinationMember)))
                 return true;
 
-            return config.IgnoreMembers.TryGetValue(destinationMember.Name, out condition)
+            return config.IgnoreIfs.TryGetValue(destinationMember.Name, out condition)
                    && condition == null;
         }
 

@@ -118,7 +118,7 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static Expression BuildUnderlyingTypeConvertExpression(Expression source, Type sourceType, Type destinationType)
+        public static Expression BuildUnderlyingTypeConvertExpression(Expression source, Type sourceType, Type destinationType, TypeAdapterSettings settings)
         {
             var srcType = sourceType.UnwrapNullable();
             var destType = destinationType.UnwrapNullable();
@@ -156,7 +156,7 @@ namespace Mapster
                 }
             }
 
-            if (destType.GetTypeInfo().IsEnum && srcType.GetTypeInfo().IsEnum)
+            if (destType.GetTypeInfo().IsEnum && srcType.GetTypeInfo().IsEnum && settings.MapEnumByName == true)
             {
                 var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
                 var tostring = Expression.Call(method, source);

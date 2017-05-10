@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Mapster
 {
-    public class TransformsCollection
+    public class TransformsCollection: IApplyable<TransformsCollection>
     {
         private readonly Dictionary<Type, LambdaExpression> _transforms = new Dictionary<Type, LambdaExpression>();
 
@@ -59,6 +59,16 @@ namespace Mapster
         public void Clear()
         {
             _transforms.Clear();
+        }
+
+        public void Apply(object other)
+        {
+            if (other is TransformsCollection collection)
+                Apply(collection);
+        }
+        public void Apply(TransformsCollection other)
+        {
+            this.TryAdd(other.Transforms);
         }
 
         internal IDictionary<Type, LambdaExpression> Transforms => _transforms;

@@ -2,113 +2,83 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Mapster.Models;
-using Mapster.Utils;
-using System.Linq;
 
 namespace Mapster
 {
-    public enum MapType
+    public class TypeAdapterSettings: SettingStore
     {
-        Map,
-        InlineMap,
-        MapToTarget,
-        Projection,
-    }
+        public List<Func<IMemberModel, bool>> Ignores
+        {
+            get => Get("Ignores", () => new List<Func<IMemberModel, bool>>());
+        }
+        public IgnoreIfDictionary IgnoreIfs
+        {
+            get => Get("IgnoreIfs", () => new IgnoreIfDictionary());
+        }
+        public TransformsCollection DestinationTransforms
+        {
+            get => Get("DestinationTransforms", () => new TransformsCollection());
+        }
+        public NameMatchingStrategy NameMatchingStrategy
+        {
+            get => Get("NameMatchingStrategy", () => new NameMatchingStrategy());
+            set => Set("NameMatchingStrategy", value);
+        }
 
-    public class TypeAdapterSettings
-    {
-        public List<Func<IMemberModel, bool>> Ignores { get; internal set; } = new List<Func<IMemberModel, bool>>();
-        public Dictionary<string, LambdaExpression> IgnoreMembers { get; internal set; } = new Dictionary<string, LambdaExpression>();
-        public TransformsCollection DestinationTransforms { get; internal set; } = new TransformsCollection();
-        public NameMatchingStrategy NameMatchingStrategy { get; internal set; } = new NameMatchingStrategy();
+        public bool? PreserveReference
+        {
+            get => Get("PreserveReference");
+            set => Set("PreserveReference", value);
+        }
+        public bool? ShallowCopyForSameType
+        {
+            get => Get("ShallowCopyForSameType");
+            set => Set("ShallowCopyForSameType", value);
+        }
+        public bool? IgnoreNullValues
+        {
+            get => Get("IgnoreNullValues");
+            set => Set("IgnoreNullValues", value);
+        }
+        public bool? MapEnumByName
+        {
+            get => Get("MapEnumByName");
+            set => Set("MapEnumByName", value);
+        }
 
-        public bool? PreserveReference { get; set; }
-        public bool? ShallowCopyForSameType { get; set; }
-        public bool? IgnoreNullValues { get; set; }
-        public bool? NoInherit { get; set; }
-        public Type DestinationType { get; set; }
-
-        public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies { get; internal set; } = new List<Func<Expression, IMemberModel, CompileArgument, Expression>>();
-        public List<InvokerModel> Resolvers { get; internal set; } = new List<InvokerModel>();
-        public Func<CompileArgument, LambdaExpression> ConstructUsingFactory { get; set; }
-        public Func<CompileArgument, LambdaExpression> ConverterFactory { get; set; }
-        public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory { get; set; }
-        public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories { get; internal set; } = new List<Func<CompileArgument, LambdaExpression>>();
+        public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies
+        {
+            get => Get("ValueAccessingStrategies", () => new List<Func<Expression, IMemberModel, CompileArgument, Expression>>());
+            internal set => Set("ValueAccessingStrategies", value);
+        }
+        public List<InvokerModel> Resolvers
+        {
+            get => Get("Resolvers", () => new List<InvokerModel>());
+        }
+        public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories
+        {
+            get => Get("AfterMappingFactories", () => new List<Func<CompileArgument, LambdaExpression>>());
+        }
+        public List<TypeTuple> Includes
+        {
+            get => Get("Includes", () => new List<TypeTuple>());
+        }
+        public Func<CompileArgument, LambdaExpression> ConstructUsingFactory
+        {
+            get => Get<Func<CompileArgument, LambdaExpression>>("ConstructUsingFactory");
+            set => Set("ConstructUsingFactory", value);
+        }
+        public Func<CompileArgument, LambdaExpression> ConverterFactory
+        {
+            get => Get<Func<CompileArgument, LambdaExpression>>("ConverterFactory");
+            set => Set("ConverterFactory", value);
+        }
+        public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory
+        {
+            get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
+            set => Set("ConverterToTargetFactory", value);
+        }
 
         internal bool Compiled { get; set; }
-
-        public void Apply(TypeAdapterSettings other)
-        {
-            if (this.NoInherit == null)
-                this.NoInherit = other.NoInherit;
-
-            if (this.NoInherit == true)
-            {
-                if (this.DestinationType != null && other.DestinationType != null)
-                    return;
-            }
-
-            if (this.PreserveReference == null)
-                this.PreserveReference = other.PreserveReference;
-            if (this.ShallowCopyForSameType == null)
-                this.ShallowCopyForSameType = other.ShallowCopyForSameType;
-            if (this.IgnoreNullValues == null)
-                this.IgnoreNullValues = other.IgnoreNullValues;
-
-            foreach (var member in other.IgnoreMembers)
-            {
-                this.MergeIgnoreMembers(member.Key, member.Value);
-            }
-            this.Ignores.AddRange(other.Ignores);
-            this.NameMatchingStrategy.Apply(other.NameMatchingStrategy);
-            this.DestinationTransforms.TryAdd(other.DestinationTransforms.Transforms);
-            this.AfterMappingFactories.AddRange(other.AfterMappingFactories);
-
-            this.ValueAccessingStrategies.AddRange(other.ValueAccessingStrategies);
-            this.Resolvers.AddRange(other.Resolvers);
-
-            if (this.ConstructUsingFactory == null)
-                this.ConstructUsingFactory = other.ConstructUsingFactory;
-            if (this.ConverterFactory == null)
-                this.ConverterFactory = other.ConverterFactory;
-            if (this.ConverterToTargetFactory == null)
-                this.ConverterToTargetFactory = other.ConverterToTargetFactory;
-        }
-
-        internal void MergeIgnoreMembers(string name, LambdaExpression condition)
-        {
-            if (condition != null && this.IgnoreMembers.TryGetValue(name, out var lambda))
-            {
-                if (lambda == null)
-                    return;
-
-                var param = lambda.Parameters.ToArray();
-                lambda = Expression.Lambda(Expression.OrElse(lambda.Body, condition.Apply(param[0], param[1])), param);
-                this.IgnoreMembers[name] = lambda;
-            }
-            else
-                this.IgnoreMembers[name] = condition;
-
-        }
-    }
-
-    public class CompileArgument
-    {
-        public Type SourceType;
-        public Type DestinationType;
-        public MapType MapType;
-        public TypeAdapterSettings Settings;
-        public CompileContext Context;
-    }
-
-    public class CompileContext
-    {
-        public readonly HashSet<TypeTuple> Running = new HashSet<TypeTuple>();
-        public readonly TypeAdapterConfig Config;
-
-        public CompileContext(TypeAdapterConfig config)
-        {
-            this.Config = config;
-        }
     }
 }

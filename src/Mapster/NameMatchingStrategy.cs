@@ -4,11 +4,16 @@ using System.Linq;
 
 namespace Mapster
 {
-    public class NameMatchingStrategy
+    public class NameMatchingStrategy: IApplyable<NameMatchingStrategy>
     {
         public Func<string, string> SourceMemberNameConverter { get; set; }
         public Func<string, string> DestinationMemberNameConverter { get; set; }
 
+        public void Apply(object other)
+        {
+            if (other is NameMatchingStrategy strategy)
+                Apply(strategy);
+        }
         public void Apply(NameMatchingStrategy other)
         {
             if (this.SourceMemberNameConverter == null)

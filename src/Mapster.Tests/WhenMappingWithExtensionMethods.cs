@@ -79,5 +79,16 @@ namespace Mapster.Tests
 
             dto.ShouldBeNull();
         }
+
+        [Test]
+        public void Map_From_Non_Public_Type()
+        {
+            var product = new { Id = Guid.NewGuid(), Title = "Test" };
+
+            var dto = product.Adapt<ProductDTO>();
+
+            dto.Id.ShouldBe(product.Id);
+            dto.Title.ShouldBe(product.Title);
+        }
     }
 }

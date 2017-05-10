@@ -43,6 +43,7 @@ namespace Mapster
         public bool RequireDestinationMemberSource { get; set; }
         public bool RequireExplicitMapping { get; set; }
         public bool AllowImplicitDestinationInheritance { get; set; }
+        public bool AllowImplicitSourceInheritance { get; set; }
 
         public List<TypeAdapterRule> Rules { get; protected set; }
         public TypeAdapterSetter Default { get; protected set; }
@@ -136,15 +137,12 @@ namespace Mapster
                     var score1 = GetSubclassDistance(destinationType, key.Destination, this.AllowImplicitDestinationInheritance);
                     if (score1 == null)
                         return null;
-                    var score2 = GetSubclassDistance(sourceType, key.Source, true);
+                    var score2 = GetSubclassDistance(sourceType, key.Source, this.AllowImplicitSourceInheritance);
                     if (score2 == null)
                         return null;
                     return score1.Value + score2.Value;
                 },
-                Settings = new TypeAdapterSettings
-                {
-                    DestinationType = key.Destination,
-                },
+                Settings = new TypeAdapterSettings(),
             };
         }
 
@@ -153,10 +151,7 @@ namespace Mapster
             return new TypeAdapterRule
             {
                 Priority = (sourceType, destinationType, mapType) => GetSubclassDistance(destinationType, key.Destination, true),
-                Settings = new TypeAdapterSettings
-                {
-                    DestinationType = key.Destination,
-                },
+                Settings = new TypeAdapterSettings(),
             };
         }
 
@@ -407,10 +402,7 @@ namespace Mapster
                             where priority != null
                             orderby priority.Value descending
                             select rule.Settings).ToList();
-            var result = new TypeAdapterSettings
-            {
-                NoInherit = settings.FirstOrDefault(s => s.NoInherit.HasValue)?.NoInherit
-            };
+            var result = new TypeAdapterSettings();
             foreach (var setting in settings)
             {
                 result.Apply(setting);
@@ -545,11 +537,5 @@ namespace Mapster
         {
             TypeAdapterConfig.GlobalSettings.Remove(typeof(TSource), typeof(TDestination));
         }
-    }
-
-    public class TypeAdapterRule
-    {
-        public Func<Type, Type, MapType, int?> Priority;
-        public TypeAdapterSettings Settings;
     }
 }

@@ -1,24 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Mapster
 {
-    internal class ReferenceComparer : IEqualityComparer<object>
-    {
-        public static readonly ReferenceComparer Default = new ReferenceComparer();
-
-        bool IEqualityComparer<object>.Equals(object x, object y)
-        {
-            return ReferenceEquals(x, y);
-        }
-
-        public int GetHashCode(object obj)
-        {
-            return RuntimeHelpers.GetHashCode(obj);
-        }
-    }
-
     /// <summary>
     /// This class is to send data between mapping process
     /// </summary>
@@ -42,26 +26,5 @@ namespace Mapster
 
         private Dictionary<string, object> _parameters;
         public Dictionary<string, object> Parameters => _parameters ?? (_parameters = new Dictionary<string, object>());
-    }
-    public class MapContextScope : IDisposable
-    {
-        public MapContext Context { get; }
-
-        private readonly bool _isRootScope;
-        public MapContextScope()
-        {
-            this.Context = MapContext.Current;
-            if (this.Context == null)
-            {
-                _isRootScope = true;
-                this.Context = MapContext.Current = new MapContext();
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_isRootScope && ReferenceEquals(MapContext.Current, this.Context))
-                MapContext.Current = null;
-        }
     }
 }

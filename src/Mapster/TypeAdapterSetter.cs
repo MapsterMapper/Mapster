@@ -39,7 +39,7 @@ namespace Mapster
 
             foreach (var name in names)
             {
-                setter.Settings.IgnoreMembers[name] = null;
+                setter.Settings.IgnoreIfs[name] = null;
             }
             return setter;
         }
@@ -71,6 +71,14 @@ namespace Mapster
             return setter;
         }
 
+        public static TSetter EnumMappingStrategy<TSetter>(this TSetter setter, EnumMappingStrategy strategy) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.MapEnumByName = strategy == Mapster.EnumMappingStrategy.ByName;
+            return setter;
+        }
+
         public static TSetter IgnoreNullValues<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
@@ -84,14 +92,6 @@ namespace Mapster
             setter.CheckCompiled();
 
             setter.Settings.PreserveReference = value;
-            return setter;
-        }
-
-        public static TSetter NoInherit<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-
-            setter.Settings.NoInherit = value;
             return setter;
         }
 
@@ -131,7 +131,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreMembers[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
+                Settings.IgnoreIfs[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
             }
             return this;
         }
@@ -192,7 +192,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreMembers[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
+                Settings.IgnoreIfs[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
             }
             return this;
         }
@@ -206,7 +206,7 @@ namespace Mapster
             foreach (var member in members)
             {
                 var name = ReflectionUtils.GetMemberInfo(member).Member.Name;
-                Settings.MergeIgnoreMembers(name, condition);
+                Settings.IgnoreIfs.Merge(name, condition);
             }
             return this;
         }
@@ -224,6 +224,18 @@ namespace Mapster
                 Invoker = source,
                 Condition = shouldMap
             });
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> TwoWaysMap<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TSourceMember>> source)
+        {
+            this.CheckCompiled();
+
+            Map(member, source);
+            ParentConfig.ForType<TDestination, TSource>().Map(source, member);
+
             return this;
         }
 
@@ -299,6 +311,25 @@ namespace Mapster
                 var invoke = Expression.Call(actionExp, "Invoke", null, p1, p2);
                 return Expression.Lambda(invoke, p1, p2);
             });
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>() 
+            where TDerivedSource: TSource
+            where TDerivedDestination: TDestination
+        {
+            this.CheckCompiled();
+
+            ParentConfig.Rules.Add(new TypeAdapterRule
+            {
+                Priority = (sourceType, destinationType, mapType) =>
+                    sourceType == typeof(TDerivedSource) &&
+                    destinationType == typeof(TDerivedDestination) ? (int?)100 : null,
+                Settings = Settings
+            });
+
+            Settings.Includes.Add(new TypeTuple(typeof(TDerivedSource), typeof(TDerivedDestination)));
+
             return this;
         }
 
