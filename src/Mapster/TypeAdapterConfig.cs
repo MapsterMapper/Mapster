@@ -352,7 +352,7 @@ namespace Mapster
             {
                 if (parentMapType == MapType.Projection)
                     throw new InvalidOperationException("Projection does not support circular reference");
-                return CreateInvokeExpression(sourceType, destinationType);
+                return CreateMapInvokeExpression(sourceType, destinationType);
             }
 
             context.Running.Add(tuple);
@@ -367,7 +367,7 @@ namespace Mapster
                     if (detector.IsBlockExpression)
                         exp = null;
                 }
-                return exp ?? CreateInvokeExpression(sourceType, destinationType);
+                return exp ?? CreateMapInvokeExpression(sourceType, destinationType);
             }
             finally
             {
@@ -375,7 +375,7 @@ namespace Mapster
             }
         }
 
-        private LambdaExpression CreateInvokeExpression(Type sourceType, Type destinationType)
+        private LambdaExpression CreateMapInvokeExpression(Type sourceType, Type destinationType)
         {
             Expression invoker;
             if (this == GlobalSettings)
@@ -393,6 +393,18 @@ namespace Mapster
             var p = Expression.Parameter(sourceType);
             var invoke = Expression.Call(invoker, "Invoke", null, p);
             return Expression.Lambda(invoke, p);
+        }
+
+        internal LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
+        {
+            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+                          where m.Name == "GetMapToTargetFunction"
+                          select m).First().MakeGenericMethod(sourceType, destinationType);
+            var invoker = Expression.Call(Expression.Constant(this), method);
+            var p1 = Expression.Parameter(sourceType);
+            var p2 = Expression.Parameter(destinationType);
+            var invoke = Expression.Call(invoker, "Invoke", null, p1, p2);
+            return Expression.Lambda(invoke, p1, p2);
         }
 
         internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)

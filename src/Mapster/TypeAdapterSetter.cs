@@ -315,8 +315,8 @@ namespace Mapster
         }
 
         public TypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>() 
-            where TDerivedSource: TSource
-            where TDerivedDestination: TDestination
+            where TDerivedSource: class, TSource
+            where TDerivedDestination: class, TDestination
         {
             this.CheckCompiled();
 

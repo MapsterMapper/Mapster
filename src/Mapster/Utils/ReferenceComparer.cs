@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Mapster
+namespace Mapster.Utils
 {
     internal class ReferenceComparer : IEqualityComparer<object>
     {

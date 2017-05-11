@@ -23,7 +23,8 @@ namespace Mapster.Adapters
 
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg.Settings, destinationMember, out var setterCondition)) continue;
+                if (ProcessIgnores(arg.Settings, destinationMember, out var setterCondition))
+                    continue;
 
                 var member = destinationMember;
                 var getter = arg.Settings.ValueAccessingStrategies
