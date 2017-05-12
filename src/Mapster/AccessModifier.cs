@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mapster.Models
+namespace Mapster
 {
     [Flags]
     public enum AccessModifier

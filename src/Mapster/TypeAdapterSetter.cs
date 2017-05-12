@@ -50,16 +50,16 @@ namespace Mapster
 
             foreach (var type in types)
             {
-                setter.Settings.Ignores.Add(member => member.GetCustomAttributes(true).Any(attr => attr.GetType() == type));
+                setter.Settings.ShouldMapMember.Add(member => member.GetCustomAttributes(true).Any(attr => attr.GetType() == type) ? (bool?)false : null);
             }
             return setter;
         }
 
-        public static TSetter IgnoreMember<TSetter>(this TSetter setter, Func<IMemberModel, bool> predicate) where TSetter : TypeAdapterSetter
+        public static TSetter ShouldMapMember<TSetter>(this TSetter setter, Func<IMemberModel, bool?> predicate) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
-            setter.Settings.Ignores.Add(predicate);
+            setter.Settings.ShouldMapMember.Add(predicate);
             return setter;
         }
 
@@ -103,18 +103,58 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter Map<TSetter, TSource, TSourceMember>(
+        public static TSetter Map<TSetter, TSourceMember>(
             this TSetter setter, string memberName,
-            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null) where TSetter : TypeAdapterSetter
+            Expression<Func<TSourceMember>> source) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)), source.Parameters[0]);
+            setter.Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = memberName,
+                Invoker = invoker,
+                Condition = null
+            });
+            return setter;
+        }
+
+        public static TSetter Map<TSetter, TSourceMember>(
+            this TSetter setter, string destinationMemberName, string sourceMemberName) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
             setter.Settings.Resolvers.Add(new InvokerModel
             {
-                MemberName = memberName,
-                Invoker = source,
-                Condition = shouldMap
+                DestinationMemberName = destinationMemberName,
+                SourceMemberName = sourceMemberName,
+                Condition = null
             });
+            return setter;
+        }
+
+        public static TSetter EnableNonPublicMembers<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.ShouldMapMember.Add(member => member.AccessModifier != AccessModifier.None);
+
+            return setter;
+        }
+
+        public static TSetter IgnoreNonMapped<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.IgnoreNonMapped = value;
+            return setter;
+        }
+
+        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string> func) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.GetMemberName = func;
             return setter;
         }
     }
@@ -146,7 +186,7 @@ namespace Mapster
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)), source.Parameters[0]);
             Settings.Resolvers.Add(new InvokerModel
             {
-                MemberName = memberExp.Member.Name,
+                DestinationMemberName = memberExp.Member.Name,
                 Invoker = invoker,
                 Condition = null
             });
@@ -220,22 +260,10 @@ namespace Mapster
             var memberExp = ReflectionUtils.GetMemberInfo(member);
             Settings.Resolvers.Add(new InvokerModel
             {
-                MemberName = memberExp.Member.Name,
+                DestinationMemberName = memberExp.Member.Name,
                 Invoker = source,
                 Condition = shouldMap
             });
-            return this;
-        }
-
-        public TypeAdapterSetter<TSource, TDestination> TwoWaysMap<TDestinationMember, TSourceMember>(
-            Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TSourceMember>> source)
-        {
-            this.CheckCompiled();
-
-            Map(member, source);
-            ParentConfig.ForType<TDestination, TSource>().Map(source, member);
-
             return this;
         }
 
@@ -247,22 +275,10 @@ namespace Mapster
 
             Settings.Resolvers.Add(new InvokerModel
             {
-                MemberName = memberName,
+                DestinationMemberName = memberName,
                 Invoker = source,
                 Condition = shouldMap
             });
-            return this;
-        }
-
-        public TypeAdapterSetter<TSource, TDestination> EnableNonPublicMembers()
-        {
-            this.CheckCompiled();
-
-            var adapter = new ClassWithNonPublicMemberAdapter();
-            Settings.ConverterFactory = adapter.CreateAdaptFunc;
-            Settings.ConverterToTargetFactory = adapter.CreateAdaptToTargetFunc;
-            Settings.ValueAccessingStrategies.Add(ValueAccessingStrategy.NonPublicPropertyOrField);
-
             return this;
         }
 

@@ -22,18 +22,15 @@ namespace Mapster.Models
             get
             {
                 var setter = _propertyInfo.GetSetMethod();
-                if (setter == null)
-                    return AccessModifier.None;
-
-                if (setter.IsFamilyOrAssembly)
-                    return AccessModifier.Protected | AccessModifier.Internal;
-                if (setter.IsFamily)
-                    return AccessModifier.Protected;
-                if (setter.IsAssembly)
-                    return AccessModifier.Internal;
-                if (setter.IsPublic)
-                    return AccessModifier.Public;
-                return AccessModifier.Private;
+                return setter == null ? AccessModifier.None : setter.GetAccessModifier();
+            }
+        }
+        public AccessModifier AccessModifier
+        {
+            get
+            {
+                var getter = _propertyInfo.GetGetMethod();
+                return getter == null ? AccessModifier.None : getter.GetAccessModifier();
             }
         }
 

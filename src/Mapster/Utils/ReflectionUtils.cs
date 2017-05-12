@@ -228,7 +228,7 @@ namespace Mapster
             var properties = source.Type.GetFieldsAndProperties();
             foreach (var property in properties)
             {
-                var sourceMemberName = strategy.SourceMemberNameConverter(property.Name);
+                var sourceMemberName = property.GetMemberName(arg.Settings.GetMemberName, strategy.SourceMemberNameConverter);
                 var propertyType = property.Type;
                 if (propertyType.GetTypeInfo().IsClass && propertyType != _stringType
                     && propertyName.StartsWith(sourceMemberName))
@@ -288,8 +288,11 @@ namespace Mapster
                 return false;
 
             //all parameters should match getter
-            var names = props.Select(p => p.Name.ToPascalCase()).ToHashSet();
-            return names.SetEquals(ctors[0].GetParameters().Select(p => p.Name.ToPascalCase()));
+            return props.All(prop =>
+            {
+                var name = prop.Name.ToPascalCase();
+                return ctors[0].GetParameters().Any(p => p.ParameterType == prop.Type && p.Name.ToPascalCase() == name);
+            });
         }
 
         public static bool IsConvertible(this Type type)
@@ -367,6 +370,55 @@ namespace Mapster
             {
                 yield return item;
             }
+        }
+
+        public static AccessModifier GetAccessModifier(this FieldInfo memberInfo)
+        {
+            if (memberInfo.IsFamilyOrAssembly)
+                return AccessModifier.Protected | AccessModifier.Internal;
+            if (memberInfo.IsFamily)
+                return AccessModifier.Protected;
+            if (memberInfo.IsAssembly)
+                return AccessModifier.Internal;
+            if (memberInfo.IsPublic)
+                return AccessModifier.Public;
+            return AccessModifier.Private;
+        }
+
+        public static AccessModifier GetAccessModifier(this MethodBase methodBase)
+        {
+            if (methodBase.IsFamilyOrAssembly)
+                return AccessModifier.Protected | AccessModifier.Internal;
+            if (methodBase.IsFamily)
+                return AccessModifier.Protected;
+            if (methodBase.IsAssembly)
+                return AccessModifier.Internal;
+            if (methodBase.IsPublic)
+                return AccessModifier.Public;
+            return AccessModifier.Private;
+        }
+
+        public static bool ShouldMapMember(this IMemberModel member, IEnumerable<Func<IMemberModel, bool?>> predicates)
+        {
+            return predicates.Aggregate((bool?)null, (prev, predicate) =>
+            {
+                var next = predicate(member);
+                if (prev == false)
+                    return false;
+                if (next == false)
+                    return false;
+                if (prev == null && next == null)
+                    return null;
+                return true;
+            }) == true;
+        }
+
+        public static string GetMemberName(this IMemberModel member, Func<IMemberModel, string> getMemberNameFn, Func<string, string> nameConverter)
+        {
+            if (getMemberNameFn == null)
+                return nameConverter(member.Name);
+            else
+                return getMemberNameFn(member);
         }
     }
 }

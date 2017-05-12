@@ -10,6 +10,7 @@ namespace Mapster.Models
         string Name { get; }
         object Info { get; }
         AccessModifier SetterModifier { get; }
+        AccessModifier AccessModifier { get; }
 
         Expression GetExpression(Expression source);
         IEnumerable<object> GetCustomAttributes(bool inherit);

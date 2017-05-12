@@ -77,7 +77,7 @@ namespace Mapster.Adapters
             out LambdaExpression condition)
         {
             condition = null;
-            if (config.Ignores.Any(ignore => ignore(destinationMember)))
+            if (!destinationMember.ShouldMapMember(config.ShouldMapMember))
                 return true;
 
             return config.IgnoreIfs.TryGetValue(destinationMember.Name, out condition)

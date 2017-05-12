@@ -11,8 +11,7 @@ namespace Mapster
     public static class ValueAccessingStrategy
     {
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> CustomResolver = CustomResolverFn;
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrField = PropertyOrFieldFn(false);
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> NonPublicPropertyOrField = PropertyOrFieldFn(true);
+        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrField = PropertyOrFieldFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> GetMethod = GetMethodFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> FlattenMember = FlattenMemberFn;
         public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> Dictionary = DictionaryFn;
@@ -40,7 +39,7 @@ namespace Mapster
             for (int j = 0; j < resolvers.Count; j++)
             {
                 var resolver = resolvers[j];
-                if (destinationMember.Name.Equals(resolver.MemberName))
+                if (destinationMember.Name.Equals(resolver.DestinationMemberName))
                 {
                     Expression invoke = resolver.Invoker.Apply(source);
                     getter = lastCondition != null
@@ -56,17 +55,16 @@ namespace Mapster
             return getter;
         }
 
-        private static Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrFieldFn(bool nonPublicPropertyOrField)
+        private static Expression PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
-            return (source, destinationMember, arg) =>
-            {
-                var members = source.Type.GetFieldsAndProperties(accessorFlags: nonPublicPropertyOrField ? BindingFlags.NonPublic : BindingFlags.Public);
-                var strategy = arg.Settings.NameMatchingStrategy;
-                var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
-                return members.Where(member => strategy.SourceMemberNameConverter(member.Name) == destinationMemberName)
-                    .Select(member => member.GetExpression(source))
-                    .FirstOrDefault();
-            };
+            var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
+            return members
+                .Where(member => member.ShouldMapMember(arg.Settings.ShouldMapMember))
+                .Where(member => member.GetMemberName(arg.Settings.GetMemberName, strategy.SourceMemberNameConverter) == destinationMemberName)
+                .Select(member => member.GetExpression(source))
+                .FirstOrDefault();
         }
 
         private static Expression GetMethodFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
@@ -74,7 +72,7 @@ namespace Mapster
             if (arg.MapType == MapType.Projection)
                 return null;
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = "Get" + strategy.DestinationMemberNameConverter(destinationMember.Name);
+            var destinationMemberName = "Get" + destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
             var getMethod = source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
             if (getMethod == null)
@@ -87,7 +85,7 @@ namespace Mapster
         private static Expression FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
             return ReflectionUtils.GetDeepFlattening(source, destinationMemberName, arg);
         }
 
@@ -98,7 +96,7 @@ namespace Mapster
                 return null;
 
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = strategy.DestinationMemberNameConverter(destinationMember.Name);
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
             var key = Expression.Constant(destinationMemberName);
             var args = dictType.GetGenericArguments();
             if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)

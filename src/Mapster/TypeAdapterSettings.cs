@@ -7,9 +7,9 @@ namespace Mapster
 {
     public class TypeAdapterSettings: SettingStore
     {
-        public List<Func<IMemberModel, bool>> Ignores
+        public List<Func<IMemberModel, bool?>> ShouldMapMember
         {
-            get => Get("Ignores", () => new List<Func<IMemberModel, bool>>());
+            get => Get("ShouldMapMember", () => new List<Func<IMemberModel, bool?>>());
         }
         public IgnoreIfDictionary IgnoreIfs
         {
@@ -45,6 +45,11 @@ namespace Mapster
             get => Get("MapEnumByName");
             set => Set("MapEnumByName", value);
         }
+        public bool? IgnoreNonMapped
+        {
+            get => Get("IgnoreNonMapped");
+            set => Set("IgnoreNonMapped", value);
+        }
 
         public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies
         {
@@ -77,6 +82,11 @@ namespace Mapster
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
             set => Set("ConverterToTargetFactory", value);
+        }
+        public Func<IMemberModel, string> GetMemberName
+        {
+            get => Get<Func<IMemberModel, string>>("GetMemberName");
+            set => Set("GetMemberName", value);
         }
 
         internal bool Compiled { get; set; }
