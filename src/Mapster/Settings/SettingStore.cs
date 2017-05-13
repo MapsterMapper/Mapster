@@ -5,21 +5,10 @@ using System.Collections;
 
 namespace Mapster
 {
-    public class SettingStore: ISettingStore, IApplyable<SettingStore>
+    public class SettingStore: IApplyable<SettingStore>
     {
         private Dictionary<string, object> _objectStore = new Dictionary<string, object>();
-        Dictionary<string, object> ISettingStore.ObjectStore
-        {
-            get => _objectStore;
-            set => _objectStore = value;
-        }
-
         private Dictionary<string, bool?> _booleanStore = new Dictionary<string, bool?>();
-        Dictionary<string, bool?> ISettingStore.BooleanStore
-        {
-            get => _booleanStore;
-            set => _booleanStore = value;
-        }
 
         public void Set(string key, bool? value)
         {

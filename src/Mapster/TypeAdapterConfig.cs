@@ -22,11 +22,11 @@ namespace Mapster
         {
             return new List<TypeAdapterRule>
             {
-                new PrimitiveAdapter().CreateRule(),
-                new RecordTypeAdapter().CreateRule(),
-                new ClassAdapter().CreateRule(),
-                new DictionaryAdapter().CreateRule(),
-                new CollectionAdapter().CreateRule(),
+                new PrimitiveAdapter().CreateRule(),    //-200
+                new RecordTypeAdapter().CreateRule(),   //-151
+                new ClassAdapter().CreateRule(),        //-150
+                new DictionaryAdapter().CreateRule(),   //-149
+                new CollectionAdapter().CreateRule(),   //-125
 
                 //dictionary accessor
                 new TypeAdapterRule
@@ -34,7 +34,7 @@ namespace Mapster
                     Priority = (srcType, destType, mapType) => srcType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -149 : (int?)null,
                     Settings = new TypeAdapterSettings
                     {
-                        ValueAccessingStrategies = new[] { ValueAccessingStrategy.Dictionary }.ToList(),
+                        ValueAccessingStrategies = { ValueAccessingStrategy.Dictionary },
                     }
                 }
             };
@@ -54,9 +54,14 @@ namespace Mapster
             this.Rules = RulesTemplate.ToList();
             var settings = new TypeAdapterSettings
             {
-                ValueAccessingStrategies = ValueAccessingStrategiesTemplate.ToList(),
                 NameMatchingStrategy = NameMatchingStrategy.Exact,
+                ShouldMapMember = {
+                    ShouldMapMember.AllowPublic,
+                    ShouldMapMember.IgnoreAdaptIgnore,
+                    ShouldMapMember.AllowAdaptMember,
+                },
             };
+            settings.ValueAccessingStrategies.AddRange(ValueAccessingStrategiesTemplate);
             this.Default = new TypeAdapterSetter(settings, this);
             this.Rules.Add(new TypeAdapterRule
             {
@@ -527,6 +532,10 @@ namespace Mapster
             {
                 _cloneConfig = new TypeAdapterConfig();
                 _cloneConfig.Default.Settings.PreserveReference = true;
+                _cloneConfig.ForType<SettingStore, SettingStore>()
+                    .Map("_objectStore", "_objectStore")
+                    .Map("_booleanStore", "_booleanStore")
+                    .IgnoreNonMapped(true);
             }
             var fn = _cloneConfig.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
             return fn(this);

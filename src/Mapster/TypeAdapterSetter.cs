@@ -50,7 +50,7 @@ namespace Mapster
 
             foreach (var type in types)
             {
-                setter.Settings.ShouldMapMember.Add(member => member.GetCustomAttributes(true).Any(attr => attr.GetType() == type) ? (bool?)false : null);
+                setter.Settings.ShouldMapMember.Add(member => member.HasCustomAttribute(type) ? (bool?)false : null);
             }
             return setter;
         }
@@ -60,6 +60,14 @@ namespace Mapster
             setter.CheckCompiled();
 
             setter.Settings.ShouldMapMember.Add(predicate);
+            return setter;
+        }
+
+        public static TSetter UseDestinationValues<TSetter>(this TSetter setter, Func<IMemberModel, bool?> predicate) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.UseDestinationValues.Add(predicate);
             return setter;
         }
 
@@ -116,10 +124,12 @@ namespace Mapster
                 Invoker = invoker,
                 Condition = null
             });
+            setter.Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
+
             return setter;
         }
 
-        public static TSetter Map<TSetter, TSourceMember>(
+        public static TSetter Map<TSetter>(
             this TSetter setter, string destinationMemberName, string sourceMemberName) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
@@ -130,6 +140,10 @@ namespace Mapster
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
+            setter.Settings.ShouldMapMember.Add(member => member.Name == destinationMemberName ? (bool?)true : null);
+            if (sourceMemberName != destinationMemberName)
+                setter.Settings.ShouldMapMember.Add(member => member.Name == sourceMemberName ? (bool?)true : null);
+
             return setter;
         }
 
@@ -137,7 +151,16 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.ShouldMapMember.Add(member => member.AccessModifier != AccessModifier.None);
+            if (value)
+            {
+                setter.Settings.ShouldMapMember.Remove(Mapster.ShouldMapMember.AllowPublic);
+                setter.Settings.ShouldMapMember.Add(Mapster.ShouldMapMember.AllowNonPublic);
+            }
+            else
+            {
+                setter.Settings.ShouldMapMember.Remove(Mapster.ShouldMapMember.AllowNonPublic);
+                setter.Settings.ShouldMapMember.Add(Mapster.ShouldMapMember.AllowPublic);
+            }
 
             return setter;
         }
@@ -193,6 +216,34 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TDestination> Map<TDestinationMember>(
+            Expression<Func<TDestination, TDestinationMember>> destinationMember,
+            string sourceMemberName)
+        {
+            this.CheckCompiled();
+
+            var memberExp = ReflectionUtils.GetMemberInfo(destinationMember);
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = memberExp.Member.Name,
+                SourceMemberName = sourceMemberName,
+                Condition = null
+            });
+            Settings.ShouldMapMember.Add(member => member.Name == sourceMemberName ? (bool?)true : null);
+
+            return this;
+        }
+
+        public TypeAdapterSetter<TDestination> UseDestinationValue<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> destinationMember)
+        {
+            this.CheckCompiled();
+
+            var memberExp = ReflectionUtils.GetMemberInfo(destinationMember);
+            Settings.UseDestinationValues.Add(memberExp.Member.Name);
+
+            return this;
+        }
+
         public TypeAdapterSetter<TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
         {
             this.CheckCompiled();
@@ -226,16 +277,43 @@ namespace Mapster
             : base(settings, parentConfig)
         { }
 
+        #region replace for chaining
+
         public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
         {
-            this.CheckCompiled();
-
-            foreach (var member in members)
-            {
-                Settings.IgnoreIfs[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
-            }
-            return this;
+            return (TypeAdapterSetter<TSource, TDestination>)base.Ignore(members);
         }
+
+        public  new TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSourceMember>> source)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>)base.Map(member, source);
+        }
+
+        public new TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember>(
+            Expression<Func<TDestination, TDestinationMember>> destinationMember,
+            string sourceMemberName)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>)base.Map(destinationMember, sourceMemberName);
+        }
+
+        public new TypeAdapterSetter<TSource, TDestination> UseDestinationValue<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> destinationMember)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>)base.UseDestinationValue(destinationMember);
+        }
+
+        public new TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>)base.ConstructUsing(constructUsing);
+        }
+
+        public new TypeAdapterSetter<TSource, TDestination> AfterMapping(Action<TDestination> action)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>)base.AfterMapping(action);
+        }
+
+        #endregion
 
         public TypeAdapterSetter<TSource, TDestination> IgnoreIf(
             Expression<Func<TSource, TDestination, bool>> condition,
@@ -279,6 +357,8 @@ namespace Mapster
                 Invoker = source,
                 Condition = shouldMap
             });
+            Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
+
             return this;
         }
 

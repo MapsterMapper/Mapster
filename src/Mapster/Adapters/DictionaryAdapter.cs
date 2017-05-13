@@ -24,8 +24,11 @@ namespace Mapster.Adapters
         {
             if (!base.CanInline(source, destination, arg))
                 return false;
-            if (arg.MapType != MapType.Projection &&
-                arg.Settings.IgnoreNullValues == true)
+
+            //IgnoreNullValue isn't supported by projection
+            if (arg.MapType == MapType.Projection)
+                return true;
+            if (arg.Settings.IgnoreNullValues == true)
                 return false;
             return true;
         }

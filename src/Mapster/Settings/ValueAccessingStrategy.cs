@@ -41,7 +41,9 @@ namespace Mapster
                 var resolver = resolvers[j];
                 if (destinationMember.Name.Equals(resolver.DestinationMemberName))
                 {
-                    Expression invoke = resolver.Invoker.Apply(source);
+                    Expression invoke = resolver.Invoker == null
+                        ? Expression.PropertyOrField(source, resolver.SourceMemberName)
+                        : resolver.Invoker.Apply(source);
                     getter = lastCondition != null
                         ? Expression.Condition(lastCondition.Apply(source), getter, invoke)
                         : invoke;

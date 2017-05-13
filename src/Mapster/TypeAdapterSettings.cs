@@ -54,7 +54,6 @@ namespace Mapster
         public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies
         {
             get => Get("ValueAccessingStrategies", () => new List<Func<Expression, IMemberModel, CompileArgument, Expression>>());
-            internal set => Set("ValueAccessingStrategies", value);
         }
         public List<InvokerModel> Resolvers
         {
@@ -67,6 +66,10 @@ namespace Mapster
         public List<TypeTuple> Includes
         {
             get => Get("Includes", () => new List<TypeTuple>());
+        }
+        public List<Func<IMemberModel, bool?>> UseDestinationValues
+        {
+            get => Get("UseDestinationValues", () => new List<Func<IMemberModel, bool?>>());
         }
         public Func<CompileArgument, LambdaExpression> ConstructUsingFactory
         {

@@ -27,9 +27,11 @@ namespace Mapster.Adapters
                     continue;
 
                 var member = destinationMember;
-                var getter = arg.Settings.ValueAccessingStrategies
-                    .Select(fn => fn(source, member, arg))
-                    .FirstOrDefault(result => result != null);
+                var getter = arg.Settings.IgnoreNonMapped == true
+                    ? ValueAccessingStrategy.CustomResolver(source, member, arg)
+                    : arg.Settings.ValueAccessingStrategies
+                        .Select(fn => fn(source, member, arg))
+                        .FirstOrDefault(result => result != null);
 
                 if (getter != null)
                 {

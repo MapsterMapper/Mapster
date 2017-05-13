@@ -113,11 +113,10 @@ namespace Mapster.Adapters
 
             var set = CreateBlockExpression(source, result, arg);
 
+            //result.prop = adapt(source.prop);
+            //action(source, result);
             if (arg.Settings.AfterMappingFactories.Count > 0)
             {
-                //result.prop = adapt(source.prop);
-                //action(source, result);
-
                 var actions = new List<Expression> { set };
 
                 foreach (var afterMappingFactory in arg.Settings.AfterMappingFactories)
@@ -140,22 +139,21 @@ namespace Mapster.Adapters
                 set = Expression.Block(actions);
             }
 
+            //using (var scope = new MapContextScope()) {
+            //  var dict = scope.Context.Reference;
+            //  object cache;
+            //  if (dict.TryGetValue(source, out cache))
+            //      result = (TDestination)cache;
+            //  else {
+            //      result = new TDestination();
+            //      dict.Add(source, (object)result);
+            //      result.prop = adapt(source.prop);
+            //  }
+            //}
             if (arg.Settings.PreserveReference == true &&
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
             {
-                //using (var scope = new MapContextScope()) {
-                //  var dict = scope.Context.Reference;
-                //  object cache;
-                //  if (dict.TryGetValue(source, out cache))
-                //      result = (TDestination)cache;
-                //  else {
-                //      result = new TDestination();
-                //      dict.Add(source, (object)result);
-                //      result.prop = adapt(source.prop);
-                //  }
-                //}
-
                 var scope = Expression.Variable(typeof(MapContextScope));
                 var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
 
@@ -250,7 +248,7 @@ namespace Mapster.Adapters
         }
         protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
-            //source == null ? default(TDestination) : convert(source)
+            //source == null ? default(TDestination) : adapt(source)
 
             var exp = CreateInlineExpression(source, arg);
 

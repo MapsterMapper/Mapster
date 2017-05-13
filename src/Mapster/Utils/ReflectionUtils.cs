@@ -50,16 +50,16 @@ namespace Mapster
             return type.GetFieldsAndProperties(allowNoSetter: false).Any();
         }
 
-        public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNonPublicSetter = true, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
+        public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
         {
             var bindingFlags = BindingFlags.Instance | accessorFlags;
 
             var properties = type.GetProperties(bindingFlags)
-                .Where(x => (allowNoSetter || x.CanWrite) && (allowNonPublicSetter || x.GetSetMethod() != null))
+                .Where(x => allowNoSetter || x.CanWrite)
                 .Select(CreateModel);
 
             var fields = type.GetFields(bindingFlags)
-                .Where(x => (allowNoSetter || !x.IsInitOnly))
+                .Where(x => allowNoSetter || !x.IsInitOnly)
                 .Select(CreateModel);
 
             return properties.Concat(fields);
@@ -400,17 +400,8 @@ namespace Mapster
 
         public static bool ShouldMapMember(this IMemberModel member, IEnumerable<Func<IMemberModel, bool?>> predicates)
         {
-            return predicates.Aggregate((bool?)null, (prev, predicate) =>
-            {
-                var next = predicate(member);
-                if (prev == false)
-                    return false;
-                if (next == false)
-                    return false;
-                if (prev == null && next == null)
-                    return null;
-                return true;
-            }) == true;
+            return predicates.Select(predicate => predicate(member))
+                .FirstOrDefault(result => result != null) == true;
         }
 
         public static string GetMemberName(this IMemberModel member, Func<IMemberModel, string> getMemberNameFn, Func<string, string> nameConverter)
@@ -419,6 +410,16 @@ namespace Mapster
                 return nameConverter(member.Name);
             else
                 return getMemberNameFn(member);
+        }
+
+        public static bool HasCustomAttribute(this IMemberModel member, Type type)
+        {
+            return member.GetCustomAttributes(true).Any(attr => attr.GetType() == type);
+        }
+
+        public static T GetCustomAttribute<T>(this IMemberModel member)
+        {
+            return (T)member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
         }
     }
 }

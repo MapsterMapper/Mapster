@@ -33,8 +33,11 @@ namespace Mapster.Adapters
         {
             if (!base.CanInline(source, destination, arg))
                 return false;
-            if (arg.MapType != MapType.Projection &&
-                arg.Settings.IgnoreNullValues == true)
+
+            //IgnoreNullValue isn't supported by projection
+            if (arg.MapType == MapType.Projection)
+                return true;
+            if (arg.Settings.IgnoreNullValues == true)
                 return false;
             return true;
         }
@@ -57,9 +60,12 @@ namespace Mapster.Adapters
             var lines = new List<Expression>();
             foreach (var property in properties)
             {
-                var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+                var useDestinationValue = arg.Settings.UseDestinationValue == true;
+                var getter = useDestinationValue
+                    ? CreateAdaptToExpression(property.Getter, property.Setter, arg)
+                    : CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
 
-                Expression itemAssign = Expression.Assign(property.Setter, getter);
+                Expression itemAssign = useDestinationValue ? getter : Expression.Assign(property.Setter, getter);
                 if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
                 {
                     var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
