@@ -55,11 +55,16 @@ namespace Mapster
             var settings = new TypeAdapterSettings
             {
                 NameMatchingStrategy = NameMatchingStrategy.Exact,
-                ShouldMapMember = {
+                ShouldMapMember =
+                {
                     ShouldMapMember.AllowPublic,
                     ShouldMapMember.IgnoreAdaptIgnore,
                     ShouldMapMember.AllowAdaptMember,
                 },
+                GetMemberNames =
+                {
+                    GetMemberName.AdaptMember,
+                }
             };
             settings.ValueAccessingStrategies.AddRange(ValueAccessingStrategiesTemplate);
             this.Default = new TypeAdapterSetter(settings, this);
@@ -532,10 +537,8 @@ namespace Mapster
             {
                 _cloneConfig = new TypeAdapterConfig();
                 _cloneConfig.Default.Settings.PreserveReference = true;
-                _cloneConfig.ForType<SettingStore, SettingStore>()
-                    .Map("_objectStore", "_objectStore")
-                    .Map("_booleanStore", "_booleanStore")
-                    .IgnoreNonMapped(true);
+                _cloneConfig.ForType<TypeAdapterSettings, TypeAdapterSettings>()
+                    .MapWith()
             }
             var fn = _cloneConfig.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
             return fn(this);

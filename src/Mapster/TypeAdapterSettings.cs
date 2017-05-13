@@ -7,10 +7,6 @@ namespace Mapster
 {
     public class TypeAdapterSettings: SettingStore
     {
-        public List<Func<IMemberModel, bool?>> ShouldMapMember
-        {
-            get => Get("ShouldMapMember", () => new List<Func<IMemberModel, bool?>>());
-        }
         public IgnoreIfDictionary IgnoreIfs
         {
             get => Get("IgnoreIfs", () => new IgnoreIfDictionary());
@@ -51,6 +47,10 @@ namespace Mapster
             set => Set("IgnoreNonMapped", value);
         }
 
+        public List<Func<IMemberModel, bool?>> ShouldMapMember
+        {
+            get => Get("ShouldMapMember", () => new List<Func<IMemberModel, bool?>>());
+        }
         public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies
         {
             get => Get("ValueAccessingStrategies", () => new List<Func<Expression, IMemberModel, CompileArgument, Expression>>());
@@ -67,9 +67,13 @@ namespace Mapster
         {
             get => Get("Includes", () => new List<TypeTuple>());
         }
-        public List<Func<IMemberModel, bool?>> UseDestinationValues
+        public List<string> UseDestinationValues
         {
-            get => Get("UseDestinationValues", () => new List<Func<IMemberModel, bool?>>());
+            get => Get("UseDestinationValues", () => new List<string>());
+        }
+        public List<Func<IMemberModel, string>> GetMemberNames
+        {
+            get => Get("GetMemberNames", () => new List<Func<IMemberModel, string>>());
         }
         public Func<CompileArgument, LambdaExpression> ConstructUsingFactory
         {
@@ -85,11 +89,6 @@ namespace Mapster
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
             set => Set("ConverterToTargetFactory", value);
-        }
-        public Func<IMemberModel, string> GetMemberName
-        {
-            get => Get<Func<IMemberModel, string>>("GetMemberName");
-            set => Set("GetMemberName", value);
         }
 
         internal bool Compiled { get; set; }

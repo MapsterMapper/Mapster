@@ -228,7 +228,7 @@ namespace Mapster
             var properties = source.Type.GetFieldsAndProperties();
             foreach (var property in properties)
             {
-                var sourceMemberName = property.GetMemberName(arg.Settings.GetMemberName, strategy.SourceMemberNameConverter);
+                var sourceMemberName = property.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
                 var propertyType = property.Type;
                 if (propertyType.GetTypeInfo().IsClass && propertyType != _stringType
                     && propertyName.StartsWith(sourceMemberName))
@@ -404,12 +404,11 @@ namespace Mapster
                 .FirstOrDefault(result => result != null) == true;
         }
 
-        public static string GetMemberName(this IMemberModel member, Func<IMemberModel, string> getMemberNameFn, Func<string, string> nameConverter)
+        public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string>> getMemberNames, Func<string, string> nameConverter)
         {
-            if (getMemberNameFn == null)
-                return nameConverter(member.Name);
-            else
-                return getMemberNameFn(member);
+            return getMemberNames.Select(predicate => predicate(member))
+                .FirstOrDefault(name => name != null)
+                ?? nameConverter(member.Name);
         }
 
         public static bool HasCustomAttribute(this IMemberModel member, Type type)

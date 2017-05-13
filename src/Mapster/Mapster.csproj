@@ -73,6 +73,7 @@
     <Compile Include="MapContext\MapContext.cs" />
     <Compile Include="MapContext\MapContextScope.cs" />
     <Compile Include="Enums\MapType.cs" />
+    <Compile Include="Settings\GetMemberName.cs" />
     <Compile Include="Settings\NameMatchingStrategy.cs" />
     <Compile Include="Interfaces\IAdapter.cs" />
     <Compile Include="Settings\IgnoreIfDictionary.cs" />

@@ -55,19 +55,11 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter ShouldMapMember<TSetter>(this TSetter setter, Func<IMemberModel, bool?> predicate) where TSetter : TypeAdapterSetter
+        public static TSetter ShouldMapMember<TSetter>(this TSetter setter, Func<IMemberModel, bool> predicate, bool value) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
-            setter.Settings.ShouldMapMember.Add(predicate);
-            return setter;
-        }
-
-        public static TSetter UseDestinationValues<TSetter>(this TSetter setter, Func<IMemberModel, bool?> predicate) where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-
-            setter.Settings.UseDestinationValues.Add(predicate);
+            setter.Settings.ShouldMapMember.Add(member => predicate(member) ? (bool?)value : null);
             return setter;
         }
 
@@ -177,9 +169,19 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.GetMemberName = func;
+            setter.Settings.GetMemberNames.Add(func);
             return setter;
         }
+
+        public static TSetter UseDestinationValue<TSetter>(this TSetter setter, string destinationMember) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+            
+            setter.Settings.UseDestinationValues.Add(destinationMember);
+
+            return setter;
+        }
+
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter

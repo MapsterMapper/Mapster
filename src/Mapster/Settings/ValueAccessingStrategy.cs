@@ -61,10 +61,10 @@ namespace Mapster
         {
             var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             return members
                 .Where(member => member.ShouldMapMember(arg.Settings.ShouldMapMember))
-                .Where(member => member.GetMemberName(arg.Settings.GetMemberName, strategy.SourceMemberNameConverter) == destinationMemberName)
+                .Where(member => member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();
         }
@@ -74,7 +74,7 @@ namespace Mapster
             if (arg.MapType == MapType.Projection)
                 return null;
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = "Get" + destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = "Get" + destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             var getMethod = source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
             if (getMethod == null)
@@ -87,7 +87,7 @@ namespace Mapster
         private static Expression FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             return ReflectionUtils.GetDeepFlattening(source, destinationMemberName, arg);
         }
 
@@ -98,7 +98,7 @@ namespace Mapster
                 return null;
 
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberName, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             var key = Expression.Constant(destinationMemberName);
             var args = dictType.GetGenericArguments();
             if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)

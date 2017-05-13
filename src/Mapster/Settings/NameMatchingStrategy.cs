@@ -52,6 +52,24 @@ namespace Mapster
             DestinationMemberNameConverter = CamelCase,
         };
 
+        public static NameMatchingStrategy ConvertSourceMemberName(Func<string, string> nameConverter)
+        {
+            return new NameMatchingStrategy
+            {
+                SourceMemberNameConverter = nameConverter,
+                DestinationMemberNameConverter = Identity,
+            };
+        }
+
+        public static NameMatchingStrategy ConvertDestinationMemberName(Func<string, string> nameConverter)
+        {
+            return new NameMatchingStrategy
+            {
+                SourceMemberNameConverter = Identity,
+                DestinationMemberNameConverter = nameConverter,
+            };
+        }
+
         public static string Identity(string s) => s;
 
         internal static string PascalCase(string s) => string.Join("", BreakWords(s).Select(ProperCase));
