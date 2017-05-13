@@ -100,15 +100,9 @@ namespace Mapster.Adapters
             if (arg.MapType == MapType.Projection)
                 throw new InvalidOperationException("Mapping is invalid for projection");
 
-            //### adapt
             //var result = new TDest();
-            //
-            //### adapt to target
-            //var result = dest ?? new TDest();
             var result = Expression.Variable(arg.DestinationType);
-            var newObj = CreateInstantiationExpression(source, arg);
-            if (destination != null)
-                newObj = Expression.Coalesce(destination, newObj);
+            var newObj = CreateInstantiationExpression(source, destination, arg);
             Expression assign = Expression.Assign(result, newObj);
 
             var set = CreateBlockExpression(source, result, arg);
@@ -146,7 +140,7 @@ namespace Mapster.Adapters
             //      result = (TDestination)cache;
             //  else {
             //      result = new TDestination();
-            //      dict.Add(source, (object)result);
+            //      dict[source] = (object)result;
             //      result.prop = adapt(source.prop);
             //  }
             //}
@@ -157,13 +151,17 @@ namespace Mapster.Adapters
                 var scope = Expression.Variable(typeof(MapContextScope));
                 var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
 
-                var dict = Expression.Variable(typeof(Dictionary<object, object>));
+                var dictType = typeof(Dictionary<object, object>);
+                var dict = Expression.Variable(dictType);
                 var refContext = Expression.Property(scope, "Context");
                 var refDict = Expression.Property(refContext, "References");
                 var assignDict = Expression.Assign(dict, refDict);
 
-                var refAdd = Expression.Call(dict, "Add", null, Expression.Convert(source, typeof(object)), Expression.Convert(result, typeof(object)));
-                var setResultAndCache = Expression.Block(assign, refAdd, set);
+                var indexer = dictType.GetProperties().First(item => item.GetIndexParameters().Length > 0);
+                var refAssign = Expression.Assign(
+                    Expression.Property(dict, indexer, Expression.Convert(source, typeof(object))),
+                    Expression.Convert(result, typeof(object)));
+                var setResultAndCache = Expression.Block(assign, refAssign, set);
 
                 var cached = Expression.Variable(typeof(object));
                 var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
@@ -268,14 +266,22 @@ namespace Mapster.Adapters
         protected abstract Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg);
         protected abstract Expression CreateInlineExpression(Expression source, CompileArgument arg);
 
-        protected virtual Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
+        protected Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
+        {
+            return CreateInstantiationExpression(source, null, arg);
+        }
+        protected virtual Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
             //new TDestination()
-
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
-            return constructUsing != null
+            var newObj = constructUsing != null
                 ? constructUsing.Apply(source).TrimConversion(true).To(arg.DestinationType)
                 : Expression.New(arg.DestinationType);
+
+            //dest ?? new TDest();
+            return destination == null
+                ? newObj
+                : Expression.Coalesce(destination, newObj);
         }
 
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)

@@ -57,7 +57,7 @@ namespace Mapster.Adapters
             return false;
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
             if (arg.DestinationType.IsArray)
@@ -124,7 +124,7 @@ namespace Mapster.Adapters
                 if (arg.MapType == MapType.Projection)
                     return source;
 
-                var toEnum = (from m in typeof(ReflectionUtils).GetMethods()
+                var toEnum = (from m in typeof(Expression).GetMethods()
                               where m.Name == "ToEnumerable"
                               select m).First().MakeGenericMethod(destinationElementType);
                 return Expression.Call(toEnum, source);

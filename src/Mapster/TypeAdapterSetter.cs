@@ -172,16 +172,6 @@ namespace Mapster
             setter.Settings.GetMemberNames.Add(func);
             return setter;
         }
-
-        public static TSetter UseDestinationValue<TSetter>(this TSetter setter, string destinationMember) where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-            
-            setter.Settings.UseDestinationValues.Add(destinationMember);
-
-            return setter;
-        }
-
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -232,16 +222,6 @@ namespace Mapster
                 Condition = null
             });
             Settings.ShouldMapMember.Add(member => member.Name == sourceMemberName ? (bool?)true : null);
-
-            return this;
-        }
-
-        public TypeAdapterSetter<TDestination> UseDestinationValue<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> destinationMember)
-        {
-            this.CheckCompiled();
-
-            var memberExp = ReflectionUtils.GetMemberInfo(destinationMember);
-            Settings.UseDestinationValues.Add(memberExp.Member.Name);
 
             return this;
         }
@@ -298,11 +278,6 @@ namespace Mapster
             string sourceMemberName)
         {
             return (TypeAdapterSetter<TSource, TDestination>)base.Map(destinationMember, sourceMemberName);
-        }
-
-        public new TypeAdapterSetter<TSource, TDestination> UseDestinationValue<TDestinationMember>(Expression<Func<TDestination, TDestinationMember>> destinationMember)
-        {
-            return (TypeAdapterSetter<TSource, TDestination>)base.UseDestinationValue(destinationMember);
         }
 
         public new TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)

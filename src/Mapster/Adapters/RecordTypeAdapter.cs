@@ -23,12 +23,12 @@ namespace Mapster.Adapters
             return true;
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
             //new TDestination(src.Prop1, src.Prop2)
 
             if (arg.Settings.ConstructUsingFactory != null)
-                return base.CreateInstantiationExpression(source, arg);
+                return base.CreateInstantiationExpression(source, destination, arg);
 
             var classConverter = CreateClassConverter(source, null, arg);
             var properties = classConverter.Members;

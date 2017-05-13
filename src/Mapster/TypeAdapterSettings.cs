@@ -67,10 +67,6 @@ namespace Mapster
         {
             get => Get("Includes", () => new List<TypeTuple>());
         }
-        public List<string> UseDestinationValues
-        {
-            get => Get("UseDestinationValues", () => new List<string>());
-        }
         public List<Func<IMemberModel, string>> GetMemberNames
         {
             get => Get("GetMemberNames", () => new List<Func<IMemberModel, string>>());
@@ -92,5 +88,12 @@ namespace Mapster
         }
 
         internal bool Compiled { get; set; }
+
+        public TypeAdapterSettings Clone()
+        {
+            var settings = new TypeAdapterSettings();
+            settings.Apply(this, true);
+            return settings;
+        }
     }
 }

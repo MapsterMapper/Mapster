@@ -53,26 +53,41 @@ namespace Mapster.Adapters
             var dict = Expression.Variable(dictType);
             lines.Add(Expression.Assign(dict, destination));
 
-            MethodInfo setMethod = null;
+            Func<Expression, Expression> getFn = null;
+            Func<Expression, Expression, Expression> setFn = (key, value) => Expression.Assign(Expression.Property(dict, indexer, key), value);
             var strategy = arg.Settings.NameMatchingStrategy;
-            if (arg.MapType == MapType.MapToTarget && strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
+            if (arg.MapType == MapType.MapToTarget)
             {
-                var args = dictType.GetGenericArguments();
-                setMethod = typeof (Extensions).GetMethods().First(m => m.Name == "FlexibleSet")
-                    .MakeGenericMethod(args[1]);
+                if (strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
+                {
+                    var args = dictType.GetGenericArguments();
+                    var setMethod = typeof(Extensions).GetMethods().First(m => m.Name == "FlexibleSet")
+                        .MakeGenericMethod(args[1]);
+                    setFn = (key, value) => Expression.Call(setMethod, dict, key, Expression.Constant(strategy.DestinationMemberNameConverter), value);
+                    var getMethod = typeof(Extensions).GetMethods().First(m => m.Name == "FlexibleGet")
+                        .MakeGenericMethod(args[1]);
+                    getFn = key => Expression.Call(getMethod, dict, key, Expression.Constant(strategy.DestinationMemberNameConverter));
+                }
+                else
+                {
+                    var args = dictType.GetGenericArguments();
+                    var getMethod = typeof(Extensions).GetMethods().First(m => m.Name == "GetValueOrDefault")
+                        .MakeGenericMethod(args);
+                    getFn = key => Expression.Call(getMethod, dict, key);
+                }
             }
             var properties = source.Type.GetFieldsAndProperties();
             foreach (var property in properties)
             {
-                var getter = property.GetExpression(source);
-                var value = CreateAdaptExpression(getter, valueType, arg);
-
                 var sourceMemberName = strategy.SourceMemberNameConverter(property.Name);
                 Expression key = Expression.Constant(sourceMemberName);
 
-                var itemSet = setMethod != null
-                    ? (Expression)Expression.Call(setMethod, dict, key, Expression.Constant(strategy.DestinationMemberNameConverter), value)
-                    : Expression.Assign(Expression.Property(dict, indexer, key), value);
+                var getter = property.GetExpression(source);
+                var value = destination != null
+                    ? CreateAdaptToExpression(getter, getFn(key), arg)
+                    : CreateAdaptExpression(getter, valueType, arg);
+
+                var itemSet = setFn(key, value);
                 if (arg.Settings.IgnoreNullValues == true && (!getter.Type.GetTypeInfo().IsValueType || getter.Type.IsNullable()))
                 {
                     var condition = Expression.NotEqual(getter, Expression.Constant(null, getter.Type));

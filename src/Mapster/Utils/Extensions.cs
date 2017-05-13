@@ -35,5 +35,31 @@ namespace Mapster.Utils
                            select kvp.Key).FirstOrDefault();
             dict[dictKey ?? key] = value;
         }
+
+        public static IEnumerable<T> ToEnumerable<T>(this IEnumerable<T> source)
+        {
+            if (source is T[] array)
+            {
+                for (int i = 0, count = array.Length; i < count; i++)
+                {
+                    yield return array[i];
+                }
+                yield break;
+            }
+
+            if (source is IList<T> list)
+            {
+                for (int i = 0, count = list.Count; i < count; i++)
+                {
+                    yield return list[i];
+                }
+                yield break;
+            }
+
+            foreach (var item in source)
+            {
+                yield return item;
+            }
+        }
     }
 }

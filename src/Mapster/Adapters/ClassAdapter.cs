@@ -58,14 +58,14 @@ namespace Mapster.Adapters
             var properties = classConverter.Members;
 
             var lines = new List<Expression>();
+            Dictionary<LambdaExpression, List<Expression>> conditions = null;
             foreach (var property in properties)
             {
-                var useDestinationValue = arg.Settings.UseDestinationValue == true;
-                var getter = useDestinationValue
+                var getter = destination != null
                     ? CreateAdaptToExpression(property.Getter, property.Setter, arg)
                     : CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
 
-                Expression itemAssign = useDestinationValue ? getter : Expression.Assign(property.Setter, getter);
+                Expression itemAssign = Expression.Assign(property.Setter, getter);
                 if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
                 {
                     var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
@@ -74,9 +74,30 @@ namespace Mapster.Adapters
 
                 if (property.SetterCondition != null)
                 {
-                    itemAssign = Expression.IfThen(Expression.Not(property.SetterCondition.Apply(source, destination)), itemAssign);
+                    if (conditions == null)
+                        conditions = new Dictionary<LambdaExpression, List<Expression>>();
+                    if (!conditions.TryGetValue(property.SetterCondition, out List<Expression> pendingAssign))
+                    {
+                        pendingAssign = new List<Expression>();
+                        conditions[property.SetterCondition] = pendingAssign;
+                    }
+                    pendingAssign.Add(itemAssign);
                 }
-                lines.Add(itemAssign);
+                else
+                {
+                    lines.Add(itemAssign);
+                }
+            }
+
+            if (conditions != null)
+            {
+                foreach (var kvp in conditions)
+                {
+                    var condition = Expression.IfThen(
+                        Expression.Not(kvp.Key.Apply(source, destination)),
+                        Expression.Block(kvp.Value));
+                    lines.Add(condition);
+                }
             }
 
             return lines.Count > 0 ? (Expression)Expression.Block(lines) : Expression.Empty();

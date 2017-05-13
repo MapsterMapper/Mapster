@@ -538,7 +538,7 @@ namespace Mapster
                 _cloneConfig = new TypeAdapterConfig();
                 _cloneConfig.Default.Settings.PreserveReference = true;
                 _cloneConfig.ForType<TypeAdapterSettings, TypeAdapterSettings>()
-                    .MapWith()
+                    .MapWith(src => src.Clone());
             }
             var fn = _cloneConfig.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
             return fn(this);
