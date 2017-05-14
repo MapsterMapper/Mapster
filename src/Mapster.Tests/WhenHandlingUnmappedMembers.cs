@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenHandlingUnmappedMembers
     {
-        [TestFixtureTearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
         }
 
-        [Test]
+        [TestMethod]
         public void No_Errors_Thrown_With_Default_Configuration_On_Unmapped_Primitive()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
@@ -30,7 +30,7 @@ namespace Mapster.Tests
             simpleDto.UnmappedMember2.ShouldBe(0);
         }
 
-        [Test]
+        [TestMethod]
         public void Error_Thrown_With_Explicit_Configuration_On_Unmapped_Primitive()
         {
             try
@@ -48,7 +48,7 @@ namespace Mapster.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void No_Errors_Thrown_With_Default_Configuration_On_Unmapped_Child_Collection()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = false;
@@ -63,7 +63,7 @@ namespace Mapster.Tests
             destination.Children.Count.ShouldBe(1);
         }
 
-        [Test]
+        [TestMethod]
         public void Error_Thrown_With_Explicit_Configuration_On_Unmapped_Child_Collection()
         {
             try

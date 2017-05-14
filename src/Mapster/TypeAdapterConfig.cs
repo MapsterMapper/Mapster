@@ -385,6 +385,12 @@ namespace Mapster
             {
                 result.Apply(setting);
             }
+
+            //remove recursive include types
+            if (mapType == MapType.MapToTarget)
+                result.Includes.Remove(new TypeTuple(sourceType, destinationType));
+            else
+                result.Includes.RemoveAll(tuple => tuple.Source == sourceType);
             return result;
         }
 

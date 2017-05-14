@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Linq;
 using Mapster.Models;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenCloningConfig
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void Alter_Config_After_Map_Should_Error()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -29,13 +29,13 @@ namespace Mapster.Tests
             var result = TypeAdapter.Adapt<SimpleDto>(poco);
             result.Name.ShouldBe("a");
 
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = Should.Throw<InvalidOperationException>(() =>
                 TypeAdapterConfig<SimplePoco, SimpleDto>.ForType()
                     .Map(dest => dest.Name, src => "b"));
             ex.Message.ShouldContain("TypeAdapter.Adapt was already called");
         }
 
-        [Test]
+        [TestMethod]
         public void Clone()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()

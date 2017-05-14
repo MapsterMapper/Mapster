@@ -1,27 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenRunningOnMultipleThreads
     {
 
-        [SetUp]
+        [TestInitialize]
         public void Setup()
         {
             TypeAdapterConfig<Customer, CustomerDTO>.Clear();
             TypeAdapterConfig<Address, AddressDTO>.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Set_Up_Mapping_On_Multiple_Threads()
         {
             Parallel.For(1, 5, x => TypeAdapterConfig<Customer, CustomerDTO>.NewConfig());
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Set_Up_Adapt_On_Multiple_Threads()
         {
             Parallel.For(1, 5, x => TypeAdapter.Adapt<Customer, CustomerDTO>(GetCustomer()));
@@ -51,7 +51,7 @@ namespace Mapster.Tests
         }
 
 
-        #region Test Classes
+        #region TestMethod Classes
 
         public class Address
         {

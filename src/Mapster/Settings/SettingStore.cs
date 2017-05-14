@@ -53,11 +53,6 @@ namespace Mapster
         }
         public void Apply(SettingStore other)
         {
-            Apply(other, false);
-        }
-
-        protected void Apply(SettingStore other, bool clone)
-        {
             foreach (var kvp in other._booleanStore)
             {
                 if (_booleanStore.GetValueOrDefault(kvp.Key) == null)
@@ -70,21 +65,18 @@ namespace Mapster
                 if (self == null)
                 {
                     var value = kvp.Value;
-                    if (clone)
+                    if (value is IApplyable)
                     {
-                        if (value is IApplyable)
-                        {
-                            var applyable = (IApplyable)Activator.CreateInstance(value.GetType());
-                            applyable.Apply(value);
-                            value = applyable;
-                        }
-                        else if (value is IList side)
-                        {
-                            var list = (IList)Activator.CreateInstance(value.GetType());
-                            foreach (var item in side)
-                                list.Add(item);
-                            value = list;
-                        }
+                        var applyable = (IApplyable)Activator.CreateInstance(value.GetType());
+                        applyable.Apply(value);
+                        value = applyable;
+                    }
+                    else if (value is IList side)
+                    {
+                        var list = (IList)Activator.CreateInstance(value.GetType());
+                        foreach (var item in side)
+                            list.Add(item);
+                        value = list;
                     }
                     _objectStore[kvp.Key] = value;
                 }

@@ -94,7 +94,7 @@ namespace Mapster
             return MapContextScope.GetOrAddMapReference(this, key =>
             {
                 var settings = new TypeAdapterSettings();
-                settings.Apply(key, true);
+                settings.Apply(key);
                 return settings;
             });
         }

@@ -1,12 +1,12 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingPrivateFieldsAndProperties
     {
-        [Test]
+        [TestMethod]
         public void Default_Settings_Should_Not_Map_Private_Fields_To_New_Object()
         {
             TypeAdapterConfig<CustomerWithPrivateField, CustomerDTO>
@@ -19,12 +19,12 @@ namespace Mapster.Tests
 
             var dto = aCustomer.Adapt<CustomerDTO>();
 
-            Assert.NotNull(dto);
+            Assert.IsNotNull(dto);
             dto.Id.ShouldNotBe(customerId);
             dto.Name.ShouldBe(customerName);
         }
 
-        [Test]
+        [TestMethod]
         public void Default_Settings_Should_Not_Map_Private_Properties_To_New_Object()
         {
             var customerId = 1;
@@ -33,12 +33,12 @@ namespace Mapster.Tests
 
             var dto = aCustomer.Adapt<CustomerDTO>();
 
-            Assert.NotNull(dto);
+            Assert.IsNotNull(dto);
             dto.Id.ShouldBe(customerId);
             dto.Name.ShouldNotBe(customerName);
         }
 
-        [Test]
+        [TestMethod]
         public void Should_Map_Private_Field_To_New_Object_Correctly()
         {
             SetUpMappingNonPublicFields<CustomerWithPrivateField, CustomerDTO>();
@@ -49,12 +49,12 @@ namespace Mapster.Tests
 
             var dto = aCustomer.Adapt<CustomerDTO>();
 
-            Assert.NotNull(dto);
+            Assert.IsNotNull(dto);
             dto.Id.ShouldBe(customerId);
             dto.Name.ShouldBe(customerName);
         }
 
-        [Test]
+        [TestMethod]
         public void Should_Map_Private_Property_To_New_Object_Correctly()
         {
             SetUpMappingNonPublicProperties<CustomerWithPrivateProperty, CustomerDTO>();
@@ -65,12 +65,12 @@ namespace Mapster.Tests
 
             var dto = aCustomer.Adapt<CustomerDTO>();
 
-            Assert.NotNull(dto);
+            Assert.IsNotNull(dto);
             dto.Id.ShouldBe(customerId);
             dto.Name.ShouldBe(customerName);
         }
 
-        [Test]
+        [TestMethod]
         public void Should_Map_To_Private_Fields_Correctly()
         {
             SetUpMappingNonPublicFields<CustomerDTO, CustomerWithPrivateField>();
@@ -83,12 +83,12 @@ namespace Mapster.Tests
 
             var customer = dto.Adapt<CustomerWithPrivateField>();
 
-            Assert.NotNull(customer);
+            Assert.IsNotNull(customer);
             Assert.IsTrue(customer.HasId(dto.Id));
             customer.Name.ShouldBe(dto.Name);            
         }
 
-        [Test]
+        [TestMethod]
         public void Should_Map_To_Private_Properties_Correctly()
         {
             SetUpMappingNonPublicFields<CustomerDTO, CustomerWithPrivateProperty>();
@@ -101,7 +101,7 @@ namespace Mapster.Tests
 
             var customer = dto.Adapt<CustomerWithPrivateProperty>();
 
-            Assert.NotNull(customer);
+            Assert.IsNotNull(customer);
             customer.Id.ShouldBe(dto.Id);
             Assert.IsTrue(customer.HasName(dto.Name));
         }
@@ -121,7 +121,7 @@ namespace Mapster.Tests
 
         }
 
-        #region Test Classes
+        #region TestMethod Classes
 
         public class CustomerWithPrivateField
         {

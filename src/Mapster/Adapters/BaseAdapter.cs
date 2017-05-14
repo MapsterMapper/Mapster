@@ -78,6 +78,8 @@ namespace Mapster.Adapters
                 return false;
             if (arg.Settings.AfterMappingFactories.Count > 0)
                 return false;
+            if (arg.Settings.Includes.Count > 0)
+                return false;
             return true;
         }
 
@@ -234,10 +236,11 @@ namespace Mapster.Adapters
                         Expression.NotEqual(drvdDest, Expression.Constant(null, tuple.Destination)));
                 }
 
-                var adapt = Expression.Assign(
-                    result,
-                    CreateAdaptToExpression(drvdSource, drvdDest, arg));
-                var ifExpr = Expression.Condition(cond, adapt, set);
+                var adaptExpr = drvdDest == null
+                    ? CreateAdaptExpression(drvdSource, tuple.Destination, arg)
+                    : CreateAdaptToExpression(drvdSource, drvdDest, arg);
+                var adapt = Expression.Assign(result, adaptExpr);
+                var ifExpr = Expression.Condition(cond, adapt, set, typeof(void));
                 blocks.Add(ifExpr);
                 set = Expression.Block(vars, blocks);
             }
@@ -274,9 +277,17 @@ namespace Mapster.Adapters
         {
             //new TDestination()
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
-            var newObj = constructUsing != null
-                ? constructUsing.Apply(source).TrimConversion(true).To(arg.DestinationType)
-                : Expression.New(arg.DestinationType);
+            Expression newObj;
+            if (constructUsing != null)
+                newObj = constructUsing.Apply(source).TrimConversion(true).To(arg.DestinationType);
+            else if (arg.DestinationType.GetTypeInfo().IsAbstract && arg.Settings.Includes.Count > 0)
+                newObj = Expression.Throw(
+                    Expression.New(
+                        typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
+                        Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
+                    arg.DestinationType);
+            else
+                newObj = Expression.New(arg.DestinationType);
 
             //dest ?? new TDest();
             return destination == null

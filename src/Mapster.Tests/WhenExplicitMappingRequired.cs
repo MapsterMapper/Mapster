@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
 
-    [TestFixture]
+    [TestClass]
     public class WhenExplicitMappingRequired
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
 
-        [Test]
+        [TestMethod]
         public void Unmapped_Classes_Should_Throw()
         {
             try
@@ -40,7 +40,7 @@ namespace Mapster.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void Mapped_Classes_Succeed_With_Mapped_Enum()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -53,7 +53,7 @@ namespace Mapster.Tests
             simpleDto.Name.ShouldBe(simpleEnumPoco.Name.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void Mapped_Classes_With_Mapped_Enum_Compiles()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -67,7 +67,7 @@ namespace Mapster.Tests
             simpleDto.Name.ShouldBe(simpleEnumPoco.Name.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void Mapped_Classes_Succeed()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -81,7 +81,7 @@ namespace Mapster.Tests
             simpleDto.Name.ShouldBe(simplePoco.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Mapped_List_Of_Classes_Succeed()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -99,7 +99,7 @@ namespace Mapster.Tests
             simpleDtos[0].Name.ShouldBe(simplePocos[0].Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Mapped_Classes_Succeed_With_Child_Mapping()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -114,7 +114,7 @@ namespace Mapster.Tests
             collectionDto.Name.ShouldBe(collectionPoco.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Mapped_Classes_Succeed_When_List_To_IList_Is_Mapped()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;

@@ -1,19 +1,19 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenPerformingAfterMapping
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void After_Mapping()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -30,7 +30,7 @@ namespace Mapster.Tests
             result.Name.ShouldBe(poco.Name + "xxx");
         }
 
-        [Test]
+        [TestMethod]
         public void After_Mapping_With_DestinationType_Setting()
         {
             TypeAdapterConfig.GlobalSettings.ForDestinationType<IValidatable>()

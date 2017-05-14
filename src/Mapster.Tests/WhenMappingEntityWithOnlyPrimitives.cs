@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Mapster.Tests
 {
 
-    [TestFixture]
+    [TestClass]
     public class WhenMappingEntityWithOnlyPrimitives
     {
         #region Classes
@@ -48,7 +48,7 @@ namespace Mapster.Tests
 
         #endregion
 
-        [Test]
+        [TestMethod]
         public void ConvertPrimitiveEntityToDto()
         {
             var dto = TypeAdapter.Adapt<Customer, CustomerDTO>(GetCustomer());

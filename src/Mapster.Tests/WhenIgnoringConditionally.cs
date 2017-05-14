@@ -1,15 +1,15 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenIgnoringConditionally
     {
 
         #region Tests
 
-        [Test]
+        [TestMethod]
         public void True_Constant_Ignores_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -23,7 +23,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void True_Constant_Ignores_Map_To_Target()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -38,7 +38,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("DtoName");
         }
 
-        [Test]
+        [TestMethod]
         public void True_Condition_Ignores_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -52,7 +52,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void True_Condition_Ignores_Map_To_Target()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -67,7 +67,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("DtoName");
         }
 
-        [Test]
+        [TestMethod]
         public void Null_Condition_Ignores_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -81,7 +81,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Null_Condition_Ignores_Map_To_Target()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -96,7 +96,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("DtoName");
         }
 
-        [Test]
+        [TestMethod]
         public void True_Condition_On_Target_Ignores_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -110,7 +110,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("TestName");
         }
 
-        [Test]
+        [TestMethod]
         public void True_Condition_On_Target_Ignores_Map_To_Target()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -125,7 +125,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("DtoName");
         }
 
-        [Test]
+        [TestMethod]
         public void False_Condition_Does_Not_Ignore()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -140,7 +140,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("NotTestName");
         }
 
-        [Test]
+        [TestMethod]
         public void IgnoreIf_Can_Be_Combined()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -156,7 +156,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("DtoName");
         }
 
-        [Test]
+        [TestMethod]
         public void IgnoreIf_Apply_To_RecordType()
         {
             TypeAdapterConfig<SimplePoco, SimpleRecord>.NewConfig()

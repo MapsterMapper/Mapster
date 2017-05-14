@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingWithGetMethod
     {
-        [Test]
+        [TestMethod]
         public void Should_Copy_Value_From_Get_Method()
         {
             var poco = new Poco {FirstName = "Foo", LastName = "Bar"};
@@ -19,7 +19,7 @@ namespace Mapster.Tests
             dto.FullName.ShouldBe("Foo Bar");
         }
 
-        [Test]
+        [TestMethod]
         public void Should_Ignore_GetType()
         {
             var poco = new Poco { FirstName = "Foo", LastName = "Bar" };
@@ -27,7 +27,7 @@ namespace Mapster.Tests
             dto.Type.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Allow_GetType_If_Property_Is_Type()
         {
             var poco = new Poco { FirstName = "Foo", LastName = "Bar" };

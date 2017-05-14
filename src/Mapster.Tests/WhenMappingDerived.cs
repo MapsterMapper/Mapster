@@ -1,17 +1,18 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingDerived
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void WhenCompilingConfigDerivedWithoutMembers()
         {
             //Arrange
@@ -21,10 +22,10 @@ namespace Mapster.Tests
                                                            ;
 
             //Act && Assert
-            Assert.DoesNotThrow(() => config.Compile());
+            Should.NotThrow(() => config.Compile());
         }
 
-        [Test]
+        [TestMethod]
         public void WhenMappingDerivedWithoutMembers()
         {
             //Arrange

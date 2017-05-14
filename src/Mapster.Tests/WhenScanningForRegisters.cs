@@ -3,21 +3,21 @@ using System.Linq;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Tests.Classes;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenScanningForRegisters
     {
-        [SetUp]
+        [TestInitialize]
         public void Setup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void Registers_Are_Found()
         {
             IList<IRegister> registers = TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());

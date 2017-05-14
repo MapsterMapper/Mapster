@@ -1,6 +1,6 @@
 ﻿using System;
 using Mapster.Tests.Classes;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
@@ -8,11 +8,11 @@ namespace Mapster.Tests
     /// <summary>
     /// Not trying to test core testing here...just a few tests to make sure the extension method approach doesn't hose anything
     /// </summary>
-    [TestFixture]
+    [TestClass]
     public class WhenMappingWithExtensionMethods
     {
 
-        [Test]
+        [TestMethod]
         public void Adapt_With_Source_And_Destination_Type_Succeeds()
         {
             TypeAdapterConfig<Product, ProductDTO>.NewConfig()
@@ -26,7 +26,7 @@ namespace Mapster.Tests
             dto.Id.ShouldBe(product.Id);
         }
 
-        [Test]
+        [TestMethod]
         public void Adapt_With_Source_And_Destination_Types_And_Config_Succeeds()
         {
             var config = new TypeAdapterConfig();
@@ -41,7 +41,7 @@ namespace Mapster.Tests
             dto.Id.ShouldBe(product.Id);
         }
 
-        [Test]
+        [TestMethod]
         public void Adapt_With_Destination_Type_Succeeds()
         {
             TypeAdapterConfig<Product, ProductDTO>.NewConfig()
@@ -55,7 +55,7 @@ namespace Mapster.Tests
             dto.Id.ShouldBe(product.Id);
         }
 
-        [Test]
+        [TestMethod]
         public void Adapt_With_Destination_Type_And_Config_Succeeds()
         {
             var config = new TypeAdapterConfig();
@@ -70,7 +70,7 @@ namespace Mapster.Tests
             dto.Id.ShouldBe(product.Id);
         }
 
-        [Test]
+        [TestMethod]
         public void Map_From_Null_Should_Be_Null()
         {
             Product product = null;
@@ -80,10 +80,10 @@ namespace Mapster.Tests
             dto.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Map_From_Non_Public_Type()
         {
-            var product = new { Id = Guid.NewGuid(), Title = "Test" };
+            var product = new { Id = Guid.NewGuid(), Title = "TestMethod" };
 
             var dto = product.Adapt<ProductDTO>();
 

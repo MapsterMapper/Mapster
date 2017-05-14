@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingIgnoreNullValues
     {
-        [Test]
+        [TestMethod]
         public void Map()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
@@ -18,11 +18,11 @@ namespace Mapster.Tests
             var dest = source.Adapt<DestClass>();
 
             Assert.AreEqual("Hello", dest.Title);
-            Assert.NotNull(dest.Sub);
-            Assert.NotNull(dest.List);
+            Assert.IsNotNull(dest.Sub);
+            Assert.IsNotNull(dest.List);
         }
 
-        [Test]
+        [TestMethod]
         public void Map_To_Target()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
@@ -34,8 +34,8 @@ namespace Mapster.Tests
             var dest = source.Adapt(new DestClass());
 
             Assert.AreEqual("Hello", dest.Title);
-            Assert.NotNull(dest.Sub);
-            Assert.NotNull(dest.List);
+            Assert.IsNotNull(dest.Sub);
+            Assert.IsNotNull(dest.List);
         }
 
         public class DestClass

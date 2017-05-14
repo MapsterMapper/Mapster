@@ -1,14 +1,14 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenUsingConverterFactory
     {
 
-        [Test]
+        [TestMethod]
         public void Custom_Mapping_From_String_To_Char_Array()
         {
             TypeAdapterConfig<string, char[]>.NewConfig()

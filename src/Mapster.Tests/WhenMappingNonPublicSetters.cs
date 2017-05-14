@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingNonPublicSetters
     {
-        [Test]
+        [TestMethod]
         public void Non_Public_Destination_Setter_Is_Populated()
         {
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
@@ -19,7 +19,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(poco.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Non_Public_Destination_Collection_Setter_Is_Populated()
         {
             var poco = new CollectionPoco

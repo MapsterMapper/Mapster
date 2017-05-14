@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mapster.Tests.Classes;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenProjecting
     {
-        [Test]
+        [TestMethod]
         public void TestTypeConversion()
         {
             TypeTestClassA testA = new TypeTestClassA();
@@ -30,7 +30,7 @@ namespace Mapster.Tests
             Assert.IsTrue(bList[0].C == 4.5m);
         }
 
-        [Test]
+        [TestMethod]
         public void TestProjectionConfiguration()
         {
             ConfigTestClassA testA = new ConfigTestClassA();
@@ -56,7 +56,7 @@ namespace Mapster.Tests
             Assert.IsTrue(bList[0].C == testA.C.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void TestPocoTypeMapping()
         {
             var products = new[]

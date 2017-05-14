@@ -1,13 +1,13 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingWithImplicitInheritance
     {
-        [SetUp]
+        [TestInitialize]
         public void Setup()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
@@ -17,7 +17,7 @@ namespace Mapster.Tests
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_Applies_To_Derived_Class_If_No_Explicit_Configuration()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -36,7 +36,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name + "_Suffix");
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_Map_Condition_Applies_To_Derived_Class()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -67,7 +67,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_DestinationTransforms_Apply_To_Derived_Class()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
@@ -87,7 +87,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name.Trim());
         }
 
-        [Test]
+        [TestMethod]
         public void Ignores_Are_Derived_From_Base_Configurations()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -107,7 +107,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_Doesnt_Apply_To_Derived_Class_If_Explicit_Configuration_Exists()
         {
 
@@ -129,7 +129,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_Applies_To_Double_Derived_Class_If_No_Explicit_Configuration()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -148,7 +148,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name + "_Suffix");
         }
 
-        [Test]
+        [TestMethod]
         public void Derived_Class_Stops_At_First_Valid_Base_Configuration()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -172,7 +172,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name + "_Derived");
         }
 
-        [Test]
+        [TestMethod]
         public void Derived_Config_Shares_Base_Config_Properties()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -188,7 +188,7 @@ namespace Mapster.Tests
             //derivedConfig.MaxDepth.ShouldBe(5);
         }
 
-        [Test]
+        [TestMethod]
         public void Derived_Config_Shares_Base_Dest_Config_Properties()
         {
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
@@ -205,7 +205,7 @@ namespace Mapster.Tests
             //derivedConfig.MaxDepth.ShouldBe(5);
         }
 
-        [Test]
+        [TestMethod]
         public void Derived_Config_Doesnt_Share_Base_Dest_Config_Properties_If_Disabled()
         {
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
@@ -221,7 +221,7 @@ namespace Mapster.Tests
             derivedConfig.ShallowCopyForSameType.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Ignores_Are_Derived_From_Base_Dest_Configurations()
         {
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = true;
@@ -241,7 +241,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name + "_Suffix");
         }
 
-        #region Test Classes
+        #region TestMethod Classes
 
         public class SimplePoco
         {

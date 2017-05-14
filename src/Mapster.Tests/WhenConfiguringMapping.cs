@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Mapster.Tests.Classes;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mapster.Tests
 {
-    #region Test Object
+    #region TestMethod Object
 
     public class ConfigA
     {
@@ -67,10 +67,10 @@ namespace Mapster.Tests
 
     #endregion
 
-    [TestFixture]
+    [TestClass]
     public class WhenConfiguringMapping
     {
-        [Test]
+        [TestMethod]
         public void IgnoreMemberTest()
         {
             var currentDate = DateTime.Now;
@@ -93,7 +93,7 @@ namespace Mapster.Tests
             Assert.IsTrue(objB.Id == 0 && objB.FullName == null && objB.BirthDate == currentDate);
         }
 
-        [Test]
+        [TestMethod]
         public void MapFromTest()
         {
             var currentDate = DateTime.Now;
@@ -118,7 +118,7 @@ namespace Mapster.Tests
         }
 
 
-        [Test]
+        [TestMethod]
         public void NewInstanceTest()
         {
             TestNewInstanceA obj = new TestNewInstanceA();
@@ -135,7 +135,7 @@ namespace Mapster.Tests
             Assert.IsTrue(obj.Child.Name != newObj.Child.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void NewInstanceConfigurationTest()
         {
             TestNewInstanceD obj = new TestNewInstanceD();

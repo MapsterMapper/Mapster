@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Mapster.Tests
 {
-    #region Test Objects
+    #region TestMethod Objects
 
     public class XProject
     {
@@ -82,10 +82,10 @@ namespace Mapster.Tests
 
     #endregion
 
-    [TestFixture]
+    [TestClass]
     public class WhenMappingCollections
     {
-        [Test]
+        [TestMethod]
         public void MapCollectionProperty()
         {
             var person = new Person()
@@ -150,7 +150,7 @@ namespace Mapster.Tests
             Assert.IsTrue(dto.RelatedDepartments.Length == 2 && dto.RelatedDepartments[0] == Departments.IT && dto.RelatedDepartments[1] == Departments.Finance);           
         }
 
-        [Test]
+        [TestMethod]
         public void MapCollection()
         {
             var person = new Person()
@@ -189,7 +189,7 @@ namespace Mapster.Tests
             Assert.IsTrue(dtos[0].Projects.First().Id == 1 && dtos[0].Projects.First().Name == "Project X");
         }
 
-        [Test]
+        [TestMethod]
         public void ShouldNotUsingTheSameEnumerable()
         {
             var src = new Foo

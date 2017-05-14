@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenCompilingConfig
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void Compile_Success_When_Contain_Collection()
         {
             TypeAdapterConfig<SrcItem, DestItem>.ForType();

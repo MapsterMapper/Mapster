@@ -1,14 +1,14 @@
 ﻿using Mapster.Tests.Classes;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
 
-    [TestFixture]
+    [TestClass]
     public class WhenCreatingConfigInstances
     {
-        [Test]
+        [TestMethod]
         public void Basic_Poco_Is_Mapped_With_New_Config()
         {
             var config = new TypeAdapterConfig();
@@ -29,7 +29,7 @@ namespace Mapster.Tests
             customerDto.Address_Country.ShouldBe("TestAddressCountry");
         }
 
-        [Test]
+        [TestMethod]
         public void ForType_Enhances_Config()
         {
             var config = new TypeAdapterConfig();
@@ -53,7 +53,7 @@ namespace Mapster.Tests
             customerDto.Address_Country.ShouldBe("TestAddressCountry");
         }
 
-        [Test]
+        [TestMethod]
         public void NewConfig_Overwrites_Config()
         {
             var config = new TypeAdapterConfig();

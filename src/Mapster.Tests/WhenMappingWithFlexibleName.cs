@@ -1,18 +1,18 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingWithFlexibleName
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void Not_Set_Match_Only_Exact_Name()
         {
             var mix = new MixName
@@ -35,7 +35,7 @@ namespace Mapster.Tests
             simple.MixUnder_SCORE.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Map_Flexible_Name()
         {
             TypeAdapterConfig<MixName, SimpleName>.NewConfig().NameMatchingStrategy(NameMatchingStrategy.Flexible);
@@ -60,7 +60,7 @@ namespace Mapster.Tests
             simple.MixUnder_SCORE.ShouldBe(mix.MIX_UnderScore);
         }
 
-        [Test]
+        [TestMethod]
         public void Map_IgnoreCase()
         {
             TypeAdapterConfig<MixName, SimpleName>.NewConfig().NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
@@ -75,7 +75,7 @@ namespace Mapster.Tests
             simple.FooBar.ShouldBe(mix.FOOBAR);
         }
 
-        [Test]
+        [TestMethod]
         public void Test_Name()
         {
             NameMatchingStrategy.PascalCase("PascalCase").ShouldBe("PascalCase");

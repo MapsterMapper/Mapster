@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
-    class WhenConvertingFromObjects
+    [TestClass]
+    public class WhenConvertingFromObjects
     {
 
         #region TestClasses
@@ -22,7 +22,7 @@ namespace Mapster.Tests
 
         #endregion
 
-        [Test]
+        [TestMethod]
         public void Int32_In_Object_Is_Converted_To_Int64()
         {
             var dictionaryData = new Dictionary<string, object>

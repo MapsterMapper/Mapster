@@ -1,13 +1,13 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenPassingRuntimeValue
     {
-        [Test]
+        [TestMethod]
         public void Passing_Runtime_Value()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()

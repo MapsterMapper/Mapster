@@ -1,55 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenPerformingDestinationTransforms
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Default.Settings.DestinationTransforms.Clear();
         }
 
-        [Test]
+        [TestMethod]
         public void Transform_Doesnt_Occur_If_None_Present()
         {
             TypeAdapterConfig<string, string>.Clear();
             TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
 
-            var source = new SimplePoco { Id = new Guid(), Name = "Test    " };
+            var source = new SimplePoco { Id = new Guid(), Name = "TestMethod    " };
 
             var destination = TypeAdapter.Adapt<SimpleDto>(source);
 
             destination.Name.ShouldBe(source.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Global_Destination_Transform_Is_Applied_To_Class()
         {
             TypeAdapterConfig.GlobalSettings.Default.AddDestinationTransform((string x) => x.Trim());
             TypeAdapterConfig<string, string>.Clear();
 
-            var source = new SimplePoco {Id = new Guid(), Name = "Test    "};
+            var source = new SimplePoco {Id = new Guid(), Name = "TestMethod"};
             var destination = TypeAdapter.Adapt<SimpleDto>(source);
 
-            destination.Name.ShouldBe("Test");
+            destination.Name.ShouldBe("TestMethod");
         }
 
-        [Test]
+        [TestMethod]
         public void Adapter_Destination_Transform_Is_Applied_To_Class()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
             config.AddDestinationTransform((string x) => x.Trim());
             config.Compile();
 
-            var source = new SimplePoco { Id = new Guid(), Name = "Test    " };
+            var source = new SimplePoco { Id = new Guid(), Name = "TestMethod    " };
             var destination = TypeAdapter.Adapt<SimpleDto>(source);
 
-            destination.Name.ShouldBe("Test");
+            destination.Name.ShouldBe("TestMethod");
         }
 
 

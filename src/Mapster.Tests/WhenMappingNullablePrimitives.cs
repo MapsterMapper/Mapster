@@ -1,14 +1,14 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingNullablePrimitives
     {
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Null_Source_To_Non_Nullable_Existing_Target()
         {
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.Clear();
@@ -26,7 +26,7 @@ namespace Mapster.Tests
             dto.IsImport.ShouldBeFalse();
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Null_Source_To_Non_Nullable_Target()
         {
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.Clear();
@@ -40,7 +40,7 @@ namespace Mapster.Tests
             dto.IsImport.ShouldBeFalse();
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Nullable_Source_To_Nullable_Target()
         {
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
@@ -53,7 +53,7 @@ namespace Mapster.Tests
             dto.Amount.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Nullable_Source_To_Nullable_Existing_Target()
         {
             var poco = new NullablePrimitivesPoco { Id = Guid.NewGuid(), Name = "TestName" };
@@ -72,7 +72,7 @@ namespace Mapster.Tests
             dto.Amount.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Nullable_Source_With_Values_To_Non_Nullable_Target()
         {
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
@@ -87,7 +87,7 @@ namespace Mapster.Tests
             dto.Amount.ShouldBe(10);
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Nullable_Source_Without_Values_To_Non_Nullable_Target()
         {
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
@@ -102,7 +102,7 @@ namespace Mapster.Tests
             dto.Amount.ShouldBe(0);
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Nullable_Source_With_Values_To_Explicitly_Mapped_Non_Nullable_Target()
         {
             TypeAdapterConfig<NullablePrimitivesPoco, NonNullablePrimitivesDto>.NewConfig()
@@ -122,7 +122,7 @@ namespace Mapster.Tests
             dto.MyFee.ShouldBe(20);
         }
 
-        [Test]
+        [TestMethod]
         public void Can_Map_From_Non_Nullable_Source_To_Nullable_Target()
         {
             var dto = new NonNullablePrimitivesDto { Id = Guid.NewGuid(), Name = "TestName", IsImport = true};

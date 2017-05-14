@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Text;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingPrimitives
     {
-        [Test]
+        [TestMethod]
         public void Integer_Is_Mapped_To_Byte()
         {
             byte b = TypeAdapter.Adapt<int, byte>(5);
@@ -16,7 +16,7 @@ namespace Mapster.Tests
             Assert.IsTrue(b == 5);
         }
 
-        [Test]
+        [TestMethod]
         public void Byte_Array_Is_Mapped_Correctly()
         {
             string testString = "this is a string that will later be converted to a byte array and other text blah blah blah I'm not sure what else to put here...";
@@ -30,7 +30,7 @@ namespace Mapster.Tests
             testString.ShouldBe(resultString);
         }
 
-        [Test]
+        [TestMethod]
         public void Byte_Array_In_Test_Class_Is_Mapped_Correctly()
         {
             string testString = "this is a string that will later be converted to a byte array and other text blah blah blah I'm not sure what else to put here...";
@@ -44,7 +44,7 @@ namespace Mapster.Tests
             testString.ShouldBe(resultString);
         }
 
-        [Test]
+        [TestMethod]
         public void ValueType_String_Object_Is_Always_Primitive()
         {
             var sourceDto = new PrimitivePoco
@@ -60,7 +60,7 @@ namespace Mapster.Tests
             targetDto.Obj.ShouldBeSameAs(sourceDto.Obj);
         }
 
-        [Test]
+        [TestMethod]
         public void Immutable_Class_With_No_Mapping_Should_Error()
         {
             try
@@ -75,7 +75,7 @@ namespace Mapster.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void Able_To_Map_Immutable_Class_With_MapWith()
         {
             TypeAdapterConfig.GlobalSettings.Clear();

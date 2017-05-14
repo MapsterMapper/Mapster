@@ -1,14 +1,14 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenUsingNonDefaultConstructor
     {
 
-        [Test]
+        [TestMethod]
         public void Dest_Calls_Calls_Non_Default_Constructor_With_ConstructUsing()
         {
             TypeAdapterConfig<SimplePoco, SimpleDtoWithDefaultConstructor>.NewConfig()
@@ -25,7 +25,7 @@ namespace Mapster.Tests
             dto.Unmapped.ShouldBe("unmapped");
         }
 
-        [Test]
+        [TestMethod]
         public void Dest_Calls_Calls_Factory_Method_With_ConstructUsing()
         {
             TypeAdapterConfig<SimplePoco, SimpleDtoWithDefaultConstructor>.NewConfig()
@@ -42,7 +42,7 @@ namespace Mapster.Tests
             dto.Unmapped.ShouldBe("unmapped");
         }
 
-        [Test]
+        [TestMethod]
         public void Construct_From_Interface()
         {
             TypeAdapterConfig<SimplePoco, ISimpleDtoWithDefaultConstructor>.NewConfig()

@@ -1,5 +1,5 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
@@ -76,10 +76,10 @@ namespace Mapster.Tests
 
     #endregion
 
-    [TestFixture]
+    [TestClass]
     public class WhenFlattening
     {
-        [Test]
+        [TestMethod]
         public void GetMethodTest()
         {
             var b = TypeAdapter.Adapt<A, B>(new A { X = 100, Y = 50 });
@@ -88,7 +88,7 @@ namespace Mapster.Tests
             Assert.IsTrue(b.Total == 150);
         }
 
-        [Test]
+        [TestMethod]
         public void PropertyTest()
         {
             var d = TypeAdapter.Adapt<C, D>(new C { BClass = new B { Total = 250 } });
@@ -97,7 +97,7 @@ namespace Mapster.Tests
             Assert.IsTrue(d.BClassTotal == 250);
         }
 
-        [Test]
+        [TestMethod]
         public void PropertyTest_NameWithUnderscore()
         {
             var e = TypeAdapter.Adapt<C, E>(new C { BClass = new B { Total = 250 } });
@@ -106,7 +106,7 @@ namespace Mapster.Tests
             Assert.IsTrue(e.BClass_Total == 250);
         }
 
-        [Test]
+        [TestMethod]
         public void ShouldUseNestedObjectPropertyMembers()
         {
             var src = new ModelObject

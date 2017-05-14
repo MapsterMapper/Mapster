@@ -1,13 +1,13 @@
 ﻿using System;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingWithExplicitInheritance
     {
-        [SetUp]
+        [TestInitialize]
         public void Setup()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.Clear();
@@ -16,7 +16,7 @@ namespace Mapster.Tests
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_Map_Condition_Applies_To_Derived_Class()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -50,7 +50,7 @@ namespace Mapster.Tests
             dto2.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Base_Configuration_DestinationTransforms_Apply_To_Derived_Class()
         {
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
@@ -73,7 +73,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(source.Name.Trim());
         }
 
-        [Test]
+        [TestMethod]
         public void Ignores_Are_Derived_From_Base_Configurations()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -96,7 +96,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Derived_Config_Shares_Base_Config_Properties()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -114,23 +114,23 @@ namespace Mapster.Tests
         }
 
 
-        [Test]
+        [TestMethod]
         public void Invalid_Source_Cast_Throws_Exception()
         {
-            Assert.Throws<InvalidCastException>(() => TypeAdapterConfig<SimpleDto, DerivedDto>.NewConfig()
+            Should.Throw<InvalidCastException>(() => TypeAdapterConfig<SimpleDto, DerivedDto>.NewConfig()
                 .Inherits<SimplePoco, SimpleDto>());
 
         }
 
-        [Test]
+        [TestMethod]
         public void Invalid_Destination_Cast_Throws_Exception()
         {
-            Assert.Throws<InvalidCastException>(() => TypeAdapterConfig<DerivedPoco, SimplePoco>.NewConfig()
+            Should.Throw<InvalidCastException>(() => TypeAdapterConfig<DerivedPoco, SimplePoco>.NewConfig()
                 .Inherits<SimplePoco, SimpleDto>());
 
         }
 
-        #region Test Classes
+        #region TestMethod Classes
 
         public class SimplePoco
         {

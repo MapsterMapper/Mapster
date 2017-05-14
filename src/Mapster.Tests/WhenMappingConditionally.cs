@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingConditionally
     {
-        [Test]
+        [TestMethod]
         public void False_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -23,7 +23,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Failed_Condition_Primitive_Does_Not_Map()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -38,7 +38,7 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Passed_Condition_Primitive_Does_Map()
         {
             

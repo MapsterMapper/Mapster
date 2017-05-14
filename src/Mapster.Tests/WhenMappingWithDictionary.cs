@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class WhenMappingWithDictionary
     {
-        [TearDown]
-        public void TearDown()
+        [TestCleanup]
+        public void TestCleanup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Exact);
         }
 
-        [Test]
+        [TestMethod]
         public void Object_To_Dictionary()
         {
             var poco = new SimplePoco
@@ -31,7 +31,7 @@ namespace Mapster.Tests
             dict["Name"].ShouldBe(poco.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Object_To_Dictionary_CamelCase()
         {
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.ToCamelCase);
@@ -48,7 +48,7 @@ namespace Mapster.Tests
             dict["name"].ShouldBe(poco.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Object_To_Dictionary_Flexible()
         {
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
@@ -70,7 +70,7 @@ namespace Mapster.Tests
             dict["Name"].ShouldBe(poco.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void Object_To_Dictionary_Ignore_Null_Values()
         {
             TypeAdapterConfig<SimplePoco, Dictionary<string, object>>.NewConfig()
@@ -88,7 +88,7 @@ namespace Mapster.Tests
             dict["Id"].ShouldBe(poco.Id);
         }
 
-        [Test]
+        [TestMethod]
         public void Dictionary_To_Object()
         {
             var dict = new Dictionary<string, object>
@@ -102,7 +102,7 @@ namespace Mapster.Tests
             poco.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Dictionary_To_Object_CamelCase()
         {
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.FromCamelCase);
@@ -118,7 +118,7 @@ namespace Mapster.Tests
             poco.Name.ShouldBeNull();
         }
 
-        [Test]
+        [TestMethod]
         public void Dictionary_To_Object_Flexible()
         {
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
@@ -134,7 +134,7 @@ namespace Mapster.Tests
             poco.Name.ShouldBe(dict["Name"]);
         }
 
-        [Test]
+        [TestMethod]
         public void Dictionary_Of_Int()
         {
             var result = TypeAdapter.Adapt<A, A>(new A { Prop = new Dictionary<int, decimal> { { 1, 2m } } });

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
 {
-    #region Test Objects
+    #region TestMethod Objects
 
     public enum Departments
     {
@@ -53,10 +53,10 @@ namespace Mapster.Tests
 
     #endregion
 
-    [TestFixture]
+    [TestClass]
     public class WhenMappingEnums
     {
-        [Test]
+        [TestMethod]
         public void Int_Is_Mapped_To_Enum()
         {
             TypeAdapterConfig<Employee, EmployeeDTO>
@@ -73,7 +73,7 @@ namespace Mapster.Tests
                 dto.Department == Departments.IT);
         }
 
-        [Test]
+        [TestMethod]
         public void String_Is_Mapped_To_Enum()
         {
             var employee = new EmployeeWithStringEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = Departments.IT.ToString() };
@@ -87,7 +87,7 @@ namespace Mapster.Tests
             dto.Department.ShouldBe(Departments.IT);
         }
 
-        [Test]
+        [TestMethod]
         public void Enum_Is_Mapped_To_Enum()
         {
             var employee = new EmployeeWithEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = EmployeeDepartments.IT };
@@ -102,7 +102,7 @@ namespace Mapster.Tests
             dto.Department.ShouldBe(Departments.IT);
         }
 
-        [Test]
+        [TestMethod]
         public void Null_String_Is_Mapped_To_Enum_Default()
         {
             TypeAdapterConfig<EmployeeWithStringEnum, EmployeeDTO>
@@ -119,7 +119,7 @@ namespace Mapster.Tests
             dto.Department.ShouldBe(Departments.Finance);
         }
 
-        [Test]
+        [TestMethod]
         public void Empty_String_Is_Mapped_To_Enum_Default()
         {
             TypeAdapterConfig<EmployeeWithStringEnum, EmployeeDTO>
@@ -137,7 +137,7 @@ namespace Mapster.Tests
 
         }
 
-        [Test]
+        [TestMethod]
         public void Enum_Is_Mapped_To_String()
         {
             var employeeDto = new EmployeeDTO { Id = Guid.NewGuid(), Name = "Timuçin", Department = Departments.IT };
@@ -151,7 +151,7 @@ namespace Mapster.Tests
             poco.Department.ShouldBe(employeeDto.Department.ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void Flag_Enum_Is_Supported()
         {
             Assert_Flag_Enum(0, "Zero");
@@ -176,7 +176,7 @@ namespace Mapster.Tests
             e2.ShouldBe(e);
         }
 
-        [Test, Explicit]
+        [TestMethod, TestCategory("speed")]
         public void MapEnumToStringSpeedTest()
         {
             TypeAdapterConfig<EmployeeDTO, EmployeeWithStringEnum>
