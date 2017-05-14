@@ -1,4 +1,6 @@
+using Mapster.Models;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Mapster
 {
@@ -64,6 +66,18 @@ namespace Mapster
         {
             var fn = this.Config.GetMapToTargetFunction<TSource, TDestination>();
             return fn(this.Source, destination);
+        }
+
+        public LambdaExpression CreateMapExpression<TDestination>()
+        {
+            var tuple = new TypeTuple(typeof(TSource), typeof(TDestination));
+            return this.Config.CreateMapExpression(tuple, MapType.Map);
+        }
+
+        public LambdaExpression CreateMapToTargetExpression<TDestination>()
+        {
+            var tuple = new TypeTuple(typeof(TSource), typeof(TDestination));
+            return this.Config.CreateMapExpression(tuple, MapType.MapToTarget);
         }
     }
 }

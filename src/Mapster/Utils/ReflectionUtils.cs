@@ -384,15 +384,5 @@ namespace Mapster
                 .FirstOrDefault(name => name != null)
                 ?? nameConverter(member.Name);
         }
-
-        public static bool HasCustomAttribute(this IMemberModel member, Type type)
-        {
-            return member.GetCustomAttributes(true).Any(attr => attr.GetType() == type);
-        }
-
-        public static T GetCustomAttribute<T>(this IMemberModel member)
-        {
-            return (T)member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
-        }
     }
 }

@@ -56,7 +56,7 @@ namespace Mapster.Tests
                 }
             });
 
-            exception.InnerException.ShouldBeOfType(typeof(ArgumentOutOfRangeException));
+            exception.InnerException.ShouldBeOfType(typeof(CompileException));
 
         }
 

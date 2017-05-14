@@ -61,7 +61,7 @@ namespace Mapster.Adapters
             Dictionary<LambdaExpression, List<Expression>> conditions = null;
             foreach (var property in properties)
             {
-                var getter = destination != null
+                var getter = arg.MapType == MapType.MapToTarget
                     ? CreateAdaptToExpression(property.Getter, property.Setter, arg)
                     : CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
 

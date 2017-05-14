@@ -91,9 +91,12 @@ namespace Mapster
 
         public TypeAdapterSettings Clone()
         {
-            var settings = new TypeAdapterSettings();
-            settings.Apply(this, true);
-            return settings;
+            return MapContextScope.GetOrAddMapReference(this, key =>
+            {
+                var settings = new TypeAdapterSettings();
+                settings.Apply(key, true);
+                return settings;
+            });
         }
     }
 }

@@ -10,11 +10,11 @@ namespace Mapster
     public class TypeAdapterSetter
     {
         public readonly TypeAdapterSettings Settings;
-        public readonly TypeAdapterConfig ParentConfig;
-        public TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
+        public readonly TypeAdapterConfig Config;
+        public TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig config)
         {
             this.Settings = settings;
-            this.ParentConfig = parentConfig;
+            this.Config = config;
         }
     }
     public static class TypeAdapterSetterExtensions
@@ -106,6 +106,24 @@ namespace Mapster
         public static TSetter Map<TSetter, TSourceMember>(
             this TSetter setter, string memberName,
             Expression<Func<TSourceMember>> source) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)), source.Parameters[0]);
+            setter.Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = memberName,
+                Invoker = invoker,
+                Condition = null
+            });
+            setter.Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
+
+            return setter;
+        }
+
+        public static TSetter Map<TSetter, TSource, TSourceMember>(
+            this TSetter setter, string memberName,
+            Expression<Func<TSource, TSourceMember>> source) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -393,7 +411,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            ParentConfig.Rules.Add(new TypeAdapterRule
+            Config.Rules.Add(new TypeAdapterRule
             {
                 Priority = (sourceType, destinationType, mapType) =>
                     sourceType == typeof(TDerivedSource) &&
@@ -419,7 +437,7 @@ namespace Mapster
             if (!baseDestinationType.GetTypeInfo().IsAssignableFrom(typeof(TDestination).GetTypeInfo()))
                 throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
 
-            if (ParentConfig.RuleMap.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out var rule))
+            if (Config.RuleMap.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out var rule))
             {
                 Settings.Apply(rule.Settings);
             }
@@ -428,12 +446,12 @@ namespace Mapster
 
         public void Compile()
         {
-            this.ParentConfig.Compile(typeof(TSource), typeof(TDestination));
+            this.Config.Compile(typeof(TSource), typeof(TDestination));
         }
 
         public void CompileProjection()
         {
-            this.ParentConfig.CompileProjection(typeof(TSource), typeof(TDestination));
+            this.Config.CompileProjection(typeof(TSource), typeof(TDestination));
         }
     }
 }

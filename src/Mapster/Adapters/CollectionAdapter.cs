@@ -32,7 +32,7 @@ namespace Mapster.Adapters
                 if (!allowCountAll)
                     return null;
                 var countMethod = typeof(Enumerable).GetMethods()
-                    .First(m => m.Name == "Count" && m.GetParameters().Length == 1)
+                    .First(m => m.Name == nameof(Enumerable.Count) && m.GetParameters().Length == 1)
                     .MakeGenericMethod(source.Type.ExtractCollectionType());
                 return Expression.Call(countMethod, source);            //list.Count()
             }
@@ -124,15 +124,15 @@ namespace Mapster.Adapters
                 if (arg.MapType == MapType.Projection)
                     return source;
 
-                var toEnum = (from m in typeof(Expression).GetMethods()
-                              where m.Name == "ToEnumerable"
+                var toEnum = (from m in typeof(CoreExtensions).GetMethods()
+                              where m.Name == nameof(CoreExtensions.ToEnumerable)
                               select m).First().MakeGenericMethod(destinationElementType);
                 return Expression.Call(toEnum, source);
             }
 
             //src.Select(item => convert(item))
             var method = (from m in typeof(Enumerable).GetMethods()
-                          where m.Name == "Select"
+                          where m.Name == nameof(Enumerable.Select)
                           let p = m.GetParameters()[1]
                           where p.ParameterType.GetGenericTypeDefinition() == typeof(Func<,>)
                           select m).First().MakeGenericMethod(sourceElementType, destinationElementType);
@@ -141,7 +141,7 @@ namespace Mapster.Adapters
             {
                 //src.Select(item => convert(item)).ToList()
                 var toList = (from m in typeof (Enumerable).GetMethods()
-                              where m.Name == "ToList"
+                              where m.Name == nameof(Enumerable.ToList)
                               select m).First().MakeGenericMethod(destinationElementType);
                 exp = Expression.Call(toList, exp);
             }

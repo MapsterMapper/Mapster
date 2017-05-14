@@ -22,5 +22,16 @@ namespace Mapster
             if (_isRootScope && ReferenceEquals(MapContext.Current, this.Context))
                 MapContext.Current = null;
         }
+
+        public static TResult GetOrAddMapReference<TKey, TResult>(TKey key, Func<TKey, TResult> mapFn)
+        {
+            using (var context = new MapContextScope())
+            {
+                var dict = context.Context.References;
+                if (!dict.TryGetValue(key, out var reference))
+                    dict[key] = reference = mapFn(key);
+                return (TResult)reference;
+            }
+        }
     }
 }

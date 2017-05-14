@@ -92,6 +92,7 @@ namespace Mapster.Tests
         {
             var employee = new EmployeeWithEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = EmployeeDepartments.IT };
 
+            TypeAdapterConfig.GlobalSettings.Default.EnumMappingStrategy(EnumMappingStrategy.ByName);
             var dto = TypeAdapter.Adapt<EmployeeWithEnum, EmployeeDTO>(employee);
 
             dto.ShouldNotBeNull();

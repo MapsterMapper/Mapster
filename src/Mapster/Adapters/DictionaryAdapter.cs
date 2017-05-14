@@ -61,17 +61,17 @@ namespace Mapster.Adapters
                 if (strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
                 {
                     var args = dictType.GetGenericArguments();
-                    var setMethod = typeof(Extensions).GetMethods().First(m => m.Name == "FlexibleSet")
+                    var setMethod = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.FlexibleSet))
                         .MakeGenericMethod(args[1]);
                     setFn = (key, value) => Expression.Call(setMethod, dict, key, Expression.Constant(strategy.DestinationMemberNameConverter), value);
-                    var getMethod = typeof(Extensions).GetMethods().First(m => m.Name == "FlexibleGet")
+                    var getMethod = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.FlexibleGet))
                         .MakeGenericMethod(args[1]);
                     getFn = key => Expression.Call(getMethod, dict, key, Expression.Constant(strategy.DestinationMemberNameConverter));
                 }
                 else
                 {
                     var args = dictType.GetGenericArguments();
-                    var getMethod = typeof(Extensions).GetMethods().First(m => m.Name == "GetValueOrDefault")
+                    var getMethod = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.GetValueOrDefault))
                         .MakeGenericMethod(args);
                     getFn = key => Expression.Call(getMethod, dict, key);
                 }
@@ -83,7 +83,7 @@ namespace Mapster.Adapters
                 Expression key = Expression.Constant(sourceMemberName);
 
                 var getter = property.GetExpression(source);
-                var value = destination != null
+                var value = arg.MapType == MapType.MapToTarget
                     ? CreateAdaptToExpression(getter, getFn(key), arg)
                     : CreateAdaptExpression(getter, valueType, arg);
 

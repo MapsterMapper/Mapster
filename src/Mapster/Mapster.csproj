@@ -94,7 +94,7 @@
     <Compile Include="Models\ParameterModel.cs" />
     <Compile Include="Models\PropertyModel.cs" />
     <Compile Include="Models\TypeTuple.cs" />
-    <Compile Include="QueryableExtensions.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Models\InvokerModel.cs" />
     <Compile Include="Models\MemberMapping.cs" />
     <Compile Include="TypeAdapterSetter.cs" />
@@ -102,7 +102,7 @@
     <Compile Include="TypeAdapterConfig.cs" />
     <Compile Include="Utils\Enum.cs" />
     <Compile Include="Utils\ExpressionEx.cs" />
-    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\CoreExtensions.cs" />
     <Compile Include="Adapters\CollectionAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
