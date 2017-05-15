@@ -60,6 +60,7 @@
     <Compile Include="Adapters\BaseAdapter.cs" />
     <Compile Include="Adapters\BaseAfterMapper.cs" />
     <Compile Include="Adapters\BaseClassAdapter.cs" />
+    <Compile Include="Adapters\DelegateAdapter.cs" />
     <Compile Include="Adapters\DictionaryAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
     <Compile Include="Attributes\AdaptIgnoreAttribute.cs" />

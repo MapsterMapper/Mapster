@@ -366,26 +366,44 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> MapWith(Expression<Func<TSource, TDestination>> converterFactory)
+        public TypeAdapterSetter<TSource, TDestination> MapWith(Expression<Func<TSource, TDestination>> converterFactory, bool applySettings = false)
         {
             this.CheckCompiled();
 
-            Settings.ConverterFactory = arg => converterFactory;
-
-            if (Settings.ConverterToTargetFactory == null)
+            if (applySettings)
             {
-                var dest = Expression.Parameter(typeof (TDestination));
-                Settings.ConverterToTargetFactory = arg => Expression.Lambda(converterFactory.Body, converterFactory.Parameters[0], dest);
+                var adapter = new DelegateAdapter(converterFactory);
+                Settings.ConverterFactory = adapter.CreateAdaptFunc;
+                if (Settings.ConverterToTargetFactory == null)
+                {
+                    var dest = Expression.Parameter(typeof(TDestination));
+                    Settings.ConverterToTargetFactory = adapter.CreateAdaptToTargetFunc;
+                }
+            }
+            else
+            {
+                Settings.ConverterFactory = arg => converterFactory;
+                if (Settings.ConverterToTargetFactory == null)
+                {
+                    var dest = Expression.Parameter(typeof(TDestination));
+                    Settings.ConverterToTargetFactory = arg => Expression.Lambda(converterFactory.Body, converterFactory.Parameters[0], dest);
+                }
             }
 
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(Expression<Func<TSource, TDestination, TDestination>> converterFactory)
+        public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(Expression<Func<TSource, TDestination, TDestination>> converterFactory, bool applySettings = false)
         {
             this.CheckCompiled();
 
-            Settings.ConverterToTargetFactory = arg => converterFactory;
+            if (applySettings)
+            {
+                var adapter = new DelegateAdapter(converterFactory);
+                Settings.ConverterToTargetFactory = adapter.CreateAdaptToTargetFunc;
+            }
+            else
+                Settings.ConverterToTargetFactory = arg => converterFactory;
             return this;
         }
 
