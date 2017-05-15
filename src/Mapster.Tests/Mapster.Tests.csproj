@@ -75,6 +75,7 @@
     <Compile Include="WhenCreatingConfigInstance.cs" />
     <Compile Include="WhenIgnoringConditionally.cs" />
     <Compile Include="WhenMappingDerived.cs" />
+    <Compile Include="WhenMappingComplexClasses.cs" />
     <Compile Include="WhenMappingPrivateFieldsAndProperties.cs" />
     <Compile Include="WhenMappingWithDictionary.cs" />
     <Compile Include="WhenMappingRecordTypes.cs" />
