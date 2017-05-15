@@ -106,7 +106,7 @@ namespace Mapster.Adapters
                 throw new InvalidOperationException("Mapping is invalid for projection");
 
             //var result = new TDest();
-            var result = Expression.Variable(arg.DestinationType);
+            var result = Expression.Variable(arg.DestinationType, "result");
             var newObj = CreateInstantiationExpression(source, destination, arg);
             Expression assign = Expression.Assign(result, newObj);
 
@@ -139,13 +139,13 @@ namespace Mapster.Adapters
             }
 
             //using (var scope = new MapContextScope()) {
-            //  var dict = scope.Context.Reference;
+            //  var references = scope.Context.Reference;
             //  object cache;
-            //  if (dict.TryGetValue(source, out cache))
+            //  if (references.TryGetValue(source, out cache))
             //      result = (TDestination)cache;
             //  else {
             //      result = new TDestination();
-            //      dict[source] = (object)result;
+            //      references[source] = (object)result;
             //      result.prop = adapt(source.prop);
             //  }
             //}
@@ -153,11 +153,11 @@ namespace Mapster.Adapters
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
             {
-                var scope = Expression.Variable(typeof(MapContextScope));
+                var scope = Expression.Variable(typeof(MapContextScope), "scope");
                 var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
 
                 var dictType = typeof(Dictionary<object, object>);
-                var dict = Expression.Variable(dictType);
+                var dict = Expression.Variable(dictType, "references");
                 var refContext = Expression.Property(scope, "Context");
                 var refDict = Expression.Property(refContext, "References");
                 var assignDict = Expression.Assign(dict, refDict);
@@ -168,14 +168,14 @@ namespace Mapster.Adapters
                     Expression.Convert(result, typeof(object)));
                 var setResultAndCache = Expression.Block(assign, refAssign, set);
 
-                var cached = Expression.Variable(typeof(object));
+                var cache = Expression.Variable(typeof(object), "cache");
                 var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
-                var checkHasRef = Expression.Call(dict, tryGetMethod, source, cached);
+                var checkHasRef = Expression.Call(dict, tryGetMethod, source, cache);
                 var setResult = Expression.IfThenElse(
                     checkHasRef,
-                    ExpressionEx.Assign(result, cached),
+                    ExpressionEx.Assign(result, cache),
                     setResultAndCache);
-                var usingBody = Expression.Block(new[] { cached, dict }, assignDict, setResult);
+                var usingBody = Expression.Block(new[] { cache, dict }, assignDict, setResult);
 
                 var dispose = Expression.Call(scope, "Dispose", null);
                 set = Expression.Block(new[] { scope }, newScope, Expression.TryFinally(usingBody, dispose));

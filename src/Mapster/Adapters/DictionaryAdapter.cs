@@ -50,7 +50,7 @@ namespace Mapster.Adapters
             var indexer = dictType.GetProperties().First(item => item.GetIndexParameters().Length > 0);
             var lines = new List<Expression>();
 
-            var dict = Expression.Variable(dictType);
+            var dict = Expression.Variable(dictType, "dict");
             lines.Add(Expression.Assign(dict, destination));
 
             Func<Expression, Expression> getFn = null;

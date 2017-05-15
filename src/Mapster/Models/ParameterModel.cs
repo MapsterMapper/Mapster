@@ -22,7 +22,7 @@ namespace Mapster.Models
 
         public Expression GetExpression(Expression source)
         {
-            return Expression.Variable(this.Type);
+            return Expression.Variable(this.Type, _parameterInfo.Name);
         }
 
         public IEnumerable<object> GetCustomAttributes(bool inherit)

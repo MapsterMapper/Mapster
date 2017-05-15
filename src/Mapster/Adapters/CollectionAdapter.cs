@@ -102,7 +102,7 @@ namespace Mapster.Adapters
                 var listType = destination.Type.GetGenericEnumerableType() != null
                     ? typeof(ICollection<>).MakeGenericType(destinationElementType)
                     : typeof(IList);
-                var tmp = Expression.Variable(listType);
+                var tmp = Expression.Variable(listType, "list");
                 var assign = ExpressionEx.Assign(tmp, destination); //convert to list type
                 var set = CreateListSet(source, tmp, arg);
                 return Expression.Block(new[] {tmp}, assign, set);
@@ -165,7 +165,7 @@ namespace Mapster.Adapters
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var p = Expression.Parameter(sourceElementType);
-            var v = Expression.Variable(typeof (int));
+            var v = Expression.Variable(typeof (int), "v");
             var start = Expression.Assign(v, Expression.Constant(0));
             var getter = CreateAdaptExpression(p, destinationElementType, arg);
             var set = Expression.Assign(
