@@ -16,43 +16,6 @@ namespace Mapster.Tests
             TypeAdapterConfig.GlobalSettings.Compile();
         }
 
-        [Test, Timeout(30000)]
-        public void Classes_With_Complex_Dependencies_Can_Be_Mapped_In_A_Reasonable_Time_When_All_Classes_Are_With_PreserveReference_Set()
-        {
-            TypeAdapterConfig<Watermelon, Watermelon>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Cowberry, Cowberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Crowberry, Crowberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Pigeonberry, Pigeonberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Honeysuckle, Honeysuckle>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Cherry, Cherry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<RedCurrant, RedCurrant>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<BlackCurrant, BlackCurrant>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<WhiteCurrant, WhiteCurrant>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<BlackChokeberry, BlackChokeberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Rowanberry, Rowanberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<MayApple, MayApple>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Bearberry, Bearberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Bilberry, Bilberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<SeaBuckthorn, SeaBuckthorn>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Hip, Hip>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Guelder, Guelder>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Ephedra, Ephedra>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Cloudberry, Cloudberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Raspberry, Raspberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Silverweed, Silverweed>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Gooseberry, Gooseberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Cranberry, Cranberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Strawberry, Strawberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Shadberry, Shadberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<WildStrawberry, WildStrawberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<BogBilberry, BogBilberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Foxberry, Foxberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Lycium, Lycium>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<Blackberry, Blackberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig<SweetCherry, SweetCherry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig.GlobalSettings.Compile();
-        }
-
         class Watermelon
         {
             public ICollection<Cowberry> Prop0 { get; set; }
