@@ -183,6 +183,14 @@ namespace Mapster
             return setter;
         }
 
+        public static TSetter AvoidInlineMapping<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.AvoidInlineMapping = value;
+            return setter;
+        }
+
         public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string> func) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();

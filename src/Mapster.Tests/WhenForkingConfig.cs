@@ -1,24 +1,20 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mapster.Tests
 {
     [TestClass]
-    public class WhenInliningConfig
+    public class WhenForkingConfig
     {
         [TestMethod]
-        public void Inline_Config_Should_Not_Apply_To_Parent()
+        public void Forked_Config_Should_Not_Apply_To_Parent()
         {
             var config = new TypeAdapterConfig();
             config.NewConfig<SimplePoco, SimpleDto>()
                 .Map(dest => dest.Name2, src => src.Name2 + "Parent");
 
-            var inline = config.Inline(child =>
+            var fork = config.Fork(child =>
                 child.ForType<SimplePoco, SimpleDto>()
                     .Map(dest => dest.Name1, src => src.Name1 + "Child"));
 
@@ -29,7 +25,7 @@ namespace Mapster.Tests
                 Name2 = "Name2",
             };
 
-            var dtoInline = poco.Adapt<SimplePoco, SimpleDto>(inline);
+            var dtoInline = poco.Adapt<SimplePoco, SimpleDto>(fork);
             dtoInline.Id.ShouldBe(poco.Id);
             dtoInline.Name1.ShouldBe("Name1Child");
             dtoInline.Name2.ShouldBe("Name2Parent");

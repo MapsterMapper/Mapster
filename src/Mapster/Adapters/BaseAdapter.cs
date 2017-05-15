@@ -24,7 +24,7 @@ namespace Mapster.Adapters
         {
             var p = Expression.Parameter(arg.SourceType);
             var body = CreateExpressionBody(p, null, arg);
-            return Expression.Lambda(body, p);
+            return body == null ? null : Expression.Lambda(body, p);
         }
 
         public LambdaExpression CreateAdaptToTargetFunc(CompileArgument arg)
@@ -92,9 +92,12 @@ namespace Mapster.Adapters
                 throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
             }
 
-            return CanInline(source, destination, arg)
-                ? CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true)
-                : CreateBlockExpressionBody(source, destination, arg);
+            if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
+                return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
+            else if (arg.MapType == MapType.InlineMap)
+                return null;
+            else
+                return CreateBlockExpressionBody(source, destination, arg);
         }
 
         protected Expression CreateBlockExpressionBody(Expression source, Expression destination, CompileArgument arg)

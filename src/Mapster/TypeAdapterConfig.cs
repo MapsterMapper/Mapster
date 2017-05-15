@@ -511,7 +511,7 @@ namespace Mapster
         }
 
         private Hashtable _inlineConfigs;
-        public TypeAdapterConfig Inline(Action<TypeAdapterConfig> action,
+        public TypeAdapterConfig Fork(Action<TypeAdapterConfig> action,
             [CallerFilePath]string key1 = null, [CallerLineNumber]int key2 = 0)
         {
             if (_inlineConfigs == null)

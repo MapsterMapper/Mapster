@@ -71,7 +71,8 @@
     <Compile Include="WhenIgnoringConditionally.cs" />
     <Compile Include="WhenIgnoringNonMapped.cs" />
     <Compile Include="WhenIncludeDerivedClasses.cs" />
-    <Compile Include="WhenInliningConfig.cs" />
+    <Compile Include="WhenForkingConfig.cs" />
+    <Compile Include="WhenMappingComplexClasses.cs" />
     <Compile Include="WhenMappingDerived.cs" />
     <Compile Include="WhenMappingPrivateFieldsAndProperties.cs" />
     <Compile Include="WhenMappingWithDictionary.cs" />

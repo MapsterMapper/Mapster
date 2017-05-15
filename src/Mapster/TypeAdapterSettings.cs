@@ -46,6 +46,11 @@ namespace Mapster
             get => Get("IgnoreNonMapped");
             set => Set("IgnoreNonMapped", value);
         }
+        public bool? AvoidInlineMapping
+        {
+            get => Get("AvoidInlineMapping");
+            set => Set("AvoidInlineMapping", value);
+        }
 
         public List<Func<IMemberModel, bool?>> ShouldMapMember
         {
