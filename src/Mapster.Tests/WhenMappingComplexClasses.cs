@@ -13,7 +13,7 @@ namespace Mapster.Tests
         public void Classes_With_Complex_Dependencies_Can_Be_Mapped_In_A_Reasonable_Time_When_PreserveReference_Set_For_One_Class()
         {
             TypeAdapterConfig<Blackberry, Blackberry>.NewConfig().PreserveReference(true);
-            TypeAdapterConfig.GlobalSettings.Compile();
+            TypeAdapter<Blackberry, Blackberry>.Map(new Blackberry());
         }
 
         class Watermelon
