@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Mapster.Diagnostics;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
@@ -30,7 +31,10 @@ namespace Mapster
                         filename += "-" + num;
                     registeredFilename[key]++;
                 }
-                return lambda.CompileWithDebugInfo(Path.Combine(sourceCodePath, filename + ".cs"));
+                using (var injector = new DebugInfoInjectorEx(Path.Combine(sourceCodePath, filename + ".cs")))
+                {
+                    return injector.Compile(lambda);
+                }
             };
         }
 

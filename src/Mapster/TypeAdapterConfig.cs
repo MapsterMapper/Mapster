@@ -45,7 +45,9 @@ namespace Mapster
         public bool RequireExplicitMapping { get; set; }
         public bool AllowImplicitDestinationInheritance { get; set; }
         public bool AllowImplicitSourceInheritance { get; set; } = true;
-        public Func<LambdaExpression, Delegate> Compiler { get; set; } = lambda => lambda.Compile();
+
+        internal static Func<LambdaExpression, Delegate> DefaultCompiler = lambda => lambda.Compile();
+        public Func<LambdaExpression, Delegate> Compiler { get; set; } = DefaultCompiler;
 
         public List<TypeAdapterRule> Rules { get; protected set; }
         public TypeAdapterSetter Default { get; protected set; }
@@ -221,7 +223,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapDict = new Hashtable();
-        public Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
+        internal Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination>)GetMapFunction(typeof(TSource), typeof(TDestination));
         }
@@ -234,7 +236,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapToTargetDict = new Hashtable();
-        public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
+        internal Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination, TDestination>)GetMapToTargetFunction(typeof(TSource), typeof(TDestination));
         }
@@ -333,7 +335,12 @@ namespace Mapster
                     if (detector.IsBlockExpression)
                         exp = null;
                 }
-                return exp ?? CreateMapInvokeExpression(sourceType, destinationType);
+                if (exp != null)
+                    return exp;
+                if (parentMapType == MapType.MapToTarget)
+                    return CreateMapToTargetInvokeExpression(sourceType, destinationType);
+                else
+                    return CreateMapInvokeExpression(sourceType, destinationType);
             }
             finally
             {
@@ -351,7 +358,7 @@ namespace Mapster
             }
             else
             {
-                var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
                               where m.Name == nameof(TypeAdapterConfig.GetMapFunction)
                               select m).First().MakeGenericMethod(sourceType, destinationType);
                 invoker = Expression.Call(Expression.Constant(this), method);
@@ -361,9 +368,9 @@ namespace Mapster
             return Expression.Lambda(invoke, p);
         }
 
-        internal LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
+        private LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
         {
-            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
                           where m.Name == nameof(TypeAdapterConfig.GetMapToTargetFunction)
                           select m).First().MakeGenericMethod(sourceType, destinationType);
             var invoker = Expression.Call(Expression.Constant(this), method);
@@ -496,7 +503,7 @@ namespace Mapster
             _projectionDict.Remove(key);
         }
 
-        internal static TypeAdapterConfig _cloneConfig;
+        private static TypeAdapterConfig _cloneConfig;
         public TypeAdapterConfig Clone()
         {
             if (_cloneConfig == null)

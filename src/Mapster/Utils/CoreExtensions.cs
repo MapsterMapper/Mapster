@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Mapster.Utils
 {
-    public static class CoreExtensions
+    internal static class CoreExtensions
     {
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
         {

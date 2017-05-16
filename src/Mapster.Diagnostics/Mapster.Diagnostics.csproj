@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DebugInfoInjectorEx.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GlobalReference.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeAdapterConfigExtensions.cs" />
   </ItemGroup>

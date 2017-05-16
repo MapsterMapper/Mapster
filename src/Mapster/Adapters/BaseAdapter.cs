@@ -327,7 +327,7 @@ namespace Mapster.Adapters
                 return source;
 
             //adapt(source, dest);
-            var lambda = arg.Context.Config.CreateMapToTargetInvokeExpression(source.Type, destination.Type);
+            var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destination.Type, arg.MapType, arg.Context);
             var exp = lambda.Apply(source, destination);
 
             //transform(adapt(source, dest));
