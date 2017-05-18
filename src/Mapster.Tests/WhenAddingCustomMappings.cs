@@ -81,7 +81,7 @@ namespace Mapster.Tests
             public Guid Id { get; set; }
             public string Name { get; set; }
 
-            public IReadOnlyList<ChildDto> Children { get; protected set; }
+            public IReadOnlyList<ChildDto> Children { get; internal set; }
         }
 
         #endregion

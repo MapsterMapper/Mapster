@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Mapster.Diagnostics.snk" />
+    <EmbeddedResource Include="mock.keys" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

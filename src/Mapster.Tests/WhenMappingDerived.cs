@@ -44,7 +44,7 @@ namespace Mapster.Tests
             Assert.AreEqual(inputEntity.Id, result.Id);
         }
 
-        private class BaseDto
+        internal class BaseDto
         {
             public long Id { get; set; }
 
@@ -54,12 +54,12 @@ namespace Mapster.Tests
             }
         }
 
-        private class Entity
+        internal class Entity
         {
             public long Id { get; set; }
         }
 
-        private class DerivedDto : BaseDto
+        internal class DerivedDto : BaseDto
         {
             public DerivedDto(long id) : base(id) { }
         }

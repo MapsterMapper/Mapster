@@ -1,4 +1,5 @@
-﻿using Mapster.Diagnostics;
+﻿using ExpressionDebugger;
+using Mapster.Diagnostics;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -33,7 +34,7 @@ namespace Mapster
                 }
                 using (var injector = new DebugInfoInjectorEx(Path.Combine(sourceCodePath, filename + ".cs")))
                 {
-                    return injector.Compile(lambda);
+                    return injector.Compile(lambda, _an);
                 }
             };
         }
@@ -44,6 +45,22 @@ namespace Mapster
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
             return dir;
+        }
+
+        static AssemblyName _an = GetAssemblyName();
+        private static AssemblyName GetAssemblyName()
+        {
+            StrongNameKeyPair kp;
+            // Getting this from a resource would be a good idea.
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Mapster.Diagnostics.mock.keys"))
+            using (var mem = new MemoryStream())
+            {
+                stream.CopyTo(mem);
+                mem.Position = 0;
+                kp = new StrongNameKeyPair(mem.ToArray());
+            }
+            var name = "Mapster.Dynamic";
+            return new AssemblyName(name) { KeyPair = kp };
         }
     }
 }

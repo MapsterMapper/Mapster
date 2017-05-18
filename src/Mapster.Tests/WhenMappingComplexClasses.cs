@@ -25,7 +25,7 @@ namespace Mapster.Tests
             new Blackberry().Adapt<Blackberry, Blackberry>(config);
         }
 
-        class Watermelon
+        internal class Watermelon
         {
             public Cowberry Prop0 { get; set; }
             public Cherry Prop1 { get; set; }
@@ -38,7 +38,7 @@ namespace Mapster.Tests
             public Rowanberry Prop11 { get; set; }
         }
 
-        class Cowberry
+        internal class Cowberry
         {
             public Crowberry Prop0 { get; set; }
             public RedCurrant Prop1 { get; set; }
@@ -48,12 +48,12 @@ namespace Mapster.Tests
             public Crowberry Prop6 { get; set; }
         }
 
-        class Crowberry
+        internal class Crowberry
         {
             public Pigeonberry Prop0 { get; set; }
         }
 
-        class Pigeonberry
+        internal class Pigeonberry
         {
             public Honeysuckle Prop0 { get; set; }
             public Crowberry Prop1 { get; set; }
@@ -61,7 +61,7 @@ namespace Mapster.Tests
             public Crowberry Prop3 { get; set; }
         }
 
-        class Honeysuckle
+        internal class Honeysuckle
         {
             public Cowberry Prop0 { get; set; }
             public Cherry Prop1 { get; set; }
@@ -70,7 +70,7 @@ namespace Mapster.Tests
             public Pigeonberry Prop5 { get; set; }
         }
 
-        class Cherry
+        internal class Cherry
         {
             public Crowberry Prop0 { get; set; }
             public RedCurrant Prop1 { get; set; }
@@ -82,29 +82,29 @@ namespace Mapster.Tests
             public Crowberry Prop8 { get; set; }
         }
 
-        class RedCurrant
+        internal class RedCurrant
         {
             public BlackCurrant Prop1 { get; set; }
         }
 
-        class BlackCurrant
+        internal class BlackCurrant
         {
             public WhiteCurrant Prop0 { get; set; }
             public BlackChokeberry Prop1 { get; set; }
             public RedCurrant Prop2 { get; set; }
         }
 
-        class WhiteCurrant
+        internal class WhiteCurrant
         {
             public BlackCurrant Prop0 { get; set; }
         }
 
-        class BlackChokeberry
+        internal class BlackChokeberry
         {
             public BlackCurrant Prop0 { get; set; }
         }
 
-        class Rowanberry
+        internal class Rowanberry
         {
             public MayApple Prop0 { get; set; }
             public Hip Prop1 { get; set; }
@@ -113,7 +113,7 @@ namespace Mapster.Tests
             public Guelder Prop4 { get; set; }
         }
 
-        class MayApple
+        internal class MayApple
         {
             public Bearberry Prop0 { get; set; }
             public Ephedra Prop1 { get; set; }
@@ -121,7 +121,7 @@ namespace Mapster.Tests
             public Rowanberry Prop3 { get; set; }
         }
 
-        class Bearberry
+        internal class Bearberry
         {
             public MayApple Prop0 { get; set; }
             public Bilberry Prop1 { get; set; }
@@ -129,13 +129,13 @@ namespace Mapster.Tests
             public Guelder Prop3 { get; set; }
         }
 
-        class Bilberry
+        internal class Bilberry
         {
             public SeaBuckthorn Prop0 { get; set; }
             public Bearberry Prop1 { get; set; }
         }
 
-        class SeaBuckthorn
+        internal class SeaBuckthorn
         {
             public Crowberry Prop0 { get; set; }
             public RedCurrant Prop1 { get; set; }
@@ -145,42 +145,42 @@ namespace Mapster.Tests
             public Hip Prop6 { get; set; }
         }
 
-        class Hip
+        internal class Hip
         {
             public SeaBuckthorn Prop0 { get; set; }
             public SeaBuckthorn Prop1 { get; set; }
             public Rowanberry Prop2 { get; set; }
         }
 
-        class Guelder
+        internal class Guelder
         {
             public MayApple Prop0 { get; set; }
             public Ephedra Prop1 { get; set; }
         }
 
-        class Ephedra
+        internal class Ephedra
         {
             public MayApple Prop0 { get; set; }
         }
 
-        class Cloudberry
+        internal class Cloudberry
         {
             public MayApple Prop0 { get; set; }
             public Raspberry Prop1 { get; set; }
         }
 
-        class Raspberry
+        internal class Raspberry
         {
             public Cloudberry Prop0 { get; set; }
         }
 
-        class Silverweed
+        internal class Silverweed
         {
             public Rowanberry Prop0 { get; set; }
             public Gooseberry Prop1 { get; set; }
         }
 
-        class Gooseberry
+        internal class Gooseberry
         {
             public Cranberry Prop0 { get; set; }
             public Gooseberry Prop1 { get; set; }
@@ -192,7 +192,7 @@ namespace Mapster.Tests
             public Guelder Prop11 { get; set; }
         }
 
-        class Cranberry
+        internal class Cranberry
         {
             public Strawberry Prop0 { get; set; }
             public Gooseberry Prop1 { get; set; }
@@ -200,14 +200,14 @@ namespace Mapster.Tests
             public Guelder Prop4 { get; set; }
         }
 
-        class Strawberry
+        internal class Strawberry
         {
             public Cranberry Prop0 { get; set; }
             public Watermelon Prop1 { get; set; }
             public Shadberry Prop2 { get; set; }
         }
 
-        class Shadberry
+        internal class Shadberry
         {
             public Gooseberry Prop0 { get; set; }
             public Strawberry Prop1 { get; set; }
@@ -216,12 +216,12 @@ namespace Mapster.Tests
             public BogBilberry Prop4 { get; set; }
         }
 
-        class WildStrawberry
+        internal class WildStrawberry
         {
             public Shadberry Prop1 { get; set; }
         }
 
-        class BogBilberry
+        internal class BogBilberry
         {
             public Watermelon Prop0 { get; set; }
             public Foxberry Prop1 { get; set; }
@@ -233,12 +233,12 @@ namespace Mapster.Tests
             public Blackberry Prop7 { get; set; }
         }
 
-        class Foxberry
+        internal class Foxberry
         {
             public BogBilberry Prop0 { get; set; }
         }
 
-        class Lycium
+        internal class Lycium
         {
             public Watermelon Prop0 { get; set; }
             public Rowanberry Prop1 { get; set; }
@@ -247,7 +247,7 @@ namespace Mapster.Tests
             public Gooseberry Prop6 { get; set; }
         }
 
-        class Blackberry
+        internal class Blackberry
         {
             public Watermelon Prop0 { get; set; }
             public Honeysuckle Prop1 { get; set; }
@@ -257,7 +257,7 @@ namespace Mapster.Tests
             public Guelder Prop6 { get; set; }
         }
 
-        class SweetCherry
+        internal class SweetCherry
         {
             public Blackberry Prop0 { get; set; }
         }

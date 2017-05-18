@@ -49,9 +49,9 @@ namespace Mapster
         internal static Func<LambdaExpression, Delegate> DefaultCompiler = lambda => lambda.Compile();
         public Func<LambdaExpression, Delegate> Compiler { get; set; } = DefaultCompiler;
 
-        public List<TypeAdapterRule> Rules { get; protected set; }
-        public TypeAdapterSetter Default { get; protected set; }
-        public Dictionary<TypeTuple, TypeAdapterRule> RuleMap { get; protected set; } = new Dictionary<TypeTuple, TypeAdapterRule>();
+        public List<TypeAdapterRule> Rules { get; internal set; }
+        public TypeAdapterSetter Default { get; internal set; }
+        public Dictionary<TypeTuple, TypeAdapterRule> RuleMap { get; internal set; } = new Dictionary<TypeTuple, TypeAdapterRule>();
 
         public TypeAdapterConfig()
         {
@@ -263,6 +263,17 @@ namespace Mapster
             return (MethodCallExpression)del;
         }
 
+        private Hashtable _dynamicMapDict;
+        internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
+        {
+            if (_dynamicMapDict == null)
+                _dynamicMapDict = new Hashtable();
+            var key = new TypeTuple(sourceType, typeof(TDestination));
+            object del = _dynamicMapDict[key] ?? AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
+
+            return (Func<object, TDestination>)del;
+        }
+
         internal LambdaExpression CreateMapExpression(TypeTuple tuple, MapType mapType)
         {
             var context = new CompileContext(this);
@@ -311,6 +322,17 @@ namespace Mapster
             {
                 throw new CompileException(arg, ex);
             }
+        }
+
+        private LambdaExpression CreateDynamicMapExpression(TypeTuple tuple)
+        {
+            var lambda = CreateMapExpression(tuple, MapType.Map);
+            var pNew = Expression.Parameter(typeof(object));
+            var pOld = lambda.Parameters[0];
+            var assign = ExpressionEx.Assign(pOld, pNew);
+            return Expression.Lambda(
+                Expression.Block(new[] { pOld }, assign, lambda.Body),
+                pNew);
         }
 
         internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType parentMapType, CompileContext context)

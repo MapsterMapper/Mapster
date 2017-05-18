@@ -42,12 +42,14 @@ namespace Mapster.Tests
         [TestMethod]
         public void Adapter_Destination_Transform_Is_Applied_To_Class()
         {
+            TypeAdapterConfig.GlobalSettings.EnableDebugging();
+
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
             config.AddDestinationTransform((string x) => x.Trim());
             config.Compile();
 
             var source = new SimplePoco { Id = new Guid(), Name = "TestMethod    " };
-            var destination = TypeAdapter.Adapt<SimpleDto>(source);
+            var destination = TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
 
             destination.Name.ShouldBe("TestMethod");
         }
@@ -64,7 +66,7 @@ namespace Mapster.Tests
         public class SimpleDto
         {
             public Guid Id { get; set; }
-            public string Name { get; protected set; }
+            public string Name { get; internal set; }
         }
 
         public class ChildPoco
@@ -92,7 +94,7 @@ namespace Mapster.Tests
             public Guid Id { get; set; }
             public string Name { get; set; }
 
-            public IReadOnlyList<ChildDto> Children { get; protected set; }
+            public IReadOnlyList<ChildDto> Children { get; internal set; }
         }
 
         #endregion

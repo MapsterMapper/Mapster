@@ -38,18 +38,8 @@ namespace Mapster
             if (source == null)
                 return default(TDestination);
             var type = source.GetType();
-            var del = config.GetMapFunction(type, typeof(TDestination));
-            if (type.GetTypeInfo().IsVisible)
-            {
-                dynamic fn = del;
-                return (TDestination)fn((dynamic)source);
-            }
-            else
-            {
-                //NOTE: if type is non-public, we cannot use dynamic
-                //DynamicInvoke is slow, but works with non-public
-                return (TDestination)del.DynamicInvoke(source);
-            }
+            var fn = config.GetDynamicMapFunction<TDestination>(type);
+            return fn(source);
         }
 
         /// <summary>
