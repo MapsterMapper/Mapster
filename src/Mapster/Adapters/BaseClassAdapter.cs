@@ -8,13 +8,13 @@ namespace Mapster.Adapters
 {
     internal abstract class BaseClassAdapter : BaseAdapter
     {
-        protected abstract ClassModel GetClassModel(Type destinationType);
+        protected abstract ClassModel GetClassModel(Type destinationType, CompileArgument arg);
 
         #region Build the Adapter Model
 
         protected ClassMapping CreateClassConverter(Expression source, Expression destination, CompileArgument arg)
         {
-            var classModel = GetClassModel(arg.DestinationType);
+            var classModel = GetClassModel(arg.DestinationType, arg);
             var destinationMembers = classModel.Members;
 
             var unmappedDestinationMembers = new List<string>();
@@ -27,19 +27,19 @@ namespace Mapster.Adapters
                     continue;
 
                 var member = destinationMember;
-                var getter = arg.Settings.IgnoreNonMapped == true
-                    ? ValueAccessingStrategy.CustomResolver(source, member, arg)
-                    : arg.Settings.ValueAccessingStrategies
-                        .Select(fn => fn(source, member, arg))
-                        .FirstOrDefault(result => result != null);
+                var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
+                if (arg.Settings.IgnoreNonMapped == true)
+                    resolvers = resolvers.Where(ValueAccessingStrategy.CustomResolvers.Contains);
+                var getter = resolvers
+                    .Select(fn => fn(source, member, arg))
+                    .FirstOrDefault(result => result != null);
 
                 if (getter != null)
                 {
                     var propertyModel = new MemberMapping
                     {
                         Getter = getter,
-                        Setter = destinationMember.GetExpression(destination),
-                        SetterInfo = destinationMember.Info,
+                        DestinationMember = destinationMember,
                         SetterCondition = setterCondition,
                     };
                     properties.Add(propertyModel);
@@ -49,8 +49,7 @@ namespace Mapster.Adapters
                     var propertyModel = new MemberMapping
                     {
                         Getter = null,
-                        Setter = destinationMember.GetExpression(destination),
-                        SetterInfo = destinationMember.Info,
+                        DestinationMember = destinationMember,
                         SetterCondition = setterCondition,
                     };
                     properties.Add(propertyModel);
@@ -73,7 +72,7 @@ namespace Mapster.Adapters
             };
         }
 
-        private static bool ProcessIgnores(
+        protected static bool ProcessIgnores(
             TypeAdapterSettings config,
             IMemberModel destinationMember,
             out LambdaExpression condition)

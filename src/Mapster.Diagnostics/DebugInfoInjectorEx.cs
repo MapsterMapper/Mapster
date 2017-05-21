@@ -1,4 +1,5 @@
 ﻿using ExpressionDebugger;
+using Mapster.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,9 +29,11 @@ namespace Mapster.Diagnostics
         private static Expression GetNonPublicObject(object value, Type type)
         {
             var i = GlobalReference.GetIndex(value);
-            return Expression.Call(
+            return Expression.Convert(
+                Expression.Call(
                     typeof(GlobalReference).GetMethod(nameof(GlobalReference.GetObject)),
-                    Expression.Constant(i)).To(type);
+                    Expression.Constant(i)),
+                type);
         }
 
         private static bool CanEmitConstant(object value, Type type)

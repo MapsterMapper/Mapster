@@ -14,7 +14,6 @@ namespace Mapster
     public class TypeAdapterConfig
     {
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
-        public static List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategiesTemplate { get; } = ValueAccessingStrategy.GetDefaultStrategies();
 
         private static TypeAdapterConfig _globalSettings;
         public static TypeAdapterConfig GlobalSettings => _globalSettings ?? (_globalSettings = new TypeAdapterConfig());
@@ -26,16 +25,48 @@ namespace Mapster
                 new PrimitiveAdapter().CreateRule(),    //-200
                 new RecordTypeAdapter().CreateRule(),   //-151
                 new ClassAdapter().CreateRule(),        //-150
-                new DictionaryAdapter().CreateRule(),   //-149
                 new CollectionAdapter().CreateRule(),   //-125
+                new DictionaryAdapter().CreateRule(),   //-124
+
+                //fallback rules
+                new TypeAdapterRule
+                {
+                    Priority = (srcType, destType, mapType) => -200,
+                    Settings = new TypeAdapterSettings
+                    {
+                        //match exact name
+                        NameMatchingStrategy = NameMatchingStrategy.Exact,  
+                        ShouldMapMember =
+                        {
+                            ShouldMapMember.AllowPublic,            //match public prop
+                            ShouldMapMember.IgnoreAdaptIgnore,      //ignore AdaptIgnore attribute
+                            ShouldMapMember.AllowAdaptMember,       //match AdaptMember attribute
+                        },                                          
+                        GetMemberNames =                            
+                        {                                           
+                            GetMemberName.AdaptMember,              //get name using AdaptMember attribute
+                        },
+                        ValueAccessingStrategies =
+                        {
+                            ValueAccessingStrategy.CustomResolver,  //get value from Map
+                            ValueAccessingStrategy.PropertyOrField, //get value from properties/fields
+                            ValueAccessingStrategy.GetMethod,       //get value from get method
+                            ValueAccessingStrategy.FlattenMember,   //get value from chain of properties
+                        }
+                    }
+                },
 
                 //dictionary accessor
                 new TypeAdapterRule
                 {
-                    Priority = (srcType, destType, mapType) => srcType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -149 : (int?)null,
+                    Priority = (srcType, destType, mapType) => srcType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -124 : (int?)null,
                     Settings = new TypeAdapterSettings
                     {
-                        ValueAccessingStrategies = { ValueAccessingStrategy.Dictionary },
+                        ValueAccessingStrategies =
+                        {
+                            ValueAccessingStrategy.CustomResolverForDictionary,
+                            ValueAccessingStrategy.Dictionary,
+                        },
                     }
                 }
             };
@@ -56,21 +87,7 @@ namespace Mapster
         public TypeAdapterConfig()
         {
             this.Rules = RulesTemplate.ToList();
-            var settings = new TypeAdapterSettings
-            {
-                NameMatchingStrategy = NameMatchingStrategy.Exact,
-                ShouldMapMember =
-                {
-                    ShouldMapMember.AllowPublic,
-                    ShouldMapMember.IgnoreAdaptIgnore,
-                    ShouldMapMember.AllowAdaptMember,
-                },
-                GetMemberNames =
-                {
-                    GetMemberName.AdaptMember,
-                }
-            };
-            settings.ValueAccessingStrategies.AddRange(ValueAccessingStrategiesTemplate);
+            var settings = new TypeAdapterSettings();
             this.Default = new TypeAdapterSetter(settings, this);
             this.Rules.Add(new TypeAdapterRule
             {
@@ -523,6 +540,7 @@ namespace Mapster
             _mapDict.Remove(key);
             _mapToTargetDict.Remove(key);
             _projectionDict.Remove(key);
+            _dynamicMapDict?.Remove(key);
         }
 
         private static TypeAdapterConfig _cloneConfig;

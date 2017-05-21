@@ -109,7 +109,7 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)), source.Parameters[0]);
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)));
             setter.Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
@@ -127,11 +127,11 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)), source.Parameters[0]);
             setter.Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
-                Invoker = invoker,
+                Invoker = source,
+                SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = null
             });
             setter.Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
@@ -224,7 +224,7 @@ namespace Mapster
             this.CheckCompiled();
 
             var memberExp = ReflectionUtils.GetMemberInfo(member);
-            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)), source.Parameters[0]);
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
             Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberExp.Member.Name,
@@ -332,6 +332,19 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TSource, TDestination> IgnoreIf(
+            Expression<Func<TSource, TDestination, bool>> condition,
+            params string[] members)
+        {
+            this.CheckCompiled();
+
+            foreach (var member in members)
+            {
+                Settings.IgnoreIfs.Merge(member, condition);
+            }
+            return this;
+        }
+
         public TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
             Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
@@ -343,6 +356,7 @@ namespace Mapster
             {
                 DestinationMemberName = memberExp.Member.Name,
                 Invoker = source,
+                SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = shouldMap
             });
             return this;
@@ -353,11 +367,12 @@ namespace Mapster
             Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
         {
             this.CheckCompiled();
-
+            
             Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
                 Invoker = source,
+                SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = shouldMap
             });
             Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);

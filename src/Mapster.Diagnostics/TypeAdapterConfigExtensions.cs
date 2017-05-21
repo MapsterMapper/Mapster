@@ -10,7 +10,7 @@ namespace Mapster
 {
     public static class TypeAdapterConfigExtensions
     {
-        static Dictionary<string, int> registeredFilename;
+        static Dictionary<string, int> _registeredFilename;
 
         [Conditional("DEBUG")]
         public static void EnableDebugging(this TypeAdapterConfig config, string sourceCodePath = null)
@@ -18,23 +18,28 @@ namespace Mapster
             if (sourceCodePath == null)
                 sourceCodePath = GetDefaultSourceCodePath();
 
-            if (registeredFilename == null)
-                registeredFilename = new Dictionary<string, int>();
+            //initialize on first call
+            if (_registeredFilename == null)
+            {
+                _registeredFilename = new Dictionary<string, int>();
+                _assemblyName = GetAssemblyName();
+            }
+
             config.Compiler = lambda =>
             {
                 var filename = lambda.Parameters[0].Type.Name + "-" + lambda.ReturnType.Name;
                 var key = filename;
-                lock (registeredFilename)
+                lock (_registeredFilename)
                 {
-                    if (!registeredFilename.TryGetValue(key, out var num))
-                        registeredFilename[key] = 0;
+                    if (!_registeredFilename.TryGetValue(key, out var num))
+                        _registeredFilename[key] = 0;
                     else
                         filename += "-" + num;
-                    registeredFilename[key]++;
+                    _registeredFilename[key]++;
                 }
                 using (var injector = new DebugInfoInjectorEx(Path.Combine(sourceCodePath, filename + ".cs")))
                 {
-                    return injector.Compile(lambda, _an);
+                    return injector.Compile(lambda, _assemblyName);
                 }
             };
         }
@@ -47,7 +52,7 @@ namespace Mapster
             return dir;
         }
 
-        static AssemblyName _an = GetAssemblyName();
+        static AssemblyName _assemblyName;
         private static AssemblyName GetAssemblyName()
         {
             StrongNameKeyPair kp;

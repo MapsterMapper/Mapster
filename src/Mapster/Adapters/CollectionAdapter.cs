@@ -153,25 +153,25 @@ namespace Mapster.Adapters
             //### IList<T>
             //var v = 0
             //for (var i = 0, len = src.Count; i < len; i++) {
-            //  var p = src[i];
-            //  dest[v++] = convert(p);
+            //  var item = src[i];
+            //  dest[v++] = convert(item);
             //}
 
             //### IEnumerable<T>
             //var v = 0;
-            //foreach (var p in src)
-            //  dest[v++] = convert(p);
+            //foreach (var item in src)
+            //  dest[v++] = convert(item);
 
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
-            var p = Expression.Parameter(sourceElementType);
+            var item = Expression.Variable(sourceElementType, "item");
             var v = Expression.Variable(typeof (int), "v");
             var start = Expression.Assign(v, Expression.Constant(0));
-            var getter = CreateAdaptExpression(p, destinationElementType, arg);
+            var getter = CreateAdaptExpression(item, destinationElementType, arg);
             var set = Expression.Assign(
                 Expression.ArrayAccess(destination, Expression.PostIncrementAssign(v)),
                 getter);
-            var loop = ForLoop(source, p, set);
+            var loop = ForLoop(source, item, set);
             return Expression.Block(new[] {v}, start, loop);
         }
 
@@ -179,25 +179,25 @@ namespace Mapster.Adapters
         {
             //### IList<T>
             //for (var i = 0, len = src.Count; i < len; i++) {
-            //  var p = src[i];
-            //  dest.Add(convert(p));
+            //  var item = src[i];
+            //  dest.Add(convert(item));
             //}
 
             //### IEnumerable<T>
-            //foreach (var p in src)
-            //  dest.Add(convert(p));
+            //foreach (var item in src)
+            //  dest.Add(convert(item));
 
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
-            var p = Expression.Parameter(sourceElementType);
-            var getter = CreateAdaptExpression(p, destinationElementType, arg);
+            var item = Expression.Variable(sourceElementType, "item");
+            var getter = CreateAdaptExpression(item, destinationElementType, arg);
             
             var addMethod = destination.Type.GetMethod("Add", new[] {destinationElementType});
             var set = Expression.Call(
                 destination,
                 addMethod,
                 getter);
-            var loop = ForLoop(source, p, set);
+            var loop = ForLoop(source, item, set);
             return loop;
         }
 
@@ -255,7 +255,7 @@ namespace Mapster.Adapters
             return loop;
         }
 
-        private static Expression ForEach(Expression collection, ParameterExpression loopVar, params Expression[] loopContent)
+        internal static Expression ForEach(Expression collection, ParameterExpression loopVar, params Expression[] loopContent)
         {
             var elementType = loopVar.Type;
             var enumerableType = typeof (IEnumerable<>).MakeGenericType(elementType);

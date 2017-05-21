@@ -55,31 +55,31 @@ namespace Mapster.Adapters
             //  dest.Prop2 = convert(src.Prop2);
 
             var classConverter = CreateClassConverter(source, destination, arg);
-            var properties = classConverter.Members;
+            var members = classConverter.Members;
 
             var lines = new List<Expression>();
             Dictionary<LambdaExpression, List<Expression>> conditions = null;
-            foreach (var property in properties)
+            foreach (var member in members)
             {
-                var getter = arg.MapType == MapType.MapToTarget
-                    ? CreateAdaptToExpression(property.Getter, property.Setter, arg)
-                    : CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+                var value = arg.MapType == MapType.MapToTarget
+                    ? CreateAdaptToExpression(member.Getter, member.DestinationMember.GetExpression(destination), arg)
+                    : CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
 
-                Expression itemAssign = Expression.Assign(property.Setter, getter);
-                if (arg.Settings.IgnoreNullValues == true && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
+                Expression itemAssign = member.DestinationMember.SetExpression(destination, value);
+                if (arg.Settings.IgnoreNullValues == true && (!member.Getter.Type.GetTypeInfo().IsValueType || member.Getter.Type.IsNullable()))
                 {
-                    var condition = Expression.NotEqual(property.Getter, Expression.Constant(null, property.Getter.Type));
+                    var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);
                 }
 
-                if (property.SetterCondition != null)
+                if (member.SetterCondition != null)
                 {
                     if (conditions == null)
                         conditions = new Dictionary<LambdaExpression, List<Expression>>();
-                    if (!conditions.TryGetValue(property.SetterCondition, out List<Expression> pendingAssign))
+                    if (!conditions.TryGetValue(member.SetterCondition, out List<Expression> pendingAssign))
                     {
                         pendingAssign = new List<Expression>();
-                        conditions[property.SetterCondition] = pendingAssign;
+                        conditions[member.SetterCondition] = pendingAssign;
                     }
                     pendingAssign.Add(itemAssign);
                 }
@@ -115,39 +115,39 @@ namespace Mapster.Adapters
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
 
             var classConverter = CreateClassConverter(source, newInstance, arg);
-            var properties = classConverter.Members;
+            var members = classConverter.Members;
 
             var lines = new List<MemberBinding>();
             if (memberInit != null)
                 lines.AddRange(memberInit.Bindings);
-            foreach (var property in properties)
+            foreach (var member in members)
             {
-                var getter = CreateAdaptExpression(property.Getter, property.Setter.Type, arg);
+                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
 
                 //special null property check for projection
                 //if we don't set null to property, EF will create empty object
                 //except collection type & complex type which cannot be null
                 if (arg.MapType == MapType.Projection
-                    && property.Getter.Type != property.Setter.Type
-                    && !property.Getter.Type.IsCollection()
-                    && !property.Setter.Type.IsCollection()
-                    && property.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute")
-                    && (!property.Getter.Type.GetTypeInfo().IsValueType || property.Getter.Type.IsNullable()))
+                    && member.Getter.Type != member.DestinationMember.Type
+                    && !member.Getter.Type.IsCollection()
+                    && !member.DestinationMember.Type.IsCollection()
+                    && member.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute")
+                    && (!member.Getter.Type.GetTypeInfo().IsValueType || member.Getter.Type.IsNullable()))
                 {
-                    var compareNull = Expression.Equal(property.Getter, Expression.Constant(null, property.Getter.Type));
-                    getter = Expression.Condition(
+                    var compareNull = Expression.Equal(member.Getter, Expression.Constant(null, member.Getter.Type));
+                    value = Expression.Condition(
                         compareNull,
-                        Expression.Constant(property.Setter.Type.GetDefault(), property.Setter.Type),
-                        getter);
+                        Expression.Constant(member.DestinationMember.Type.GetDefault(), member.DestinationMember.Type),
+                        value);
                 }
-                var bind = Expression.Bind((MemberInfo)property.SetterInfo, getter);
+                var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info, value);
                 lines.Add(bind);
             }
 
             return Expression.MemberInit(newInstance, lines);
         }
 
-        protected override ClassModel GetClassModel(Type destinationType)
+        protected override ClassModel GetClassModel(Type destinationType, CompileArgument arg)
         {
             return new ClassModel
             {

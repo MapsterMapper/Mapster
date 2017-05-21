@@ -42,8 +42,6 @@ namespace Mapster.Tests
         [TestMethod]
         public void Adapter_Destination_Transform_Is_Applied_To_Class()
         {
-            TypeAdapterConfig.GlobalSettings.EnableDebugging();
-
             var config = TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig();
             config.AddDestinationTransform((string x) => x.Trim());
             config.Compile();

@@ -13,6 +13,7 @@ namespace Mapster.Models
         AccessModifier AccessModifier { get; }
 
         Expression GetExpression(Expression source);
+        Expression SetExpression(Expression source, Expression value);
         IEnumerable<object> GetCustomAttributes(bool inherit);
     }
 }

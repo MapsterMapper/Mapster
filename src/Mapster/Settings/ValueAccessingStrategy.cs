@@ -5,27 +5,24 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
+using ValueAccess = System.Func<System.Linq.Expressions.Expression, Mapster.Models.IMemberModel, Mapster.CompileArgument, System.Linq.Expressions.Expression>;
 
 namespace Mapster
 {
     public static class ValueAccessingStrategy
     {
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> CustomResolver = CustomResolverFn;
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> PropertyOrField = PropertyOrFieldFn;
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> GetMethod = GetMethodFn;
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> FlattenMember = FlattenMemberFn;
-        public static readonly Func<Expression, IMemberModel, CompileArgument, Expression> Dictionary = DictionaryFn;
+        public static readonly ValueAccess CustomResolver = CustomResolverFn;
+        public static readonly ValueAccess PropertyOrField = PropertyOrFieldFn;
+        public static readonly ValueAccess GetMethod = GetMethodFn;
+        public static readonly ValueAccess FlattenMember = FlattenMemberFn;
+        public static readonly ValueAccess Dictionary = DictionaryFn;
+        public static readonly ValueAccess CustomResolverForDictionary = CustomResolverForDictionaryFn;
 
-        internal static List<Func<Expression, IMemberModel, CompileArgument, Expression>> GetDefaultStrategies()
+        public static readonly HashSet<ValueAccess> CustomResolvers = new HashSet<ValueAccess>
         {
-            return new List<Func<Expression, IMemberModel, CompileArgument, Expression>>
-            {
-                CustomResolver,
-                PropertyOrField,
-                GetMethod,
-                FlattenMember,
-            };
-        }
+            CustomResolver,
+            CustomResolverForDictionary,
+        };
 
         private static Expression CustomResolverFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
@@ -39,18 +36,17 @@ namespace Mapster
             for (int j = 0; j < resolvers.Count; j++)
             {
                 var resolver = resolvers[j];
-                if (destinationMember.Name.Equals(resolver.DestinationMemberName))
-                {
-                    Expression invoke = resolver.Invoker == null
-                        ? Expression.PropertyOrField(source, resolver.SourceMemberName)
-                        : resolver.Invoker.Apply(source);
-                    getter = lastCondition != null
-                        ? Expression.Condition(lastCondition.Apply(source), getter, invoke)
-                        : invoke;
-                    lastCondition = resolver.Condition;
-                    if (resolver.Condition == null)
-                        break;
-                }
+                if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
+                    continue;
+                Expression invoke = resolver.Invoker == null
+                    ? Expression.PropertyOrField(source, resolver.SourceMemberName)
+                    : resolver.Invoker.Apply(source);
+                getter = lastCondition != null
+                    ? Expression.Condition(lastCondition.Apply(source), getter, invoke)
+                    : invoke;
+                lastCondition = resolver.Condition;
+                if (resolver.Condition == null)
+                    break;
             }
             if (lastCondition != null)
                 getter = Expression.Condition(lastCondition.Apply(source), getter, Expression.Constant(getter.Type.GetDefault(), getter.Type));
@@ -111,6 +107,41 @@ namespace Mapster
                 var method = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.GetValueOrDefault)).MakeGenericMethod(args);
                 return Expression.Call(method, source.To(dictType), key);
             }
+        }
+
+        private static Expression CustomResolverForDictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        {
+            var config = arg.Settings;
+            var resolvers = config.Resolvers;
+            if (resolvers == null || resolvers.Count <= 0)
+                return null;
+            var dictType = source.Type.GetDictionaryType();
+            if (dictType == null)
+                return null;
+            var args = dictType.GetGenericArguments();
+            var method = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.GetValueOrDefault)).MakeGenericMethod(args);
+
+            Expression getter = null;
+            LambdaExpression lastCondition = null;
+            for (int j = 0; j < resolvers.Count; j++)
+            {
+                var resolver = resolvers[j];
+                if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
+                    continue;
+
+                Expression invoke = resolver.Invoker == null
+                    ? Expression.Call(method, source.To(dictType), Expression.Constant(resolver.SourceMemberName))
+                    : resolver.Invoker.Apply(source);
+                getter = lastCondition != null
+                    ? Expression.Condition(lastCondition.Apply(source), getter, invoke)
+                    : invoke;
+                lastCondition = resolver.Condition;
+                if (resolver.Condition == null)
+                    break;
+            }
+            if (lastCondition != null)
+                getter = Expression.Condition(lastCondition.Apply(source), getter, Expression.Constant(getter.Type.GetDefault(), getter.Type));
+            return getter;
         }
     }
 }

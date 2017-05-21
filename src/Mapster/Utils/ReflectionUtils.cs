@@ -198,7 +198,7 @@ namespace Mapster
             return (sourceType == typeof(object)) && _primitiveTypes.ContainsKey(destinationType);
         }
 
-        public static MemberExpression GetMemberInfo(Expression method)
+        public static MemberExpression GetMemberInfo(Expression method, bool noThrow = false)
         {
             var lambda = method as LambdaExpression;
             if (lambda == null)
@@ -216,7 +216,7 @@ namespace Mapster
                 memberExpr = lambda.Body as MemberExpression;
             }
 
-            if (memberExpr == null)
+            if (memberExpr == null && !noThrow)
                 throw new ArgumentException("argument must be member access", nameof(method));
 
             return memberExpr;

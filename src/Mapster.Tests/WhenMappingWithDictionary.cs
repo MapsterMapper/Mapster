@@ -31,6 +31,25 @@ namespace Mapster.Tests
             dict["Name"].ShouldBe(poco.Name);
         }
 
+
+        [TestMethod]
+        public void Object_To_Dictionary_Map()
+        {
+            var poco = new SimplePoco
+            {
+                Id = Guid.NewGuid(),
+                Name = "test",
+            };
+
+            TypeAdapterConfig<SimplePoco, Dictionary<string, object>>.NewConfig()
+                .Map("Code", c => c.Id);
+            var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
+
+            dict.Count.ShouldBe(2);
+            dict["Code"].ShouldBe(poco.Id);
+            dict["Name"].ShouldBe(poco.Name);
+        }
+
         [TestMethod]
         public void Object_To_Dictionary_CamelCase()
         {
@@ -102,6 +121,24 @@ namespace Mapster.Tests
             poco.Name.ShouldBeNull();
         }
 
+
+        [TestMethod]
+        public void Dictionary_To_Object_Map()
+        {
+            var dict = new Dictionary<string, object>
+            {
+                ["Code"] = Guid.NewGuid(),
+                ["Foo"] = "test",
+            };
+
+            TypeAdapterConfig<Dictionary<string, object>, SimplePoco>.NewConfig()
+                .Map(c => c.Id, "Code");
+
+            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            poco.Id.ShouldBe(dict["Code"]);
+            poco.Name.ShouldBeNull();
+        }
+
         [TestMethod]
         public void Dictionary_To_Object_CamelCase()
         {
@@ -139,6 +176,40 @@ namespace Mapster.Tests
         {
             var result = TypeAdapter.Adapt<A, A>(new A { Prop = new Dictionary<int, decimal> { { 1, 2m } } });
             result.Prop[1].ShouldBe(2m);
+        }
+
+        [TestMethod]
+        public void Dictionary_Of_String()
+        {
+            var dict = new Dictionary<string, int>
+            {
+                ["a"] = 1
+            };
+            var result = dict.Adapt<Dictionary<string, int>>();
+            result["a"].ShouldBe(1);
+        }
+
+        [TestMethod]
+        public void Dictionary_Of_String_Mix()
+        {
+            TypeAdapterConfig<Dictionary<string, int?>, Dictionary<string, int>>.NewConfig()
+                .Map("A", "a")
+                .Ignore("c")
+                .IgnoreIf((src, dest) => src.Count > 3, "d")
+                .IgnoreNullValues(true)
+                .NameMatchingStrategy(NameMatchingStrategy.ConvertSourceMemberName(s => "_" + s));
+            var dict = new Dictionary<string, int?>
+            {
+                ["a"] = 1,
+                ["b"] = 2,
+                ["c"] = 3,
+                ["d"] = 4,
+                ["e"] = null,
+            };
+            var result = dict.Adapt<Dictionary<string, int>>();
+            result.Count.ShouldBe(2);
+            result["A"].ShouldBe(1);
+            result["_b"].ShouldBe(2);
         }
 
         public class SimplePoco

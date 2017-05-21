@@ -23,6 +23,10 @@ namespace Mapster.Models
         {
             return Expression.Field(source, _fieldInfo);
         }
+        public Expression SetExpression(Expression source, Expression value)
+        {
+            return Expression.Assign(GetExpression(source), value);
+        }
         public IEnumerable<object> GetCustomAttributes(bool inherit)
         {
             return _fieldInfo.GetCustomAttributes(inherit);
