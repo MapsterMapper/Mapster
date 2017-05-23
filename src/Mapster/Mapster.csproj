@@ -82,7 +82,7 @@
     <Compile Include="Settings\SettingStore.cs" />
     <Compile Include="Settings\TransformsCollection.cs" />
     <Compile Include="Settings\ShouldMapMember.cs" />
-    <Compile Include="TypeAdapterBuiler.cs" />
+    <Compile Include="TypeAdapterBuilder.cs" />
     <Compile Include="TypeAdapterRule.cs" />
     <Compile Include="Utils\ReferenceComparer.cs" />
     <Compile Include="Settings\ValueAccessingStrategy.cs" />

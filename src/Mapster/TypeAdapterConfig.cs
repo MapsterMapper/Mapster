@@ -240,7 +240,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapDict = new Hashtable();
-        internal Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
+        public Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination>)GetMapFunction(typeof(TSource), typeof(TDestination));
         }
@@ -253,7 +253,7 @@ namespace Mapster
         }
 
         private readonly Hashtable _mapToTargetDict = new Hashtable();
-        internal Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
+        public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination, TDestination>)GetMapToTargetFunction(typeof(TSource), typeof(TDestination));
         }
@@ -397,7 +397,7 @@ namespace Mapster
             }
             else
             {
-                var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+                var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                               where m.Name == nameof(TypeAdapterConfig.GetMapFunction)
                               select m).First().MakeGenericMethod(sourceType, destinationType);
                 invoker = Expression.Call(Expression.Constant(this), method);
@@ -409,7 +409,7 @@ namespace Mapster
 
         private LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
         {
-            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                           where m.Name == nameof(TypeAdapterConfig.GetMapToTargetFunction)
                           select m).First().MakeGenericMethod(sourceType, destinationType);
             var invoker = Expression.Call(Expression.Constant(this), method);
@@ -419,7 +419,7 @@ namespace Mapster
             return Expression.Lambda(invoke, p1, p2);
         }
 
-        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
+        public TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
         {
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
                             let priority = rule.Priority(sourceType, destinationType, mapType)
@@ -508,6 +508,14 @@ namespace Mapster
         }
 
         public void Apply(IEnumerable<IRegister> registers)
+        {
+            foreach (IRegister register in registers)
+            {
+                register.Register(this);
+            }
+        }
+
+        public void Apply(params IRegister[] registers)
         {
             foreach (IRegister register in registers)
             {

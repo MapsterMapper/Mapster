@@ -13,9 +13,9 @@ namespace Mapster
             _config = config;
         }
 
-        public TypeAdapterBuiler<TSource> BuildAdapter<TSource>(TSource source)
+        public TypeAdapterBuilder<TSource> BuildAdapter<TSource>(TSource source)
         {
-            return new TypeAdapterBuiler<TSource>(source, _config);
+            return new TypeAdapterBuilder<TSource>(source, _config);
         }
 
         public TDestination Adapt<TDestination>(object source)

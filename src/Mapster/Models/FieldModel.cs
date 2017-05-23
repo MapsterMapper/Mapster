@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class FieldModel : IMemberModel
+    public class FieldModel : IMemberModel
     {
         private readonly FieldInfo _fieldInfo;
         public FieldModel(FieldInfo fieldInfo)
