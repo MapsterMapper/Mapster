@@ -1,24 +1,40 @@
 using Mapster.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Mapster
 {
-    public class TypeAdapterBuiler<TSource>
+    public class TypeAdapterBuilder<TSource>
     {
         TSource Source { get; }
-        TypeAdapterConfig Config { get; }
+        TypeAdapterConfig Config { get; set; }
 
         private Dictionary<string, object> _parameters;
         Dictionary<string, object> Parameters => _parameters ?? (_parameters = new Dictionary<string, object>());
 
-        internal TypeAdapterBuiler(TSource source, TypeAdapterConfig config)
+        internal TypeAdapterBuilder(TSource source, TypeAdapterConfig config)
         {
             this.Source = source;
             this.Config = config;
         }
 
-        public TypeAdapterBuiler<TSource> AddParameters(string name, object value)
+        public TypeAdapterBuilder<TSource> ForkConfig(Action<TypeAdapterConfig> action,
+#if !NET40
+            [CallerFilePath]
+#endif
+            string key1 = null,
+#if !NET40
+            [CallerLineNumber]
+#endif
+            int key2 = 0)
+        {
+            this.Config = this.Config.Fork(action, key1, key2);
+            return this;
+        }
+
+        public TypeAdapterBuilder<TSource> AddParameters(string name, object value)
         {
             this.Parameters.Add(name, value);
             return this;

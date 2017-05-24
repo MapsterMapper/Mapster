@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class KeyValuePairModel : IMemberModel
+    public class KeyValuePairModel : IMemberModel
     {
         readonly Func<Expression, Expression, Expression> _getFn;
         readonly Func<Expression, Expression, Expression, Expression> _setFn;
