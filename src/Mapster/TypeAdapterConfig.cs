@@ -419,7 +419,7 @@ namespace Mapster
             return Expression.Lambda(invoke, p1, p2);
         }
 
-        public TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
+        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
         {
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
                             let priority = rule.Priority(sourceType, destinationType, mapType)

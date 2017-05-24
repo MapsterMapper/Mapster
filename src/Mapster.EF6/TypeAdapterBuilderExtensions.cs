@@ -20,11 +20,10 @@ namespace Mapster
                 .ForkConfig(config =>
                 {
                     var oc = context.ObjectContext;
-                    var assmb = context.GetType().Assembly;
                     var entities = oc.MetadataWorkspace.GetItems<EntityType>(DataSpace.CSpace);
                     foreach (var entity in entities)
                     {
-                        var type = assmb.GetType(entity.FullName);
+                        var type = (Type)entity.MetadataProperties.First(prop => prop.Name.EndsWith("ClrType")).Value;
                         var keys = entity.KeyMembers.Select(member => member.Name).ToArray();
                         var settings = config.When((srcType, destType, mapType) => destType == type);
                         settings.Settings.ConstructUsingFactory = arg =>
@@ -53,12 +52,13 @@ namespace Mapster
                                              where method.Name == nameof(DbContext.Set) &&
                                                    method.IsGenericMethod
                                              select method).First().MakeGenericMethod(arg.DestinationType);
-                            var setAssign = Expression.Call(db, setMethod);
+                            var setAssign = Expression.Assign(set, Expression.Call(db, setMethod));
 
-                            var mergedSettings = config.GetMergedSettings(arg.SourceType, arg.DestinationType, arg.MapType);
                             var getters = keys.Select(key => arg.DestinationType.GetProperty(key))
                                 .Select(prop => new PropertyModel(prop))
-                                .Select(model => mergedSettings.ValueAccessingStrategies.Select(s => s(src, model, arg)).FirstOrDefault())
+                                .Select(model => arg.Settings.ValueAccessingStrategies
+                                    .Select(s => s(src, model, arg))
+                                    .FirstOrDefault(exp => exp != null))
                                 .Where(exp => exp != null)
                                 .Select(exp => Expression.Convert(exp, typeof(object)))
                                 .ToArray();
