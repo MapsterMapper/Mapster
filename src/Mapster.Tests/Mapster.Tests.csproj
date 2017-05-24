@@ -115,14 +115,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ExpressionDebugger\ExpressionDebugger\ExpressionDebugger.csproj">
-      <Project>{370515CF-2714-4F1B-B7D9-89AB9C85C950}</Project>
-      <Name>ExpressionDebugger</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Mapster.Diagnostics\Mapster.Diagnostics.csproj">
-      <Project>{4f18cf15-1169-4993-8fe9-fd8b7020462b}</Project>
-      <Name>Mapster.Diagnostics</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Mapster\Mapster.csproj">
       <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
       <Name>Mapster</Name>

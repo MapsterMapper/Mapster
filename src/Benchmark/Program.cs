@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using AutoMapper;
 using Benchmark.Classes;
-using DeepCloning;
 using Mapster;
-using Omu.ValueInjecter;
 
 namespace Benchmark
 {
@@ -180,16 +178,6 @@ namespace Benchmark
             Console.WriteLine("Mapster:\t\t" + MapsterTime);
         }
 
-
-        private static void TestValueInjecter<TSrc, TDest>(TSrc item, int iterations)
-            where TSrc : class
-            where TDest : class, new()
-        {
-            if (iterations > 50000)
-                Console.WriteLine("ValueInjecter still working please wait...");
-
-            Console.WriteLine("ValueInjecter:\t\t" + Loop<TSrc>(item, get => new TDest().InjectFrom<FastDeepCloneInjection>(item), iterations));
-        }
 
         private static void TestExpressMapper<TSrc, TDest>(TSrc item, int iterations)
             where TSrc : class
