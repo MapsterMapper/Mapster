@@ -69,11 +69,13 @@
     <Compile Include="Compile\CompileContext.cs" />
     <Compile Include="Compile\CompileException.cs" />
     <Compile Include="Enums\EnumMappingStrategy.cs" />
+    <Compile Include="Enums\MemberSide.cs" />
     <Compile Include="Interfaces\IApplyable.cs" />
     <Compile Include="Interfaces\IRegister.cs" />
     <Compile Include="MapContext\MapContext.cs" />
     <Compile Include="MapContext\MapContextScope.cs" />
     <Compile Include="Enums\MapType.cs" />
+    <Compile Include="Models\IMemberModelEx.cs" />
     <Compile Include="Models\KeyValuePairModel.cs" />
     <Compile Include="Settings\GetMemberName.cs" />
     <Compile Include="Settings\NameMatchingStrategy.cs" />

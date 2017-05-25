@@ -174,7 +174,7 @@ namespace Mapster.Adapters
                     .Where(name => name != null)
                     .ToHashSet();
                 var propNames = arg.SourceType.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(model => model.ShouldMapMember(arg.Settings.ShouldMapMember))
+                    .Where(model => model.ShouldMapMember(arg.Settings.ShouldMapMember, MemberSide.Source))
                     .Select(model => model.Name)
                     .Where(name => !srcNames.Contains(name))
                     .Select(name => arg.Settings.NameMatchingStrategy.SourceMemberNameConverter(name));

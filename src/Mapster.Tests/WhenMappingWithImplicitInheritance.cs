@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Mapster.Models;
 
 namespace Mapster.Tests
 {
@@ -178,7 +179,8 @@ namespace Mapster.Tests
                 //.MaxDepth(5)
                 .Compile();
 
-            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(SimpleDto), MapType.Map);
+            var tuple = new TypeTuple(typeof(DerivedPoco), typeof(SimpleDto));
+            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(tuple, MapType.Map);
 
             derivedConfig.IgnoreNullValues.ShouldBe(true);
             derivedConfig.ShallowCopyForSameType.ShouldBe(true);
@@ -195,7 +197,8 @@ namespace Mapster.Tests
                 //.MaxDepth(5)
                 .Compile();
 
-            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map);
+            var tuple = new TypeTuple(typeof(DerivedPoco), typeof(DerivedDto));
+            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(tuple, MapType.Map);
 
             derivedConfig.IgnoreNullValues.ShouldBe(true);
             derivedConfig.ShallowCopyForSameType.ShouldBe(true);
@@ -212,7 +215,8 @@ namespace Mapster.Tests
                 //.MaxDepth(5)
                 .Compile();
 
-            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(typeof(DerivedPoco), typeof(DerivedDto), MapType.Map);
+            var tuple = new TypeTuple(typeof(DerivedPoco), typeof(DerivedDto));
+            var derivedConfig = TypeAdapterConfig.GlobalSettings.GetMergedSettings(tuple, MapType.Map);
 
             derivedConfig.IgnoreNullValues.ShouldBeNull();
             derivedConfig.ShallowCopyForSameType.ShouldBeNull();

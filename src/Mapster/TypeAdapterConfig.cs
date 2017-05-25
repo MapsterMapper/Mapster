@@ -297,7 +297,7 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                var arg = GetCompileArgument(tuple.Source, tuple.Destination, mapType, context);
+                var arg = GetCompileArgument(tuple, mapType, context);
                 return CreateMapExpression(arg);
             }
             finally
@@ -365,7 +365,7 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                var arg = GetCompileArgument(tuple.Source, tuple.Destination, parentMapType == MapType.Projection ? MapType.Projection : MapType.InlineMap, context);
+                var arg = GetCompileArgument(tuple, parentMapType == MapType.Projection ? MapType.Projection : MapType.InlineMap, context);
                 var exp = CreateMapExpression(arg);
                 if (exp != null)
                 {
@@ -419,10 +419,10 @@ namespace Mapster
             return Expression.Lambda(invoke, p1, p2);
         }
 
-        internal TypeAdapterSettings GetMergedSettings(Type sourceType, Type destinationType, MapType mapType)
+        internal TypeAdapterSettings GetMergedSettings(TypeTuple tuple, MapType mapType)
         {
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
-                            let priority = rule.Priority(sourceType, destinationType, mapType)
+                            let priority = rule.Priority(tuple.Source, tuple.Destination, mapType)
                             where priority != null
                             orderby priority.Value descending
                             select rule.Settings).ToList();
@@ -434,19 +434,19 @@ namespace Mapster
 
             //remove recursive include types
             if (mapType == MapType.MapToTarget)
-                result.Includes.Remove(new TypeTuple(sourceType, destinationType));
+                result.Includes.Remove(tuple);
             else
-                result.Includes.RemoveAll(tuple => tuple.Source == sourceType);
+                result.Includes.RemoveAll(t => t.Source == tuple.Source);
             return result;
         }
 
-        CompileArgument GetCompileArgument(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
+        CompileArgument GetCompileArgument(TypeTuple tuple, MapType mapType, CompileContext context)
         {
-            var setting = GetMergedSettings(sourceType, destinationType, mapType);
+            var setting = GetMergedSettings(tuple, mapType);
             var arg = new CompileArgument
             {
-                SourceType = sourceType,
-                DestinationType = destinationType,
+                SourceType = tuple.Source,
+                DestinationType = tuple.Destination,
                 MapType = mapType,
                 Context = context,
                 Settings = setting,

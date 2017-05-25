@@ -50,7 +50,7 @@ namespace Mapster
             return type.GetFieldsAndProperties(allowNoSetter: false).Any();
         }
 
-        public static IEnumerable<IMemberModel> GetFieldsAndProperties(this Type type, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
         {
             var bindingFlags = BindingFlags.Instance | accessorFlags;
 
@@ -300,17 +300,17 @@ namespace Mapster
             return typeof (IConvertible).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
 
-        public static IMemberModel CreateModel(this PropertyInfo propertyInfo)
+        public static IMemberModelEx CreateModel(this PropertyInfo propertyInfo)
         {
             return new PropertyModel(propertyInfo);
         }
 
-        public static IMemberModel CreateModel(this FieldInfo propertyInfo)
+        public static IMemberModelEx CreateModel(this FieldInfo propertyInfo)
         {
             return new FieldModel(propertyInfo);
         }
 
-        public static IMemberModel CreateModel(this ParameterInfo propertyInfo)
+        public static IMemberModelEx CreateModel(this ParameterInfo propertyInfo)
         {
             return new ParameterModel(propertyInfo);
         }
@@ -372,9 +372,9 @@ namespace Mapster
             return AccessModifier.Private;
         }
 
-        public static bool ShouldMapMember(this IMemberModel member, IEnumerable<Func<IMemberModel, bool?>> predicates)
+        public static bool ShouldMapMember(this IMemberModel member, IEnumerable<Func<IMemberModel, MemberSide, bool?>> predicates, MemberSide side)
         {
-            return predicates.Select(predicate => predicate(member))
+            return predicates.Select(predicate => predicate(member, side))
                 .FirstOrDefault(result => result != null) == true;
         }
 

@@ -50,16 +50,35 @@ namespace Mapster
 
             foreach (var type in types)
             {
-                setter.Settings.ShouldMapMember.Add(member => member.HasCustomAttribute(type) ? (bool?)false : null);
+                setter.Settings.ShouldMapMember.Add((member, _) => member.HasCustomAttribute(type) ? (bool?)false : null);
             }
             return setter;
         }
 
-        public static TSetter ShouldMapMember<TSetter>(this TSetter setter, Func<IMemberModel, bool> predicate, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter IncludeAttribute<TSetter>(this TSetter setter, params Type[] types) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
-            setter.Settings.ShouldMapMember.Add(member => predicate(member) ? (bool?)value : null);
+            foreach (var type in types)
+            {
+                setter.Settings.ShouldMapMember.Add((member, _) => member.HasCustomAttribute(type) ? (bool?)true : null);
+            }
+            return setter;
+        }
+
+        public static TSetter IgnoreMember<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, bool> predicate) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.ShouldMapMember.Add((member, side) => predicate(member, side) ? (bool?)false : null);
+            return setter;
+        }
+
+        public static TSetter IncludeMember<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, bool> predicate) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.ShouldMapMember.Add((member, side) => predicate(member, side) ? (bool?)true : null);
             return setter;
         }
 
@@ -116,7 +135,10 @@ namespace Mapster
                 Invoker = invoker,
                 Condition = null
             });
-            setter.Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
+            setter.Settings.ShouldMapMember.Add((member, side) => 
+                (member.Name == memberName && side == MemberSide.Destination)
+                ? (bool?)true 
+                : null);
 
             return setter;
         }
@@ -134,7 +156,10 @@ namespace Mapster
                 SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = null
             });
-            setter.Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
+            setter.Settings.ShouldMapMember.Add((member, side) =>
+                (member.Name == memberName && side == MemberSide.Destination)
+                ? (bool?)true
+                : null);
 
             return setter;
         }
@@ -150,9 +175,24 @@ namespace Mapster
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
-            setter.Settings.ShouldMapMember.Add(member => member.Name == destinationMemberName ? (bool?)true : null);
             if (sourceMemberName != destinationMemberName)
-                setter.Settings.ShouldMapMember.Add(member => member.Name == sourceMemberName ? (bool?)true : null);
+            {
+                setter.Settings.ShouldMapMember.Add((member, side) =>
+                    (member.Name == destinationMemberName && side == MemberSide.Destination)
+                    ? (bool?)true
+                    : null);
+                setter.Settings.ShouldMapMember.Add((member, side) =>
+                   (member.Name == sourceMemberName && side == MemberSide.Source)
+                   ? (bool?)true
+                   : null);
+            }
+            else
+            {
+                setter.Settings.ShouldMapMember.Add((member, _) =>
+                    member.Name == destinationMemberName
+                    ? (bool?)true
+                    : null);
+            }
 
             return setter;
         }
@@ -163,13 +203,13 @@ namespace Mapster
 
             if (value)
             {
-                setter.Settings.ShouldMapMember.Remove(Mapster.ShouldMapMember.AllowPublic);
-                setter.Settings.ShouldMapMember.Add(Mapster.ShouldMapMember.AllowNonPublic);
+                setter.Settings.ShouldMapMember.Remove(ShouldMapMember.AllowPublic);
+                setter.Settings.ShouldMapMember.Add(ShouldMapMember.AllowNonPublic);
             }
             else
             {
-                setter.Settings.ShouldMapMember.Remove(Mapster.ShouldMapMember.AllowNonPublic);
-                setter.Settings.ShouldMapMember.Add(Mapster.ShouldMapMember.AllowPublic);
+                setter.Settings.ShouldMapMember.Remove(ShouldMapMember.AllowNonPublic);
+                setter.Settings.ShouldMapMember.Add(ShouldMapMember.AllowPublic);
             }
 
             return setter;
@@ -247,7 +287,10 @@ namespace Mapster
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
-            Settings.ShouldMapMember.Add(member => member.Name == sourceMemberName ? (bool?)true : null);
+            Settings.ShouldMapMember.Add((member, side) =>
+                (member.Name == sourceMemberName && side == MemberSide.Source)
+                ? (bool?)true
+                : null);
 
             return this;
         }
@@ -375,7 +418,10 @@ namespace Mapster
                 SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = shouldMap
             });
-            Settings.ShouldMapMember.Add(member => member.Name == memberName ? (bool?)true : null);
+            Settings.ShouldMapMember.Add((member, side) =>
+                (member.Name == memberName && side == MemberSide.Destination)
+                ? (bool?)true
+                : null);
 
             return this;
         }

@@ -6,7 +6,7 @@ using Mapster.Utils;
 
 namespace Mapster.Models
 {
-    public class ParameterModel : IMemberModel
+    public class ParameterModel : IMemberModelEx
     {
         private readonly ParameterInfo _parameterInfo;
         public ParameterModel(ParameterInfo parameterInfo)

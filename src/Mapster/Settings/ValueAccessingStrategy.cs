@@ -59,7 +59,7 @@ namespace Mapster
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             return members
-                .Where(member => member.ShouldMapMember(arg.Settings.ShouldMapMember))
+                .Where(member => member.ShouldMapMember(arg.Settings.ShouldMapMember, MemberSide.Source))
                 .Where(member => member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();

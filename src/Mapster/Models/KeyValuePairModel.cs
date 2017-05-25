@@ -7,11 +7,11 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    public class KeyValuePairModel : IMemberModel
+    public class KeyValuePairModel : IMemberModelEx
     {
         readonly Func<Expression, Expression, Expression> _getFn;
         readonly Func<Expression, Expression, Expression, Expression> _setFn;
-        public KeyValuePairModel(string name, Type type, 
+        public KeyValuePairModel(string name, Type type,
             Func<Expression, Expression, Expression> getFn, 
             Func<Expression, Expression, Expression, Expression> setFn)
         {

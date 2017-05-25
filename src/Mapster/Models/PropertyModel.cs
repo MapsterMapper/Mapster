@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    public class PropertyModel : IMemberModel
+    public class PropertyModel : IMemberModelEx
     {
         protected readonly PropertyInfo _propertyInfo;
         public PropertyModel(PropertyInfo propertyInfo)
