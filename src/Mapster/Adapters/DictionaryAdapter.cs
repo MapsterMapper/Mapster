@@ -12,12 +12,9 @@ namespace Mapster.Adapters
     {
         protected override int Score => -124;
 
-        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
+        protected override bool CanMap(PreCompileArgument arg)
         {
-            if (sourceType == typeof (string) || sourceType == typeof (object))
-                return false;
-
-            var dictType = destinationType.GetDictionaryType();
+            var dictType = arg.DestinationType.GetDictionaryType();
             return dictType?.GetGenericArguments()[0] == typeof (string);
         }
 

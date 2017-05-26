@@ -13,23 +13,6 @@ namespace Mapster
     {
         private static readonly Type _stringType = typeof (string);
 
-        // Primitive types with their conversion methods from System.Convert class.
-        private static Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
-            { typeof(bool), "ToBoolean" },
-            { typeof(short), "ToInt16" },
-            { typeof(int), "ToInt32" },
-            { typeof(long), "ToInt64" },
-            { typeof(float), "ToSingle" },
-            { typeof(double), "ToDouble" },
-            { typeof(decimal), "ToDecimal" },
-            { typeof(ushort), "ToUInt16" },
-            { typeof(uint), "ToUInt32" },
-            { typeof(ulong), "ToUInt64" },
-            { typeof(byte), "ToByte" },
-            { typeof(sbyte), "ToSByte" },
-            { typeof(DateTime), "ToDateTime" }
-        };
-
 
 #if NET40
         public static Type GetTypeInfo(this Type type) {
@@ -96,16 +79,6 @@ namespace Mapster
             return type.GetInterface(IsGenericEnumerableType);
         }
 
-        private static Expression CreateConvertMethod(string name, Type srcType, Type destType, Expression source)
-        {
-            var method = typeof (Convert).GetMethod(name, new[] {srcType});
-            if (method != null)
-                return Expression.Call(method, source);
-
-            method = typeof (Convert).GetMethod(name, new[] {typeof (object)});
-            return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof (object))), destType);
-        }
-
         public static object GetDefault(this Type type)
         {
             return type.GetTypeInfo().IsValueType && !type.IsNullable()
@@ -116,86 +89,6 @@ namespace Mapster
         public static Type UnwrapNullable(this Type type)
         {
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
-        }
-
-        public static Expression BuildUnderlyingTypeConvertExpression(Expression source, Type sourceType, Type destinationType, TypeAdapterSettings settings)
-        {
-            var srcType = sourceType.UnwrapNullable();
-            var destType = destinationType.UnwrapNullable();
-
-            if (srcType == destType)
-                return source;
-
-            //special handling for string
-            if (destType == _stringType)
-            {
-                if (srcType.GetTypeInfo().IsEnum)
-                {
-                    var method = typeof (Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] {srcType});
-                    return Expression.Call(method, source);
-                }
-                else
-                {
-                    var method = srcType.GetMethod("ToString", Type.EmptyTypes);
-                    return Expression.Call(source, method);
-                }
-            }
-
-            if (srcType == _stringType)
-            {
-                if (destType.GetTypeInfo().IsEnum)
-                {
-                    var method = typeof (Enum<>).MakeGenericType(destType).GetMethod("Parse", new[] {typeof (string)});
-                    return Expression.Call(method, source);
-                }
-                else
-                {
-                    var method = destType.GetMethod("Parse", new[] {typeof (string)});
-                    if (method != null)
-                        return Expression.Call(method, source);
-                }
-            }
-
-            if (destType.GetTypeInfo().IsEnum && srcType.GetTypeInfo().IsEnum && settings.MapEnumByName == true)
-            {
-                var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
-                var tostring = Expression.Call(method, source);
-                var methodParse = typeof(Enum<>).MakeGenericType(destType).GetMethod("Parse", new[] { typeof(string) });
-
-                return Expression.Call(methodParse, tostring);
-            }
-
-            if (IsObjectToPrimitiveConversion(srcType, destType))
-            {
-                return CreateConvertMethod(_primitiveTypes[destType], srcType, destType, source);
-            }
-
-            //try using type casting
-            try
-            {
-                return Expression.Convert(source, destType);
-            }
-            catch
-            {
-                // ignored
-            }
-
-            if (!srcType.IsConvertible())
-                throw new InvalidOperationException("Cannot convert immutable type, please consider using 'MapWith' method to create mapping");
-
-            //using Convert
-            if (_primitiveTypes.ContainsKey(destType))
-            {
-                return CreateConvertMethod(_primitiveTypes[destType], srcType, destType, source);
-            }
-
-            var changeTypeMethod = typeof (Convert).GetMethod("ChangeType", new[] {typeof (object), typeof (Type)});
-            return Expression.Convert(Expression.Call(changeTypeMethod, Expression.Convert(source, typeof (object)), Expression.Constant(destType)), destType);
-        }
-
-        private static bool IsObjectToPrimitiveConversion(Type sourceType, Type destinationType)
-        {
-            return (sourceType == typeof(object)) && _primitiveTypes.ContainsKey(destinationType);
         }
 
         public static MemberExpression GetMemberInfo(Expression method, bool noThrow = false)

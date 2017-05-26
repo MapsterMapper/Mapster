@@ -500,9 +500,9 @@ namespace Mapster
 
             Config.Rules.Add(new TypeAdapterRule
             {
-                Priority = (sourceType, destinationType, mapType) =>
-                    sourceType == typeof(TDerivedSource) &&
-                    destinationType == typeof(TDerivedDestination) ? (int?)100 : null,
+                Priority = arg =>
+                    arg.SourceType == typeof(TDerivedSource) &&
+                    arg.DestinationType == typeof(TDerivedDestination) ? (int?)100 : null,
                 Settings = Settings
             });
 

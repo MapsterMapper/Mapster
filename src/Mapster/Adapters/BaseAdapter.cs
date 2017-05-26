@@ -13,12 +13,12 @@ namespace Mapster.Adapters
         protected virtual int Score => 0;
         protected virtual bool CheckExplicitMapping => true;
 
-        public virtual int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        public virtual int? Priority(PreCompileArgument arg)
         {
-            return CanMap(sourceType, destinationType, mapType) ? this.Score : (int?)null;
+            return CanMap(arg) ? this.Score : (int?)null;
         }
 
-        protected abstract bool CanMap(Type sourceType, Type destinationType, MapType mapType);
+        protected abstract bool CanMap(PreCompileArgument arg);
 
         public LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
@@ -87,7 +87,7 @@ namespace Mapster.Adapters
         {
             if (this.CheckExplicitMapping
                 && arg.Context.Config.RequireExplicitMapping
-                && !arg.Context.Config.RuleMap.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
+                && !arg.ExplicitMapping)
             {
                 throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
             }

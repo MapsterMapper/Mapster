@@ -18,12 +18,9 @@ namespace Mapster.Adapters
     {
         protected override int Score => -150;
 
-        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
+        protected override bool CanMap(PreCompileArgument arg)
         {
-            if (sourceType == typeof(string) || sourceType == typeof(object))
-                return false;
-
-            if (!destinationType.IsPoco())
+            if (!arg.DestinationType.IsPoco())
                 return false;
 
             return true;

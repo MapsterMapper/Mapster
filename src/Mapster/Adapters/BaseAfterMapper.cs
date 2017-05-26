@@ -7,12 +7,12 @@ namespace Mapster.Adapters
     {
         protected virtual int Score => 0;
 
-        public virtual int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        public virtual int? Priority(PreCompileArgument arg)
         {
-            return CanMap(sourceType, destinationType, mapType) ? this.Score : (int?)null;
+            return CanMap(arg) ? this.Score : (int?)null;
         }
 
-        protected abstract bool CanMap(Type sourceType, Type destinationType, MapType mapType);
+        protected abstract bool CanMap(PreCompileArgument arg);
 
         public LambdaExpression CreateAfterMapFunc(CompileArgument arg)
         {

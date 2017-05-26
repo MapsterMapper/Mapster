@@ -12,7 +12,7 @@ namespace Mapster.Adapters
             _lambda = lambda;
         }
 
-        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
+        protected override bool CanMap(PreCompileArgument arg)
         {
             throw new NotImplementedException();
         }

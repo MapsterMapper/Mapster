@@ -13,11 +13,11 @@ namespace Mapster.Adapters
         protected override int Score => -125;
         protected override bool CheckExplicitMapping => false;
 
-        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
+        protected override bool CanMap(PreCompileArgument arg)
         {
-            return sourceType.IsCollection()
-                   && destinationType.IsCollection()
-                   && destinationType.IsListCompatible();
+            return arg.SourceType.IsCollection()
+                   && arg.DestinationType.IsCollection()
+                   && arg.DestinationType.IsListCompatible();
         }
 
         private static Expression CreateCountExpression(Expression source, bool allowCountAll)

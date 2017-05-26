@@ -120,6 +120,10 @@ namespace Mapster
         {
             dynamic fn = config.GetMapFunction(sourceType, destinationType);
             return fn((dynamic)source);
+
+            var fn = config.GetDynamicMapFunction(sourceType, destinationType);
+            return fn(source);
+
         }
 
         /// <summary>

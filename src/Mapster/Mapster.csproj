@@ -62,12 +62,15 @@
     <Compile Include="Adapters\BaseClassAdapter.cs" />
     <Compile Include="Adapters\DelegateAdapter.cs" />
     <Compile Include="Adapters\DictionaryAdapter.cs" />
+    <Compile Include="Adapters\ObjectAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
+    <Compile Include="Adapters\StringAdapter.cs" />
     <Compile Include="Attributes\AdaptIgnoreAttribute.cs" />
     <Compile Include="Attributes\AdaptMemberAttribute.cs" />
     <Compile Include="Compile\CompileArgument.cs" />
     <Compile Include="Compile\CompileContext.cs" />
     <Compile Include="Compile\CompileException.cs" />
+    <Compile Include="Compile\PreCompileArgument.cs" />
     <Compile Include="Enums\EnumMappingStrategy.cs" />
     <Compile Include="Enums\MemberSide.cs" />
     <Compile Include="Interfaces\IApplyable.cs" />

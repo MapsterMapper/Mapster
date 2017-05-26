@@ -27,11 +27,12 @@ namespace Mapster
                 new ClassAdapter().CreateRule(),        //-150
                 new CollectionAdapter().CreateRule(),   //-125
                 new DictionaryAdapter().CreateRule(),   //-124
+                new StringAdapter().CreateRule(),       //-110
 
                 //fallback rules
                 new TypeAdapterRule
                 {
-                    Priority = (srcType, destType, mapType) => -200,
+                    Priority = arg => -200,
                     Settings = new TypeAdapterSettings
                     {
                         //match exact name
@@ -59,7 +60,7 @@ namespace Mapster
                 //dictionary accessor
                 new TypeAdapterRule
                 {
-                    Priority = (srcType, destType, mapType) => srcType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -124 : (int?)null,
+                    Priority = arg => arg.SourceType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -124 : (int?)null,
                     Settings = new TypeAdapterSettings
                     {
                         ValueAccessingStrategies =
@@ -91,7 +92,7 @@ namespace Mapster
             this.Default = new TypeAdapterSetter(settings, this);
             this.Rules.Add(new TypeAdapterRule
             {
-                Priority = (sourceType, destinationType, mapType) => -100,
+                Priority = arg => -100,
                 Settings = settings,
             });
         }
@@ -100,7 +101,18 @@ namespace Mapster
         {
             var rule = new TypeAdapterRule
             {
-                Priority = (srcType, destType, mapType) => canMap(srcType, destType, mapType) ? (int?)25 : null,
+                Priority = arg => canMap(arg.SourceType, arg.DestinationType, arg.MapType) ? (int?)25 : null,
+                Settings = new TypeAdapterSettings(),
+            };
+            this.Rules.Add(rule);
+            return new TypeAdapterSetter(rule.Settings, this);
+        }
+
+        public TypeAdapterSetter When(Func<PreCompileArgument, bool> canMap) 
+        {
+            var rule = new TypeAdapterRule
+            {
+                Priority = arg => canMap(arg) ? (int?)25 : null,
                 Settings = new TypeAdapterSettings(),
             };
             this.Rules.Add(rule);
@@ -163,12 +175,12 @@ namespace Mapster
         {
             return new TypeAdapterRule
             {
-                Priority = (sourceType, destinationType, mapType) =>
+                Priority = arg =>
                 {
-                    var score1 = GetSubclassDistance(destinationType, key.Destination, this.AllowImplicitDestinationInheritance);
+                    var score1 = GetSubclassDistance(arg.DestinationType, key.Destination, this.AllowImplicitDestinationInheritance);
                     if (score1 == null)
                         return null;
-                    var score2 = GetSubclassDistance(sourceType, key.Source, this.AllowImplicitSourceInheritance);
+                    var score2 = GetSubclassDistance(arg.SourceType, key.Source, this.AllowImplicitSourceInheritance);
                     if (score2 == null)
                         return null;
                     return score1.Value + score2.Value;
@@ -181,7 +193,7 @@ namespace Mapster
         {
             return new TypeAdapterRule
             {
-                Priority = (sourceType, destinationType, mapType) => GetSubclassDistance(destinationType, key.Destination, true),
+                Priority = arg => GetSubclassDistance(arg.DestinationType, key.Destination, true),
                 Settings = new TypeAdapterSettings(),
             };
         }
@@ -283,12 +295,16 @@ namespace Mapster
         private Hashtable _dynamicMapDict;
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
+            return (Func<object, TDestination>)GetDynamicMapFunction(sourceType, typeof(TDestination));
+        }
+        internal Delegate GetDynamicMapFunction(Type sourceType, Type destinationType)
+        {
             if (_dynamicMapDict == null)
                 _dynamicMapDict = new Hashtable();
-            var key = new TypeTuple(sourceType, typeof(TDestination));
+            var key = new TypeTuple(sourceType, destinationType);
             object del = _dynamicMapDict[key] ?? AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
 
-            return (Func<object, TDestination>)del;
+            return (Delegate)del;
         }
 
         internal LambdaExpression CreateMapExpression(TypeTuple tuple, MapType mapType)
@@ -421,8 +437,15 @@ namespace Mapster
 
         internal TypeAdapterSettings GetMergedSettings(TypeTuple tuple, MapType mapType)
         {
+            var arg = new PreCompileArgument
+            {
+                SourceType = tuple.Source,
+                DestinationType = tuple.Destination,
+                MapType = mapType,
+                ExplicitMapping = this.RuleMap.ContainsKey(tuple),
+            };
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
-                            let priority = rule.Priority(tuple.Source, tuple.Destination, mapType)
+                            let priority = rule.Priority(arg)
                             where priority != null
                             orderby priority.Value descending
                             select rule.Settings).ToList();
