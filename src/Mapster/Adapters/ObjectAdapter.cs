@@ -17,7 +17,7 @@ namespace Mapster.Adapters
         {
             var srcType = arg.SourceType;
             var destType = arg.DestinationType;
-            if (srcType != destType)
+            if (srcType == destType)
                 return source;
             else if (destType == typeof(object))
                 return Expression.Convert(source, destType);

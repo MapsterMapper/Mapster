@@ -84,7 +84,39 @@ namespace Mapster
         {
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
-            return ReflectionUtils.GetDeepFlattening(source, destinationMemberName, arg);
+            return GetDeepFlattening(source, destinationMemberName, arg);
+        }
+
+        private static Expression GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
+        {
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var members = source.Type.GetFieldsAndProperties();
+            foreach (var member in members)
+            {
+                if (!member.ShouldMapMember(arg.Settings.ShouldMapMember, MemberSide.Source))
+                    continue;
+                var sourceMemberName = member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
+                var propertyType = member.Type;
+                if (propertyType.GetTypeInfo().IsClass && propertyType != typeof(string)
+                    && propertyName.StartsWith(sourceMemberName))
+                {
+                    var exp = member.GetExpression(source);
+                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
+                    if (ifTrue == null)
+                        continue;
+                    if (arg.MapType == MapType.Projection)
+                        return ifTrue;
+                    return Expression.Condition(
+                        Expression.Equal(exp, Expression.Constant(null, exp.Type)),
+                        Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type),
+                        ifTrue);
+                }
+                else if (string.Equals(propertyName, sourceMemberName))
+                {
+                    return member.GetExpression(source);
+                }
+            }
+            return null;
         }
 
         private static Expression DictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)

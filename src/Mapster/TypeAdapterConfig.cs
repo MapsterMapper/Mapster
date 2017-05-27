@@ -23,8 +23,8 @@ namespace Mapster
             return new List<TypeAdapterRule>
             {
                 new PrimitiveAdapter().CreateRule(),    //-200
-                new RecordTypeAdapter().CreateRule(),   //-151
                 new ClassAdapter().CreateRule(),        //-150
+                new RecordTypeAdapter().CreateRule(),   //-149
                 new CollectionAdapter().CreateRule(),   //-125
                 new DictionaryAdapter().CreateRule(),   //-124
                 new ObjectAdapter().CreateRule(),       //-111
@@ -41,8 +41,8 @@ namespace Mapster
                         NameMatchingStrategy = NameMatchingStrategy.Exact,  
                         ShouldMapMember =
                         {
-                            ShouldMapMember.AllowPublic,            //match public prop
                             ShouldMapMember.IgnoreAdaptIgnore,      //ignore AdaptIgnore attribute
+                            ShouldMapMember.AllowPublic,            //match public prop
                             ShouldMapMember.AllowAdaptMember,       //match AdaptMember attribute
                         },                                          
                         GetMemberNames =                            
@@ -204,20 +204,20 @@ namespace Mapster
         {
             if (type1 == type2)
                 return 50;
-            if (!allowInheritance)
-                return null;
 
             //generic type definition
             int score = 35;
             if (type2.GetTypeInfo().IsGenericTypeDefinition)
             {
-                while (type1 != null && type1.GetGenericTypeDefinition() != type2)
+                while (type1 != null && type1.GetTypeInfo().IsGenericType && type1.GetGenericTypeDefinition() != type2)
                 {
                     score--;
                     type1 = type1.GetTypeInfo().BaseType;
                 }
                 return type1 == null ? null : (int?) score;
             }
+            if (!allowInheritance)
+                return null;
 
             if (!type2.GetTypeInfo().IsAssignableFrom(type1.GetTypeInfo()))
                 return null;
@@ -468,6 +468,7 @@ namespace Mapster
             {
                 SourceType = tuple.Source,
                 DestinationType = tuple.Destination,
+                ExplicitMapping = this.RuleMap.ContainsKey(tuple),
                 MapType = mapType,
                 Context = context,
                 Settings = setting,

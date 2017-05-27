@@ -20,7 +20,10 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            if (!arg.DestinationType.IsPoco())
+            var bindingFlags = arg.ExplicitMapping
+                ? BindingFlags.Public | BindingFlags.NonPublic
+                : BindingFlags.Public;
+            if (!arg.DestinationType.IsPoco(bindingFlags))
                 return false;
 
             return true;

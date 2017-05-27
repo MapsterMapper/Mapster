@@ -41,6 +41,12 @@
     <AssemblyOriginatorKeyFile>Mapster.Tests.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExpressionDebugger, Version=1.0.2.0, Culture=neutral, PublicKeyToken=b4df16a241f24dde, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExpressionDebugger.1.0.2\lib\net45\ExpressionDebugger.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Shouldly, Version=2.8.2.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
       <HintPath>..\packages\Shouldly.2.8.2\lib\net451\Shouldly.dll</HintPath>
     </Reference>
@@ -81,6 +87,7 @@
     <Compile Include="WhenMappingWithExtensionMethods.cs" />
     <Compile Include="WhenMappingWithFlexibleName.cs" />
     <Compile Include="WhenMappingWithGetMethod.cs" />
+    <Compile Include="WhenMappingWithOpenGenerics.cs" />
     <Compile Include="WhenPerformingAfterMapping.cs" />
     <Compile Include="WhenPassingRuntimeValue.cs" />
     <Compile Include="WhenPreserveReferences.cs" />
@@ -106,6 +113,7 @@
     <Compile Include="WhenRegisteringAndMappingRace.cs" />
     <Compile Include="WhenRunningOnMultipleThreads.cs" />
     <Compile Include="WhenScanningForRegisters.cs" />
+    <Compile Include="WhenUsingAttribute.cs" />
     <Compile Include="WhenUsingConverterFactory.cs" />
     <Compile Include="WhenUsingRuleBasedSetting.cs" />
     <Compile Include="WhenUsingNonDefaultConstructor.cs" />

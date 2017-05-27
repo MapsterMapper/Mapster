@@ -10,7 +10,7 @@ namespace Mapster.Adapters
 {
     internal class RecordTypeAdapter : BaseClassAdapter
     {
-        protected override int Score => -151;
+        protected override int Score => -149;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

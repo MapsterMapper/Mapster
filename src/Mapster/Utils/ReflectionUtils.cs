@@ -11,8 +11,6 @@ namespace Mapster
 {
     internal static class ReflectionUtils
     {
-        private static readonly Type _stringType = typeof (string);
-
         // Primitive types with their conversion methods from System.Convert class.
         private static Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
             { typeof(bool), "ToBoolean" },
@@ -41,12 +39,9 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
         }
 
-        public static bool IsPoco(this Type type)
+        public static bool IsPoco(this Type type, BindingFlags accessorFlags = BindingFlags.Public)
         {
-            if (type.GetTypeInfo().IsEnum)
-                return false;
-
-            return type.GetFieldsAndProperties(allowNoSetter: false).Any();
+            return type.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: accessorFlags).Any();
         }
 
         public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
@@ -66,7 +61,7 @@ namespace Mapster
 
         public static bool IsCollection(this Type type)
         {
-            return typeof (IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != _stringType;
+            return typeof (IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != typeof(string);
         }
 
         public static Type ExtractCollectionType(this Type collectionType)
@@ -144,36 +139,6 @@ namespace Mapster
                 throw new ArgumentException("argument must be member access", nameof(method));
 
             return memberExpr;
-        }
-
-        public static Expression GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
-        {
-            var strategy = arg.Settings.NameMatchingStrategy;
-            var properties = source.Type.GetFieldsAndProperties();
-            foreach (var property in properties)
-            {
-                var sourceMemberName = property.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
-                var propertyType = property.Type;
-                if (propertyType.GetTypeInfo().IsClass && propertyType != _stringType
-                    && propertyName.StartsWith(sourceMemberName))
-                {
-                    var exp = property.GetExpression(source);
-                    var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
-                    if (ifTrue == null)
-                        continue;
-                    if (arg.MapType == MapType.Projection)
-                        return ifTrue;
-                    return Expression.Condition(
-                        Expression.Equal(exp, Expression.Constant(null, exp.Type)),
-                        Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type),
-                        ifTrue);
-                }
-                else if (string.Equals(propertyName, sourceMemberName))
-                {
-                    return property.GetExpression(source);
-                }
-            }
-            return null;
         }
 
         public static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
