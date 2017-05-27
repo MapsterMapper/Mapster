@@ -31,10 +31,24 @@ namespace Mapster.Adapters
             if (!base.CanInline(source, destination, arg))
                 return false;
 
-            //IgnoreNullValue isn't supported by projection
+            if (arg.MapType == MapType.MapToTarget)
+                return false;
+            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
+            if (constructUsing != null &&
+                constructUsing.Body.NodeType != ExpressionType.New &&
+                constructUsing.Body.NodeType != ExpressionType.MemberInit)
+            {
+                if (arg.MapType == MapType.Projection)
+                    throw new InvalidOperationException("ConstructUsing for projection is support only New and MemberInit expression.");
+                return false;
+            }
+
+            //IgnoreIfs, IgnoreNullValue isn't supported by projection
             if (arg.MapType == MapType.Projection)
                 return true;
             if (arg.Settings.IgnoreNullValues == true)
+                return false;
+            if (arg.Settings.IgnoreIfs.Any(item => item.Value != null))
                 return false;
             return true;
         }

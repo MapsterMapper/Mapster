@@ -62,6 +62,7 @@
     <Compile Include="Adapters\BaseClassAdapter.cs" />
     <Compile Include="Adapters\DelegateAdapter.cs" />
     <Compile Include="Adapters\DictionaryAdapter.cs" />
+    <Compile Include="Adapters\EnumAdapter.cs" />
     <Compile Include="Adapters\ObjectAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
     <Compile Include="Adapters\StringAdapter.cs" />

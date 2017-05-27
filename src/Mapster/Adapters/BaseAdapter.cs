@@ -54,24 +54,10 @@ namespace Mapster.Adapters
 
         protected virtual bool CanInline(Expression source, Expression destination, CompileArgument arg)
         {
-            if (arg.MapType == MapType.MapToTarget)
-                return false;
-            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
-            if (constructUsing != null &&
-                constructUsing.Body.NodeType != ExpressionType.New &&
-                constructUsing.Body.NodeType != ExpressionType.MemberInit)
-            {
-                if (arg.MapType == MapType.Projection)
-                    throw new InvalidOperationException("Input ConstructUsing is invalid for projection");
-                return false;
-            }
-
-            //IgnoreIf, PreserveReference, AfterMapping, Includes aren't supported by Projection
+            //PreserveReference, AfterMapping, Includes aren't supported by Projection
             if (arg.MapType == MapType.Projection)
                 return true;
 
-            if (arg.Settings.IgnoreIfs.Any(item => item.Value != null))
-                return false;
             if (arg.Settings.PreserveReference == true &&
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)

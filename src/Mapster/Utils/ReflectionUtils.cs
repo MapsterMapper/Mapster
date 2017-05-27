@@ -13,6 +13,22 @@ namespace Mapster
     {
         private static readonly Type _stringType = typeof (string);
 
+        // Primitive types with their conversion methods from System.Convert class.
+        private static Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
+            { typeof(bool), "ToBoolean" },
+            { typeof(short), "ToInt16" },
+            { typeof(int), "ToInt32" },
+            { typeof(long), "ToInt64" },
+            { typeof(float), "ToSingle" },
+            { typeof(double), "ToDouble" },
+            { typeof(decimal), "ToDecimal" },
+            { typeof(ushort), "ToUInt16" },
+            { typeof(uint), "ToUInt32" },
+            { typeof(ulong), "ToUInt64" },
+            { typeof(byte), "ToByte" },
+            { typeof(sbyte), "ToSByte" },
+            { typeof(DateTime), "ToDateTime" }
+        };
 
 #if NET40
         public static Type GetTypeInfo(this Type type) {
@@ -77,6 +93,21 @@ namespace Mapster
         public static Type GetGenericEnumerableType(this Type type)
         {
             return type.GetInterface(IsGenericEnumerableType);
+        }
+
+        public static Expression CreateConvertMethod(Type srcType, Type destType, Expression source)
+        {
+            var name = _primitiveTypes.GetValueOrDefault(destType);
+
+            if (name == null)
+                return null;
+
+            var method = typeof (Convert).GetMethod(name, new[] {srcType});
+            if (method != null)
+                return Expression.Call(method, source);
+
+            method = typeof (Convert).GetMethod(name, new[] {typeof (object)});
+            return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof (object))), destType);
         }
 
         public static object GetDefault(this Type type)

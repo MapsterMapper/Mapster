@@ -27,7 +27,9 @@ namespace Mapster
                 new ClassAdapter().CreateRule(),        //-150
                 new CollectionAdapter().CreateRule(),   //-125
                 new DictionaryAdapter().CreateRule(),   //-124
+                new ObjectAdapter().CreateRule(),       //-111
                 new StringAdapter().CreateRule(),       //-110
+                new EnumAdapter().CreateRule(),         //-109
 
                 //fallback rules
                 new TypeAdapterRule
@@ -295,16 +297,12 @@ namespace Mapster
         private Hashtable _dynamicMapDict;
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
-            return (Func<object, TDestination>)GetDynamicMapFunction(sourceType, typeof(TDestination));
-        }
-        internal Delegate GetDynamicMapFunction(Type sourceType, Type destinationType)
-        {
             if (_dynamicMapDict == null)
                 _dynamicMapDict = new Hashtable();
-            var key = new TypeTuple(sourceType, destinationType);
+            var key = new TypeTuple(sourceType, typeof(TDestination));
             object del = _dynamicMapDict[key] ?? AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
 
-            return (Delegate)del;
+            return (Func<object, TDestination>)del;
         }
 
         internal LambdaExpression CreateMapExpression(TypeTuple tuple, MapType mapType)

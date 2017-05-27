@@ -29,7 +29,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
         {
-            return Expression.Empty();
+            return CreateInstantiationExpression(source, arg);
         }
     }
 }
