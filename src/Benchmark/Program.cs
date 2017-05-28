@@ -13,6 +13,9 @@ namespace Benchmark
         private static double AutomapperTime;
         private static double MapsterTime;
         private static double ExpressMapperTime;
+        private static double TotalAutomapperTime;
+        private static double TotalMapsterTime;
+        private static double TotalExpressMapperTime;
 
 
         private static void Main(string[] args)
@@ -21,6 +24,12 @@ namespace Benchmark
             {
                 TestSimpleTypes();
                 TestComplexTypes();
+
+                Console.WriteLine();
+                Console.WriteLine("Automapper v6.0.2 to Mapster v3.0.2 ratio: " + (TotalAutomapperTime / TotalMapsterTime).ToString("###.00") + " X slower");
+                Console.WriteLine("ExpressMapper v1.9.1 to Mapster v3.0.2 ratio: " + (TotalExpressMapperTime / TotalMapsterTime).ToString("###.00") + " X slower");
+                Console.WriteLine();
+
             }
 
             finally
@@ -57,10 +66,10 @@ namespace Benchmark
 
             TestSimple(foo, 1000000);
 
-            Console.WriteLine();
-            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime / MapsterTime).ToString("###.00") + " X slower");
-            Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime / MapsterTime).ToString("###.00") + " X slower");
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime / MapsterTime).ToString("###.00") + " X slower");
+            //Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime / MapsterTime).ToString("###.00") + " X slower");
+            //Console.WriteLine();
 
         }
 
@@ -103,10 +112,10 @@ namespace Benchmark
 
             //Test(customer, 10000000);
 
-            Console.WriteLine();
-            Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");
-            Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime/MapsterTime).ToString("###.00") + " X slower");
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");
+            //Console.WriteLine("ExpressMapper to Mapster ratio: " + (ExpressMapperTime/MapsterTime).ToString("###.00") + " X slower");
+            //Console.WriteLine();
         }
 
         private static void Test(Customer item, int iterations)
@@ -115,7 +124,7 @@ namespace Benchmark
 
             Console.WriteLine("Iterations : {0}", iterations);
 
-            TestCustomerNative(item, iterations);
+            //TestCustomerNative(item, iterations);
 
             TestMapsterAdapter<Customer, CustomerDTO>(item, iterations);
 
@@ -176,6 +185,7 @@ namespace Benchmark
         {
             MapsterTime = Loop(item, get => TypeAdapter.Adapt<TSrc, TDest>(get), iterations);
             Console.WriteLine("Mapster:\t\t" + MapsterTime);
+            TotalMapsterTime += MapsterTime;
         }
 
 
@@ -185,6 +195,7 @@ namespace Benchmark
         {
             ExpressMapperTime = Loop(item, get => ExpressMapper.Mapper.Map<TSrc, TDest>(get), iterations);
             Console.WriteLine("ExpressMapper:\t\t" + ExpressMapperTime);
+            TotalExpressMapperTime += ExpressMapperTime;
         }
 
         private static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)
@@ -196,6 +207,7 @@ namespace Benchmark
 
             AutomapperTime = Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
             Console.WriteLine("AutoMapper:\t\t" + AutomapperTime);
+            TotalAutomapperTime += AutomapperTime;
         }
 
         private static long Loop<T>(T item, Action<T> action, int iterations = 1000000)

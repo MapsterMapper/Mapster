@@ -42,8 +42,8 @@
     <Reference Include="ExpressMapper, Version=1.9.1.0, Culture=neutral, PublicKeyToken=ac363faa09311ba0, processorArchitecture=MSIL">
       <HintPath>..\packages\Expressmapper.1.9.1\lib\net45\ExpressMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Mapster, Version=3.0.0.0, Culture=neutral, PublicKeyToken=2f39883af23c29a8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mapster.3.0.0\lib\net45\Mapster.dll</HintPath>
+    <Reference Include="Mapster, Version=3.0.2.0, Culture=neutral, PublicKeyToken=2f39883af23c29a8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mapster.3.0.2\lib\net45\Mapster.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
