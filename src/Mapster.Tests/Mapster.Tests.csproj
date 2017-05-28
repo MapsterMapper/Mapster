@@ -113,6 +113,7 @@
     <Compile Include="WhenRegisteringAndMappingRace.cs" />
     <Compile Include="WhenRunningOnMultipleThreads.cs" />
     <Compile Include="WhenScanningForRegisters.cs" />
+    <Compile Include="WhenSettingMapToTargetWith.cs" />
     <Compile Include="WhenUsingAttribute.cs" />
     <Compile Include="WhenUsingConverterFactory.cs" />
     <Compile Include="WhenUsingRuleBasedSetting.cs" />

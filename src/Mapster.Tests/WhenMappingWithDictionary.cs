@@ -158,7 +158,8 @@ namespace Mapster.Tests
         [TestMethod]
         public void Dictionary_To_Object_Flexible()
         {
-            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
+            var config = new TypeAdapterConfig();
+            config.Default.NameMatchingStrategy(NameMatchingStrategy.Flexible);
             var dict = new Dictionary<string, object>
             {
                 ["id"] = Guid.NewGuid(),
@@ -166,7 +167,7 @@ namespace Mapster.Tests
                 ["foo"] = "test",
             };
 
-            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            var poco = TypeAdapter.Adapt<SimplePoco>(dict, config);
             poco.Id.ShouldBe(dict["id"]);
             poco.Name.ShouldBe(dict["Name"]);
         }

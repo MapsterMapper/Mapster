@@ -247,8 +247,9 @@ namespace Mapster
                 del = func(key);
                 hash[key] = del;
 
-                var settings = GetSettings(key);
-                settings.Compiled = true;
+                this.RuleMap.TryGetValue(key, out var rule);
+                if (rule != null)
+                    rule.Settings.Compiled = true;
                 return del;
             }
         }
@@ -379,6 +380,8 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
+                if (parentMapType == MapType.MapToTarget)
+                    return CreateMapToTargetInvokeExpression(sourceType, destinationType);
                 var arg = GetCompileArgument(tuple, parentMapType == MapType.Projection ? MapType.Projection : MapType.InlineMap, context);
                 var exp = CreateMapExpression(arg);
                 if (exp != null)
@@ -390,10 +393,7 @@ namespace Mapster
                 }
                 if (exp != null)
                     return exp;
-                if (parentMapType == MapType.MapToTarget)
-                    return CreateMapToTargetInvokeExpression(sourceType, destinationType);
-                else
-                    return CreateMapInvokeExpression(sourceType, destinationType);
+                return CreateMapInvokeExpression(sourceType, destinationType);
             }
             finally
             {
