@@ -41,6 +41,18 @@ namespace Mapster
 
         public static bool IsPoco(this Type type, BindingFlags accessorFlags = BindingFlags.Public)
         {
+            //not collection
+            if (type.IsCollection())
+                return false;
+
+            //not nullable
+            if (type.IsNullable())
+                return false;
+
+            //not primitives
+            if (type.IsConvertible())
+                return false;
+
             return type.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: accessorFlags).Any();
         }
 

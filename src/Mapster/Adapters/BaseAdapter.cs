@@ -32,7 +32,7 @@ namespace Mapster.Adapters
             var p = Expression.Parameter(arg.SourceType);
             var p2 = Expression.Parameter(arg.DestinationType);
             var body = CreateExpressionBody(p, p2, arg);
-            return Expression.Lambda(body, p, p2);
+            return body == null ? null : Expression.Lambda(body, p, p2);
         }
 
         public TypeAdapterRule CreateRule()
@@ -80,7 +80,7 @@ namespace Mapster.Adapters
 
             if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
                 return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
-            else if (arg.MapType == MapType.InlineMap)
+            else if (arg.Context.Running.Count > 1)
                 return null;
             else
                 return CreateBlockExpressionBody(source, destination, arg);
