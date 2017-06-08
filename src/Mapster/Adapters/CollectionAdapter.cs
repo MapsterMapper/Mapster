@@ -54,7 +54,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            if (arg.DestinationType.IsArray)
+            if (arg.SourceType.IsArray && arg.DestinationType.IsArray)
             {
                 return CreateArrayInstantiationExpression(source, arg);
             }
