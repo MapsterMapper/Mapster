@@ -13,12 +13,12 @@ namespace Mapster.Tests
         [TestMethod]
         public void Single_Dimensional_Array_Is_Mapped()
         {
-            var a = new FooArray { Ints = new int[] { 1, 2, 3, 4, 5 } };
-            var b = new BarArray();
+            var source = new FooArray { Ints = new int[] { 1, 2, 3, 4, 5 } };
+            var target = new BarArray();
 
-            TypeAdapter.Adapt(a, b);
-            b.Ints.Length.ShouldBe(a.Ints.Length);
-            b.Ints.ShouldBe(a.Ints);
+            TypeAdapter.Adapt(source, target);
+            target.Ints.Length.ShouldBe(source.Ints.Length);
+            target.Ints.ShouldBe(source.Ints);
         }
 
         [TestMethod]
