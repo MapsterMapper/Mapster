@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using System;
+using System.Collections.Generic;
 
 namespace Mapster.Tests
 {
@@ -81,6 +81,28 @@ namespace Mapster.Tests
             target.IntsRank3.ShouldBe(source.IntsRank3);
         }
 
+        [TestMethod]
+        public void List_To_Array_Is_Mapped()
+        {
+            var source = new FooList { Ints = new List<int>(new int[] { 1, 2, 3, 4, 5 }) };
+            var target = new BarArray();
+
+            TypeAdapter.Adapt(source, target);
+            target.Ints.Length.ShouldBe(source.Ints.Count);
+            target.Ints.ShouldBe(source.Ints);
+        }
+
+        [TestMethod]
+        public void Array_To_List_Is_Mapped()
+        {
+            var source = new FooArray { Ints = new int[] { 1, 2, 3, 4, 5 } };
+            var target = new BarList();
+
+            TypeAdapter.Adapt(source, target);
+            target.Ints.Count.ShouldBe(source.Ints.Length);
+            target.Ints.ShouldBe(source.Ints);
+        }
+
         #endregion
 
         #region TestClasses
@@ -93,6 +115,16 @@ namespace Mapster.Tests
         private class BarArray
         {
             public int[] Ints { get; set; }
+        }
+
+        private class FooList
+        {
+            public List<int> Ints { get; set; }
+        }
+
+        private class BarList
+        {
+            public List<int> Ints { get; set; }
         }
 
         private class FooArrayMultiDimensional
