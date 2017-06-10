@@ -13,8 +13,8 @@ namespace Mapster.Tests
         [TestMethod]
         public void Single_Dimensional_Array_Is_Mapped()
         {
-            var a = new Foo { Ints = new int[] { 1, 2, 3, 4, 5 } };
-            var b = new Bar();
+            var a = new FooArray { Ints = new int[] { 1, 2, 3, 4, 5 } };
+            var b = new BarArray();
 
             TypeAdapter.Adapt(a, b);
             b.Ints.Length.ShouldBe(a.Ints.Length);
@@ -24,7 +24,7 @@ namespace Mapster.Tests
         [TestMethod]
         public void Multi_Dimensional_Array_Is_Mapped()
         {
-            var source = new FooMulti
+            var source = new FooArrayMultiDimensional
             {
                 IntsRank2 = new int[3, 2] {
                     { 10, 20 },
@@ -37,7 +37,7 @@ namespace Mapster.Tests
                     { {1000, 2000, 3000, 4000 , 5000}, { 6000, 7000, 8000, 9000, 10000 } }
                 }
             };
-            var target = new BarMulti();
+            var target = new BarArrayMultiDimensional();
 
             TypeAdapter.Adapt(source, target);
 
@@ -51,7 +51,7 @@ namespace Mapster.Tests
         [TestMethod]
         public void Jagged_Array_Is_Mapped()
         {
-            var source = new FooJagged
+            var source = new FooArrayJagged
             {
                 IntsRank2 = new int[][] {
                     new int[] { 10, 20 },
@@ -70,7 +70,7 @@ namespace Mapster.Tests
                     }
                 }
             };
-            var target = new BarJagged();
+            var target = new BarArrayJagged();
 
             TypeAdapter.Adapt(source, target);
 
@@ -85,35 +85,35 @@ namespace Mapster.Tests
 
         #region TestClasses
 
-        private class Foo
+        private class FooArray
         {
             public int[] Ints { get; set; }
         }
 
-        private class Bar
+        private class BarArray
         {
             public int[] Ints { get; set; }
         }
 
-        private class FooMulti
+        private class FooArrayMultiDimensional
         {
             public int[,] IntsRank2 { get; set; }
             public int[,,] IntsRank3 { get; set; }
         }
 
-        private class BarMulti
+        private class BarArrayMultiDimensional
         {
             public int[,] IntsRank2 { get; set; }
             public int[,,] IntsRank3 { get; set; }
         }
 
-        private class FooJagged
+        private class FooArrayJagged
         {
             public int[][] IntsRank2 { get; set; }
             public int[][][] IntsRank3 { get; set; }
         }
 
-        private class BarJagged
+        private class BarArrayJagged
         {
             public int[][] IntsRank2 { get; set; }
             public int[][][] IntsRank3 { get; set; }
