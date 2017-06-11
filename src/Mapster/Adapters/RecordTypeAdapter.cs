@@ -75,7 +75,6 @@ namespace Mapster.Adapters
 
         protected override ClassModel GetClassModel(Type destinationType, CompileArgument arg)
         {
-            var props = destinationType.GetFieldsAndProperties();
             var ctor = destinationType.GetConstructors()[0];
             return new ClassModel
             {

@@ -4,7 +4,7 @@
     {
         void Apply(object other);
     }
-    public interface IApplyable<T> : IApplyable
+    public interface IApplyable<in T> : IApplyable
     {
         void Apply(T other);
     }

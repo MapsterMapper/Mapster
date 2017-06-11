@@ -7,12 +7,13 @@ using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
 
+// ReSharper disable once CheckNamespace
 namespace Mapster
 {
     internal static class ReflectionUtils
     {
         // Primitive types with their conversion methods from System.Convert class.
-        private static Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
+        private static readonly Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
             { typeof(bool), "ToBoolean" },
             { typeof(short), "ToInt16" },
             { typeof(int), "ToInt32" },

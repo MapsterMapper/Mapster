@@ -7,7 +7,7 @@ namespace Mapster.Models
 {
     public class PropertyModel : IMemberModelEx
     {
-        protected readonly PropertyInfo _propertyInfo;
+        private readonly PropertyInfo _propertyInfo;
         public PropertyModel(PropertyInfo propertyInfo)
         {
             _propertyInfo = propertyInfo;

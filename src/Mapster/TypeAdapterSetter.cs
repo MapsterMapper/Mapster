@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
@@ -445,7 +444,6 @@ namespace Mapster
                 Settings.ConverterFactory = adapter.CreateAdaptFunc;
                 if (Settings.ConverterToTargetFactory == null)
                 {
-                    var dest = Expression.Parameter(typeof(TDestination));
                     Settings.ConverterToTargetFactory = adapter.CreateAdaptToTargetFunc;
                 }
             }

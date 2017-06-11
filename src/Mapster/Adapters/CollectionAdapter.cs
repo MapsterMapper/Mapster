@@ -124,6 +124,7 @@ namespace Mapster.Adapters
                 if (arg.MapType == MapType.Projection)
                     return source;
 
+                //create new enumerable to prevent destination casting back to original type and alter directly
                 var toEnum = (from m in typeof(CoreExtensions).GetMethods()
                               where m.Name == nameof(CoreExtensions.ToEnumerable)
                               select m).First().MakeGenericMethod(destinationElementType);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Models;
 using Mapster.Utils;
 
 namespace Mapster.Adapters
@@ -272,6 +271,7 @@ namespace Mapster.Adapters
             else if (arg.DestinationType.GetTypeInfo().IsAbstract && arg.Settings.Includes.Count > 0)
                 newObj = Expression.Throw(
                     Expression.New(
+                        // ReSharper disable once AssignNullToNotNullAttribute
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
                         Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
                     arg.DestinationType);
