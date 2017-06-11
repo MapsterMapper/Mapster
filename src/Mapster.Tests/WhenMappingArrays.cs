@@ -96,11 +96,23 @@ namespace Mapster.Tests
         [TestMethod]
         public void List_To_Multi_Dimensional_Array_Is_Mapped()
         {
-            var source = new List<int> {1, 2, 3, 4, 5};
+            var source = new List<int> { 1, 2, 3, 4, 5 };
             var target = source.Adapt<int[,,]>();
             target.GetLength(0).ShouldBe(1);
             target.GetLength(1).ShouldBe(1);
             target.GetLength(2).ShouldBe(5);
+        }
+
+        [TestMethod]
+        public void Multi_Dimensional_Array_To_List_Is_Mapped()
+        {
+            var source = new [,] {{1, 2}, {3, 4}};
+            TypeAdapterConfig.GlobalSettings.EnableDebugging();
+            var target = source.Adapt<List<int>>();
+            target[0].ShouldBe(1);
+            target[1].ShouldBe(2);
+            target[2].ShouldBe(3);
+            target[3].ShouldBe(4);
         }
 
         [TestMethod]

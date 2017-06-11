@@ -67,14 +67,8 @@ namespace Mapster.Utils
             {
                 if (source.Type.GetArrayRank() == 1)
                     return Expression.ArrayLength(source);      //array.Length
-                else
-                {
-                    //array.GetLength(0) * array.GetLength(1) * ...
-                    var method = typeof(Array).GetMethod("GetLength", new[] { typeof(int) });
-                    return Enumerable.Range(0, source.Type.GetArrayRank())
-                        .Select(i => (Expression)Expression.Call(source, method, Expression.Constant(i)))
-                        .Aggregate(Expression.Multiply);
-                }
+                else 
+                    return Expression.Property(source, "Length");
             }
             else
             {
