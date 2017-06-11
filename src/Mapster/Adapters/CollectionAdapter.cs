@@ -22,20 +22,15 @@ namespace Mapster.Adapters
 
         private static Expression CreateCountExpression(Expression source, bool allowCountAll)
         {
-            if (source.Type.IsArray)
-                return Expression.ArrayLength(source);
-            else
-            {
-                var countProperty = source.Type.GetProperty("Count");
-                if (countProperty != null)
-                    return Expression.Property(source, countProperty);  //list.Count
-                if (!allowCountAll)
-                    return null;
-                var countMethod = typeof(Enumerable).GetMethods()
-                    .First(m => m.Name == nameof(Enumerable.Count) && m.GetParameters().Length == 1)
-                    .MakeGenericMethod(source.Type.ExtractCollectionType());
-                return Expression.Call(countMethod, source);            //list.Count()
-            }
+            var countProperty = source.Type.GetProperty("Count");
+            if (countProperty != null)
+                return Expression.Property(source, countProperty);  //list.Count
+            if (!allowCountAll)
+                return null;
+            var countMethod = typeof(Enumerable).GetMethods()
+                .First(m => m.Name == nameof(Enumerable.Count) && m.GetParameters().Length == 1)
+                .MakeGenericMethod(source.Type.ExtractCollectionType());
+            return Expression.Call(countMethod, source);            //list.Count()
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -51,7 +46,7 @@ namespace Mapster.Adapters
                 throw new InvalidOperationException($"{arg.DestinationType} is not supported for projection, please consider using List<>");
             }
 
-            if (arg.DestinationType == typeof (IEnumerable) || arg.DestinationType.IsGenericEnumerableType())
+            if (arg.DestinationType == typeof(IEnumerable) || arg.DestinationType.IsGenericEnumerableType())
                 return true;
 
             return false;
@@ -59,21 +54,21 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            var destinationElementType = arg.DestinationType.ExtractCollectionType();
-            if (arg.DestinationType.IsArray)
-                return Expression.NewArrayBounds(
-                    destinationElementType, 
-                    CreateCountExpression(source, true));   //new TDestinationElement[count]
+            if (arg.SourceType.IsArray && arg.DestinationType.IsArray)
+            {
+                return CreateArrayInstantiationExpression(source, arg);
+            }
 
+            var destinationElementType = arg.DestinationType.ExtractCollectionType();
             var count = CreateCountExpression(source, false);
             var listType = arg.DestinationType.GetTypeInfo().IsInterface
-                ? typeof (List<>).MakeGenericType(destinationElementType)
+                ? typeof(List<>).MakeGenericType(destinationElementType)
                 : arg.DestinationType;
             if (count == null)
                 return Expression.New(listType);            //new List<T>()
             var ctor = (from c in listType.GetConstructors()
                         let args = c.GetParameters()
-                        where args.Length == 1 && args[0].ParameterType == typeof (int)
+                        where args.Length == 1 && args[0].ParameterType == typeof(int)
                         select c).FirstOrDefault();
             if (ctor == null)
                 return Expression.New(listType);            //new List<T>()
@@ -81,17 +76,32 @@ namespace Mapster.Adapters
                 return Expression.New(ctor, count);         //new List<T>(count)
         }
 
+        protected Expression CreateArrayInstantiationExpression(Expression source, CompileArgument arg)
+        {
+            return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source));
+        }
+
+        private IEnumerable<Expression> GetArrayBounds(Expression source)
+        {
+            MethodInfo method = typeof(Array).GetMethod("GetLength", new[] { typeof(int) });
+            for (int i = 0; i < source.Type.GetArrayRank(); i++)
+            {
+                yield return Expression.Call(source, method, Expression.Constant(i));
+            }
+        }
+
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             if (destination.Type.IsArray)
             {
-                if (source.Type.IsArray && 
+                if (source.Type.IsArray &&
                     source.Type.GetElementType() == destination.Type.GetElementType() &&
                     source.Type.GetElementType().UnwrapNullable().IsConvertible())
                 {
-                    //Array.Copy(src, 0, dest, 0, src.Length)
-                    var method = typeof (Array).GetMethod("Copy", new[] {typeof (Array), typeof (int), typeof (Array), typeof (int), typeof (int)});
-                    return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), Expression.ArrayLength(source));
+                    //Array.Copy(src, 0, dest, 0, src.LongLength)
+                    var getLongLengthExpression = Expression.Call(source, typeof(Array).GetMethod("get_LongLength"));
+                    var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(long), typeof(Array), typeof(long), typeof(long) });
+                    return Expression.Call(method, source, Expression.Constant((long)0), destination, Expression.Constant((long)0), getLongLengthExpression);
                 }
                 else
                     return CreateArraySet(source, destination, arg);
@@ -105,7 +115,7 @@ namespace Mapster.Adapters
                 var tmp = Expression.Variable(listType, "list");
                 var assign = ExpressionEx.Assign(tmp, destination); //convert to list type
                 var set = CreateListSet(source, tmp, arg);
-                return Expression.Block(new[] {tmp}, assign, set);
+                return Expression.Block(new[] { tmp }, assign, set);
             }
         }
 
@@ -140,7 +150,7 @@ namespace Mapster.Adapters
             if (exp.Type != arg.DestinationType)
             {
                 //src.Select(item => convert(item)).ToList()
-                var toList = (from m in typeof (Enumerable).GetMethods()
+                var toList = (from m in typeof(Enumerable).GetMethods()
                               where m.Name == nameof(Enumerable.ToList)
                               select m).First().MakeGenericMethod(destinationElementType);
                 exp = Expression.Call(toList, exp);
@@ -165,14 +175,14 @@ namespace Mapster.Adapters
             var sourceElementType = source.Type.ExtractCollectionType();
             var destinationElementType = destination.Type.ExtractCollectionType();
             var item = Expression.Variable(sourceElementType, "item");
-            var v = Expression.Variable(typeof (int), "v");
+            var v = Expression.Variable(typeof(int), "v");
             var start = Expression.Assign(v, Expression.Constant(0));
             var getter = CreateAdaptExpression(item, destinationElementType, arg);
             var set = Expression.Assign(
                 Expression.ArrayAccess(destination, Expression.PostIncrementAssign(v)),
                 getter);
             var loop = ForLoop(source, item, set);
-            return Expression.Block(new[] {v}, start, loop);
+            return Expression.Block(new[] { v }, start, loop);
         }
 
         private Expression CreateListSet(Expression source, Expression destination, CompileArgument arg)
@@ -191,8 +201,8 @@ namespace Mapster.Adapters
             var destinationElementType = destination.Type.ExtractCollectionType();
             var item = Expression.Variable(sourceElementType, "item");
             var getter = CreateAdaptExpression(item, destinationElementType, arg);
-            
-            var addMethod = destination.Type.GetMethod("Add", new[] {destinationElementType});
+
+            var addMethod = destination.Type.GetMethod("Add", new[] { destinationElementType });
             var set = Expression.Call(
                 destination,
                 addMethod,
@@ -258,13 +268,13 @@ namespace Mapster.Adapters
         internal static Expression ForEach(Expression collection, ParameterExpression loopVar, params Expression[] loopContent)
         {
             var elementType = loopVar.Type;
-            var enumerableType = typeof (IEnumerable<>).MakeGenericType(elementType);
-            var enumeratorType = typeof (IEnumerator<>).MakeGenericType(elementType);
+            var enumerableType = typeof(IEnumerable<>).MakeGenericType(elementType);
+            var enumeratorType = typeof(IEnumerator<>).MakeGenericType(elementType);
             var isGeneric = enumerableType.GetTypeInfo().IsAssignableFrom(collection.Type.GetTypeInfo());
             if (!isGeneric)
             {
-                enumerableType = typeof (IEnumerable);
-                enumeratorType = typeof (IEnumerator);
+                enumerableType = typeof(IEnumerable);
+                enumeratorType = typeof(IEnumerator);
             }
 
             var enumeratorVar = Expression.Variable(enumeratorType, "enumerator");
