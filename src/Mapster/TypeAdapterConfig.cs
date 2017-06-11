@@ -27,6 +27,8 @@ namespace Mapster
                 new RecordTypeAdapter().CreateRule(),   //-149
                 new CollectionAdapter().CreateRule(),   //-125
                 new DictionaryAdapter().CreateRule(),   //-124
+                new ArrayAdapter().CreateRule(),        //-123
+                new MultiDimensionalArrayAdapter().CreateRule(), //-122
                 new ObjectAdapter().CreateRule(),       //-111
                 new StringAdapter().CreateRule(),       //-110
                 new EnumAdapter().CreateRule(),         //-109
