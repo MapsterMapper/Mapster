@@ -79,6 +79,8 @@ namespace Mapster
 
         public static Type ExtractCollectionType(this Type collectionType)
         {
+            if (collectionType.IsArray)
+                return collectionType.GetElementType();
             var enumerableType = collectionType.GetGenericEnumerableType();
             return enumerableType != null
                 ? enumerableType.GetGenericArguments()[0]
@@ -285,6 +287,11 @@ namespace Mapster
             return getMemberNames.Select(predicate => predicate(member))
                 .FirstOrDefault(name => name != null)
                 ?? nameConverter(member.Name);
+        }
+
+        public static bool IsPrimitiveKind(this Type type)
+        {
+            return type == typeof(object) || type.UnwrapNullable().IsConvertible();
         }
     }
 }

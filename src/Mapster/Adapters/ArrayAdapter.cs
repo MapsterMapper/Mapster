@@ -33,8 +33,9 @@ namespace Mapster.Adapters
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             if (source.Type.IsArray &&
+                source.Type.GetArrayRank() == 1 &&
                 source.Type.GetElementType() == destination.Type.GetElementType() &&
-                source.Type.GetElementType().UnwrapNullable().IsConvertible())
+                source.Type.GetElementType().IsPrimitiveKind())
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });

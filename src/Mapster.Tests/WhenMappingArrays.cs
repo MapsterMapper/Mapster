@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System.Collections.Generic;
 
@@ -93,6 +94,33 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void List_To_Multi_Dimensional_Array_Is_Mapped()
+        {
+            var source = new List<int> {1, 2, 3, 4, 5};
+            var target = source.Adapt<int[,,]>();
+            target.GetLength(0).ShouldBe(1);
+            target.GetLength(1).ShouldBe(1);
+            target.GetLength(2).ShouldBe(5);
+        }
+
+        [TestMethod]
+        public void Can_Map_Multi_Dimensional_Array_Of_Poco()
+        {
+            var source = new [,] {{new SimplePoco {Id = Guid.NewGuid(), Name = "Test"}}};
+            var target = source.Adapt<SimpleDto[,]>();
+            target[0, 0].Id.ShouldBe(source[0, 0].Id);
+        }
+
+        [TestMethod]
+        public void Unmatch_Rank_Is_Mapped()
+        {
+            var source = new[] {1, 2, 3, 4, 5};
+            var target = source.Adapt<int[,]>();
+            target.GetLength(0).ShouldBe(1);
+            target.GetLength(1).ShouldBe(5);
+        }
+
+        [TestMethod]
         public void Array_To_List_Is_Mapped()
         {
             var source = new FooArray { Ints = new int[] { 1, 2, 3, 4, 5 } };
@@ -107,48 +135,59 @@ namespace Mapster.Tests
 
         #region TestClasses
 
-        private class FooArray
+        internal class FooArray
         {
             public int[] Ints { get; set; }
         }
 
-        private class BarArray
+        internal class BarArray
         {
             public int[] Ints { get; set; }
         }
 
-        private class FooList
+        internal class FooList
         {
             public List<int> Ints { get; set; }
         }
 
-        private class BarList
+        internal class BarList
         {
             public List<int> Ints { get; set; }
         }
 
-        private class FooArrayMultiDimensional
+        internal class FooArrayMultiDimensional
         {
             public int[,] IntsRank2 { get; set; }
             public int[,,] IntsRank3 { get; set; }
         }
 
-        private class BarArrayMultiDimensional
+        internal class BarArrayMultiDimensional
         {
             public int[,] IntsRank2 { get; set; }
             public int[,,] IntsRank3 { get; set; }
         }
 
-        private class FooArrayJagged
+        internal class FooArrayJagged
         {
             public int[][] IntsRank2 { get; set; }
             public int[][][] IntsRank3 { get; set; }
         }
 
-        private class BarArrayJagged
+        internal class BarArrayJagged
         {
             public int[][] IntsRank2 { get; set; }
             public int[][][] IntsRank3 { get; set; }
+        }
+        public class SimplePoco
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class SimpleDto
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
         }
 
         #endregion

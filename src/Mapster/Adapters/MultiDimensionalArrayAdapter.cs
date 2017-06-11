@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mapster.Utils;
 
 namespace Mapster.Adapters
@@ -25,23 +26,41 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source));
+            return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source, arg.DestinationType));
         }
 
-        private static IEnumerable<Expression> GetArrayBounds(Expression source)
+        private static IEnumerable<Expression> GetArrayBounds(Expression source, Type destinationType)
         {
-            var method = typeof(Array).GetMethod("GetLength", new[] { typeof(int) });
-            for (int i = 0; i < source.Type.GetArrayRank(); i++)
+            var destRank = destinationType.GetArrayRank();
+            if (!source.Type.IsArray)
             {
-                yield return Expression.Call(source, method, Expression.Constant(i));
+                for (int i = 0; i < destRank - 1; i++)
+                {
+                    yield return Expression.Constant(1);
+                }
+                yield return ExpressionEx.CreateCountExpression(source, true);
+            }
+            else
+            {
+                var srcRank = source.Type.GetArrayRank();
+                var method = typeof(Array).GetMethod("GetLength", new[] {typeof(int)});
+                for (int i = srcRank; i < destRank; i++)
+                {
+                    yield return Expression.Constant(1);
+                }
+                for (int i = 0; i < srcRank; i++)
+                {
+                    yield return Expression.Call(source, method, Expression.Constant(i));
+                }
             }
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             if (source.Type.IsArray &&
+                source.Type.GetArrayRank() == destination.Type.GetArrayRank() &&
                 source.Type.GetElementType() == destination.Type.GetElementType() &&
-                source.Type.GetElementType().UnwrapNullable().IsConvertible())
+                source.Type.GetElementType().IsPrimitiveKind())
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
@@ -89,19 +108,19 @@ namespace Mapster.Adapters
                         vlen,
                         Expression.Call(destination, method, Expression.Constant(i)))));
             var getter = CreateAdaptExpression(item, destinationElementType, arg);
-            var set = Expression.Assign(
+            var set = ExpressionEx.Assign(
                 Expression.ArrayAccess(destination, vx),
                 getter);
 
             Expression ifExpr = Expression.Block(
                 Expression.Assign(vx[1], Expression.Constant(0)),
-                Expression.Increment(vx[0]));
+                Expression.PostIncrementAssign(vx[0]));
             for (var i = 1; i < vx.Count; i++)
             {
                 var list = new List<Expression>();
                 if (i + 1 < vx.Count)
                     list.Add(Expression.Assign(vx[i + 1], Expression.Constant(0)));
-                list.Add(Expression.Increment(vx[i]));
+                list.Add(Expression.PostIncrementAssign(vx[i]));
                 list.Add(Expression.IfThen(
                     Expression.GreaterThanOrEqual(vx[i], vlenx[i]),
                     ifExpr));
@@ -110,7 +129,7 @@ namespace Mapster.Adapters
 
             var loop = ExpressionEx.ForLoop(source, item, set, ifExpr);
             block.Add(loop);
-            return Expression.Block(vx, block);
+            return Expression.Block(vx.Concat(vlenx), block);
         }
     }
 }
