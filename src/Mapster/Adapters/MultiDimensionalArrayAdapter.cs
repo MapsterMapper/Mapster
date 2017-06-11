@@ -1,0 +1,116 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using Mapster.Utils;
+
+namespace Mapster.Adapters
+{
+    public class MultiDimensionalArrayAdapter : BaseAdapter
+    {
+        protected override int Score => -122;
+        protected override bool CheckExplicitMapping => false;
+
+        protected override bool CanMap(PreCompileArgument arg)
+        {
+            return arg.SourceType.IsCollection()
+                   && arg.DestinationType.IsArray
+                   && arg.DestinationType.GetArrayRank() > 1;
+        }
+
+        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        {
+            return false;
+        }
+
+        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        {
+            return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source));
+        }
+
+        private static IEnumerable<Expression> GetArrayBounds(Expression source)
+        {
+            var method = typeof(Array).GetMethod("GetLength", new[] { typeof(int) });
+            for (int i = 0; i < source.Type.GetArrayRank(); i++)
+            {
+                yield return Expression.Call(source, method, Expression.Constant(i));
+            }
+        }
+
+        protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
+        {
+            if (source.Type.IsArray &&
+                source.Type.GetElementType() == destination.Type.GetElementType() &&
+                source.Type.GetElementType().UnwrapNullable().IsConvertible())
+            {
+                //Array.Copy(src, 0, dest, 0, src.Length)
+                var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
+                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source, true));
+            }
+            else
+                return CreateArraySet(source, destination, arg);
+        }
+
+        protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Expression CreateArraySet(Expression source, Expression destination, CompileArgument arg)
+        {
+            //var v0 = 0, v1 = 0;
+            //var vlen0 = dest.GetLength(0), vlen1 = dest.GetLength(1);
+            //for (var i = 0, len = src.Count; i < len; i++) {
+            //  var item = src[i];
+            //  dest[v0, v1] = convert(item);
+            //  v1++;
+            //  if (v1 >= vlen1) {
+            //      v1 = 0;
+            //      v0++;
+            //  }
+            //}
+
+            var sourceElementType = source.Type.ExtractCollectionType();
+            var destinationElementType = destination.Type.ExtractCollectionType();
+            var item = Expression.Variable(sourceElementType, "item");
+            var vx = Enumerable.Range(0, destination.Type.GetArrayRank())
+                .Select(i => Expression.Variable(typeof(int), "v" + i))
+                .ToList();
+            var vlenx = Enumerable.Range(0, destination.Type.GetArrayRank())
+                .Select(i => Expression.Variable(typeof(int), "vlen" + i))
+                .ToList();
+            var block = new List<Expression>();
+            block.AddRange(vx.Select(v => Expression.Assign(v, Expression.Constant(0))));
+
+            var method = typeof(Array).GetMethod("GetLength", new[] { typeof(int) });
+            block.AddRange(
+                vlenx.Select((vlen, i) => 
+                    Expression.Assign(
+                        vlen,
+                        Expression.Call(destination, method, Expression.Constant(i)))));
+            var getter = CreateAdaptExpression(item, destinationElementType, arg);
+            var set = Expression.Assign(
+                Expression.ArrayAccess(destination, vx),
+                getter);
+
+            Expression ifExpr = Expression.Block(
+                Expression.Assign(vx[1], Expression.Constant(0)),
+                Expression.Increment(vx[0]));
+            for (var i = 1; i < vx.Count; i++)
+            {
+                var list = new List<Expression>();
+                if (i + 1 < vx.Count)
+                    list.Add(Expression.Assign(vx[i + 1], Expression.Constant(0)));
+                list.Add(Expression.Increment(vx[i]));
+                list.Add(Expression.IfThen(
+                    Expression.GreaterThanOrEqual(vx[i], vlenx[i]),
+                    ifExpr));
+                ifExpr = Expression.Block(list);
+            }
+
+            var loop = ExpressionEx.ForLoop(source, item, set, ifExpr);
+            block.Add(loop);
+            return Expression.Block(vx, block);
+        }
+    }
+}

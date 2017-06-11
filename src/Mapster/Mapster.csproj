@@ -57,12 +57,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapter.cs" />
+    <Compile Include="Adapters\ArrayAdapter.cs" />
     <Compile Include="Adapters\BaseAdapter.cs" />
     <Compile Include="Adapters\BaseAfterMapper.cs" />
     <Compile Include="Adapters\BaseClassAdapter.cs" />
     <Compile Include="Adapters\DelegateAdapter.cs" />
     <Compile Include="Adapters\DictionaryAdapter.cs" />
     <Compile Include="Adapters\EnumAdapter.cs" />
+    <Compile Include="Adapters\CollectionAdapter.cs" />
+    <Compile Include="Adapters\MultiDimensionalArrayAdapter.cs" />
     <Compile Include="Adapters\ObjectAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
     <Compile Include="Adapters\StringAdapter.cs" />
@@ -111,9 +114,6 @@
     <Compile Include="Utils\Enum.cs" />
     <Compile Include="Utils\ExpressionEx.cs" />
     <Compile Include="Utils\CoreExtensions.cs" />
-    <Compile Include="Adapters\CollectionAdapter.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Adapters\PrimitiveAdapter.cs" />
     <Compile Include="Adapters\ClassAdapter.cs" />
     <Compile Include="TypeAdapter.cs" />
