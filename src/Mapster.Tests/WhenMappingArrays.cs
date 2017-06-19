@@ -107,7 +107,6 @@ namespace Mapster.Tests
         public void Multi_Dimensional_Array_To_List_Is_Mapped()
         {
             var source = new [,] {{1, 2}, {3, 4}};
-            TypeAdapterConfig.GlobalSettings.EnableDebugging();
             var target = source.Adapt<List<int>>();
             target[0].ShouldBe(1);
             target[1].ShouldBe(2);

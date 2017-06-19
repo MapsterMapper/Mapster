@@ -31,24 +31,41 @@ namespace Mapster
             if (resolvers == null || resolvers.Count <= 0)
                 return null;
 
+            var invokes = new List<Tuple<Expression, Expression>>();
+
             Expression getter = null;
-            LambdaExpression lastCondition = null;
             foreach (var resolver in resolvers)
             {
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
                     continue;
-                Expression invoke = resolver.Invoker == null
+                var invoke = resolver.Invoker == null
                     ? Expression.PropertyOrField(source, resolver.SourceMemberName)
                     : resolver.Invoker.Apply(source);
-                getter = lastCondition != null
-                    ? Expression.Condition(lastCondition.Apply(source), getter, invoke)
-                    : invoke;
-                lastCondition = resolver.Condition;
+
                 if (resolver.Condition == null)
+                {
+                    getter = invoke;
                     break;
+                }
+
+                var condition = resolver.Condition.Apply(source);
+                invokes.Add(Tuple.Create(condition, invoke));
             }
-            if (lastCondition != null)
-                getter = Expression.Condition(lastCondition.Apply(source), getter, Expression.Constant(getter.Type.GetDefault(), getter.Type));
+
+            if (invokes.Count > 0)
+            {
+                invokes.Reverse();
+                if (getter == null)
+                {
+                    var type = invokes[0].Item2.Type;
+                    getter = Expression.Constant(type.GetDefault(), type);
+                }
+                foreach (var invoke in invokes)
+                {
+                    getter = Expression.Condition(invoke.Item1, invoke.Item2, getter);
+                }
+            }
+
             return getter;
         }
 
