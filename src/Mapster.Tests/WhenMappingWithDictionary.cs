@@ -60,7 +60,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
 
-            var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
+            var dict = TypeAdapter.Adapt<SimplePoco, Dictionary<string, object>>(poco);
 
             dict.Count.ShouldBe(2);
             dict["id"].ShouldBe(poco.Id);
@@ -142,7 +142,6 @@ namespace Mapster.Tests
         [TestMethod]
         public void Dictionary_To_Object_CamelCase()
         {
-            TypeAdapterConfig.GlobalSettings.EnableDebugging();
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.FromCamelCase);
             var dict = new Dictionary<string, object>
             {
@@ -208,7 +207,7 @@ namespace Mapster.Tests
                 ["d"] = 4,
                 ["e"] = null,
             };
-            var result = dict.Adapt<Dictionary<string, int>>();
+            var result = dict.Adapt<Dictionary<string, int?>, Dictionary<string, int>>();
             result.Count.ShouldBe(2);
             result["A"].ShouldBe(1);
             result["_b"].ShouldBe(2);
