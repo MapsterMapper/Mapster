@@ -84,6 +84,13 @@ namespace Mapster.Tests
                 .Compile();
         }
 
+        [TestMethod]
+        public void String_Parse()
+        {
+            var i = "123".Adapt<int>();
+            i.ShouldBe(123);
+        }
+
         public class ImmutableA
         {
             public ImmutableA(string name)

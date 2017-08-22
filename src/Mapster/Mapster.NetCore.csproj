@@ -11,7 +11,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Mapster</PackageId>
     <PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
-    <PackageIconUrl>http://www.fancyicons.com/free-icons/103/pretty-office-5/png/128/order_128.png</PackageIconUrl>
+    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/chaowlert/Mapster</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/chaowlert/Mapster/blob/master/LICENSE</PackageLicenseUrl>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
@@ -23,6 +23,7 @@
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>3.1.2</Version>
+    <RootNamespace>Mapster</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">

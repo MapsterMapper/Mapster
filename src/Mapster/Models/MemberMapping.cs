@@ -5,9 +5,7 @@ namespace Mapster.Models
     internal class MemberMapping
     {
         public Expression Getter;
-        public Expression Setter;
-
-        public object SetterInfo;
+        public IMemberModelEx DestinationMember;
         public LambdaExpression SetterCondition;
     }
 }

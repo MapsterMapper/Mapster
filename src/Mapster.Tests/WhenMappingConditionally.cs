@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -39,6 +40,26 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void Map_Multiple_Condition()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Map(dest => dest.Name, src => "1", cond => cond.Name == "1")
+                .Map(dest => dest.Name, src => "2", cond => cond.Name == "2")
+                .Map(dest => dest.Name, src => "3", cond => cond.Name == "3")
+                .Map(dest => dest.Name, src => "4", cond => cond.Name == "4")
+                .Map(dest => dest.Name, src => "5", cond => cond.Name == "5")
+                .Map(dest => dest.Name, src => "0");
+
+            var list = Enumerable.Range(0, 6).Select(i => new SimplePoco {Name = i.ToString()}).ToList();
+            var dtos = list.Adapt<List<SimpleDto>>();
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                dtos[i].Name.ShouldBe(i.ToString());
+            }
+        }
+
+        [TestMethod]
         public void Passed_Condition_Primitive_Does_Map()
         {
             
@@ -65,7 +86,7 @@ namespace Mapster.Tests
         public class SimpleDto
         {
             public Guid Id { get; set; }
-            public string Name { get; protected set; }
+            public string Name { get; internal set; }
         }
 
         public class ChildPoco
@@ -93,7 +114,7 @@ namespace Mapster.Tests
             public Guid Id { get; set; }
             public string Name { get; set; }
 
-            public IReadOnlyList<ChildDto> Children { get; protected set; }
+            public IReadOnlyList<ChildDto> Children { get; internal set; }
         }
 
         #endregion

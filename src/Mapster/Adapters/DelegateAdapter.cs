@@ -12,7 +12,7 @@ namespace Mapster.Adapters
             _lambda = lambda;
         }
 
-        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
+        protected override bool CanMap(PreCompileArgument arg)
         {
             throw new NotImplementedException();
         }
@@ -29,7 +29,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
         {
-            return Expression.Empty();
+            return CreateInstantiationExpression(source, arg);
         }
     }
 }

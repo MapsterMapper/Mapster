@@ -6,10 +6,10 @@ namespace Mapster.Adapters
 {
     internal class PrimitiveAdapter : BaseAdapter
     {
-        protected override int Score => -200;
+        protected override int Score => -200;   //must do last
         protected override bool CheckExplicitMapping => false;
 
-        protected override bool CanMap(Type sourceType, Type destinationType, MapType mapType)
+        protected override bool CanMap(PreCompileArgument arg)
         {
             return true;
         }
@@ -22,10 +22,11 @@ namespace Mapster.Adapters
             if (sourceType != destinationType)
             {
                 if (sourceType.IsNullable())
-                {
                     convert = Expression.Convert(convert, sourceType.GetGenericArguments()[0]);
-                }
-                convert = ReflectionUtils.BuildUnderlyingTypeConvertExpression(convert, sourceType, destinationType, arg.Settings);
+                var destType = arg.DestinationType.UnwrapNullable();
+
+                if (convert.Type != destType)
+                    convert = ConvertType(convert, destType, arg);
                 if (convert.Type != destinationType)
                     convert = Expression.Convert(convert, destinationType);
 
@@ -39,6 +40,32 @@ namespace Mapster.Adapters
             }
 
             return convert;
+        }
+
+        protected virtual Expression ConvertType(Expression source, Type destinationType, CompileArgument arg)
+        {
+            var srcType = source.Type;
+
+            //try using type casting
+            try
+            {
+                return Expression.Convert(source, destinationType);
+            }
+            catch
+            {
+                // ignored
+            }
+
+            if (!srcType.IsConvertible())
+                throw new InvalidOperationException("Cannot convert immutable type, please consider using 'MapWith' method to create mapping");
+
+            //using Convert
+            var result = ReflectionUtils.CreateConvertMethod(srcType, destinationType, source);
+            if (result != null)
+                return result;
+
+            var changeTypeMethod = typeof(Convert).GetMethod("ChangeType", new[] { typeof(object), typeof(Type) });
+            return Expression.Convert(Expression.Call(changeTypeMethod, Expression.Convert(source, typeof(object)), Expression.Constant(destinationType)), destinationType);
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)

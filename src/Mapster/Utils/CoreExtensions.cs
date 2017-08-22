@@ -44,21 +44,20 @@ namespace Mapster.Utils
                 {
                     yield return array[i];
                 }
-                yield break;
             }
-
-            if (source is IList<T> list)
+            else if (source is IList<T> list)
             {
                 for (int i = 0, count = list.Count; i < count; i++)
                 {
                     yield return list[i];
                 }
-                yield break;
             }
-
-            foreach (var item in source)
+            else
             {
-                yield return item;
+                foreach (var item in source)
+                {
+                    yield return item;
+                }
             }
         }
     }

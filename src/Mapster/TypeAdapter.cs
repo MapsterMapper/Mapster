@@ -5,14 +5,14 @@ namespace Mapster
 {
     public static class TypeAdapter
     {
-        public static TypeAdapterBuiler<TSource> BuildAdapter<TSource>(this TSource source)
+        public static TypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source)
         {
             return BuildAdapter(source, TypeAdapterConfig.GlobalSettings);
         }
 
-        public static TypeAdapterBuiler<TSource> BuildAdapter<TSource>(this TSource source, TypeAdapterConfig config)
+        public static TypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source, TypeAdapterConfig config)
         {
-            return new TypeAdapterBuiler<TSource>(source, config);
+            return new TypeAdapterBuilder<TSource>(source, config);
         }
 
         /// <summary>
@@ -38,18 +38,8 @@ namespace Mapster
             if (source == null)
                 return default(TDestination);
             var type = source.GetType();
-            var del = config.GetMapFunction(type, typeof(TDestination));
-            if (type.GetTypeInfo().IsVisible)
-            {
-                dynamic fn = del;
-                return (TDestination)fn((dynamic)source);
-            }
-            else
-            {
-                //NOTE: if type is non-public, we cannot use dynamic
-                //DynamicInvoke is slow, but works with non-public
-                return (TDestination)del.DynamicInvoke(source);
-            }
+            var fn = config.GetDynamicMapFunction<TDestination>(type);
+            return fn(source);
         }
 
         /// <summary>
@@ -128,8 +118,18 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static object Adapt(this object source, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
-            dynamic fn = config.GetMapFunction(sourceType, destinationType);
-            return fn((dynamic)source);
+            var del = config.GetMapFunction(sourceType, destinationType);
+            if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)
+            {
+                dynamic fn = del;
+                return fn((dynamic)source);
+            }
+            else
+            {
+                //NOTE: if type is non-public, we cannot use dynamic
+                //DynamicInvoke is slow, but works with non-public
+                return del.DynamicInvoke(source);
+            }
         }
 
         /// <summary>
@@ -156,8 +156,18 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static object Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
-            dynamic fn = config.GetMapToTargetFunction(sourceType, destinationType);
-            return fn((dynamic)source, (dynamic)destination);
+            var del = config.GetMapToTargetFunction(sourceType, destinationType);
+            if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)
+            {
+                dynamic fn = del;
+                return fn((dynamic)source, (dynamic)destination);
+            }
+            else
+            {
+                //NOTE: if type is non-public, we cannot use dynamic
+                //DynamicInvoke is slow, but works with non-public
+                return del.DynamicInvoke(source, destination);
+            }
         }
 
         /// <summary>

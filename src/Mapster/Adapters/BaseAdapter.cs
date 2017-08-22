@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Models;
 using Mapster.Utils;
 
 namespace Mapster.Adapters
@@ -13,12 +12,12 @@ namespace Mapster.Adapters
         protected virtual int Score => 0;
         protected virtual bool CheckExplicitMapping => true;
 
-        public virtual int? Priority(Type sourceType, Type destinationType, MapType mapType)
+        public virtual int? Priority(PreCompileArgument arg)
         {
-            return CanMap(sourceType, destinationType, mapType) ? this.Score : (int?)null;
+            return CanMap(arg) ? this.Score : (int?)null;
         }
 
-        protected abstract bool CanMap(Type sourceType, Type destinationType, MapType mapType);
+        protected abstract bool CanMap(PreCompileArgument arg);
 
         public LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
@@ -32,7 +31,7 @@ namespace Mapster.Adapters
             var p = Expression.Parameter(arg.SourceType);
             var p2 = Expression.Parameter(arg.DestinationType);
             var body = CreateExpressionBody(p, p2, arg);
-            return Expression.Lambda(body, p, p2);
+            return body == null ? null : Expression.Lambda(body, p, p2);
         }
 
         public TypeAdapterRule CreateRule()
@@ -54,24 +53,10 @@ namespace Mapster.Adapters
 
         protected virtual bool CanInline(Expression source, Expression destination, CompileArgument arg)
         {
-            if (arg.MapType == MapType.MapToTarget)
-                return false;
-            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
-            if (constructUsing != null &&
-                constructUsing.Body.NodeType != ExpressionType.New &&
-                constructUsing.Body.NodeType != ExpressionType.MemberInit)
-            {
-                if (arg.MapType == MapType.Projection)
-                    throw new InvalidOperationException("Input ConstructUsing is invalid for projection");
-                return false;
-            }
-
-            //IgnoreIf, PreserveReference, AfterMapping, Includes aren't supported by Projection
+            //PreserveReference, AfterMapping, Includes aren't supported by Projection
             if (arg.MapType == MapType.Projection)
                 return true;
 
-            if (arg.Settings.IgnoreIfs.Any(item => item.Value != null))
-                return false;
             if (arg.Settings.PreserveReference == true &&
                 !arg.SourceType.GetTypeInfo().IsValueType &&
                 !arg.DestinationType.GetTypeInfo().IsValueType)
@@ -87,14 +72,14 @@ namespace Mapster.Adapters
         {
             if (this.CheckExplicitMapping
                 && arg.Context.Config.RequireExplicitMapping
-                && !arg.Context.Config.RuleMap.ContainsKey(new TypeTuple(arg.SourceType, arg.DestinationType)))
+                && !arg.ExplicitMapping)
             {
                 throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
             }
 
             if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
                 return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
-            else if (arg.MapType == MapType.InlineMap)
+            else if (arg.Context.Running.Count > 1)
                 return null;
             else
                 return CreateBlockExpressionBody(source, destination, arg);
@@ -294,6 +279,7 @@ namespace Mapster.Adapters
             else if (arg.DestinationType.GetTypeInfo().IsAbstract && arg.Settings.Includes.Count > 0)
                 newObj = Expression.Throw(
                     Expression.New(
+                        // ReSharper disable once AssignNullToNotNullAttribute
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
                         Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
                     arg.DestinationType);

@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class PropertyModel : IMemberModel
+    public class PropertyModel : IMemberModelEx
     {
         private readonly PropertyInfo _propertyInfo;
         public PropertyModel(PropertyInfo propertyInfo)
@@ -14,7 +14,7 @@ namespace Mapster.Models
         }
 
         public Type Type => _propertyInfo.PropertyType;
-        public string Name => _propertyInfo.Name;
+        public virtual string Name => _propertyInfo.Name;
         public object Info => _propertyInfo;
 
         public AccessModifier SetterModifier
@@ -22,7 +22,7 @@ namespace Mapster.Models
             get
             {
                 var setter = _propertyInfo.GetSetMethod();
-                return setter == null ? AccessModifier.None : setter.GetAccessModifier();
+                return setter?.GetAccessModifier() ?? AccessModifier.None;
             }
         }
         public AccessModifier AccessModifier
@@ -30,13 +30,17 @@ namespace Mapster.Models
             get
             {
                 var getter = _propertyInfo.GetGetMethod();
-                return getter == null ? AccessModifier.None : getter.GetAccessModifier();
+                return getter?.GetAccessModifier() ?? AccessModifier.None;
             }
         }
 
-        public Expression GetExpression(Expression source)
+        public virtual Expression GetExpression(Expression source)
         {
             return Expression.Property(source, _propertyInfo);
+        }
+        public Expression SetExpression(Expression source, Expression value)
+        {
+            return Expression.Assign(GetExpression(source), value);
         }
         public IEnumerable<object> GetCustomAttributes(bool inherit)
         {

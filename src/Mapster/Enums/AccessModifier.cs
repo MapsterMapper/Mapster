@@ -9,6 +9,7 @@ namespace Mapster
         Private = 1,
         Protected = 2,
         Internal = 4,
+        ProtectedInternal = 6,
         Public = 8,
     }
 }

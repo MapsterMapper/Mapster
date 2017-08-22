@@ -196,7 +196,7 @@ namespace Mapster.Tests
 
         [Flags]
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
-        enum Flags
+        internal enum Flags
         {
             Zero = 0,
             Two = 2,

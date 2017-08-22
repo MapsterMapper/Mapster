@@ -6,7 +6,7 @@ using Mapster.Utils;
 
 namespace Mapster.Models
 {
-    internal class ParameterModel : IMemberModel
+    public class ParameterModel : IMemberModelEx
     {
         private readonly ParameterInfo _parameterInfo;
         public ParameterModel(ParameterInfo parameterInfo)
@@ -24,7 +24,10 @@ namespace Mapster.Models
         {
             return Expression.Variable(this.Type, _parameterInfo.Name);
         }
-
+        public Expression SetExpression(Expression source, Expression value)
+        {
+            return Expression.Assign(GetExpression(source), value);
+        }
         public IEnumerable<object> GetCustomAttributes(bool inherit)
         {
             return _parameterInfo.GetCustomAttributes(inherit);

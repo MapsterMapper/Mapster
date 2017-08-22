@@ -57,23 +57,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapter.cs" />
+    <Compile Include="Adapters\ArrayAdapter.cs" />
     <Compile Include="Adapters\BaseAdapter.cs" />
     <Compile Include="Adapters\BaseAfterMapper.cs" />
     <Compile Include="Adapters\BaseClassAdapter.cs" />
     <Compile Include="Adapters\DelegateAdapter.cs" />
     <Compile Include="Adapters\DictionaryAdapter.cs" />
+    <Compile Include="Adapters\EnumAdapter.cs" />
+    <Compile Include="Adapters\CollectionAdapter.cs" />
+    <Compile Include="Adapters\MultiDimensionalArrayAdapter.cs" />
+    <Compile Include="Adapters\ObjectAdapter.cs" />
     <Compile Include="Adapters\RecordTypeAdapter.cs" />
+    <Compile Include="Adapters\StringAdapter.cs" />
     <Compile Include="Attributes\AdaptIgnoreAttribute.cs" />
     <Compile Include="Attributes\AdaptMemberAttribute.cs" />
     <Compile Include="Compile\CompileArgument.cs" />
     <Compile Include="Compile\CompileContext.cs" />
     <Compile Include="Compile\CompileException.cs" />
+    <Compile Include="Compile\PreCompileArgument.cs" />
     <Compile Include="Enums\EnumMappingStrategy.cs" />
+    <Compile Include="Enums\MemberSide.cs" />
     <Compile Include="Interfaces\IApplyable.cs" />
     <Compile Include="Interfaces\IRegister.cs" />
     <Compile Include="MapContext\MapContext.cs" />
     <Compile Include="MapContext\MapContextScope.cs" />
     <Compile Include="Enums\MapType.cs" />
+    <Compile Include="Models\IMemberModelEx.cs" />
+    <Compile Include="Models\KeyValuePairModel.cs" />
     <Compile Include="Settings\GetMemberName.cs" />
     <Compile Include="Settings\NameMatchingStrategy.cs" />
     <Compile Include="Interfaces\IAdapter.cs" />
@@ -81,7 +91,7 @@
     <Compile Include="Settings\SettingStore.cs" />
     <Compile Include="Settings\TransformsCollection.cs" />
     <Compile Include="Settings\ShouldMapMember.cs" />
-    <Compile Include="TypeAdapterBuiler.cs" />
+    <Compile Include="TypeAdapterBuilder.cs" />
     <Compile Include="TypeAdapterRule.cs" />
     <Compile Include="Utils\ReferenceComparer.cs" />
     <Compile Include="Settings\ValueAccessingStrategy.cs" />
@@ -104,9 +114,6 @@
     <Compile Include="Utils\Enum.cs" />
     <Compile Include="Utils\ExpressionEx.cs" />
     <Compile Include="Utils\CoreExtensions.cs" />
-    <Compile Include="Adapters\CollectionAdapter.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Adapters\PrimitiveAdapter.cs" />
     <Compile Include="Adapters\ClassAdapter.cs" />
     <Compile Include="TypeAdapter.cs" />

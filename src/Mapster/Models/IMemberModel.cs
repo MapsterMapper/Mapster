@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace Mapster.Models
 {
@@ -12,7 +11,6 @@ namespace Mapster.Models
         AccessModifier SetterModifier { get; }
         AccessModifier AccessModifier { get; }
 
-        Expression GetExpression(Expression source);
         IEnumerable<object> GetCustomAttributes(bool inherit);
     }
 }

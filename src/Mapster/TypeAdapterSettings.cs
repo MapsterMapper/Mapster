@@ -52,9 +52,9 @@ namespace Mapster
             set => Set("AvoidInlineMapping", value);
         }
 
-        public List<Func<IMemberModel, bool?>> ShouldMapMember
+        public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {
-            get => Get("ShouldMapMember", () => new List<Func<IMemberModel, bool?>>());
+            get => Get("ShouldMapMember", () => new List<Func<IMemberModel, MemberSide, bool?>>());
         }
         public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies
         {

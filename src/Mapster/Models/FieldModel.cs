@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mapster.Models
 {
-    internal class FieldModel : IMemberModel
+    public class FieldModel : IMemberModelEx
     {
         private readonly FieldInfo _fieldInfo;
         public FieldModel(FieldInfo fieldInfo)
@@ -22,6 +22,10 @@ namespace Mapster.Models
         public Expression GetExpression(Expression source)
         {
             return Expression.Field(source, _fieldInfo);
+        }
+        public Expression SetExpression(Expression source, Expression value)
+        {
+            return Expression.Assign(GetExpression(source), value);
         }
         public IEnumerable<object> GetCustomAttributes(bool inherit)
         {
