@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
     <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
-    <VersionPrefix>2.6.1</VersionPrefix>
     <Authors>chaowlert;eric_swann</Authors>
     <TargetFrameworks>net40;net45;netstandard1.3</TargetFrameworks>
     <AssemblyName>Mapster</AssemblyName>
@@ -23,6 +22,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>3.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">

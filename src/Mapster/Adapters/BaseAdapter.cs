@@ -212,6 +212,14 @@ namespace Mapster.Adapters
             //return result;
             foreach (var tuple in arg.Settings.Includes)
             {
+                //same type, no redirect to prevent endless loop
+                if (tuple.Source == arg.SourceType)
+                    continue;
+                
+                //type is not compatible, no redirect
+                if (!arg.SourceType.IsReferenceAssignableFrom(tuple.Source))
+                    continue;
+
                 var blocks = new List<Expression>();
                 var vars = new List<ParameterExpression>();
 
