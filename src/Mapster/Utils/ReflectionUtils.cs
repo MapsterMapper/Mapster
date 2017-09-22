@@ -7,12 +7,13 @@ using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
 
+// ReSharper disable once CheckNamespace
 namespace Mapster
 {
     internal static class ReflectionUtils
     {
         // Primitive types with their conversion methods from System.Convert class.
-        private static Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
+        private static readonly Dictionary<Type, string> _primitiveTypes = new Dictionary<Type, string>() {
             { typeof(bool), "ToBoolean" },
             { typeof(short), "ToInt16" },
             { typeof(int), "ToInt32" },
@@ -41,6 +42,18 @@ namespace Mapster
 
         public static bool IsPoco(this Type type, BindingFlags accessorFlags = BindingFlags.Public)
         {
+            //not collection
+            if (type.IsCollection())
+                return false;
+
+            //not nullable
+            if (type.IsNullable())
+                return false;
+
+            //not primitives
+            if (type.IsConvertible())
+                return false;
+
             return type.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: accessorFlags).Any();
         }
 
@@ -66,6 +79,8 @@ namespace Mapster
 
         public static Type ExtractCollectionType(this Type collectionType)
         {
+            if (collectionType.IsArray)
+                return collectionType.GetElementType();
             var enumerableType = collectionType.GetGenericEnumerableType();
             return enumerableType != null
                 ? enumerableType.GetGenericArguments()[0]
@@ -272,6 +287,11 @@ namespace Mapster
             return getMemberNames.Select(predicate => predicate(member))
                 .FirstOrDefault(name => name != null)
                 ?? nameConverter(member.Name);
+        }
+
+        public static bool IsPrimitiveKind(this Type type)
+        {
+            return type == typeof(object) || type.UnwrapNullable().IsConvertible();
         }
     }
 }

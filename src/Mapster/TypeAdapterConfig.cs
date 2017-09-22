@@ -27,6 +27,8 @@ namespace Mapster
                 new RecordTypeAdapter().CreateRule(),   //-149
                 new CollectionAdapter().CreateRule(),   //-125
                 new DictionaryAdapter().CreateRule(),   //-124
+                new ArrayAdapter().CreateRule(),        //-123
+                new MultiDimensionalArrayAdapter().CreateRule(), //-122
                 new ObjectAdapter().CreateRule(),       //-111
                 new StringAdapter().CreateRule(),       //-110
                 new EnumAdapter().CreateRule(),         //-109
@@ -333,14 +335,14 @@ namespace Mapster
             return Expression.Call(methodInfo, source, Expression.Quote(lambda));
         }
 
-        private static LambdaExpression CreateMapExpression(CompileArgument arg)
+        private static LambdaExpression CreateMapExpression(CompileArgument arg, bool allowNull = false)
         {
             var fn = arg.MapType == MapType.MapToTarget
                 ? arg.Settings.ConverterToTargetFactory
                 : arg.Settings.ConverterFactory;
             if (fn == null)
             {
-                if (arg.MapType == MapType.InlineMap)
+                if (allowNull)
                     return null;
                 else
                     throw new CompileException(arg, 
@@ -380,10 +382,8 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                if (parentMapType == MapType.MapToTarget)
-                    return CreateMapToTargetInvokeExpression(sourceType, destinationType);
-                var arg = GetCompileArgument(tuple, parentMapType == MapType.Projection ? MapType.Projection : MapType.InlineMap, context);
-                var exp = CreateMapExpression(arg);
+                var arg = GetCompileArgument(tuple, parentMapType, context);
+                var exp = CreateMapExpression(arg, true);
                 if (exp != null)
                 {
                     var detector = new BlockExpressionDetector();
@@ -393,7 +393,10 @@ namespace Mapster
                 }
                 if (exp != null)
                     return exp;
-                return CreateMapInvokeExpression(sourceType, destinationType);
+                if (parentMapType == MapType.MapToTarget)
+                    return CreateMapToTargetInvokeExpression(sourceType, destinationType);
+                else
+                    return CreateMapInvokeExpression(sourceType, destinationType);
             }
             finally
             {

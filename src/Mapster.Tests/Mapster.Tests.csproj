@@ -70,6 +70,9 @@
     <Compile Include="Classes\Customer.cs" />
     <Compile Include="Classes\Product.cs" />
     <Compile Include="Classes\TypeTestClass.cs" />
+    <Compile Include="Diagnostics\DebugInfoInjectorEx.cs" />
+    <Compile Include="Diagnostics\GlobalReference.cs" />
+    <Compile Include="Diagnostics\TypeAdapterConfigExtensions.cs" />
     <Compile Include="WhenCloningConfig.cs" />
     <Compile Include="WhenCompilingConfig.cs" />
     <Compile Include="WhenConvertingFromObjects.cs" />
@@ -80,6 +83,7 @@
     <Compile Include="WhenForkingConfig.cs" />
     <Compile Include="WhenMappingComplexClasses.cs" />
     <Compile Include="WhenMappingDerived.cs" />
+    <Compile Include="WhenMappingArrays.cs" />
     <Compile Include="WhenMappingPrivateFieldsAndProperties.cs" />
     <Compile Include="WhenMappingWithDictionary.cs" />
     <Compile Include="WhenMappingRecordTypes.cs" />
@@ -121,6 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Mapster.Tests.snk" />
+    <EmbeddedResource Include="mock.keys" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@ namespace Mapster.Models
 {
     public class PropertyModel : IMemberModelEx
     {
-        protected readonly PropertyInfo _propertyInfo;
+        private readonly PropertyInfo _propertyInfo;
         public PropertyModel(PropertyInfo propertyInfo)
         {
             _propertyInfo = propertyInfo;
@@ -22,7 +22,7 @@ namespace Mapster.Models
             get
             {
                 var setter = _propertyInfo.GetSetMethod();
-                return setter == null ? AccessModifier.None : setter.GetAccessModifier();
+                return setter?.GetAccessModifier() ?? AccessModifier.None;
             }
         }
         public AccessModifier AccessModifier
@@ -30,7 +30,7 @@ namespace Mapster.Models
             get
             {
                 var getter = _propertyInfo.GetGetMethod();
-                return getter == null ? AccessModifier.None : getter.GetAccessModifier();
+                return getter?.GetAccessModifier() ?? AccessModifier.None;
             }
         }
 

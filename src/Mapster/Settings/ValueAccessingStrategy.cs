@@ -33,9 +33,8 @@ namespace Mapster
 
             Expression getter = null;
             LambdaExpression lastCondition = null;
-            for (int j = 0; j < resolvers.Count; j++)
+            foreach (var resolver in resolvers)
             {
-                var resolver = resolvers[j];
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
                     continue;
                 Expression invoke = resolver.Invoker == null
@@ -155,9 +154,8 @@ namespace Mapster
 
             Expression getter = null;
             LambdaExpression lastCondition = null;
-            for (int j = 0; j < resolvers.Count; j++)
+            foreach (var resolver in resolvers)
             {
-                var resolver = resolvers[j];
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
                     continue;
 

@@ -104,7 +104,7 @@ namespace Mapster.Adapters
             //  dest[kvp.Key] = convert(kvp.Value);
             //}
             set = Expression.Block(new[] { key }, keyAssign, set);
-            var loop = CollectionAdapter.ForEach(source, kvp, set);
+            var loop = ExpressionEx.ForEach(source, kvp, set);
             return mapped.NodeType == ExpressionType.Default
                 ? loop
                 : Expression.Block(mapped, loop);

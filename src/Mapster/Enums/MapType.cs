@@ -3,7 +3,6 @@
     public enum MapType
     {
         Map,
-        InlineMap,
         MapToTarget,
         Projection,
     }

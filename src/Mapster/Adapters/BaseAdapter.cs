@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Models;
 using Mapster.Utils;
 
 namespace Mapster.Adapters
@@ -32,7 +31,7 @@ namespace Mapster.Adapters
             var p = Expression.Parameter(arg.SourceType);
             var p2 = Expression.Parameter(arg.DestinationType);
             var body = CreateExpressionBody(p, p2, arg);
-            return Expression.Lambda(body, p, p2);
+            return body == null ? null : Expression.Lambda(body, p, p2);
         }
 
         public TypeAdapterRule CreateRule()
@@ -80,7 +79,7 @@ namespace Mapster.Adapters
 
             if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
                 return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
-            else if (arg.MapType == MapType.InlineMap)
+            else if (arg.Context.Running.Count > 1)
                 return null;
             else
                 return CreateBlockExpressionBody(source, destination, arg);
@@ -272,6 +271,7 @@ namespace Mapster.Adapters
             else if (arg.DestinationType.GetTypeInfo().IsAbstract && arg.Settings.Includes.Count > 0)
                 newObj = Expression.Throw(
                     Expression.New(
+                        // ReSharper disable once AssignNullToNotNullAttribute
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
                         Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
                     arg.DestinationType);
