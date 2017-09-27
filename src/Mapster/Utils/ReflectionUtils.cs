@@ -165,10 +165,6 @@ namespace Mapster
 
         public static bool IsRecordType(this Type type)
         {
-            //not collection
-            if (type.IsCollection())
-                return false;
-
             //not nullable
             if (type.IsNullable())
                 return false;
