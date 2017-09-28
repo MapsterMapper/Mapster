@@ -42,6 +42,10 @@ namespace Mapster
 
         public static bool IsPoco(this Type type, BindingFlags accessorFlags = BindingFlags.Public)
         {
+            //not collection
+            if (type.IsCollection())
+                return false;
+
             //not nullable
             if (type.IsNullable())
                 return false;
@@ -165,6 +169,10 @@ namespace Mapster
 
         public static bool IsRecordType(this Type type)
         {
+            //not collection
+            if (type.IsCollection())
+                return false;
+
             //not nullable
             if (type.IsNullable())
                 return false;
@@ -187,7 +195,7 @@ namespace Mapster
             return props.All(prop =>
             {
                 var name = prop.Name.ToPascalCase();
-                return ctors[0].GetParameters().Any(p => p.ParameterType == prop.Type && p.Name?.ToPascalCase() == name);
+                return ctors[0].GetParameters().Any(p => p.ParameterType == prop.Type && p.Name.ToPascalCase() == name);
             });
         }
 
