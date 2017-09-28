@@ -84,6 +84,7 @@
     <Compile Include="WhenMappingComplexClasses.cs" />
     <Compile Include="WhenMappingDerived.cs" />
     <Compile Include="WhenMappingArrays.cs" />
+    <Compile Include="WhenMappingIEnumerableClass.cs" />
     <Compile Include="WhenMappingPrivateFieldsAndProperties.cs" />
     <Compile Include="WhenMappingWithDictionary.cs" />
     <Compile Include="WhenMappingRecordTypes.cs" />
