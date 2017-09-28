@@ -198,8 +198,7 @@ namespace Mapster.Adapters
         private static Func<Expression, Expression, Expression> GetFunction(CompileArgument arg, Type dictType)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            if (arg.MapType == MapType.MapToTarget &&
-                strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
+            if (strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
             {
                 var args = dictType.GetGenericArguments();
                 var getMethod = typeof(CoreExtensions).GetMethods()

@@ -1,10 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mapster.Tests
 {
@@ -25,6 +21,25 @@ namespace Mapster.Tests
             ((CarDto)dto).Make.ShouldBe("Toyota");
         }
 
+        [TestMethod]
+        public void Map_Including_Derived_Class_With_List()
+        {
+            TypeAdapterConfig<Vehicle, VehicleDto>.NewConfig()
+                .Include<Car, CarDto>()
+                .Include<Bike, BikeDto>()
+                .Compile();
+
+            var vehicles = new List<Vehicle>
+            {
+                new Car {Id = 1, Name = "Car", Make = "Toyota", ChassiNumber = "XXX"},
+                new Bike {Id = 2, Name = "Bike", Brand = "BMX"},
+            };
+            var dto = vehicles.Adapt<List<Vehicle>, IList<VehicleDto>>();
+
+            ((CarDto)dto[0]).Make.ShouldBe("Toyota");
+            ((BikeDto)dto[1]).Brand.ShouldBe("BMX");
+        }
+
         #region test classes
         public abstract class Vehicle
         {
@@ -36,6 +51,10 @@ namespace Mapster.Tests
             public string Make { get; set; }
             public string ChassiNumber { get; set; }
         }
+        public class Bike : Vehicle
+        {
+            public string Brand { get; set; }
+        }
 
         public abstract class VehicleDto
         {
@@ -46,6 +65,10 @@ namespace Mapster.Tests
         {
             public string Make { get; set; }
             public string ChassiNumber { get; set; }
+        }
+        public class BikeDto : VehicleDto
+        {
+            public string Brand { get; set; }
         }
         #endregion
     }
