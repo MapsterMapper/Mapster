@@ -15,7 +15,6 @@ namespace Mapster.Tests
 
         public class ClassB : IEnumerable
         {
-
             public int Id { get; set; }
 
             public IEnumerator GetEnumerator()
@@ -24,7 +23,7 @@ namespace Mapster.Tests
             }
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public void Map_To_IEnumerable_Class_Should_Pass()
         {
             ClassA classA = new ClassA()
