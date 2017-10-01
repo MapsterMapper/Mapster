@@ -32,7 +32,7 @@ namespace Mapster.Tests
             TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco);
         }
 
-        [TestMethod, TestCategory("speed")]
+        [TestMethod, TestCategory("speed"), Ignore]
         public void Race_Condition_Produces_Error()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
