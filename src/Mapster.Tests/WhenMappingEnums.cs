@@ -88,6 +88,38 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void String_Is_Mapped_To_Nullable_Enum()
+        {
+            var department = Departments.IT.ToString();
+            var value = TypeAdapter.Adapt<string, Departments?>(department);
+            value.ShouldBe(Departments.IT);
+        }
+
+        [TestMethod]
+        public void Null_String_Is_Mapped_To_Nullable_Enum()
+        {
+            string department = null;
+            var value = TypeAdapter.Adapt<string, Departments?>(department);
+            value.ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void Nullable_Enum_Is_Mapped_To_String()
+        {
+            var department = Departments.IT;
+            var value = TypeAdapter.Adapt<Departments?, string>(department);
+            value.ShouldBe(Departments.IT.ToString());
+        }
+
+        [TestMethod]
+        public void Null_Nullable_Enum_Is_Mapped_To_String()
+        {
+            Departments? department = null;
+            var value = TypeAdapter.Adapt<Departments?, string>(department);
+            value.ShouldBeNull();
+        }
+
+        [TestMethod]
         public void Enum_Is_Mapped_To_Enum()
         {
             var employee = new EmployeeWithEnum { Id = Guid.NewGuid(), Name = "Timuçin", Department = EmployeeDepartments.IT };

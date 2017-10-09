@@ -12,7 +12,8 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return arg.SourceType.GetTypeInfo().IsEnum || arg.DestinationType.GetTypeInfo().IsEnum;
+            return arg.SourceType.UnwrapNullable().GetTypeInfo().IsEnum 
+                || arg.DestinationType.UnwrapNullable().GetTypeInfo().IsEnum;
         }
 
         protected override Expression ConvertType(Expression source, Type destinationType, CompileArgument arg)
