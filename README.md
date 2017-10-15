@@ -56,7 +56,7 @@ var poco = dto.BuildAdapter()
 ```
 
 ### Change logs
-https://github.com/chaowlert/Mapster/releases
+https://github.com/MapsterMapper/Mapster/releases
 
 ### Usages
-https://github.com/chaowlert/Mapster/wiki
+https://github.com/MapsterMapper/Mapster/wiki
