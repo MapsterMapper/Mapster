@@ -226,6 +226,19 @@ namespace Mapster.Tests
             Console.WriteLine("Enum to string Elapsed time ms: " + timer.ElapsedMilliseconds);
         }
 
+        [TestMethod]
+        public void MapEnumToClass()
+        {
+            TypeAdapterConfig<CustomerType, EnumViewModel>.NewConfig()
+                .Map(dest => dest.Text, src => src.ToString())
+                .Map(dest => dest.Value, src => (int)src);
+
+            var e = CustomerType.Private;
+            var result = e.Adapt<EnumViewModel>();
+            result.Value.ShouldBe(1);
+            result.Text.ShouldBe("Private");
+        }
+
         [Flags]
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         internal enum Flags
@@ -235,6 +248,17 @@ namespace Mapster.Tests
             Four = 4,
             Six = 6,
             Eight = 8,
+        }
+
+        public enum CustomerType
+        {
+            Company, Private
+        }
+
+        public class EnumViewModel
+        {
+            public int Value { get; set; }
+            public string Text { get; set; }
         }
     }
 }

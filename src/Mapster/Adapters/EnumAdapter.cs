@@ -12,8 +12,26 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return arg.SourceType.UnwrapNullable().GetTypeInfo().IsEnum 
-                || arg.DestinationType.UnwrapNullable().GetTypeInfo().IsEnum;
+            return CanMap(arg.SourceType, arg.DestinationType)
+                   || CanMap(arg.DestinationType, arg.SourceType);
+        }
+
+        static bool CanMap(Type type1, Type type2)
+        {
+            if (!type1.UnwrapNullable().GetTypeInfo().IsEnum)
+                return false;
+
+            type2 = type2.UnwrapNullable();
+            return type2.GetTypeInfo().IsEnum
+                   || type2 == typeof(string)
+                   || type2 == typeof(byte)
+                   || type2 == typeof(sbyte)
+                   || type2 == typeof(short)
+                   || type2 == typeof(ushort)
+                   || type2 == typeof(int)
+                   || type2 == typeof(uint)
+                   || type2 == typeof(long)
+                   || type2 == typeof(ulong);
         }
 
         protected override Expression ConvertType(Expression source, Type destinationType, CompileArgument arg)
