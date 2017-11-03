@@ -59,6 +59,18 @@ namespace Mapster.Tests
             dto.Unmapped.ShouldBe("unmapped");
         }
 
+        [TestMethod]
+        public void Map_To_Existing_Destination_Instance_Should_Pass()
+        {
+            var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            var dto = new SimpleDtoWithoutDefaultConstructor("unmapped");
+            simplePoco.Adapt(dto);
+
+            dto.Id.ShouldBe(simplePoco.Id);
+            dto.Name.ShouldBe(simplePoco.Name);
+            dto.Unmapped.ShouldBe("unmapped");
+        }
 
         #region TestClasses
 
@@ -89,6 +101,19 @@ namespace Mapster.Tests
             public Guid Id { get; set; }
             public string Name { get; set; }
 
+            public string Unmapped { get; set; }
+        }
+
+        public class SimpleDtoWithoutDefaultConstructor
+        {       
+
+            public SimpleDtoWithoutDefaultConstructor(string unmapped)
+            {
+                Unmapped = unmapped;
+            }
+
+            public Guid Id { get; set; }
+            public string Name { get; set; }
             public string Unmapped { get; set; }
         }
 
