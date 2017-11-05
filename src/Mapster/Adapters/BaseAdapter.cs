@@ -283,7 +283,7 @@ namespace Mapster.Adapters
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
                         Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
                     arg.DestinationType);
-            else if (arg.DestinationType.HasDefaultConstructor())
+            else if (destination == null || arg.DestinationType.HasDefaultConstructor())
                 newObj = Expression.New(arg.DestinationType);
             else
                 newObj = destination;
