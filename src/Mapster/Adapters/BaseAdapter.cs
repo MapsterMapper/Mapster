@@ -200,7 +200,7 @@ namespace Mapster.Adapters
                 //same type, no redirect to prevent endless loop
                 if (tuple.Source == arg.SourceType)
                     continue;
-                
+
                 //type is not compatible, no redirect
                 if (!arg.SourceType.IsReferenceAssignableFrom(tuple.Source))
                     continue;
@@ -242,7 +242,7 @@ namespace Mapster.Adapters
             }
 
             return Expression.Block(new[] { result }, set, result);
-        }
+        }       
         protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
             //source == null ? default(TDestination) : adapt(source)
@@ -283,8 +283,10 @@ namespace Mapster.Adapters
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
                         Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
                     arg.DestinationType);
-            else
+            else if (destination == null || arg.DestinationType.HasDefaultConstructor())
                 newObj = Expression.New(arg.DestinationType);
+            else
+                newObj = destination;
 
             //dest ?? new TDest();
             return destination == null

@@ -16,7 +16,7 @@ namespace Mapster.Tests
                 .ConstructUsing(src => new SimpleDtoWithDefaultConstructor("unmapped"))
                 .Compile();
 
-            var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
+            var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
             var dto = TypeAdapter.Adapt<SimpleDtoWithDefaultConstructor>(simplePoco);
 
@@ -30,7 +30,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDtoWithDefaultConstructor>.NewConfig()
                 .IgnoreNullValues(true)
-                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor{Unmapped = "unmapped"})
+                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor { Unmapped = "unmapped" })
                 .Compile();
 
             var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
@@ -47,7 +47,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, ISimpleDtoWithDefaultConstructor>.NewConfig()
                 .IgnoreNullValues(true)
-                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor {Unmapped = "unmapped"})
+                .ConstructUsing(src => new SimpleDtoWithDefaultConstructor { Unmapped = "unmapped" })
                 .Compile();
 
             var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
@@ -59,6 +59,32 @@ namespace Mapster.Tests
             dto.Unmapped.ShouldBe("unmapped");
         }
 
+        [TestMethod]
+        public void Map_To_Existing_Destination_Instance_Should_Pass()
+        {
+            var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            var dto = new SimpleDtoWithoutDefaultConstructor("unmapped");
+            simplePoco.Adapt(dto);
+
+            dto.Id.ShouldBe(simplePoco.Id);
+            dto.Name.ShouldBe(simplePoco.Name);
+            dto.Unmapped.ShouldBe("unmapped");
+        }
+
+        [TestMethod]
+        public void Map_To_Destination_Type_Without_Default_Constructor_Shoud_Throw_Argument_Exception()
+        {
+            var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
+
+            Action action = () =>
+            {
+                var dto = TypeAdapter.Adapt<SimpleDtoWithoutDefaultConstructor>(simplePoco);
+            };
+
+            action.ShouldThrow<CompileException>()
+                .InnerException.ShouldBeOfType<ArgumentException>();
+        }
 
         #region TestClasses
 
@@ -89,6 +115,19 @@ namespace Mapster.Tests
             public Guid Id { get; set; }
             public string Name { get; set; }
 
+            public string Unmapped { get; set; }
+        }
+
+        public class SimpleDtoWithoutDefaultConstructor
+        {
+
+            public SimpleDtoWithoutDefaultConstructor(string unmapped)
+            {
+                Unmapped = unmapped;
+            }
+
+            public Guid Id { get; set; }
+            public string Name { get; set; }
             public string Unmapped { get; set; }
         }
 
