@@ -272,21 +272,30 @@ namespace Mapster.Adapters
         protected virtual Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
             //new TDestination()
+
+            //if there is constructUsing, use constructUsing
             var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
             Expression newObj;
             if (constructUsing != null)
                 newObj = constructUsing.Apply(source).TrimConversion(true).To(arg.DestinationType);
-            else if (arg.DestinationType.GetTypeInfo().IsAbstract && arg.Settings.Includes.Count > 0)
+
+            //if there is default constructor, use default constructor
+            else if (arg.DestinationType.HasDefaultConstructor())
+                newObj = Expression.New(arg.DestinationType);
+
+            //if mapToTarget or include derived types, allow mapping & throw exception on runtime
+            //instantiation is not needed
+            else if (destination != null || arg.Settings.Includes.Count > 0)
                 newObj = Expression.Throw(
                     Expression.New(
                         // ReSharper disable once AssignNullToNotNullAttribute
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
-                        Expression.Constant("Cannot instantiate abstract type: " + arg.DestinationType.Name)),
+                        Expression.Constant("Cannot instantiate type: " + arg.DestinationType.Name)),
                     arg.DestinationType);
-            else if (destination == null || arg.DestinationType.HasDefaultConstructor())
-                newObj = Expression.New(arg.DestinationType);
+
+            //otherwise throw
             else
-                newObj = destination;
+                throw new InvalidOperationException($"No default constructor for type '{arg.DestinationType.Name}', please use 'ConstructUsing'");
 
             //dest ?? new TDest();
             return destination == null

@@ -128,26 +128,28 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static MemberExpression GetMemberInfo(Expression method, bool noThrow = false)
+        public static MemberExpression GetMemberInfo(Expression member, bool source = false)
         {
-            var lambda = method as LambdaExpression;
+            var lambda = member as LambdaExpression;
             if (lambda == null)
-                throw new ArgumentNullException(nameof(method));
+                throw new ArgumentNullException(nameof(member));
+
+            var expr = lambda.Body;
+            if (lambda.Body.NodeType == ExpressionType.Convert)
+                expr = ((UnaryExpression)lambda.Body).Operand;
 
             MemberExpression memberExpr = null;
-
-            if (lambda.Body.NodeType == ExpressionType.Convert)
+            if (expr.NodeType == ExpressionType.MemberAccess)
             {
-                memberExpr =
-                    ((UnaryExpression) lambda.Body).Operand as MemberExpression;
-            }
-            else if (lambda.Body.NodeType == ExpressionType.MemberAccess)
-            {
-                memberExpr = lambda.Body as MemberExpression;
+                var tmp = (MemberExpression) expr;
+                if (tmp.Expression.NodeType == ExpressionType.Parameter)
+                    memberExpr = tmp;
+                else if (!source)
+                    throw new ArgumentException("Only first level member access on destination allowed (eg. dest => dest.Name)", nameof(member));
             }
 
-            if (memberExpr == null && !noThrow)
-                throw new ArgumentException("argument must be member access", nameof(method));
+            if (memberExpr == null && !source)
+                throw new ArgumentException("Argument must be member access", nameof(member));
 
             return memberExpr;
         }

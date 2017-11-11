@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mapster.Models;
 
 namespace Mapster
@@ -22,7 +23,7 @@ namespace Mapster
 
         public static T GetCustomAttribute<T>(this IMemberModel member)
         {
-            return (T)member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
+            return (T) member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
         }
 
         /// <summary>
@@ -33,7 +34,15 @@ namespace Mapster
         ///   <c>true</c> if specific <paramref name="type"/> has default constructor; otherwise <c>false</c>.
         /// </returns>
         public static bool HasDefaultConstructor(this Type type)
-            => type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null;
+        {
+            if (type == typeof(void)
+                || type.GetTypeInfo().IsAbstract
+                || type.GetTypeInfo().IsInterface)
+                return false;
+            if (type.GetTypeInfo().IsValueType)
+                return true;
+            return type.GetConstructor(Type.EmptyTypes) != null;
+        }
 
     }
 }

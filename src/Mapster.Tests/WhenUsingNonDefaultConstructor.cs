@@ -73,7 +73,7 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
-        public void Map_To_Destination_Type_Without_Default_Constructor_Shoud_Throw_Argument_Exception()
+        public void Map_To_Destination_Type_Without_Default_Constructor_Shoud_Throw_Exception()
         {
             var simplePoco = new SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
@@ -83,7 +83,7 @@ namespace Mapster.Tests
             };
 
             action.ShouldThrow<CompileException>()
-                .InnerException.ShouldBeOfType<ArgumentException>();
+                .InnerException.ShouldBeOfType<InvalidOperationException>();
         }
 
         #region TestClasses
