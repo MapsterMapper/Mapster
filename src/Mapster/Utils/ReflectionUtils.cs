@@ -142,7 +142,7 @@ namespace Mapster
             if (expr.NodeType == ExpressionType.MemberAccess)
             {
                 var tmp = (MemberExpression) expr;
-                if (tmp.Expression.NodeType == ExpressionType.Parameter)
+                if (tmp.Expression?.NodeType == ExpressionType.Parameter)
                     memberExpr = tmp;
                 else if (!source)
                     throw new ArgumentException("Only first level member access on destination allowed (eg. dest => dest.Name)", nameof(member));
