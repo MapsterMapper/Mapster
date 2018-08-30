@@ -10,7 +10,9 @@ namespace Mapster.Adapters
 {
     internal class DictionaryAdapter : ClassAdapter
     {
-        protected override int Score => -124;   //must do before CollectionAdapter
+        public static int DefaultScore { get; } = -124;
+
+        protected override int Score => DefaultScore;   //must do before CollectionAdapter
 
         protected override bool CanMap(PreCompileArgument arg)
         {

@@ -64,7 +64,7 @@ namespace Mapster
                 //dictionary accessor
                 new TypeAdapterRule
                 {
-                    Priority = arg => arg.SourceType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? -124 : (int?)null,
+                    Priority = arg => arg.SourceType.GetDictionaryType()?.GetGenericArguments()[0] == typeof(string) ? DictionaryAdapter.DefaultScore : (int?)null,
                     Settings = new TypeAdapterSettings
                     {
                         ValueAccessingStrategies =
