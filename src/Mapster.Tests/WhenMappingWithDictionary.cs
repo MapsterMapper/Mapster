@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -213,6 +215,64 @@ namespace Mapster.Tests
             result["_b"].ShouldBe(2);
         }
 
+        [TestMethod]
+        public void AdaptClassWithIntegerKeyDictionary()
+        {
+            TypeAdapterConfig<ClassWithIntKeyDictionary, OtherClassWithIntKeyDictionary>.NewConfig();
+            TypeAdapterConfig<Dictionary<int, SimplePoco>, Dictionary<int, SimplePoco>>.NewConfig();
+
+            var instanceWithDictionary = new ClassWithIntKeyDictionary();
+            instanceWithDictionary.Dict = new Dictionary<int, SimplePoco>
+            {
+                { 1 , new SimplePoco { Id =  Guid.NewGuid(), Name = "one"} },
+                { 100 , new SimplePoco { Id =  Guid.NewGuid(), Name = "one hundred"} },
+            };
+
+            var result = instanceWithDictionary.Adapt<OtherClassWithIntKeyDictionary>();
+            result.Dict.ShouldContainKey(1);
+            result.Dict.ShouldContainKey(100);
+            result.Dict[1].Name.ShouldBe("one");
+            result.Dict[100].Name.ShouldBe("one hundred");
+        }
+
+        [TestMethod]
+        public void AdaptClassWithIntegerKeyDictionaryInterface()
+        {
+            TypeAdapterConfig<ClassWithIntKeyIDictionary, ClassWithIntKeyIDictionary>.NewConfig();
+            TypeAdapterConfig<Dictionary<int, SimplePoco>, Dictionary<int, SimplePoco>>.NewConfig();
+            TypeAdapterConfig.GlobalSettings.ForDestinationType<IDictionary<int, SimplePoco>>().ConstructUsing(() => new Dictionary<int, SimplePoco>());
+
+            var instanceWithDictionary = new ClassWithIntKeyDictionary();
+            instanceWithDictionary.Dict = new Dictionary<int, SimplePoco>
+            {
+                { 1 , new SimplePoco { Id =  Guid.NewGuid(), Name = "one"} },
+                { 100 , new SimplePoco { Id =  Guid.NewGuid(), Name = "one hundred"} },
+            };
+
+            var result = instanceWithDictionary.Adapt<ClassWithIntKeyIDictionary>();
+            result.Dict.ShouldContainKey(1);
+            result.Dict.ShouldContainKey(100);
+            result.Dict[1].Name.ShouldBe("one");
+            result.Dict[100].Name.ShouldBe("one hundred");
+        }
+
+        [TestMethod]
+        public void AdaptClassWithObjectKeyDictionary()
+        {
+            TypeAdapterConfig<ClassWithPocoKeyDictionary, OtherClassWithPocoKeyDictionary>.NewConfig();
+            TypeAdapterConfig<Dictionary<SimplePoco, int>, Dictionary<SimplePoco, int>>.NewConfig();
+            var instanceWithDictionary = new ClassWithPocoKeyDictionary();
+            instanceWithDictionary.Dict = new Dictionary<SimplePoco, int>
+            {
+                { new SimplePoco { Id =  Guid.NewGuid(), Name = "one"}, 1 },
+                { new SimplePoco { Id =  Guid.NewGuid(), Name = "one hundred"}, 100 },
+            };
+
+            var result = instanceWithDictionary.Adapt<OtherClassWithPocoKeyDictionary>();
+            result.Dict.Keys.Any(k => k.Name == "one").ShouldBeTrue();
+            result.Dict.Keys.Any(k => k.Name == "one hundred").ShouldBeTrue();
+        }
+
         public class SimplePoco
         {
             public Guid Id { get; set; }
@@ -222,6 +282,31 @@ namespace Mapster.Tests
         public class A
         {
             public Dictionary<int, decimal> Prop { get; set; }
+        }
+
+        public class ClassWithIntKeyDictionary
+        {
+            public Dictionary<int, SimplePoco> Dict { get; set; }
+        }
+
+        public class ClassWithIntKeyIDictionary
+        {
+            public IDictionary<int, SimplePoco> Dict { get; set; }
+        }
+
+        public class OtherClassWithIntKeyDictionary
+        {
+            public Dictionary<int, SimplePoco> Dict { get; set; }
+        }
+
+        public class ClassWithPocoKeyDictionary
+        {
+            public Dictionary<SimplePoco, int> Dict { get; set; }
+        }
+
+        public class OtherClassWithPocoKeyDictionary
+        {
+            public Dictionary<SimplePoco, int> Dict { get; set; }
         }
     }
 }

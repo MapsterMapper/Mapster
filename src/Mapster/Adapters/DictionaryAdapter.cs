@@ -15,7 +15,7 @@ namespace Mapster.Adapters
         protected override bool CanMap(PreCompileArgument arg)
         {
             var dictType = arg.DestinationType.GetDictionaryType();
-            return dictType?.GetGenericArguments()[0] == typeof (string);
+            return dictType != null;
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -37,9 +37,10 @@ namespace Mapster.Adapters
             if (srcDictType == null || arg.Settings.IgnoreNonMapped == true)
                 return mapped;
 
+            var keyType = srcDictType.GetGenericArguments().First();
             var kvpType = source.Type.ExtractCollectionType();
             var kvp = Expression.Variable(kvpType, "kvp");
-            var key = Expression.Variable(typeof(string), "key");
+            var key = Expression.Variable(keyType, "key");
             var keyAssign = Expression.Assign(key, Expression.Property(kvp, "Key"));
 
             //dest[kvp.Key] = convert(kvp.Value);
@@ -141,8 +142,9 @@ namespace Mapster.Adapters
             var members = classConverter.Members;
 
             var dictType = arg.DestinationType.GetDictionaryType();
+            var keyType = dictType.GetGenericArguments()[0];
             var valueType = dictType.GetGenericArguments()[1];
-            var add = dictType.GetMethod("Add", new[] { typeof(string), valueType });
+            var add = dictType.GetMethod("Add", new[] { keyType, valueType });
 
             var lines = new List<ElementInit>();
             if (listInit != null)
