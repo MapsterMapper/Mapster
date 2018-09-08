@@ -22,12 +22,19 @@ namespace Benchmark
         {
             try
             {
+                Mapper.Initialize(cfg =>
+                {
+                    cfg.CreateMap<Foo, Foo>();
+                    cfg.CreateMap<Address, Address>();
+                    cfg.CreateMap<Address, AddressDTO>();
+                    cfg.CreateMap<Customer, CustomerDTO>();                   
+                });
                 TestSimpleTypes();
                 TestComplexTypes();
 
                 Console.WriteLine();
-                Console.WriteLine("Automapper v6.0.2 to Mapster v3.0.2 ratio: " + (TotalAutomapperTime / TotalMapsterTime).ToString("###.00") + " X slower");
-                Console.WriteLine("ExpressMapper v1.9.1 to Mapster v3.0.2 ratio: " + (TotalExpressMapperTime / TotalMapsterTime).ToString("###.00") + " X slower");
+                Console.WriteLine("Automapper v7.0.1 to Mapster v3.1.8 ratio: " + (TotalAutomapperTime / TotalMapsterTime).ToString("###.00") + " X slower");
+                Console.WriteLine("ExpressMapper v1.9.1 to Mapster v3.1.8 ratio: " + (TotalExpressMapperTime / TotalMapsterTime).ToString("###.00") + " X slower");
                 Console.WriteLine();
 
             }
@@ -50,7 +57,6 @@ namespace Benchmark
 
             var foo = GetFoo();
 
-            Mapper.Initialize(cfg => cfg.CreateMap<Foo, Foo>());
             Mapper.Map<Foo, Foo>(foo);
             //Mapper.Configuration
 
@@ -87,13 +93,6 @@ namespace Benchmark
 
             var customer = GetCustomer();
 
-            Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<Address, Address>();
-                cfg.CreateMap<Address, AddressDTO>();
-                cfg.CreateMap<Customer, CustomerDTO>();
-
-            });
             Mapper.Map<Customer, CustomerDTO>(customer);
 
             //TypeAdapterConfig.GlobalSettings.DestinationTransforms.Upsert<Guid>(x => x);
@@ -110,7 +109,7 @@ namespace Benchmark
 
             Test(customer, 1000000);
 
-            //Test(customer, 10000000);
+            Test(customer, 10000000);
 
             //Console.WriteLine();
             //Console.WriteLine("Automapper to Mapster ratio: " + (AutomapperTime/MapsterTime).ToString("###.00") + " X slower");

@@ -5,12 +5,6 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Mapster")]
-[assembly: AssemblyDescription("A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Mapster")]
-[assembly: AssemblyCopyright("Copyright © Chaowlert Chaisrichalermpol, Eric Swann 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

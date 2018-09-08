@@ -1,165 +1,33 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7E1F904D-B410-417A-9212-66E55F0AAB91}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mapster.Tests</RootNamespace>
-    <AssemblyName>Mapster.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
-    <IsCodedUITest>False</IsCodedUITest>
-    <TestProjectType>UnitTest</TestProjectType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Mapster.Tests.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="ExpressionDebugger, Version=1.0.2.0, Culture=neutral, PublicKeyToken=b4df16a241f24dde, processorArchitecture=MSIL">
-      <HintPath>..\packages\ExpressionDebugger.1.0.2\lib\net45\ExpressionDebugger.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Shouldly, Version=2.8.2.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
-      <HintPath>..\packages\Shouldly.2.8.2\lib\net451\Shouldly.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-  </ItemGroup>
-  <Choose>
-    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
-  <ItemGroup>
-    <Compile Include="Classes\Address.cs" />
-    <Compile Include="Classes\Customer.cs" />
-    <Compile Include="Classes\Product.cs" />
-    <Compile Include="Classes\TypeTestClass.cs" />
-    <Compile Include="Diagnostics\DebugInfoInjectorEx.cs" />
-    <Compile Include="Diagnostics\GlobalReference.cs" />
-    <Compile Include="Diagnostics\TypeAdapterConfigExtensions.cs" />
-    <Compile Include="WhenCloningConfig.cs" />
-    <Compile Include="WhenCompilingConfig.cs" />
-    <Compile Include="WhenConvertingFromObjects.cs" />
-    <Compile Include="WhenCreatingConfigInstance.cs" />
-    <Compile Include="WhenIgnoringConditionally.cs" />
-    <Compile Include="WhenIgnoringNonMapped.cs" />
-    <Compile Include="WhenIncludeDerivedClasses.cs" />
-    <Compile Include="WhenForkingConfig.cs" />
-    <Compile Include="WhenMappingComplexClasses.cs" />
-    <Compile Include="WhenMappingDerived.cs" />
-    <Compile Include="WhenMappingArrays.cs" />
-    <Compile Include="WhenMappingIEnumerableClass.cs" />
-    <Compile Include="WhenMappingPrivateFieldsAndProperties.cs" />
-    <Compile Include="WhenMappingWithDictionary.cs" />
-    <Compile Include="WhenMappingRecordTypes.cs" />
-    <Compile Include="WhenMappingIgnoreNullValues.cs" />
-    <Compile Include="WhenMappingWithExtensionMethods.cs" />
-    <Compile Include="WhenMappingWithFlexibleName.cs" />
-    <Compile Include="WhenMappingWithGetMethod.cs" />
-    <Compile Include="WhenMappingWithOpenGenerics.cs" />
-    <Compile Include="WhenPerformingAfterMapping.cs" />
-    <Compile Include="WhenPassingRuntimeValue.cs" />
-    <Compile Include="WhenPreserveReferences.cs" />
-    <Compile Include="WhenAddingCustomMappings.cs" />
-    <Compile Include="WhenHandlingUnmappedMembers.cs" />
-    <Compile Include="WhenExplicitMappingRequired.cs" />
-    <Compile Include="WhenMappingConditionally.cs" />
-    <Compile Include="WhenMappingErrorThrown.cs" />
-    <Compile Include="WhenMappingWithExplicitInheritance.cs" />
-    <Compile Include="WhenMappingWithImplicitInheritance.cs" />
-    <Compile Include="WhenMappingNonPublicSetters.cs" />
-    <Compile Include="WhenMappingEntityWithOnlyPrimitives.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WhenMappingEnums.cs" />
-    <Compile Include="WhenMappingCollections.cs" />
-    <Compile Include="WhenFlattening.cs" />
-    <Compile Include="WhenMappingNullablePrimitives.cs" />
-    <Compile Include="WhenMappingPrimitives.cs" />
-    <Compile Include="WhenConfiguringMapping.cs" />
-    <Compile Include="WhenMappingWithInstance.cs" />
-    <Compile Include="WhenPerformingDestinationTransforms.cs" />
-    <Compile Include="WhenProjecting.cs" />
-    <Compile Include="WhenRegisteringAndMappingRace.cs" />
-    <Compile Include="WhenRunningOnMultipleThreads.cs" />
-    <Compile Include="WhenScanningForRegisters.cs" />
-    <Compile Include="WhenSettingMapToTargetWith.cs" />
-    <Compile Include="WhenUsingAttribute.cs" />
-    <Compile Include="WhenUsingConverterFactory.cs" />
-    <Compile Include="WhenUsingRuleBasedSetting.cs" />
-    <Compile Include="WhenUsingNonDefaultConstructor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Mapster.Tests.snk" />
-    <EmbeddedResource Include="mock.keys" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Mapster\Mapster.csproj">
-      <Project>{994a64a1-c542-4b4a-a4d6-4cc93a8b59ba}</Project>
-      <Name>Mapster</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <AssemblyName>Mapster.Tests</AssemblyName>
+        <AssemblyOriginatorKeyFile>Mapster.Tests.snk</AssemblyOriginatorKeyFile>
+        <SignAssembly>true</SignAssembly>
+        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
+        <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
+        <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+        <PackageReference Include="Shouldly" Version="3.0.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+        <PackageReference Include="ExpressionDebugger" Version="1.0.5" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Mapster\Mapster.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="packages.config" />
+      <None Remove="mock.keys" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="mock.keys" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="Diagnostics\DebugInfoInjectorEx.cs" />
+    </ItemGroup>
 </Project>

@@ -131,6 +131,7 @@ namespace Mapster.Tests
                 get { return _name; }
                 set
                 {
+                    _name = value;
                     throw new InvalidOperationException("Something bad happened!!!");
                 }
             }
