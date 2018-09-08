@@ -1,135 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{994A64A1-C542-4B4A-A4D6-4CC93A8B59BA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mapster</RootNamespace>
-    <AssemblyName>Mapster</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <CopyNuGetImplementations>false</CopyNuGetImplementations>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <DebugSymbols>true</DebugSymbols>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>
-    </DocumentationFile>
-    <BaseAddress>1124073472</BaseAddress>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Adapter.cs" />
-    <Compile Include="Adapters\ArrayAdapter.cs" />
-    <Compile Include="Adapters\BaseAdapter.cs" />
-    <Compile Include="Adapters\BaseAfterMapper.cs" />
-    <Compile Include="Adapters\BaseClassAdapter.cs" />
-    <Compile Include="Adapters\DelegateAdapter.cs" />
-    <Compile Include="Adapters\DictionaryAdapter.cs" />
-    <Compile Include="Adapters\EnumAdapter.cs" />
-    <Compile Include="Adapters\CollectionAdapter.cs" />
-    <Compile Include="Adapters\MultiDimensionalArrayAdapter.cs" />
-    <Compile Include="Adapters\ObjectAdapter.cs" />
-    <Compile Include="Adapters\RecordTypeAdapter.cs" />
-    <Compile Include="Adapters\StringAdapter.cs" />
-    <Compile Include="Attributes\AdaptIgnoreAttribute.cs" />
-    <Compile Include="Attributes\AdaptMemberAttribute.cs" />
-    <Compile Include="Compile\CompileArgument.cs" />
-    <Compile Include="Compile\CompileContext.cs" />
-    <Compile Include="Compile\CompileException.cs" />
-    <Compile Include="Compile\PreCompileArgument.cs" />
-    <Compile Include="Enums\EnumMappingStrategy.cs" />
-    <Compile Include="Enums\MemberSide.cs" />
-    <Compile Include="Interfaces\IApplyable.cs" />
-    <Compile Include="Interfaces\IRegister.cs" />
-    <Compile Include="MapContext\MapContext.cs" />
-    <Compile Include="MapContext\MapContextScope.cs" />
-    <Compile Include="Enums\MapType.cs" />
-    <Compile Include="Models\IMemberModelEx.cs" />
-    <Compile Include="Models\KeyValuePairModel.cs" />
-    <Compile Include="Settings\GetMemberName.cs" />
-    <Compile Include="Settings\NameMatchingStrategy.cs" />
-    <Compile Include="Interfaces\IAdapter.cs" />
-    <Compile Include="Settings\IgnoreIfDictionary.cs" />
-    <Compile Include="Settings\SettingStore.cs" />
-    <Compile Include="Settings\TransformsCollection.cs" />
-    <Compile Include="Settings\ShouldMapMember.cs" />
-    <Compile Include="TypeAdapterBuilder.cs" />
-    <Compile Include="TypeAdapterRule.cs" />
-    <Compile Include="Utils\ReferenceComparer.cs" />
-    <Compile Include="Settings\ValueAccessingStrategy.cs" />
-    <Compile Include="Enums\AccessModifier.cs" />
-    <Compile Include="Utils\BlockExpressionDetector.cs" />
-    <Compile Include="Models\ClassMapping.cs" />
-    <Compile Include="Models\ClassModel.cs" />
-    <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Models\IMemberModel.cs" />
-    <Compile Include="Utils\ParameterExpressionReplacer.cs" />
-    <Compile Include="Models\ParameterModel.cs" />
-    <Compile Include="Models\PropertyModel.cs" />
-    <Compile Include="Models\TypeTuple.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="Models\InvokerModel.cs" />
-    <Compile Include="Models\MemberMapping.cs" />
-    <Compile Include="TypeAdapterSetter.cs" />
-    <Compile Include="TypeAdapterSettings.cs" />
-    <Compile Include="TypeAdapterConfig.cs" />
-    <Compile Include="Utils\Enum.cs" />
-    <Compile Include="Utils\ExpressionEx.cs" />
-    <Compile Include="Utils\CoreExtensions.cs" />
-    <Compile Include="Adapters\PrimitiveAdapter.cs" />
-    <Compile Include="Adapters\ClassAdapter.cs" />
-    <Compile Include="TypeAdapter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\ReflectionUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Mapster.snk" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
+        <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
+        <Authors>chaowlert;eric_swann</Authors>
+        <TargetFrameworks>netstandard1.3;net45;net40</TargetFrameworks>
+        <AssemblyName>Mapster</AssemblyName>
+        <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
+        <SignAssembly>true</SignAssembly>
+        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+        <PackageId>Mapster</PackageId>
+        <PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
+        <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
+        <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/MapsterMapper/Mapster/blob/master/LICENSE</PackageLicenseUrl>
+        <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Version>3.1.8</Version>
+        <RootNamespace>Mapster</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+        <Reference Include="Microsoft.CSharp" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+        <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
+        <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+        <PackageReference Include="System.Runtime" Version="4.3.0" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+        <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
+    </ItemGroup>
 </Project>
