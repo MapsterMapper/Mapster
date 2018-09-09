@@ -41,7 +41,7 @@ Mapster also provides extensions to map queryables.
 ### Performance
 Don't let other libraries slow you down, Mapster is at least 2.5 times faster!
 
-![image](https://user-images.githubusercontent.com/5763993/45261155-39b8c480-b425-11e8-8845-ada748dcae19.png)
+![image](https://user-images.githubusercontent.com/5763993/45261206-11ca6080-b427-11e8-8ada-c9766148d810.png)
 
 ### What's new in 3.0
 
