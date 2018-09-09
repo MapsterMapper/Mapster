@@ -15,9 +15,12 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return arg.SourceType.IsCollection()
-                   && arg.DestinationType.IsCollection()
-                   && arg.DestinationType.IsListCompatible();
+            if (!arg.SourceType.IsCollection() || !arg.DestinationType.IsCollection())
+                return false;
+            if (arg.DestinationType.IsListCompatible())
+                return true;
+
+            return arg.DestinationType.GetDictionaryType() != null;
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -41,11 +44,22 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            var destinationElementType = arg.DestinationType.ExtractCollectionType();
+            var listType = arg.DestinationType;
+            if (arg.DestinationType.GetTypeInfo().IsInterface)
+            {
+                var dict = arg.DestinationType.GetDictionaryType();
+                if (dict != null)
+                {
+                    var dictArgs = dict.GetGenericArguments();
+                    listType = typeof(Dictionary<,>).MakeGenericType(dictArgs);
+                }
+                else
+                {
+                    var destinationElementType = arg.DestinationType.ExtractCollectionType();
+                    listType = typeof(List<>).MakeGenericType(destinationElementType);
+                }
+            }
             var count = ExpressionEx.CreateCountExpression(source, false);
-            var listType = arg.DestinationType.GetTypeInfo().IsInterface
-                ? typeof(List<>).MakeGenericType(destinationElementType)
-                : arg.DestinationType;
             if (count == null)
                 return Expression.New(listType);            //new List<T>()
             var ctor = (from c in listType.GetConstructors()

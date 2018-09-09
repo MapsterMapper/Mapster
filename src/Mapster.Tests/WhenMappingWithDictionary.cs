@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -218,9 +219,6 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptClassWithIntegerKeyDictionary()
         {
-            TypeAdapterConfig<ClassWithIntKeyDictionary, OtherClassWithIntKeyDictionary>.NewConfig();
-            TypeAdapterConfig<Dictionary<int, SimplePoco>, Dictionary<int, SimplePoco>>.NewConfig();
-
             var instanceWithDictionary = new ClassWithIntKeyDictionary();
             instanceWithDictionary.Dict = new Dictionary<int, SimplePoco>
             {
@@ -238,10 +236,6 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptClassWithIntegerKeyDictionaryInterface()
         {
-            TypeAdapterConfig<ClassWithIntKeyIDictionary, ClassWithIntKeyIDictionary>.NewConfig();
-            TypeAdapterConfig<Dictionary<int, SimplePoco>, Dictionary<int, SimplePoco>>.NewConfig();
-            TypeAdapterConfig.GlobalSettings.ForDestinationType<IDictionary<int, SimplePoco>>().ConstructUsing(() => new Dictionary<int, SimplePoco>());
-
             var instanceWithDictionary = new ClassWithIntKeyDictionary();
             instanceWithDictionary.Dict = new Dictionary<int, SimplePoco>
             {
@@ -254,13 +248,12 @@ namespace Mapster.Tests
             result.Dict.ShouldContainKey(100);
             result.Dict[1].Name.ShouldBe("one");
             result.Dict[100].Name.ShouldBe("one hundred");
+            result.Dict.ShouldNotBeSameAs(instanceWithDictionary.Dict);
         }
 
         [TestMethod]
         public void AdaptClassWithObjectKeyDictionary()
         {
-            TypeAdapterConfig<ClassWithPocoKeyDictionary, OtherClassWithPocoKeyDictionary>.NewConfig();
-            TypeAdapterConfig<Dictionary<SimplePoco, int>, Dictionary<SimplePoco, int>>.NewConfig();
             var instanceWithDictionary = new ClassWithPocoKeyDictionary();
             instanceWithDictionary.Dict = new Dictionary<SimplePoco, int>
             {

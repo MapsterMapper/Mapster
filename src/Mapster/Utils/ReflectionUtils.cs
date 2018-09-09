@@ -58,6 +58,7 @@ namespace Mapster
             var bindingFlags = BindingFlags.Instance | accessorFlags;
 
             var properties = type.GetProperties(bindingFlags)
+                .Where(x => x.GetIndexParameters().Length == 0)
                 .Where(x => allowNoSetter || x.CanWrite)
                 .Select(CreateModel);
 

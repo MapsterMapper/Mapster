@@ -17,7 +17,7 @@ namespace Mapster.Adapters
         protected override bool CanMap(PreCompileArgument arg)
         {
             var dictType = arg.DestinationType.GetDictionaryType();
-            return dictType != null;
+            return dictType?.GetGenericArguments()[0] == typeof(string);
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)

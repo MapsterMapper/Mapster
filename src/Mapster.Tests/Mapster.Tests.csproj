@@ -16,6 +16,7 @@
         <PackageReference Include="Shouldly" Version="3.0.0" />
         <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
         <PackageReference Include="ExpressionDebugger" Version="1.0.5" />
+        <PackageReference Include="Mapster.Diagnostics" Version="1.0.2" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Mapster\Mapster.csproj" />
@@ -29,5 +30,7 @@
     </ItemGroup>
     <ItemGroup>
       <Compile Remove="Diagnostics\DebugInfoInjectorEx.cs" />
+      <Compile Remove="Diagnostics\GlobalReference.cs" />
+      <Compile Remove="Diagnostics\TypeAdapterConfigExtensions.cs" />
     </ItemGroup>
 </Project>
