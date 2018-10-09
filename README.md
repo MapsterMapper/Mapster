@@ -39,9 +39,10 @@ Mapster also provides extensions to map queryables.
     }
 
 ### Performance
-Don't let other libraries slow you down, Mapster is at least 2.5 times faster!
+Don't let other libraries slow you down, raw Mapster performance is at least 2.5 times faster!  
+And you can boost another 1.3 - 4.0 times faster with [FastExpressionCompiler](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)!
 
-![image](https://user-images.githubusercontent.com/5763993/45261155-39b8c480-b425-11e8-8845-ada748dcae19.png)
+<img width="932" alt="screen shot 2018-10-08 at 21 27 55" src="https://user-images.githubusercontent.com/5763993/46615061-8cc78980-cb41-11e8-8bea-b04d9fcabccd.png">
 
 ### What's new in 3.0
 
