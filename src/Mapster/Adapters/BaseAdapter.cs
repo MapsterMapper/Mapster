@@ -178,7 +178,7 @@ namespace Mapster.Adapters
             //  result.prop = adapt(source.prop);
             //}
             //return result;
-            if (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable())
+            if (source.CanBeNull())
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 set = Expression.IfThenElse(
@@ -249,8 +249,7 @@ namespace Mapster.Adapters
 
             var exp = CreateInlineExpression(source, arg);
 
-            if (arg.MapType != MapType.Projection
-                && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
+            if (arg.MapType != MapType.Projection && source.CanBeNull())
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 exp = Expression.Condition(
@@ -305,7 +304,8 @@ namespace Mapster.Adapters
 
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)
         {
-            if (source.Type == destinationType && (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
+            if (source.Type == destinationType && 
+                (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection || source.ShouldShallowCopy()))
                 return source;
 
             //adapt(source);
@@ -316,9 +316,7 @@ namespace Mapster.Adapters
             if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))
             {
                 var transform = arg.Settings.DestinationTransforms.Transforms[exp.Type];
-                var replacer = new ParameterExpressionReplacer(transform.Parameters, exp);
-                var newExp = replacer.Visit(transform.Body);
-                exp = replacer.ReplaceCount >= 2 ? Expression.Invoke(transform, exp) : newExp;
+                exp = transform.Apply(exp);
             }
             return exp.To(destinationType);
         }
@@ -328,7 +326,7 @@ namespace Mapster.Adapters
             if (destination == null)
                 return CreateAdaptExpression(source, arg.DestinationType, arg);
 
-            if (source.Type == destination.Type && arg.Settings.ShallowCopyForSameType == true)
+            if (source.Type == destination.Type && (arg.Settings.ShallowCopyForSameType == true || source.ShouldShallowCopy()))
                 return source;
 
             //adapt(source, dest);
@@ -339,9 +337,7 @@ namespace Mapster.Adapters
             if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))
             {
                 var transform = arg.Settings.DestinationTransforms.Transforms[exp.Type];
-                var replacer = new ParameterExpressionReplacer(transform.Parameters, exp);
-                var newExp = replacer.Visit(transform.Body);
-                exp = replacer.ReplaceCount >= 2 ? Expression.Invoke(transform, exp) : newExp;
+                exp = transform.Apply(exp);
             }
             return exp.To(destination.Type);
         }

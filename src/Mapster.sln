@@ -9,11 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster", "Mapster\Mapster.csproj", "{C1137DAE-26D6-47BD-985A-BA619549E633}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster", "Mapster\Mapster.csproj", "{C1137DAE-26D6-47BD-985A-BA619549E633}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Tests", "Mapster.Tests\Mapster.Tests.csproj", "{1DD1735E-5BE9-4193-957F-B9D5B267AB1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Tests", "Mapster.Tests\Mapster.Tests.csproj", "{1DD1735E-5BE9-4193-957F-B9D5B267AB1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{D00BFDEA-33A4-4F20-A577-2E8C06C391D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{D00BFDEA-33A4-4F20-A577-2E8C06C391D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {83B87DBA-277C-49F1-B597-E3B78C2C8275}
 	EndGlobalSection
 EndGlobal

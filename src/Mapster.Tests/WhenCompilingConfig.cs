@@ -28,22 +28,22 @@ namespace Mapster.Tests
             TypeAdapterConfig.GlobalSettings.Compile();
         }
 
-        class MainSrc
+        public class MainSrc
         {
             public int SrcId { get; set; }
             public List<SrcItem> SrcItems { get; set; }
         }
-        class MainDest
+        public class MainDest
         {
             public int DestId { get; set; }
             public List<DestItem> DestItems { get; set; }
         }
-        class SrcItem
+        public class SrcItem
         {
             public int ItemId { get; set; }
             public string StringData { get; set; }
         }
-        class DestItem
+        public class DestItem
         {
             public int ItemId { get; set; }
             public string StringData { get; set; }

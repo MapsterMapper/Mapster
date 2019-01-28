@@ -80,7 +80,7 @@ namespace Mapster.Adapters
                     : CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
 
                 Expression itemAssign = member.DestinationMember.SetExpression(destination, value);
-                if (arg.Settings.IgnoreNullValues == true && (!member.Getter.Type.GetTypeInfo().IsValueType || member.Getter.Type.IsNullable()))
+                if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
                 {
                     var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);
@@ -146,7 +146,7 @@ namespace Mapster.Adapters
                     && !member.Getter.Type.IsCollection()
                     && !member.DestinationMember.Type.IsCollection()
                     && member.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute")
-                    && (!member.Getter.Type.GetTypeInfo().IsValueType || member.Getter.Type.IsNullable()))
+                    && member.Getter.CanBeNull())
                 {
                     var compareNull = Expression.Equal(member.Getter, Expression.Constant(null, member.Getter.Type));
                     value = Expression.Condition(

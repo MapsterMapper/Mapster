@@ -46,7 +46,7 @@ namespace Mapster.Adapters
                 {
                     getter = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
 
-                    if (arg.Settings.IgnoreNullValues == true && (!member.Getter.Type.GetTypeInfo().IsValueType || member.Getter.Type.IsNullable()))
+                    if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
                     {
                         var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                         getter = Expression.Condition(condition, getter, defaultConst);

@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Mapster.Utils
 {
-    internal static class Enum<TEnum> where TEnum : struct 
+    public static class Enum<TEnum> where TEnum : struct 
     {
         private static readonly Dictionary<string, TEnum> _lookup = ((TEnum[])Enum.GetValues(typeof(TEnum))).ToDictionary(x => x.ToString().ToUpperInvariant(), y => y);
         private static readonly Dictionary<TEnum, string> _reverseLookup = ((TEnum[])Enum.GetValues(typeof(TEnum))).ToDictionary(x => x, y => y.ToString());

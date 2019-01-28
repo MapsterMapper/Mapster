@@ -20,7 +20,10 @@ namespace Mapster.Utils
         public static Expression Apply(this LambdaExpression lambda, params Expression[] exps)
         {
             var replacer = new ParameterExpressionReplacer(lambda.Parameters, exps);
-            return replacer.Visit(lambda.Body);
+            var result = replacer.Visit(lambda.Body);
+            if (replacer.ReplaceCounts.Max() <= 1 || !exps.Any(IsComplex))
+                return result;
+            return Expression.Invoke(lambda, exps);
         }
 
         public static Expression TrimConversion(this Expression exp, bool force = false)
@@ -30,7 +33,7 @@ namespace Mapster.Utils
                 var unary = (UnaryExpression) exp;
                 if (force || unary.Type.IsReferenceAssignableFrom(unary.Operand.Type))
                     exp = unary.Operand;
-                else 
+                else
                     break;
             }
             return exp;
@@ -176,6 +179,29 @@ namespace Mapster.Utils
             );
 
             return loop;
+        }
+
+        public static bool CanBeNull(this Expression exp)
+        {
+            if (!exp.Type.CanBeNull())
+                return false;
+            var visitor = new NullableExpressionVisitor();
+            visitor.Visit(exp);
+            return visitor.CanBeNull.GetValueOrDefault();
+        }
+
+        public static bool ShouldShallowCopy(this Expression exp)
+        {
+            var visitor = new NewExpressionVisitor();
+            visitor.Visit(exp);
+            return visitor.IsNew.GetValueOrDefault();
+        }
+
+        public static bool IsComplex(this Expression exp)
+        {
+            var visitor = new ComplexExpressionVisitor();
+            visitor.Visit(exp);
+            return visitor.IsComplex;
         }
     }
 }

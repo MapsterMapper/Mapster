@@ -40,6 +40,11 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
         }
 
+        public static bool CanBeNull(this Type type)
+        {
+            return !type.GetTypeInfo().IsValueType || type.IsNullable();
+        }
+
         public static bool IsPoco(this Type type, BindingFlags accessorFlags = BindingFlags.Public)
         {
             //not nullable
@@ -119,9 +124,7 @@ namespace Mapster
 
         public static object GetDefault(this Type type)
         {
-            return type.GetTypeInfo().IsValueType && !type.IsNullable()
-                ? Activator.CreateInstance(type)
-                : null;
+            return type.CanBeNull() ? null : Activator.CreateInstance(type);
         }
 
         public static Type UnwrapNullable(this Type type)

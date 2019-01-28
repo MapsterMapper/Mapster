@@ -96,7 +96,7 @@ namespace Mapster.Adapters
             //if (kvp.Value != null)
             //  dest[kvp.Key] = convert(kvp.Value);
             var kvpValueType = kvpType.GetGenericArguments()[1];
-            if (arg.Settings.IgnoreNullValues == true && (!kvpValueType.GetTypeInfo().IsValueType || kvpValueType.IsNullable()))
+            if (arg.Settings.IgnoreNullValues == true && kvpValueType.CanBeNull())
                 set = Expression.IfThen(
                     Expression.NotEqual(
                         Expression.Property(kvp, "Value"),

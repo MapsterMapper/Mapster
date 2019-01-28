@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mapster.Utils;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -30,8 +31,7 @@ namespace Mapster.Adapters
                 if (convert.Type != destinationType)
                     convert = Expression.Convert(convert, destinationType);
 
-                if (arg.MapType != MapType.Projection
-                    && (!arg.SourceType.GetTypeInfo().IsValueType || arg.SourceType.IsNullable()))
+                if (arg.MapType != MapType.Projection && source.CanBeNull())
                 {
                     //src == null ? default(TDestination) : convert(src)
                     var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
