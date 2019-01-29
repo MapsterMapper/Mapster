@@ -44,17 +44,11 @@ And you can boost another 1.3 - 4.0 times faster with [FastExpressionCompiler](h
 
 <img width="932" alt="screen shot 2018-10-08 at 21 27 55" src="https://user-images.githubusercontent.com/5763993/46615061-8cc78980-cb41-11e8-8bea-b04d9fcabccd.png">
 
-### What's new in 3.0
+### What's new in 3.3
 
-Debugging generated mapping function!
+Step-into debugging now working in .NET Core!!!
 ![image](https://cloud.githubusercontent.com/assets/5763993/26521773/180427b6-431b-11e7-9188-10c01fa5ba5c.png)
 
-Mapping your DTOs directly to EF6!
-```
-var poco = dto.BuildAdapter()
-              .CreateEntityFromContext(db)
-              .AdaptToType<DomainPoco>();
-```
 
 ### Change logs
 https://github.com/MapsterMapper/Mapster/releases
