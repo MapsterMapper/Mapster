@@ -190,13 +190,6 @@ namespace Mapster.Utils
             return visitor.CanBeNull.GetValueOrDefault();
         }
 
-        public static bool ShouldShallowCopy(this Expression exp)
-        {
-            var visitor = new NewExpressionVisitor();
-            visitor.Visit(exp);
-            return visitor.IsNew.GetValueOrDefault();
-        }
-
         public static bool IsComplex(this Expression exp)
         {
             var visitor = new ComplexExpressionVisitor();

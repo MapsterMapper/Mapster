@@ -10,8 +10,8 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenCompilingConfig
     {
-        [TestCleanup]
-        public void TestCleanup()
+        [TestInitialize]
+        public void Setup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
         }

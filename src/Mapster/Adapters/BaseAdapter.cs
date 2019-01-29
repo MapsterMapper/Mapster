@@ -92,99 +92,102 @@ namespace Mapster.Adapters
 
             //var result = new TDest();
             var result = Expression.Variable(arg.DestinationType, "result");
-            var newObj = CreateInstantiationExpression(source, destination, arg);
-            Expression assign = Expression.Assign(result, newObj);
+            var set = CreateInstantiationExpression(source, destination, arg);
 
-            var set = CreateBlockExpression(source, result, arg);
-
-            //result.prop = adapt(source.prop);
-            //action(source, result);
-            if (arg.Settings.AfterMappingFactories.Count > 0)
+            if (set.NodeType != ExpressionType.Throw)
             {
-                var actions = new List<Expression> { set };
+                Expression assign = Expression.Assign(result, set);
+                set = CreateBlockExpression(source, result, arg);
 
-                foreach (var afterMappingFactory in arg.Settings.AfterMappingFactories)
+                //result.prop = adapt(source.prop);
+                //action(source, result);
+                if (arg.Settings.AfterMappingFactories.Count > 0)
                 {
-                    var afterMapping = afterMappingFactory(arg);
-                    var args = afterMapping.Parameters;
-                    Expression invoke;
-                    if (args[0].Type.IsReferenceAssignableFrom(source.Type) && args[1].Type.IsReferenceAssignableFrom(result.Type))
+                    var actions = new List<Expression> { set };
+
+                    foreach (var afterMappingFactory in arg.Settings.AfterMappingFactories)
                     {
-                        var replacer = new ParameterExpressionReplacer(args, source, result);
-                        invoke = replacer.Visit(afterMapping.Body);
+                        var afterMapping = afterMappingFactory(arg);
+                        var args = afterMapping.Parameters;
+                        Expression invoke;
+                        if (args[0].Type.IsReferenceAssignableFrom(source.Type) && args[1].Type.IsReferenceAssignableFrom(result.Type))
+                        {
+                            var replacer = new ParameterExpressionReplacer(args, source, result);
+                            invoke = replacer.Visit(afterMapping.Body);
+                        }
+                        else
+                        {
+                            invoke = Expression.Invoke(afterMapping, source.To(args[0].Type), result.To(args[1].Type));
+                        }
+                        actions.Add(invoke);
                     }
-                    else
-                    {
-                        invoke = Expression.Invoke(afterMapping, source.To(args[0].Type), result.To(args[1].Type));
-                    }
-                    actions.Add(invoke);
+
+                    set = Expression.Block(actions);
                 }
 
-                set = Expression.Block(actions);
-            }
+                //using (var scope = new MapContextScope()) {
+                //  var references = scope.Context.Reference;
+                //  object cache;
+                //  if (references.TryGetValue(source, out cache))
+                //      result = (TDestination)cache;
+                //  else {
+                //      result = new TDestination();
+                //      references[source] = (object)result;
+                //      result.prop = adapt(source.prop);
+                //  }
+                //}
+                if (arg.Settings.PreserveReference == true &&
+                    !arg.SourceType.GetTypeInfo().IsValueType &&
+                    !arg.DestinationType.GetTypeInfo().IsValueType)
+                {
+                    var scope = Expression.Variable(typeof(MapContextScope), "scope");
+                    var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
 
-            //using (var scope = new MapContextScope()) {
-            //  var references = scope.Context.Reference;
-            //  object cache;
-            //  if (references.TryGetValue(source, out cache))
-            //      result = (TDestination)cache;
-            //  else {
-            //      result = new TDestination();
-            //      references[source] = (object)result;
-            //      result.prop = adapt(source.prop);
-            //  }
-            //}
-            if (arg.Settings.PreserveReference == true &&
-                !arg.SourceType.GetTypeInfo().IsValueType &&
-                !arg.DestinationType.GetTypeInfo().IsValueType)
-            {
-                var scope = Expression.Variable(typeof(MapContextScope), "scope");
-                var newScope = Expression.Assign(scope, Expression.New(typeof(MapContextScope)));
+                    var dictType = typeof(Dictionary<object, object>);
+                    var dict = Expression.Variable(dictType, "references");
+                    var refContext = Expression.Property(scope, "Context");
+                    var refDict = Expression.Property(refContext, "References");
+                    var assignDict = Expression.Assign(dict, refDict);
 
-                var dictType = typeof(Dictionary<object, object>);
-                var dict = Expression.Variable(dictType, "references");
-                var refContext = Expression.Property(scope, "Context");
-                var refDict = Expression.Property(refContext, "References");
-                var assignDict = Expression.Assign(dict, refDict);
+                    var indexer = dictType.GetProperties().First(item => item.GetIndexParameters().Length > 0);
+                    var refAssign = Expression.Assign(
+                        Expression.Property(dict, indexer, Expression.Convert(source, typeof(object))),
+                        Expression.Convert(result, typeof(object)));
+                    var setResultAndCache = Expression.Block(assign, refAssign, set);
 
-                var indexer = dictType.GetProperties().First(item => item.GetIndexParameters().Length > 0);
-                var refAssign = Expression.Assign(
-                    Expression.Property(dict, indexer, Expression.Convert(source, typeof(object))),
-                    Expression.Convert(result, typeof(object)));
-                var setResultAndCache = Expression.Block(assign, refAssign, set);
+                    var cache = Expression.Variable(typeof(object), "cache");
+                    var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
+                    var checkHasRef = Expression.Call(dict, tryGetMethod, source, cache);
+                    var setResult = Expression.IfThenElse(
+                        checkHasRef,
+                        ExpressionEx.Assign(result, cache),
+                        setResultAndCache);
+                    var usingBody = Expression.Block(new[] { cache, dict }, assignDict, setResult);
 
-                var cache = Expression.Variable(typeof(object), "cache");
-                var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
-                var checkHasRef = Expression.Call(dict, tryGetMethod, source, cache);
-                var setResult = Expression.IfThenElse(
-                    checkHasRef,
-                    ExpressionEx.Assign(result, cache),
-                    setResultAndCache);
-                var usingBody = Expression.Block(new[] { cache, dict }, assignDict, setResult);
+                    var dispose = Expression.Call(scope, "Dispose", null);
+                    set = Expression.Block(new[] { scope }, newScope, Expression.TryFinally(usingBody, dispose));
+                }
+                else
+                {
+                    set = Expression.Block(assign, set);
+                }
 
-                var dispose = Expression.Call(scope, "Dispose", null);
-                set = Expression.Block(new[] { scope }, newScope, Expression.TryFinally(usingBody, dispose));
-            }
-            else
-            {
-                set = Expression.Block(assign, set);
-            }
-
-            //TDestination result;
-            //if (source == null)
-            //  result = default(TDestination);
-            //else {
-            //  result = new TDestination();
-            //  result.prop = adapt(source.prop);
-            //}
-            //return result;
-            if (source.CanBeNull())
-            {
-                var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
-                set = Expression.IfThenElse(
-                    compareNull,
-                    Expression.Assign(result, destination ?? arg.DestinationType.CreateDefault()),
-                    set);
+                //TDestination result;
+                //if (source == null)
+                //  result = default(TDestination);
+                //else {
+                //  result = new TDestination();
+                //  result.prop = adapt(source.prop);
+                //}
+                //return result;
+                if (source.CanBeNull())
+                {
+                    var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
+                    set = Expression.IfThenElse(
+                        compareNull,
+                        Expression.Assign(result, destination ?? arg.DestinationType.CreateDefault()),
+                        set);
+                }
             }
 
             //var drvdSource = source as TDerivedSource
@@ -243,6 +246,7 @@ namespace Mapster.Adapters
 
             return Expression.Block(new[] { result }, set, result);
         }
+
         protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
             //source == null ? default(TDestination) : adapt(source)
@@ -305,7 +309,7 @@ namespace Mapster.Adapters
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)
         {
             if (source.Type == destinationType &&
-                (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection || source.ShouldShallowCopy()))
+                (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
                 return source;
 
             //adapt(source);
@@ -326,7 +330,7 @@ namespace Mapster.Adapters
             if (destination == null)
                 return CreateAdaptExpression(source, arg.DestinationType, arg);
 
-            if (source.Type == destination.Type && (arg.Settings.ShallowCopyForSameType == true || source.ShouldShallowCopy()))
+            if (source.Type == destination.Type && arg.Settings.ShallowCopyForSameType == true)
                 return source;
 
             //adapt(source, dest);

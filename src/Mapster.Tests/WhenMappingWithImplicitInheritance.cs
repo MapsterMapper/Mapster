@@ -12,6 +12,12 @@ namespace Mapster.Tests
         public void Setup()
         {
             TypeAdapterConfig.GlobalSettings.Clear();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            TypeAdapterConfig.GlobalSettings.Clear();
             TypeAdapterConfig.GlobalSettings.AllowImplicitDestinationInheritance = false;
         }
 
@@ -133,6 +139,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Name, src => src.Name + "_Suffix")
                 .Compile();
+            TypeAdapterConfig<DoubleDerivedPoco, SimpleDto>.Clear();
 
             var source = new DoubleDerivedPoco()
             {

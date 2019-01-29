@@ -8,6 +8,12 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenMappingNonPublicSetters
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            TypeAdapterConfig.GlobalSettings.Clear();
+        }
+
         [TestMethod]
         public void Non_Public_Destination_Setter_Is_Populated()
         {

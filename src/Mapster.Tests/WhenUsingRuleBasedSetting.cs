@@ -11,12 +11,13 @@ namespace Mapster.Tests
         [TestMethod]
         public void Rule_Base_Testing()
         {
-            TypeAdapterConfig.GlobalSettings.When((srcType, destType, mapType) => srcType == destType)
+            var config = new TypeAdapterConfig();
+            config.When((srcType, destType, mapType) => srcType == destType)
                 .Ignore("Id");
 
             var simplePoco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            var dto = TypeAdapter.Adapt<SimplePoco>(simplePoco);
+            var dto = TypeAdapter.Adapt<SimplePoco>(simplePoco, config);
 
             dto.Id.ShouldBe(Guid.Empty);
             dto.Name.ShouldBe(simplePoco.Name);
