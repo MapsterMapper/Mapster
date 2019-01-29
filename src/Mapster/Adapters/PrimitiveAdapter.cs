@@ -35,7 +35,7 @@ namespace Mapster.Adapters
                 {
                     //src == null ? default(TDestination) : convert(src)
                     var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
-                    convert = Expression.Condition(compareNull, Expression.Constant(destinationType.GetDefault(), destinationType), convert);
+                    convert = Expression.Condition(compareNull, destinationType.CreateDefault(), convert);
                 }
             }
 

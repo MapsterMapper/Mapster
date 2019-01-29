@@ -30,7 +30,7 @@ namespace Mapster.Utils
         {
             while (exp.NodeType == ExpressionType.Convert || exp.NodeType == ExpressionType.ConvertChecked)
             {
-                var unary = (UnaryExpression) exp;
+                var unary = (UnaryExpression)exp;
                 if (force || unary.Type.IsReferenceAssignableFrom(unary.Operand.Type))
                     exp = unary.Operand;
                 else
@@ -70,7 +70,7 @@ namespace Mapster.Utils
             {
                 if (source.Type.GetArrayRank() == 1)
                     return Expression.ArrayLength(source);      //array.Length
-                else 
+                else
                     return Expression.Property(source, "Length");
             }
             else
@@ -202,6 +202,19 @@ namespace Mapster.Utils
             var visitor = new ComplexExpressionVisitor();
             visitor.Visit(exp);
             return visitor.IsComplex;
+        }
+
+        public static bool IsSingleValue(this Expression exp)
+        {
+            switch (exp.NodeType)
+            {
+                case ExpressionType.Constant:
+                case ExpressionType.Default:
+                case ExpressionType.Parameter:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Mapster.Utils
             {
                 case ExpressionType.ArrayIndex:
                 case ExpressionType.ArrayLength:
+                case ExpressionType.Call:
                 case ExpressionType.Constant:
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:
@@ -33,6 +34,13 @@ namespace Mapster.Utils
                     IsComplex = true;
                     return node;
             }
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (!node.Method.IsSpecialName || !node.Method.Name.StartsWith("get_"))
+                IsComplex = true;
+            return node;
         }
     }
 }

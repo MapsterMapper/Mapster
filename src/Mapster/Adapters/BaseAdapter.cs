@@ -183,7 +183,7 @@ namespace Mapster.Adapters
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 set = Expression.IfThenElse(
                     compareNull,
-                    Expression.Assign(result, destination ?? Expression.Constant(arg.DestinationType.GetDefault(), arg.DestinationType)),
+                    Expression.Assign(result, destination ?? arg.DestinationType.CreateDefault()),
                     set);
             }
 
@@ -242,19 +242,19 @@ namespace Mapster.Adapters
             }
 
             return Expression.Block(new[] { result }, set, result);
-        }       
+        }
         protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
             //source == null ? default(TDestination) : adapt(source)
 
             var exp = CreateInlineExpression(source, arg);
 
-            if (arg.MapType != MapType.Projection && source.CanBeNull())
+            if (arg.MapType != MapType.Projection && !exp.IsSingleValue() && source.CanBeNull())
             {
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 exp = Expression.Condition(
                     compareNull,
-                    Expression.Constant(exp.Type.GetDefault(), exp.Type),
+                    exp.Type.CreateDefault(),
                     exp);
             }
 
@@ -304,7 +304,7 @@ namespace Mapster.Adapters
 
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)
         {
-            if (source.Type == destinationType && 
+            if (source.Type == destinationType &&
                 (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection || source.ShouldShallowCopy()))
                 return source;
 

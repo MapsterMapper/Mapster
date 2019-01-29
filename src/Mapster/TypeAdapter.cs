@@ -181,7 +181,7 @@ namespace Mapster
         }
     }
 
-    internal static class TypeAdapter<TSource, TDestination>
+    public static class TypeAdapter<TSource, TDestination>
     {
         public static Func<TSource, TDestination> Map = TypeAdapterConfig.GlobalSettings.GetMapFunction<TSource, TDestination>();
     }

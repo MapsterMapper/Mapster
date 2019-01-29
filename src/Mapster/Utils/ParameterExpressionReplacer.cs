@@ -27,7 +27,7 @@ namespace Mapster.Utils
                 if (node == _from[i])
                 {
                     if (i >= _to.Length)
-                        return Expression.Constant(node.Type.GetDefault(), node.Type);
+                        return node.Type.CreateDefault();
 
                     ReplaceCounts[i]++;
                     if (node.Type == _to[i].Type)

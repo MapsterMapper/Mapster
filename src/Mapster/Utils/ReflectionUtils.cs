@@ -37,7 +37,7 @@ namespace Mapster
 
         public static bool IsNullable(this Type type)
         {
-            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
+            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         public static bool CanBeNull(this Type type)
@@ -76,7 +76,7 @@ namespace Mapster
 
         public static bool IsCollection(this Type type)
         {
-            return typeof (IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != typeof(string);
+            return typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != typeof(string);
         }
 
         public static Type ExtractCollectionType(this Type collectionType)
@@ -86,12 +86,12 @@ namespace Mapster
             var enumerableType = collectionType.GetGenericEnumerableType();
             return enumerableType != null
                 ? enumerableType.GetGenericArguments()[0]
-                : typeof (object);
+                : typeof(object);
         }
 
         public static bool IsGenericEnumerableType(this Type type)
         {
-            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
         }
 
         public static Type GetInterface(this Type type, Func<Type, bool> predicate)
@@ -114,17 +114,12 @@ namespace Mapster
             if (name == null)
                 return null;
 
-            var method = typeof (Convert).GetMethod(name, new[] {srcType});
+            var method = typeof(Convert).GetMethod(name, new[] { srcType });
             if (method != null)
                 return Expression.Call(method, source);
 
-            method = typeof (Convert).GetMethod(name, new[] {typeof (object)});
-            return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof (object))), destType);
-        }
-
-        public static object GetDefault(this Type type)
-        {
-            return type.CanBeNull() ? null : Activator.CreateInstance(type);
+            method = typeof(Convert).GetMethod(name, new[] { typeof(object) });
+            return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof(object))), destType);
         }
 
         public static Type UnwrapNullable(this Type type)
@@ -145,7 +140,7 @@ namespace Mapster
             MemberExpression memberExpr = null;
             if (expr.NodeType == ExpressionType.MemberAccess)
             {
-                var tmp = (MemberExpression) expr;
+                var tmp = (MemberExpression)expr;
                 if (tmp.Expression?.NodeType == ExpressionType.Parameter)
                     memberExpr = tmp;
                 else if (!source)
@@ -199,7 +194,7 @@ namespace Mapster
 
         public static bool IsConvertible(this Type type)
         {
-            return typeof (IConvertible).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
+            return typeof(IConvertible).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
 
         public static IMemberModelEx CreateModel(this PropertyInfo propertyInfo)
@@ -290,6 +285,15 @@ namespace Mapster
         public static bool IsPrimitiveKind(this Type type)
         {
             return type == typeof(object) || type.UnwrapNullable().IsConvertible();
+        }
+
+        public static Expression CreateDefault(this Type type)
+        {
+            return type.GetTypeInfo().IsPrimitive
+                ? Expression.Constant(Activator.CreateInstance(type), type)
+                : type.CanBeNull()
+                ? Expression.Constant(null, type)
+                : (Expression)Expression.Default(type);
         }
     }
 }

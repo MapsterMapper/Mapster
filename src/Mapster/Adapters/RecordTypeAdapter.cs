@@ -33,9 +33,10 @@ namespace Mapster.Adapters
             var arguments = new List<Expression>();
             foreach (var member in members)
             {
-                var parameterInfo = (ParameterInfo) member.DestinationMember.Info;
-                var defaultValue = parameterInfo.IsOptional ? parameterInfo.DefaultValue : parameterInfo.ParameterType.GetDefault();
-                var defaultConst = Expression.Constant(defaultValue, member.DestinationMember.Type);
+                var parameterInfo = (ParameterInfo)member.DestinationMember.Info;
+                var defaultConst = parameterInfo.IsOptional
+                    ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
+                    : parameterInfo.ParameterType.CreateDefault();
 
                 Expression getter;
                 if (member.Getter == null)
@@ -53,7 +54,7 @@ namespace Mapster.Adapters
                     }
                     if (member.SetterCondition != null)
                     {
-                        var condition = Expression.Not(member.SetterCondition.Apply(source, Expression.Constant(arg.DestinationType.GetDefault(), arg.DestinationType)));
+                        var condition = Expression.Not(member.SetterCondition.Apply(source, arg.DestinationType.CreateDefault()));
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
                 }

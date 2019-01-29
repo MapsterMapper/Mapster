@@ -151,7 +151,7 @@ namespace Mapster.Adapters
                     var compareNull = Expression.Equal(member.Getter, Expression.Constant(null, member.Getter.Type));
                     value = Expression.Condition(
                         compareNull,
-                        Expression.Constant(member.DestinationMember.Type.GetDefault(), member.DestinationMember.Type),
+                        member.DestinationMember.Type.CreateDefault(),
                         value);
                 }
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info, value);

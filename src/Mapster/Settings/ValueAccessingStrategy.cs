@@ -58,7 +58,7 @@ namespace Mapster
                 if (getter == null)
                 {
                     var type = invokes[0].Item2.Type;
-                    getter = Expression.Constant(type.GetDefault(), type);
+                    getter = type.CreateDefault();
                 }
                 foreach (var invoke in invokes)
                 {
@@ -91,7 +91,7 @@ namespace Mapster
                 .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
             if (getMethod == null)
                 return null;
-            if (getMethod.Name == "GetType" && destinationMember.Type != typeof (Type))
+            if (getMethod.Name == "GetType" && destinationMember.Type != typeof(Type))
                 return null;
             return Expression.Call(source, getMethod);
         }
@@ -124,7 +124,7 @@ namespace Mapster
                         return ifTrue;
                     return Expression.Condition(
                         Expression.Equal(exp, Expression.Constant(null, exp.Type)),
-                        Expression.Constant(ifTrue.Type.GetDefault(), ifTrue.Type),
+                        ifTrue.Type.CreateDefault(),
                         ifTrue);
                 }
                 else if (string.Equals(propertyName, sourceMemberName))
@@ -147,7 +147,7 @@ namespace Mapster
             var args = dictType.GetGenericArguments();
             if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
             {
-                var method = typeof (CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.FlexibleGet)).MakeGenericMethod(args[1]);
+                var method = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.FlexibleGet)).MakeGenericMethod(args[1]);
                 return Expression.Call(method, source.To(dictType), key, Expression.Constant(strategy.SourceMemberNameConverter));
             }
             else
@@ -187,7 +187,7 @@ namespace Mapster
                     break;
             }
             if (lastCondition != null)
-                getter = Expression.Condition(lastCondition.Apply(source), getter, Expression.Constant(getter.Type.GetDefault(), getter.Type));
+                getter = Expression.Condition(lastCondition.Apply(source), getter, getter.Type.CreateDefault());
             return getter;
         }
     }
