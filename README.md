@@ -47,7 +47,7 @@ And you can boost another 1.3 - 4.0 times faster with [FastExpressionCompiler](h
 ### What's new in 3.3
 
 [Step-into debugging](https://github.com/MapsterMapper/Mapster/wiki/Debugging) now working in .NET Core!!!
-![image](https://cloud.githubusercontent.com/assets/5763993/26521773/180427b6-431b-11e7-9188-10c01fa5ba5c.png =932x)
+![image](https://cloud.githubusercontent.com/assets/5763993/26521773/180427b6-431b-11e7-9188-10c01fa5ba5c.png)
 
 
 ### Change logs
