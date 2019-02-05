@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Mapster.Tests
 {
@@ -20,6 +21,16 @@ namespace Mapster.Tests
             TypeAdapter.Adapt(source, target);
             target.Ints.Length.ShouldBe(source.Ints.Length);
             target.Ints.ShouldBe(source.Ints);
+        }
+
+        [TestMethod]
+        public void MapToTarget_With_Null_Value()
+        {
+            var source = new FooArray { Ints = null };
+            var target = new BarArray { Ints = new int[] { 1, 2, 3, 4, 5 } };
+
+            TypeAdapter.Adapt(source, target);
+            target.Ints.ShouldBeNull();
         }
 
         [TestMethod]

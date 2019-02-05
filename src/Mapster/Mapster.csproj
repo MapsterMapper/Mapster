@@ -16,9 +16,9 @@
         <PackageLicenseUrl>https://github.com/MapsterMapper/Mapster/blob/master/LICENSE</PackageLicenseUrl>
         <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <Version>3.3.0</Version>
+        <Version>3.3.1</Version>
         <RootNamespace>Mapster</RootNamespace>
-        <AssemblyVersion>3.3.0.0</AssemblyVersion>
+        <AssemblyVersion>3.3.1.0</AssemblyVersion>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
         <Reference Include="Microsoft.CSharp" />
