@@ -46,6 +46,16 @@ namespace Mapster.Tests
             result.IsValidated.ShouldBeTrue();
         }
 
+
+        [TestMethod]
+        public void No_Compile_Error_When_ConstructUsing_ForDestinationType()
+        {
+            TypeAdapterConfig.GlobalSettings.ForDestinationType<IValidatable>()
+                .ConstructUsing(() => new SimpleDto());
+            TypeAdapterConfig.GlobalSettings.Compile();
+        }
+
+
         public interface IValidatable
         {
             void Validate();

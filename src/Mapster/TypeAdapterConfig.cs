@@ -40,15 +40,15 @@ namespace Mapster
                     Settings = new TypeAdapterSettings
                     {
                         //match exact name
-                        NameMatchingStrategy = NameMatchingStrategy.Exact,  
+                        NameMatchingStrategy = NameMatchingStrategy.Exact,
                         ShouldMapMember =
                         {
                             ShouldMapMember.IgnoreAdaptIgnore,      //ignore AdaptIgnore attribute
                             ShouldMapMember.AllowPublic,            //match public prop
                             ShouldMapMember.AllowAdaptMember,       //match AdaptMember attribute
-                        },                                          
-                        GetMemberNames =                            
-                        {                                           
+                        },
+                        GetMemberNames =
+                        {
                             GetMemberName.AdaptMember,              //get name using AdaptMember attribute
                         },
                         ValueAccessingStrategies =
@@ -112,7 +112,7 @@ namespace Mapster
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
-        public TypeAdapterSetter When(Func<PreCompileArgument, bool> canMap) 
+        public TypeAdapterSetter When(Func<PreCompileArgument, bool> canMap)
         {
             var rule = new TypeAdapterRule
             {
@@ -216,7 +216,7 @@ namespace Mapster
                     score--;
                     type1 = type1.GetTypeInfo().BaseType;
                 }
-                return type1 == null ? null : (int?) score;
+                return type1 == null ? null : (int?)score;
             }
             if (!allowInheritance)
                 return null;
@@ -328,10 +328,10 @@ namespace Mapster
             var lambda = CreateMapExpression(tuple, MapType.Projection);
             var source = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(tuple.Source));
             var methodInfo = (from method in typeof(Queryable).GetMethods()
-                                where method.Name == nameof(Queryable.Select)
-                                let p = method.GetParameters()[1]
-                                where p.ParameterType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof(Func<,>)
-                                select method).First().MakeGenericMethod(tuple.Source, tuple.Destination);
+                              where method.Name == nameof(Queryable.Select)
+                              let p = method.GetParameters()[1]
+                              where p.ParameterType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof(Func<,>)
+                              select method).First().MakeGenericMethod(tuple.Source, tuple.Destination);
             return Expression.Call(methodInfo, source, Expression.Quote(lambda));
         }
 
@@ -345,7 +345,7 @@ namespace Mapster
                 if (allowNull)
                     return null;
                 else
-                    throw new CompileException(arg, 
+                    throw new CompileException(arg,
                         new InvalidOperationException("ConverterFactory is not found"));
             }
             try
@@ -484,6 +484,8 @@ namespace Mapster
             var keys = RuleMap.Keys.ToList();
             foreach (var key in keys)
             {
+                if (key.Source == typeof(void))
+                    continue;
                 _mapDict[key] = Compiler(CreateMapExpression(key, MapType.Map));
                 _mapToTargetDict[key] = Compiler(CreateMapExpression(key, MapType.MapToTarget));
             }
@@ -608,7 +610,7 @@ namespace Mapster
             if (config != null)
                 return (TypeAdapterConfig)config;
 
-            lock(_inlineConfigs)
+            lock (_inlineConfigs)
             {
                 config = _inlineConfigs[key];
                 if (config != null)
