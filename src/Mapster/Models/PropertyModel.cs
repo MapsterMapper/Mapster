@@ -21,7 +21,7 @@ namespace Mapster.Models
         {
             get
             {
-                var setter = _propertyInfo.GetSetMethod();
+                var setter = _propertyInfo.GetSetMethod(true);
                 return setter?.GetAccessModifier() ?? AccessModifier.None;
             }
         }
@@ -29,7 +29,7 @@ namespace Mapster.Models
         {
             get
             {
-                var getter = _propertyInfo.GetGetMethod();
+                var getter = _propertyInfo.GetGetMethod(true);
                 return getter?.GetAccessModifier() ?? AccessModifier.None;
             }
         }

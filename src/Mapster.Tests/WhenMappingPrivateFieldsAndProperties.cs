@@ -6,6 +6,12 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenMappingPrivateFieldsAndProperties
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            TypeAdapterConfig.GlobalSettings.Clear();
+        }
+
         [TestMethod]
         public void Default_Settings_Should_Not_Map_Private_Fields_To_New_Object()
         {
@@ -106,11 +112,30 @@ namespace Mapster.Tests
             Assert.IsTrue(customer.HasName(dto.Name));
         }
 
+        [TestMethod]
+        public void Should_Map_To_Private_Properties_Using_Include()
+        {
+            var config = new TypeAdapterConfig();
+            config.NewConfig<CustomerWithProtectedProperty, CustomerDTO>()
+                .IncludeMember((model, side) => model.AccessModifier == AccessModifier.Protected);
+
+            var customerId = 1;
+            var customerName = "Customer 1";
+            var aCustomer = new CustomerWithProtectedProperty(customerId, customerName);
+
+            var dto = aCustomer.Adapt<CustomerDTO>(config);
+
+            Assert.IsNotNull(dto);
+            dto.Id.ShouldBe(customerId);
+            dto.Name.ShouldBe(customerName);
+        }
+
         private void SetUpMappingNonPublicFields<TSource, TDestination>()
         {
-            var config = TypeAdapterConfig<TSource, TDestination>.NewConfig();
-            config.EnableNonPublicMembers(true);
-            config.NameMatchingStrategy(NameMatchingStrategy.Flexible);
+            TypeAdapterConfig<TSource, TDestination>
+                .NewConfig()
+                .EnableNonPublicMembers(true)
+                .NameMatchingStrategy(NameMatchingStrategy.Flexible);
         }
 
         private void SetUpMappingNonPublicProperties<TSource, TDestination>()
@@ -118,7 +143,6 @@ namespace Mapster.Tests
             TypeAdapterConfig<TSource, TDestination>
                   .NewConfig()
                   .EnableNonPublicMembers(true);
-
         }
 
         #region TestMethod Classes
@@ -150,6 +174,25 @@ namespace Mapster.Tests
             private CustomerWithPrivateProperty() { }
 
             public CustomerWithPrivateProperty(int id, string name)
+            {
+                Id = id;
+                Name = name;
+            }
+
+            public bool HasName(string name)
+            {
+                return Name == name;
+            }
+        }
+
+        public class CustomerWithProtectedProperty
+        {
+            public int Id { get; private set; }
+            protected string Name { get; set; }
+
+            private CustomerWithProtectedProperty() { }
+
+            public CustomerWithProtectedProperty(int id, string name)
             {
                 Id = id;
                 Name = name;

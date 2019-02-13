@@ -174,9 +174,9 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            //no setter
+            //no public setter
             var props = type.GetFieldsAndProperties().ToList();
-            if (props.Any(p => p.SetterModifier != AccessModifier.None))
+            if (props.Any(p => p.SetterModifier == AccessModifier.Public))
                 return false;
 
             //1 non-empty constructor
