@@ -81,6 +81,7 @@ namespace Mapster
         public bool RequireExplicitMapping { get; set; }
         public bool AllowImplicitDestinationInheritance { get; set; }
         public bool AllowImplicitSourceInheritance { get; set; } = true;
+        public bool SelfContainedCodeGeneration { get; set; }
 
         internal static Func<LambdaExpression, Delegate> DefaultCompiler = lambda => lambda.Compile();
         public Func<LambdaExpression, Delegate> Compiler { get; set; } = DefaultCompiler;
@@ -369,12 +370,12 @@ namespace Mapster
                 pNew);
         }
 
-        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType parentMapType, CompileContext context)
+        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
         {
             var tuple = new TypeTuple(sourceType, destinationType);
             if (context.Running.Contains(tuple))
             {
-                if (parentMapType == MapType.Projection)
+                if (mapType == MapType.Projection)
                     throw new InvalidOperationException("Projection does not support circular reference");
                 return CreateMapInvokeExpression(sourceType, destinationType);
             }
@@ -382,18 +383,11 @@ namespace Mapster
             context.Running.Add(tuple);
             try
             {
-                var arg = GetCompileArgument(tuple, parentMapType, context);
+                var arg = GetCompileArgument(tuple, mapType, context);
                 var exp = CreateMapExpression(arg, true);
                 if (exp != null)
-                {
-                    var detector = new BlockExpressionDetector();
-                    detector.Visit(exp);
-                    if (detector.IsBlockExpression)
-                        exp = null;
-                }
-                if (exp != null)
                     return exp;
-                if (parentMapType == MapType.MapToTarget)
+                if (mapType == MapType.MapToTarget)
                     return CreateMapToTargetInvokeExpression(sourceType, destinationType);
                 else
                     return CreateMapInvokeExpression(sourceType, destinationType);
@@ -404,7 +398,7 @@ namespace Mapster
             }
         }
 
-        private LambdaExpression CreateMapInvokeExpression(Type sourceType, Type destinationType)
+        internal LambdaExpression CreateMapInvokeExpression(Type sourceType, Type destinationType)
         {
             Expression invoker;
             if (this == GlobalSettings)
@@ -424,7 +418,7 @@ namespace Mapster
             return Expression.Lambda(invoke, p);
         }
 
-        private LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
+        internal LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
         {
             var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                           where m.Name == nameof(TypeAdapterConfig.GetMapToTargetFunction)

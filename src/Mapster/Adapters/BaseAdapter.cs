@@ -79,7 +79,7 @@ namespace Mapster.Adapters
 
             if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
                 return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
-            else if (arg.Context.Running.Count > 1)
+            else if (!arg.Context.Config.SelfContainedCodeGeneration && arg.Context.Running.Count > 1)
                 return null;
             else
                 return CreateBlockExpressionBody(source, destination, arg);
@@ -313,8 +313,12 @@ namespace Mapster.Adapters
                 return source;
 
             //adapt(source);
-            var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destinationType, arg.MapType, arg.Context);
-            var exp = lambda.Apply(source);
+            var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destinationType, arg.MapType == MapType.MapToTarget ? MapType.Map : arg.MapType, arg.Context);
+            var exp = !lambda.IsMultiLine() 
+                ? lambda.Apply(source)
+                : arg.Context.Config.SelfContainedCodeGeneration
+                ? (Expression)Expression.Invoke(lambda, source)
+                : arg.Context.Config.CreateMapInvokeExpression(source.Type, destinationType);
 
             //transform(adapt(source));
             if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))
@@ -335,7 +339,11 @@ namespace Mapster.Adapters
 
             //adapt(source, dest);
             var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destination.Type, arg.MapType, arg.Context);
-            var exp = lambda.Apply(source, destination);
+            var exp = !lambda.IsMultiLine()
+                ? lambda.Apply(source, destination)
+                : arg.Context.Config.SelfContainedCodeGeneration
+                ? (Expression)Expression.Invoke(lambda, source, destination)
+                : arg.Context.Config.CreateMapToTargetInvokeExpression(source.Type, destination.Type);
 
             //transform(adapt(source, dest));
             if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))

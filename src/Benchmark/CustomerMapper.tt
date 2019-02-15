@@ -1,0 +1,34 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ Assembly Name="System.Core" #>
+<#@ Assembly Name="System.Runtime" #>
+<#@ Assembly Name="System.Linq.Expressions" #>
+<#@ Assembly Name="netstandard" #>
+<#@ Assembly Name="$(TargetPath)" #>
+<#@ Assembly Name="$(TargetDir)Mapster.dll" #>
+<#@ Assembly Name="$(TargetDir)ExpressionTranslator.dll" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #> 
+<#@ import namespace="Benchmark.Classes" #> 
+<#@ import namespace="ExpressionDebugger" #> 
+<#@ import namespace="Mapster" #> 
+
+<# 
+    TypeAdapterConfig.GlobalSettings.SelfContainedCodeGeneration = true;
+    var foo = default(Customer);
+    var def = new ExpressionDefinitions
+    {
+        IsStatic = true,
+        MethodName = "Map",
+        Namespace = "Benchmark",
+        TypeName = "CustomerMapper"
+    };
+    var code = foo.BuildAdapter()
+        .CreateMapExpression<CustomerDTO>()
+        .ToScript(def);
+    WriteLine(code);
+#>

@@ -209,5 +209,12 @@ namespace Mapster.Utils
                     return false;
             }
         }
+
+        public static bool IsMultiLine(this LambdaExpression lambda)
+        {
+            var detector = new BlockExpressionDetector();
+            detector.Visit(lambda);
+            return detector.IsBlockExpression;
+        }
     }
 }

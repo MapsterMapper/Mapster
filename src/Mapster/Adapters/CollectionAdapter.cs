@@ -101,8 +101,8 @@ namespace Mapster.Adapters
                     return source;
 
                 //create new enumerable to prevent destination casting back to original type and alter directly
-                var toEnum = (from m in typeof(CoreExtensions).GetMethods()
-                              where m.Name == nameof(CoreExtensions.ToEnumerable)
+                var toEnum = (from m in typeof(MapsterHelper).GetMethods()
+                              where m.Name == nameof(MapsterHelper.ToEnumerable)
                               select m).First().MakeGenericMethod(destinationElementType);
                 return Expression.Call(toEnum, source);
             }

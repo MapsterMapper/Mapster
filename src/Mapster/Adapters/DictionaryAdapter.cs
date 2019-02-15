@@ -206,8 +206,8 @@ namespace Mapster.Adapters
             if (strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
             {
                 var args = dictType.GetGenericArguments();
-                var getMethod = typeof(CoreExtensions).GetMethods()
-                    .First(m => m.Name == nameof(CoreExtensions.FlexibleGet))
+                var getMethod = typeof(MapsterHelper).GetMethods()
+                    .First(m => m.Name == nameof(MapsterHelper.FlexibleGet))
                     .MakeGenericMethod(args[1]);
                 var destNameConverter = Expression.Constant(strategy.DestinationMemberNameConverter);
                 return (dict, key) => Expression.Call(getMethod, dict, key, destNameConverter);
@@ -215,8 +215,8 @@ namespace Mapster.Adapters
             else
             {
                 var args = dictType.GetGenericArguments();
-                var getMethod = typeof(CoreExtensions).GetMethods()
-                    .First(m => m.Name == nameof(CoreExtensions.GetValueOrDefault))
+                var getMethod = typeof(MapsterHelper).GetMethods()
+                    .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault))
                     .MakeGenericMethod(args);
                 return (dict, key) => Expression.Call(getMethod, dict, key);
             }
@@ -229,8 +229,8 @@ namespace Mapster.Adapters
                 strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
             {
                 var args = dictType.GetGenericArguments();
-                var setMethod = typeof(CoreExtensions).GetMethods()
-                    .First(m => m.Name == nameof(CoreExtensions.FlexibleSet))
+                var setMethod = typeof(MapsterHelper).GetMethods()
+                    .First(m => m.Name == nameof(MapsterHelper.FlexibleSet))
                     .MakeGenericMethod(args[1]);
                 var destNameConverter = Expression.Constant(strategy.DestinationMemberNameConverter);
                 return (dict, key, value) => Expression.Call(setMethod, dict, key, destNameConverter, value);

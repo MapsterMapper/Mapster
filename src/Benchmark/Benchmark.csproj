@@ -1,13 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.0</TargetFramework>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Mapster" Version="3.2.0" />
+        <PackageReference Include="ExpressionTranslator" Version="2.0.0" />
         <PackageReference Include="AutoMapper" Version="7.0.1" />
         <PackageReference Include="Expressmapper" Version="1.9.1" />
         <PackageReference Include="FastExpressionCompiler" Version="1.10.1" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Mapster\Mapster.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="CustomerMapper.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>CustomerMapper.cs</LastGenOutput>
+      </None>
+      <None Update="FooMapper.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>FooMapper.cs</LastGenOutput>
+      </None>
+    </ItemGroup>
+    <ItemGroup>
+      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Update="CustomerMapper.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>CustomerMapper.tt</DependentUpon>
+      </Compile>
+      <Compile Update="FooMapper.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>FooMapper.tt</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

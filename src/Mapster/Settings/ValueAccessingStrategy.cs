@@ -147,12 +147,12 @@ namespace Mapster
             var args = dictType.GetGenericArguments();
             if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
             {
-                var method = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.FlexibleGet)).MakeGenericMethod(args[1]);
+                var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.FlexibleGet)).MakeGenericMethod(args[1]);
                 return Expression.Call(method, source.To(dictType), key, Expression.Constant(strategy.SourceMemberNameConverter));
             }
             else
             {
-                var method = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.GetValueOrDefault)).MakeGenericMethod(args);
+                var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault)).MakeGenericMethod(args);
                 return Expression.Call(method, source.To(dictType), key);
             }
         }
@@ -167,7 +167,7 @@ namespace Mapster
             if (dictType == null)
                 return null;
             var args = dictType.GetGenericArguments();
-            var method = typeof(CoreExtensions).GetMethods().First(m => m.Name == nameof(CoreExtensions.GetValueOrDefault)).MakeGenericMethod(args);
+            var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault)).MakeGenericMethod(args);
 
             Expression getter = null;
             LambdaExpression lastCondition = null;

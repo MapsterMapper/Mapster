@@ -6,6 +6,7 @@ using Benchmark.Classes;
 using Mapster;
 using FastExpressionCompiler;
 using System.Linq.Expressions;
+using ExpressionDebugger;
 
 namespace Benchmark
 {
@@ -117,10 +118,11 @@ namespace Benchmark
             item.Adapt<Customer, CustomerDTO>();    //exercise
             TestMapsterAdapter<Customer, CustomerDTO>(item, iterations, ref sMP);
 
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();    //switch compiler
-            TypeAdapterConfig.GlobalSettings.Compile(typeof(Customer), typeof(CustomerDTO));    //recompile
-            item.Adapt<Customer, CustomerDTO>();    //exercise
-            TestMapsterAdapter<Customer, CustomerDTO>(item, iterations, ref sMF);
+            //TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();    //switch compiler
+            //TypeAdapterConfig.GlobalSettings.Compile(typeof(Customer), typeof(CustomerDTO));    //recompile
+            //item.Adapt<Customer, CustomerDTO>();    //exercise
+            //TestMapsterAdapter<Customer, CustomerDTO>(item, iterations, ref sMF);
+            TestCodeGen(item, iterations, ref sMF);
 
             ExpressMapper.Mapper.Map<Customer, CustomerDTO>(item);  //exercise
             TestExpressMapper<Customer, CustomerDTO>(item, iterations, ref sEM);
@@ -143,10 +145,11 @@ namespace Benchmark
             item.Adapt<Foo, Foo>(); //exercise
             TestMapsterAdapter<Foo, Foo>(item, iterations, ref sMP);
 
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();    //switch compiler
-            TypeAdapterConfig.GlobalSettings.Compile(typeof(Foo), typeof(Foo));    //recompile
-            item.Adapt<Foo, Foo>(); //exercise
-            TestMapsterAdapter<Foo, Foo>(item, iterations, ref sMF);
+            //TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();    //switch compiler
+            //TypeAdapterConfig.GlobalSettings.Compile(typeof(Foo), typeof(Foo));    //recompile
+            //item.Adapt<Foo, Foo>(); //exercise
+            //TestMapsterAdapter<Foo, Foo>(item, iterations, ref sMF);
+            TestCodeGen(item, iterations, ref sMF);
 
             //TestValueInjecter<Foo, Foo>(item, iterations);
 
@@ -216,6 +219,20 @@ namespace Benchmark
             var time = Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
             Console.WriteLine("AutoMapper:\t\t" + time);
             counter += time;
+        }
+
+        static void TestCodeGen(Customer item, int iterations, ref double counter)
+        {
+            //var time = Loop(item, get => CustomerMapper.Map(get), iterations);
+            //Console.WriteLine("Codegen:\t\t" + time);
+            //counter += time;
+        }
+
+        static void TestCodeGen(Foo item, int iterations, ref double counter)
+        {
+            //var time = Loop(item, get => FooMapper.Map(get), iterations);
+            //Console.WriteLine("Codegen:\t\t" + time);
+            //counter += time;
         }
 
         static long Loop<T>(T item, Action<T> action, int iterations = 1000000)
