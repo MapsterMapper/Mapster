@@ -20,6 +20,11 @@ namespace Mapster
             get => Get("NameMatchingStrategy", () => new NameMatchingStrategy());
             set => Set("NameMatchingStrategy", value);
         }
+        public int? MaxDepth
+        {
+            get => Get<int?>("MaxDepth");
+            set => Set("MaxDepth", value);
+        }
 
         public bool? PreserveReference
         {
@@ -51,6 +56,11 @@ namespace Mapster
             get => Get("AvoidInlineMapping");
             set => Set("AvoidInlineMapping", value);
         }
+        public bool? MapToConstructor
+        {
+            get => Get("MapToConstructor");
+            set => Set("MapToConstructor", value);
+        }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {
@@ -63,6 +73,10 @@ namespace Mapster
         public List<InvokerModel> Resolvers
         {
             get => Get("Resolvers", () => new List<InvokerModel>());
+        }
+        public List<Func<CompileArgument, LambdaExpression>> BeforeMappingFactories
+        {
+            get => Get("BeforeMappingFactories", () => new List<Func<CompileArgument, LambdaExpression>>());
         }
         public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories
         {

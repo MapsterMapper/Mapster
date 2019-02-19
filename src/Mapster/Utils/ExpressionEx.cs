@@ -17,6 +17,13 @@ namespace Mapster.Utils
             return Expression.Assign(left, middle);
         }
 
+        public static Expression Not(Expression exp)
+        {
+            if (exp is UnaryExpression unary && unary.NodeType == ExpressionType.Not)
+                return unary.Operand;
+            return Expression.Not(exp);
+        }
+
         public static Expression Apply(this LambdaExpression lambda, params Expression[] exps)
         {
             var replacer = new ParameterExpressionReplacer(lambda.Parameters, exps);

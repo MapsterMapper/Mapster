@@ -25,24 +25,5 @@ namespace Mapster
         {
             return (T) member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
         }
-
-        /// <summary>
-        /// Determines whether the specific <paramref name="type"/> has default constructor.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>
-        ///   <c>true</c> if specific <paramref name="type"/> has default constructor; otherwise <c>false</c>.
-        /// </returns>
-        public static bool HasDefaultConstructor(this Type type)
-        {
-            if (type == typeof(void)
-                || type.GetTypeInfo().IsAbstract
-                || type.GetTypeInfo().IsInterface)
-                return false;
-            if (type.GetTypeInfo().IsValueType)
-                return true;
-            return type.GetConstructor(Type.EmptyTypes) != null;
-        }
-
     }
 }

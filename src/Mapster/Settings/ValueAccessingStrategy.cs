@@ -75,7 +75,7 @@ namespace Mapster
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             return members
-                .Where(member => member.ShouldMapMember(arg.Settings.ShouldMapMember, MemberSide.Source))
+                .Where(member => member.ShouldMapMember(arg, MemberSide.Source))
                 .Where(member => member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();
@@ -109,7 +109,7 @@ namespace Mapster
             var members = source.Type.GetFieldsAndProperties();
             foreach (var member in members)
             {
-                if (!member.ShouldMapMember(arg.Settings.ShouldMapMember, MemberSide.Source))
+                if (!member.ShouldMapMember(arg, MemberSide.Source))
                     continue;
                 var sourceMemberName = member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
                 var propertyType = member.Type;

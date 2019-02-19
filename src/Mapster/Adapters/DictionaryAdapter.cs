@@ -76,7 +76,7 @@ namespace Mapster.Adapters
                 else 
                 {
                     var setWithCondition = Expression.IfThen(
-                        Expression.Not(ignoreIf.Value.Apply(source, destination)),
+                        ExpressionEx.Not(ignoreIf.Value.Apply(source, destination)),
                         set);
                     dict.Add(ignoreIf.Key, setWithCondition);
                 }
@@ -141,7 +141,8 @@ namespace Mapster.Adapters
             var listInit = exp as ListInitExpression;
             var newInstance = listInit?.NewExpression ?? (NewExpression)exp;
 
-            var classConverter = CreateClassConverter(source, newInstance, arg);
+            var classModel = GetClassModel(arg);
+            var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
             var dictType = arg.DestinationType.GetDictionaryType();
@@ -164,27 +165,22 @@ namespace Mapster.Adapters
             return Expression.ListInit(newInstance, lines);
         }
 
-        protected override ClassModel GetClassModel(Type destinationType, CompileArgument arg)
+        private ClassModel GetClassModel(CompileArgument arg)
         {
             //get member name from map
-            var destNames = arg.Settings.Resolvers.Select(r => r.DestinationMemberName);
+            var destNames = arg.GetDestinationNames().AsEnumerable();
 
             //get member name from properties
             if (arg.SourceType.GetDictionaryType() == null)
             {
-                var srcNames = arg.Settings.Resolvers.Select(r => r.SourceMemberName)
-                    .Where(name => name != null)
-                    .ToHashSet();
                 var propNames = arg.SourceType.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(model => model.ShouldMapMember(arg.Settings.ShouldMapMember, MemberSide.Source))
-                    .Select(model => model.Name)
-                    .Where(name => !srcNames.Contains(name))
-                    .Select(name => arg.Settings.NameMatchingStrategy.SourceMemberNameConverter(name));
+                    .Where(model => model.ShouldMapMember(arg, MemberSide.Source))
+                    .Select(model => arg.Settings.NameMatchingStrategy.SourceMemberNameConverter(model.Name));
                 destNames = destNames.Union(propNames);
             }
 
             //create model
-            var dictType = destinationType.GetDictionaryType();
+            var dictType = arg.DestinationType.GetDictionaryType();
             var valueType = dictType.GetGenericArguments()[1];
 
             var getFn = GetFunction(arg, dictType);

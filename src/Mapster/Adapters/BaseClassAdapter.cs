@@ -2,28 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
     internal abstract class BaseClassAdapter : BaseAdapter
     {
-        protected abstract ClassModel GetClassModel(Type destinationType, CompileArgument arg);
-
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, Expression destination, CompileArgument arg)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg)
         {
-            var classModel = GetClassModel(arg.DestinationType, arg);
             var destinationMembers = classModel.Members;
-
             var unmappedDestinationMembers = new List<string>();
-
             var properties = new List<MemberMapping>();
 
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg.Settings, destinationMember, out var setterCondition))
+                if (ProcessIgnores(arg, destinationMember, out var setterCondition))
                     continue;
 
                 var member = destinationMember;
@@ -46,6 +43,9 @@ namespace Mapster.Adapters
                 }
                 else if (classModel.ConstructorInfo != null)
                 {
+                    var info = (ParameterInfo)member.Info;
+                    if (!info.IsOptional)
+                        return null;
                     var propertyModel = new MemberMapping
                     {
                         Getter = null,
@@ -73,16 +73,64 @@ namespace Mapster.Adapters
         }
 
         protected static bool ProcessIgnores(
-            TypeAdapterSettings config,
+            CompileArgument arg,
             IMemberModel destinationMember,
             out LambdaExpression condition)
         {
             condition = null;
-            if (!destinationMember.ShouldMapMember(config.ShouldMapMember, MemberSide.Destination))
+            if (!destinationMember.ShouldMapMember(arg, MemberSide.Destination))
                 return true;
 
-            return config.IgnoreIfs.TryGetValue(destinationMember.Name, out condition)
+            return arg.Settings.IgnoreIfs.TryGetValue(destinationMember.Name, out condition)
                    && condition == null;
+        }
+
+
+        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg)
+        {
+            var members = classConverter.Members;
+
+            var arguments = new List<Expression>();
+            foreach (var member in members)
+            {
+                var parameterInfo = (ParameterInfo)member.DestinationMember.Info;
+                var defaultConst = parameterInfo.IsOptional
+                    ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
+                    : parameterInfo.ParameterType.CreateDefault();
+
+                Expression getter;
+                if (member.Getter == null)
+                {
+                    getter = defaultConst;
+                }
+                else
+                {
+                    getter = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
+
+                    if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
+                    {
+                        var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
+                        getter = Expression.Condition(condition, getter, defaultConst);
+                    }
+                    if (member.SetterCondition != null)
+                    {
+                        var condition = ExpressionEx.Not(member.SetterCondition.Apply(source, arg.DestinationType.CreateDefault()));
+                        getter = Expression.Condition(condition, getter, defaultConst);
+                    }
+                }
+                arguments.Add(getter);
+            }
+
+            return Expression.New(classConverter.ConstructorInfo, arguments);
+        }
+
+        protected ClassModel GetClassModel(ConstructorInfo ctor)
+        {
+            return new ClassModel
+            {
+                ConstructorInfo = ctor,
+                Members = ctor.GetParameters().Select(ReflectionUtils.CreateModel)
+            };
         }
 
         #endregion
