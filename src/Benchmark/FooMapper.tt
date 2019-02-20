@@ -1,16 +1,18 @@
 ﻿<#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ output extension=".cs" #>
+
+<#@ Assembly Name="/usr/local/share/dotnet/sdk/2.2.103/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/netstandard.dll" #>
 <#@ Assembly Name="System.Core" #>
 <#@ Assembly Name="System.Runtime" #>
 <#@ Assembly Name="System.Linq.Expressions" #>
-<#@ Assembly Name="netstandard" #>
-<#@ Assembly Name="$(TargetPath)" #>
-<#@ Assembly Name="$(TargetDir)Mapster.dll" #>
-<#@ Assembly Name="$(TargetDir)ExpressionTranslator.dll" #>
+<#@ Assembly Name="$(TargetDir)/Benchmark.dll" #>
+<#@ Assembly Name="$(TargetDir)/Mapster.dll" #>
+<#@ Assembly Name="$(TargetDir)/ExpressionTranslator.dll" #>
 <#@ import namespace="System" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Diagnostics" #>
 <#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Linq.Expressions" #>
 <#@ import namespace="System.Collections" #>
 <#@ import namespace="System.Collections.Generic" #> 
 <#@ import namespace="Benchmark.Classes" #> 
