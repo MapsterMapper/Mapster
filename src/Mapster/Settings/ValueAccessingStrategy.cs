@@ -58,7 +58,7 @@ namespace Mapster
                 if (getter == null)
                 {
                     var type = invokes[0].Item2.Type;
-                    getter = type.CreateDefault(arg.MapType);
+                    getter = type.CreateDefault();
                 }
                 foreach (var invoke in invokes)
                 {
@@ -124,7 +124,7 @@ namespace Mapster
                         return ifTrue;
                     return Expression.Condition(
                         Expression.Equal(exp, Expression.Constant(null, exp.Type)),
-                        ifTrue.Type.CreateDefault(arg.MapType),
+                        ifTrue.Type.CreateDefault(),
                         ifTrue);
                 }
                 else if (string.Equals(propertyName, sourceMemberName))
@@ -187,7 +187,7 @@ namespace Mapster
                     break;
             }
             if (lastCondition != null)
-                getter = Expression.Condition(lastCondition.Apply(source), getter, getter.Type.CreateDefault(arg.MapType));
+                getter = Expression.Condition(lastCondition.Apply(source), getter, getter.Type.CreateDefault());
             return getter;
         }
     }

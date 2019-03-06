@@ -287,13 +287,11 @@ namespace Mapster
             return type == typeof(object) || type.UnwrapNullable().IsConvertible();
         }
 
-        public static Expression CreateDefault(this Type type, MapType mapType)
+        public static Expression CreateDefault(this Type type)
         {
-            if (type.CanBeNull())
-                return Expression.Constant(null, type);
-            if (type.GetTypeInfo().IsPrimitive || mapType == MapType.Projection)
-                return Expression.Constant(Activator.CreateInstance(type), type);
-            return Expression.Default(type);
+            return type.CanBeNull()
+                ? Expression.Constant(null, type)
+                : Expression.Constant(Activator.CreateInstance(type), type);
         }
     }
 }
