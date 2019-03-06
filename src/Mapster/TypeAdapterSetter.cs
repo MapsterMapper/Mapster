@@ -211,14 +211,6 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter MaxDepth<TSetter>(this TSetter setter, int? value) where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-
-            setter.Settings.MaxDepth = value;
-            return setter;
-        }
-
         public static TSetter MapToConstructor<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
@@ -240,7 +232,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreIfs[ReflectionUtils.GetMemberPath(member)] = null;
+                Settings.IgnoreIfs[ReflectionUtils.GetMemberPath(member, true)] = null;
             }
             return this;
         }
@@ -371,7 +363,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                var name = ReflectionUtils.GetMemberPath(member);
+                var name = ReflectionUtils.GetMemberPath(member, true);
                 Settings.IgnoreIfs.Merge(name, condition);
             }
             return this;
@@ -509,6 +501,22 @@ namespace Mapster
                 var invoke = Expression.Call(actionExp, "Invoke", null, p1, p2);
                 return Expression.Lambda(invoke, p1, p2);
             });
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(Expression<Action<TSource, TDestination>> action)
+        {
+            this.CheckCompiled();
+
+            Settings.BeforeMappingFactories.Add(arg => action);
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TSource, TDestination>> action)
+        {
+            this.CheckCompiled();
+
+            Settings.AfterMappingFactories.Add(arg => action);
             return this;
         }
 

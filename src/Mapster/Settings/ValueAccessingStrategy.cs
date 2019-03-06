@@ -148,7 +148,7 @@ namespace Mapster
             if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
             {
                 var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.FlexibleGet)).MakeGenericMethod(args[1]);
-                return Expression.Call(method, source.To(dictType), key, Expression.Constant(strategy.SourceMemberNameConverter));
+                return Expression.Call(method, source.To(dictType), key, MapsterHelper.GetConverterExpression(strategy.SourceMemberNameConverter));
             }
             else
             {

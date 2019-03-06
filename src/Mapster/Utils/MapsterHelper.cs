@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Mapster.Utils
 {
@@ -49,6 +50,24 @@ namespace Mapster.Utils
                     yield return item;
                 }
             }
+        }
+
+        public static readonly Func<string, string> Identity = NameMatchingStrategy.Identity;
+        public static readonly Func<string, string> PascalCase = NameMatchingStrategy.PascalCase;
+        public static readonly Func<string, string> CamelCase = NameMatchingStrategy.CamelCase;
+        public static readonly Func<string, string> LowerCase = NameMatchingStrategy.LowerCase;
+
+        internal static Expression GetConverterExpression(Func<string, string> converter)
+        {
+            if (converter == NameMatchingStrategy.Identity)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(Identity));
+            if (converter == NameMatchingStrategy.PascalCase)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(PascalCase));
+            if (converter == NameMatchingStrategy.CamelCase)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(CamelCase));
+            if (converter == NameMatchingStrategy.LowerCase)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(LowerCase));
+            return Expression.Constant(converter);
         }
     }
 }

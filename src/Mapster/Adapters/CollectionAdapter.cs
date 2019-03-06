@@ -11,7 +11,7 @@ namespace Mapster.Adapters
     internal class CollectionAdapter : BaseAdapter
     {
         protected override int Score => -125;
-        protected override bool CheckExplicitMapping => false;
+        protected override bool UseTargetValue => true;
 
         protected override bool CanMap(PreCompileArgument arg)
         {
@@ -79,9 +79,16 @@ namespace Mapster.Adapters
                 ? typeof(ICollection<>).MakeGenericType(destinationElementType)
                 : typeof(IList);
             var tmp = Expression.Variable(listType, "list");
-            var assign = ExpressionEx.Assign(tmp, destination); //convert to list type
-            var set = CreateListSet(source, tmp, arg);
-            return Expression.Block(new[] { tmp }, assign, set);
+            var actions = new List<Expression> {
+                ExpressionEx.Assign(tmp, destination) //convert to list type
+            };
+            if (arg.MapType == MapType.MapToTarget)
+            {
+                var clear = listType.GetMethod("Clear", Type.EmptyTypes);
+                actions.Add(Expression.Call(tmp, clear));
+            }
+            actions.Add(CreateListSet(source, tmp, arg));
+            return Expression.Block(new[] { tmp }, actions);
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
@@ -159,8 +166,7 @@ namespace Mapster.Adapters
                 destination,
                 addMethod,
                 getter);
-            var loop = ExpressionEx.ForLoop(source, item, set);
-            return loop;
+            return ExpressionEx.ForLoop(source, item, set);
         }
     }
 }

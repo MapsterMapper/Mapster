@@ -7,7 +7,6 @@ namespace Mapster.Adapters
     internal class StringAdapter : PrimitiveAdapter
     {
         protected override int Score => -110;   //must do before all class adapters
-        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

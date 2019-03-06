@@ -20,11 +20,6 @@ namespace Mapster
             get => Get("NameMatchingStrategy", () => new NameMatchingStrategy());
             set => Set("NameMatchingStrategy", value);
         }
-        public int? MaxDepth
-        {
-            get => Get<int?>("MaxDepth");
-            set => Set("MaxDepth", value);
-        }
 
         public bool? PreserveReference
         {

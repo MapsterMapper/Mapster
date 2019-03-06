@@ -10,6 +10,9 @@ namespace Mapster.Adapters
 {
     internal abstract class BaseClassAdapter : BaseAdapter
     {
+        protected override bool CheckExplicitMapping => true;
+        protected override bool UseTargetValue => true;
+
         #region Build the Adapter Model
 
         protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg)
@@ -17,18 +20,20 @@ namespace Mapster.Adapters
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
             var properties = new List<MemberMapping>();
+            var includeResolvers = arg.Settings.Resolvers
+                .Where(it => it.DestinationMemberName == "")
+                .ToList();
 
             foreach (var destinationMember in destinationMembers)
             {
                 if (ProcessIgnores(arg, destinationMember, out var setterCondition))
                     continue;
 
-                var member = destinationMember;
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
                 if (arg.Settings.IgnoreNonMapped == true)
                     resolvers = resolvers.Where(ValueAccessingStrategy.CustomResolvers.Contains);
                 var getter = resolvers
-                    .Select(fn => fn(source, member, arg))
+                    .Select(fn => fn(source, destinationMember, arg))
                     .FirstOrDefault(result => result != null);
 
                 if (getter != null)
@@ -43,7 +48,7 @@ namespace Mapster.Adapters
                 }
                 else if (classModel.ConstructorInfo != null)
                 {
-                    var info = (ParameterInfo)member.Info;
+                    var info = (ParameterInfo)destinationMember.Info;
                     if (!info.IsOptional)
                         return null;
                     var propertyModel = new MemberMapping

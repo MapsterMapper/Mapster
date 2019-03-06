@@ -6,6 +6,7 @@ namespace Mapster.Adapters
     internal class RecordTypeAdapter : BaseClassAdapter
     {
         protected override int Score => -149;
+        protected override bool UseTargetValue => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {
@@ -16,7 +17,7 @@ namespace Mapster.Adapters
         {
             //new TDestination(src.Prop1, src.Prop2)
 
-            if (arg.Settings.ConstructUsingFactory != null)
+            if (arg.GetConstructUsing() != null)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
             var ctor = arg.DestinationType.GetConstructors()[0];

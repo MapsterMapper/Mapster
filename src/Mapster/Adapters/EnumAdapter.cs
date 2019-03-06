@@ -8,7 +8,6 @@ namespace Mapster.Adapters
     internal class EnumAdapter : PrimitiveAdapter
     {
         protected override int Score => -109;   //must do before StringAdapter
-        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

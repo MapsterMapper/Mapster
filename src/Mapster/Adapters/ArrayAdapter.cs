@@ -9,7 +9,6 @@ namespace Mapster.Adapters
     public class ArrayAdapter : BaseAdapter
     {
         protected override int Score => -123;
-        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

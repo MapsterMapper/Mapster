@@ -8,7 +8,6 @@ namespace Mapster.Adapters
     internal class PrimitiveAdapter : BaseAdapter
     {
         protected override int Score => -200;   //must do last
-        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

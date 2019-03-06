@@ -54,7 +54,7 @@ namespace Mapster.Adapters
                     Expression.Assign(
                         key,
                         Expression.Call(
-                              Expression.Constant(arg.Settings.NameMatchingStrategy.SourceMemberNameConverter),
+                              MapsterHelper.GetConverterExpression(arg.Settings.NameMatchingStrategy.SourceMemberNameConverter),
                               "Invoke",
                               null,
                               key)),
@@ -205,7 +205,7 @@ namespace Mapster.Adapters
                 var getMethod = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.FlexibleGet))
                     .MakeGenericMethod(args[1]);
-                var destNameConverter = Expression.Constant(strategy.DestinationMemberNameConverter);
+                var destNameConverter = MapsterHelper.GetConverterExpression(strategy.DestinationMemberNameConverter);
                 return (dict, key) => Expression.Call(getMethod, dict, key, destNameConverter);
             }
             else
@@ -228,7 +228,7 @@ namespace Mapster.Adapters
                 var setMethod = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.FlexibleSet))
                     .MakeGenericMethod(args[1]);
-                var destNameConverter = Expression.Constant(strategy.DestinationMemberNameConverter);
+                var destNameConverter = MapsterHelper.GetConverterExpression(strategy.DestinationMemberNameConverter);
                 return (dict, key, value) => Expression.Call(setMethod, dict, key, destNameConverter, value);
             }
             else

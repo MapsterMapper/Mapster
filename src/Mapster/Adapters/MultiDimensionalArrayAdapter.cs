@@ -10,7 +10,6 @@ namespace Mapster.Adapters
     public class MultiDimensionalArrayAdapter : BaseAdapter
     {
         protected override int Score => -122;
-        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

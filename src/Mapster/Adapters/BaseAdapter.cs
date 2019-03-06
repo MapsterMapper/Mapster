@@ -10,7 +10,8 @@ namespace Mapster.Adapters
     public abstract class BaseAdapter
     {
         protected virtual int Score => 0;
-        protected virtual bool CheckExplicitMapping => true;
+        protected virtual bool CheckExplicitMapping => false;
+        protected virtual bool UseTargetValue => false;
 
         public virtual int? Priority(PreCompileArgument arg)
         {
@@ -72,14 +73,8 @@ namespace Mapster.Adapters
 
         protected virtual Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
-            if (this.CheckExplicitMapping)
-            {
-                if (arg.Settings.MaxDepth <= 0)
-                    return arg.DestinationType.CreateDefault();
-
-                if (arg.Context.Config.RequireExplicitMapping && !arg.ExplicitMapping)
-                    throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
-            }
+            if (this.CheckExplicitMapping && arg.Context.Config.RequireExplicitMapping && !arg.ExplicitMapping)
+                throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
 
             if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
                 return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
@@ -100,6 +95,11 @@ namespace Mapster.Adapters
 
             if (set.NodeType != ExpressionType.Throw)
             {
+                if (arg.MapType == MapType.MapToTarget && this.UseTargetValue && arg.GetConstructUsing()?.Parameters.Count != 2)
+                {
+                    set = Expression.Coalesce(destination, set);
+                }
+
                 var actions = new List<Expression>
                 {
                     Expression.Assign(result, set)
@@ -280,19 +280,18 @@ namespace Mapster.Adapters
             //new TDestination()
 
             //if there is constructUsing, use constructUsing
-            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
-            Expression newObj;
+            var constructUsing = arg.GetConstructUsing();
             if (constructUsing != null)
-                newObj = constructUsing.Apply(source).TrimConversion(true).To(arg.DestinationType);
+                return constructUsing.Apply(source, destination).TrimConversion(true).To(arg.DestinationType);
 
             //if there is default constructor, use default constructor
             else if (arg.DestinationType.HasDefaultConstructor())
-                newObj = Expression.New(arg.DestinationType);
+                return Expression.New(arg.DestinationType);
 
             //if mapToTarget or include derived types, allow mapping & throw exception on runtime
             //instantiation is not needed
             else if (destination != null || arg.Settings.Includes.Count > 0)
-                newObj = Expression.Throw(
+                return Expression.Throw(
                     Expression.New(
                         // ReSharper disable once AssignNullToNotNullAttribute
                         typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
@@ -302,9 +301,6 @@ namespace Mapster.Adapters
             //otherwise throw
             else
                 throw new InvalidOperationException($"No default constructor for type '{arg.DestinationType.Name}', please use 'ConstructUsing'");
-
-            //dest ?? new TDest();
-            return newObj;
         }
 
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)

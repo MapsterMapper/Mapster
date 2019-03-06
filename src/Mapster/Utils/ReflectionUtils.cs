@@ -127,12 +127,15 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static string GetMemberPath(Expression expr)
+        public static string GetMemberPath(Expression expr, bool firstLevelOnly = false)
         {
             var props = new List<string>();
             expr = expr.TrimConversion(true);
             while (expr?.NodeType == ExpressionType.MemberAccess)
             {
+                if (firstLevelOnly && props.Count > 0)
+                    throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(expr));
+
                 var memEx = (MemberExpression)expr;
                 props.Add(memEx.Member.Name);
                 expr = memEx.Expression;

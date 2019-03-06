@@ -30,7 +30,7 @@ namespace Mapster.Adapters
 
             if (arg.MapType == MapType.MapToTarget)
                 return false;
-            var constructUsing = arg.Settings.ConstructUsingFactory?.Invoke(arg);
+            var constructUsing = arg.GetConstructUsing();
             if (constructUsing != null &&
                 constructUsing.Body.NodeType != ExpressionType.New &&
                 constructUsing.Body.NodeType != ExpressionType.MemberInit)
@@ -54,7 +54,7 @@ namespace Mapster.Adapters
         {
             //new TDestination(src.Prop1, src.Prop2)
 
-            if (arg.Settings.ConstructUsingFactory != null || arg.Settings.MapToConstructor != true)
+            if (arg.GetConstructUsing() != null || arg.Settings.MapToConstructor != true)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
             var classConverter = arg.DestinationType.GetConstructors()

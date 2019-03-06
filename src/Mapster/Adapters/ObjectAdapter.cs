@@ -5,7 +5,6 @@ namespace Mapster.Adapters
     internal class ObjectAdapter : BaseAdapter
     {
         protected override int Score => -111;   //must do before all class adapters
-        protected override bool CheckExplicitMapping => false;
 
         protected override bool CanMap(PreCompileArgument arg)
         {
