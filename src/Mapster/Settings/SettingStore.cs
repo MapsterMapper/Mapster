@@ -31,12 +31,12 @@ namespace Mapster
             return _booleanStore.GetValueOrDefault(key);
         }
 
-        public T Get<T>(string key) where T : class
+        public T Get<T>(string key)
         {
             return (T)_objectStore.GetValueOrDefault(key);
         }
 
-        public T Get<T>(string key, Func<T> initializer) where T : class
+        public T Get<T>(string key, Func<T> initializer)
         {
             var value = _objectStore.GetValueOrDefault(key);
             if (value == null)

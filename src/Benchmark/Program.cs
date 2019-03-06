@@ -223,16 +223,16 @@ namespace Benchmark
 
         static void TestCodeGen(Customer item, int iterations, ref double counter)
         {
-            //var time = Loop(item, get => CustomerMapper.Map(get), iterations);
-            //Console.WriteLine("Codegen:\t\t" + time);
-            //counter += time;
+            var time = Loop(item, get => CustomerMapper.Map(get), iterations);
+            Console.WriteLine("Codegen:\t\t" + time);
+            counter += time;
         }
 
         static void TestCodeGen(Foo item, int iterations, ref double counter)
         {
-            //var time = Loop(item, get => FooMapper.Map(get), iterations);
-            //Console.WriteLine("Codegen:\t\t" + time);
-            //counter += time;
+            var time = Loop(item, get => FooMapper.Map(get), iterations);
+            Console.WriteLine("Codegen:\t\t" + time);
+            counter += time;
         }
 
         static long Loop<T>(T item, Action<T> action, int iterations = 1000000)

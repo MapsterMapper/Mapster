@@ -45,7 +45,7 @@ namespace Mapster
             return !type.GetTypeInfo().IsValueType || type.IsNullable();
         }
 
-        public static bool IsPoco(this Type type, BindingFlags accessorFlags = BindingFlags.Public)
+        public static bool IsPoco(this Type type)
         {
             //not nullable
             if (type.IsNullable())
@@ -55,7 +55,7 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            return type.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: accessorFlags).Any();
+            return type.GetFieldsAndProperties(allowNoSetter: false).Any();
         }
 
         public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
@@ -127,30 +127,20 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static MemberExpression GetMemberInfo(Expression member, bool source = false)
+        public static string GetMemberPath(Expression expr)
         {
-            var lambda = member as LambdaExpression;
-            if (lambda == null)
-                throw new ArgumentNullException(nameof(member));
-
-            var expr = lambda.Body;
-            if (lambda.Body.NodeType == ExpressionType.Convert)
-                expr = ((UnaryExpression)lambda.Body).Operand;
-
-            MemberExpression memberExpr = null;
-            if (expr.NodeType == ExpressionType.MemberAccess)
+            var props = new List<string>();
+            expr = expr.TrimConversion(true);
+            while (expr?.NodeType == ExpressionType.MemberAccess)
             {
-                var tmp = (MemberExpression)expr;
-                if (tmp.Expression?.NodeType == ExpressionType.Parameter)
-                    memberExpr = tmp;
-                else if (!source)
-                    throw new ArgumentException("Only first level member access on destination allowed (eg. dest => dest.Name)", nameof(member));
+                var memEx = (MemberExpression)expr;
+                props.Add(memEx.Member.Name);
+                expr = memEx.Expression;
             }
-
-            if (memberExpr == null && !source)
-                throw new ArgumentException("Argument must be member access", nameof(member));
-
-            return memberExpr;
+            if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
+                throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(expr));
+            props.Reverse();
+            return string.Join(".", props);
         }
 
         public static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
@@ -269,10 +259,15 @@ namespace Mapster
             return AccessModifier.Private;
         }
 
-        public static bool ShouldMapMember(this IMemberModel member, IEnumerable<Func<IMemberModel, MemberSide, bool?>> predicates, MemberSide side)
+        public static bool ShouldMapMember(this IMemberModel member, CompileArgument arg, MemberSide side)
         {
-            return predicates.Select(predicate => predicate(member, side))
-                .FirstOrDefault(result => result != null) == true;
+            var predicates = arg.Settings.ShouldMapMember;
+            var result = predicates.Select(predicate => predicate(member, side))
+                .FirstOrDefault(it => it != null);
+            if (result != null)
+                return result == true;
+            var names = side == MemberSide.Destination ? arg.GetDestinationNames() : arg.GetSourceNames();
+            return names.Contains(member.Name);
         }
 
         public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string>> getMemberNames, Func<string, string> nameConverter)
@@ -295,5 +290,24 @@ namespace Mapster
                 ? Expression.Constant(null, type)
                 : (Expression)Expression.Default(type);
         }
+
+        /// <summary>
+        /// Determines whether the specific <paramref name="type"/> has default constructor.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>
+        ///   <c>true</c> if specific <paramref name="type"/> has default constructor; otherwise <c>false</c>.
+        /// </returns>
+        public static bool HasDefaultConstructor(this Type type)
+        {
+            if (type == typeof(void)
+                || type.GetTypeInfo().IsAbstract
+                || type.GetTypeInfo().IsInterface)
+                return false;
+            if (type.GetTypeInfo().IsValueType)
+                return true;
+            return type.GetConstructor(Type.EmptyTypes) != null;
+        }
+
     }
 }

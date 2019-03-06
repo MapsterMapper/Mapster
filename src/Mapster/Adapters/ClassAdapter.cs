@@ -20,13 +20,7 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            var bindingFlags = arg.ExplicitMapping
-                ? BindingFlags.Public | BindingFlags.NonPublic
-                : BindingFlags.Public;
-            if (!arg.DestinationType.IsPoco(bindingFlags))
-                return false;
-
-            return true;
+            return arg.ExplicitMapping || arg.DestinationType.IsPoco();
         }
 
         protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
@@ -56,6 +50,25 @@ namespace Mapster.Adapters
             return true;
         }
 
+        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        {
+            //new TDestination(src.Prop1, src.Prop2)
+
+            if (arg.Settings.ConstructUsingFactory != null || arg.Settings.MapToConstructor != true)
+                return base.CreateInstantiationExpression(source, destination, arg);
+
+            var classConverter = arg.DestinationType.GetConstructors()
+                .OrderByDescending(it => it.GetParameters().Length)
+                .Select(GetClassModel)
+                .Select(it => CreateClassConverter(source, it, arg))
+                .FirstOrDefault(it => it != null);
+
+            if (classConverter == null)
+                throw new Exception();
+
+            return CreateInstantiationExpression(source, classConverter, arg);
+        }
+
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             //### !IgnoreNullValues
@@ -68,7 +81,8 @@ namespace Mapster.Adapters
             //if (src.Prop2 != null)
             //  dest.Prop2 = convert(src.Prop2);
 
-            var classConverter = CreateClassConverter(source, destination, arg);
+            var classModel = GetClassModel(arg.DestinationType);
+            var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
             var lines = new List<Expression>();
@@ -108,7 +122,7 @@ namespace Mapster.Adapters
                 foreach (var kvp in conditions)
                 {
                     var condition = Expression.IfThen(
-                        Expression.Not(kvp.Key.Apply(source, destination)),
+                        ExpressionEx.Not(kvp.Key.Apply(source, destination)),
                         Expression.Block(kvp.Value));
                     lines.Add(condition);
                 }
@@ -128,7 +142,8 @@ namespace Mapster.Adapters
             var memberInit = exp as MemberInitExpression;
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
 
-            var classConverter = CreateClassConverter(source, newInstance, arg);
+            var classModel = GetClassModel(arg.DestinationType);
+            var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
             var lines = new List<MemberBinding>();
@@ -161,7 +176,7 @@ namespace Mapster.Adapters
             return Expression.MemberInit(newInstance, lines);
         }
 
-        protected override ClassModel GetClassModel(Type destinationType, CompileArgument arg)
+        private ClassModel GetClassModel(Type destinationType)
         {
             return new ClassModel
             {

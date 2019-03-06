@@ -63,6 +63,8 @@ namespace Mapster.Adapters
                 return false;
             if (arg.Settings.AfterMappingFactories.Count > 0)
                 return false;
+            if (arg.Settings.BeforeMappingFactories.Count > 0)
+                return false;
             if (arg.Settings.Includes.Count > 0)
                 return false;
             return true;
@@ -70,11 +72,13 @@ namespace Mapster.Adapters
 
         protected virtual Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
         {
-            if (this.CheckExplicitMapping
-                && arg.Context.Config.RequireExplicitMapping
-                && !arg.ExplicitMapping)
+            if (this.CheckExplicitMapping)
             {
-                throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
+                if (arg.Settings.MaxDepth <= 0)
+                    return arg.DestinationType.CreateDefault();
+
+                if (arg.Context.Config.RequireExplicitMapping && !arg.ExplicitMapping)
+                    throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
             }
 
             if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
@@ -96,34 +100,22 @@ namespace Mapster.Adapters
 
             if (set.NodeType != ExpressionType.Throw)
             {
-                Expression assign = Expression.Assign(result, set);
-                set = CreateBlockExpression(source, result, arg);
+                var actions = new List<Expression>
+                {
+                    Expression.Assign(result, set)
+                };
+
+                //before(source, result);
+                var beforeMappings = arg.Settings.BeforeMappingFactories.Select(it => InvokeMapping(it, source, result, arg));
+                actions.AddRange(beforeMappings);
 
                 //result.prop = adapt(source.prop);
-                //action(source, result);
-                if (arg.Settings.AfterMappingFactories.Count > 0)
-                {
-                    var actions = new List<Expression> { set };
+                set = CreateBlockExpression(source, result, arg);
+                actions.Add(set);
 
-                    foreach (var afterMappingFactory in arg.Settings.AfterMappingFactories)
-                    {
-                        var afterMapping = afterMappingFactory(arg);
-                        var args = afterMapping.Parameters;
-                        Expression invoke;
-                        if (args[0].Type.IsReferenceAssignableFrom(source.Type) && args[1].Type.IsReferenceAssignableFrom(result.Type))
-                        {
-                            var replacer = new ParameterExpressionReplacer(args, source, result);
-                            invoke = replacer.Visit(afterMapping.Body);
-                        }
-                        else
-                        {
-                            invoke = Expression.Invoke(afterMapping, source.To(args[0].Type), result.To(args[1].Type));
-                        }
-                        actions.Add(invoke);
-                    }
-
-                    set = Expression.Block(actions);
-                }
+                //after(source, result);
+                var afterMappings = arg.Settings.AfterMappingFactories.Select(it => InvokeMapping(it, source, result, arg));
+                actions.AddRange(afterMappings);
 
                 //using (var scope = new MapContextScope()) {
                 //  var references = scope.Context.Reference;
@@ -153,7 +145,8 @@ namespace Mapster.Adapters
                     var refAssign = Expression.Assign(
                         Expression.Property(dict, indexer, Expression.Convert(source, typeof(object))),
                         Expression.Convert(result, typeof(object)));
-                    var setResultAndCache = Expression.Block(assign, refAssign, set);
+                    actions.Add(refAssign);
+                    var setResultAndCache = Expression.Block(actions);
 
                     var cache = Expression.Variable(typeof(object), "cache");
                     var tryGetMethod = typeof(Dictionary<object, object>).GetMethod("TryGetValue", new[] { typeof(object), typeof(object).MakeByRefType() });
@@ -169,7 +162,7 @@ namespace Mapster.Adapters
                 }
                 else
                 {
-                    set = Expression.Block(assign, set);
+                    set = Expression.Block(actions);
                 }
 
                 //TDestination result;
@@ -247,6 +240,16 @@ namespace Mapster.Adapters
             return Expression.Block(new[] { result }, set, result);
         }
 
+        private Expression InvokeMapping(Func<CompileArgument, LambdaExpression> mappingFactory, Expression source, Expression result, CompileArgument arg)
+        {
+            var afterMapping = mappingFactory(arg);
+            var args = afterMapping.Parameters;
+            var invoke = afterMapping.Apply(source.To(args[0].Type), result.To(args[1].Type));
+            if (invoke.Type != typeof(void))
+                invoke = ExpressionEx.Assign(result, invoke);
+            return invoke;
+        }
+
         protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
             //source == null ? default(TDestination) : adapt(source)
@@ -301,9 +304,7 @@ namespace Mapster.Adapters
                 throw new InvalidOperationException($"No default constructor for type '{arg.DestinationType.Name}', please use 'ConstructUsing'");
 
             //dest ?? new TDest();
-            return destination == null
-                ? newObj
-                : Expression.Coalesce(destination, newObj);
+            return newObj;
         }
 
         protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg)

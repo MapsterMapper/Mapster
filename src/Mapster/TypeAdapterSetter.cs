@@ -134,10 +134,6 @@ namespace Mapster
                 Invoker = invoker,
                 Condition = null
             });
-            setter.Settings.ShouldMapMember.Add((member, side) => 
-                (member.Name == memberName && side == MemberSide.Destination)
-                ? (bool?)true 
-                : null);
 
             return setter;
         }
@@ -152,13 +148,8 @@ namespace Mapster
             {
                 DestinationMemberName = memberName,
                 Invoker = source,
-                SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = null
             });
-            setter.Settings.ShouldMapMember.Add((member, side) =>
-                (member.Name == memberName && side == MemberSide.Destination)
-                ? (bool?)true
-                : null);
 
             return setter;
         }
@@ -174,24 +165,6 @@ namespace Mapster
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
-            if (sourceMemberName != destinationMemberName)
-            {
-                setter.Settings.ShouldMapMember.Add((member, side) =>
-                    (member.Name == destinationMemberName && side == MemberSide.Destination)
-                    ? (bool?)true
-                    : null);
-                setter.Settings.ShouldMapMember.Add((member, side) =>
-                   (member.Name == sourceMemberName && side == MemberSide.Source)
-                   ? (bool?)true
-                   : null);
-            }
-            else
-            {
-                setter.Settings.ShouldMapMember.Add((member, _) =>
-                    member.Name == destinationMemberName
-                    ? (bool?)true
-                    : null);
-            }
 
             return setter;
         }
@@ -237,6 +210,22 @@ namespace Mapster
             setter.Settings.GetMemberNames.Add(func);
             return setter;
         }
+
+        public static TSetter MaxDepth<TSetter>(this TSetter setter, int? value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.MaxDepth = value;
+            return setter;
+        }
+
+        public static TSetter MapToConstructor<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.MapToConstructor = value;
+            return setter;
+        }
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -251,7 +240,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreIfs[ReflectionUtils.GetMemberInfo(member).Member.Name] = null;
+                Settings.IgnoreIfs[ReflectionUtils.GetMemberPath(member)] = null;
             }
             return this;
         }
@@ -262,11 +251,10 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            var memberExp = ReflectionUtils.GetMemberInfo(member);
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = memberExp.Member.Name,
+                DestinationMemberName = ReflectionUtils.GetMemberPath(member),
                 Invoker = invoker,
                 Condition = null
             });
@@ -279,17 +267,12 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            var memberExp = ReflectionUtils.GetMemberInfo(destinationMember);
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = memberExp.Member.Name,
+                DestinationMemberName = ReflectionUtils.GetMemberPath(destinationMember),
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
-            Settings.ShouldMapMember.Add((member, side) =>
-                (member.Name == sourceMemberName && side == MemberSide.Source)
-                ? (bool?)true
-                : null);
 
             return this;
         }
@@ -300,6 +283,22 @@ namespace Mapster
 
             Settings.ConstructUsingFactory = arg => constructUsing;
 
+            return this;
+        }
+
+        public TypeAdapterSetter<TDestination> BeforeMapping(Action<TDestination> action)
+        {
+            this.CheckCompiled();
+
+            Settings.BeforeMappingFactories.Add(arg =>
+            {
+                var p1 = Expression.Parameter(arg.SourceType);
+                var p2 = Expression.Parameter(arg.DestinationType);
+                var actionType = action.GetType();
+                var actionExp = Expression.Constant(action, actionType);
+                var invoke = Expression.Call(actionExp, "Invoke", null, p2);
+                return Expression.Lambda(invoke, p1, p2);
+            });
             return this;
         }
 
@@ -318,7 +317,6 @@ namespace Mapster
             });
             return this;
         }
-
     }
 
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TDestination>
@@ -353,6 +351,11 @@ namespace Mapster
             return (TypeAdapterSetter<TSource, TDestination>)base.ConstructUsing(constructUsing);
         }
 
+        public new TypeAdapterSetter<TSource, TDestination> BeforeMapping(Action<TDestination> action)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>)base.BeforeMapping(action);
+        }
+
         public new TypeAdapterSetter<TSource, TDestination> AfterMapping(Action<TDestination> action)
         {
             return (TypeAdapterSetter<TSource, TDestination>)base.AfterMapping(action);
@@ -368,7 +371,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                var name = ReflectionUtils.GetMemberInfo(member).Member.Name;
+                var name = ReflectionUtils.GetMemberPath(member);
                 Settings.IgnoreIfs.Merge(name, condition);
             }
             return this;
@@ -387,18 +390,26 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TSource, TDestination> TwoWaysMap<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TSourceMember>> source)
+        {
+            this.Map(member, source);
+            this.Config.ForType<TDestination, TSource>()
+                .Map(source, member);
+            return this;
+        }
+
         public TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
             Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
         {
             this.CheckCompiled();
 
-            var memberExp = ReflectionUtils.GetMemberInfo(member);
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = memberExp.Member.Name,
+                DestinationMemberName = ReflectionUtils.GetMemberPath(member),
                 Invoker = source,
-                SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = shouldMap
             });
             return this;
@@ -414,13 +425,8 @@ namespace Mapster
             {
                 DestinationMemberName = memberName,
                 Invoker = source,
-                SourceMemberName = ReflectionUtils.GetMemberInfo(source, true)?.Member.Name,
                 Condition = shouldMap
             });
-            Settings.ShouldMapMember.Add((member, side) =>
-                (member.Name == memberName && side == MemberSide.Destination)
-                ? (bool?)true
-                : null);
 
             return this;
         }
@@ -471,6 +477,22 @@ namespace Mapster
             }
             else
                 Settings.ConverterToTargetFactory = arg => converterFactory;
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> BeforeMapping(Action<TSource, TDestination> action)
+        {
+            this.CheckCompiled();
+
+            Settings.BeforeMappingFactories.Add(arg =>
+            {
+                var p1 = Expression.Parameter(arg.SourceType);
+                var p2 = Expression.Parameter(arg.DestinationType);
+                var actionType = action.GetType();
+                var actionExp = Expression.Constant(action, actionType);
+                var invoke = Expression.Call(actionExp, "Invoke", null, p1, p2);
+                return Expression.Lambda(invoke, p1, p2);
+            });
             return this;
         }
 
