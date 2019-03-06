@@ -36,7 +36,7 @@ namespace Mapster.Adapters
                 var parameterInfo = (ParameterInfo)member.DestinationMember.Info;
                 var defaultConst = parameterInfo.IsOptional
                     ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
-                    : parameterInfo.ParameterType.CreateDefault();
+                    : parameterInfo.ParameterType.CreateDefault(arg.MapType);
 
                 Expression getter;
                 if (member.Getter == null)
@@ -54,7 +54,7 @@ namespace Mapster.Adapters
                     }
                     if (member.SetterCondition != null)
                     {
-                        var condition = Expression.Not(member.SetterCondition.Apply(source, arg.DestinationType.CreateDefault()));
+                        var condition = Expression.Not(member.SetterCondition.Apply(source, arg.DestinationType.CreateDefault(arg.MapType)));
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
                 }

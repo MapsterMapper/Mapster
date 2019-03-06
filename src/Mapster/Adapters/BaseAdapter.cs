@@ -185,7 +185,7 @@ namespace Mapster.Adapters
                     var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                     set = Expression.IfThenElse(
                         compareNull,
-                        Expression.Assign(result, arg.DestinationType.CreateDefault()),
+                        Expression.Assign(result, arg.DestinationType.CreateDefault(arg.MapType)),
                         set);
                 }
             }
@@ -258,7 +258,7 @@ namespace Mapster.Adapters
                 var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                 exp = Expression.Condition(
                     compareNull,
-                    exp.Type.CreateDefault(),
+                    exp.Type.CreateDefault(arg.MapType),
                     exp);
             }
 
