@@ -18,8 +18,8 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <RootNamespace>Mapster</RootNamespace>
         <Version Condition=" '$(OS)' != 'Windows_NT' ">0</Version>
-        <Version Condition=" '$(OS)' == 'Windows_NT' ">3.3.1</Version>
-        <AssemblyVersion Condition=" '$(OS)' == 'Windows_NT' ">3.3.1.0</AssemblyVersion>
+        <Version Condition=" '$(OS)' == 'Windows_NT' ">3.3.2</Version>
+        <AssemblyVersion Condition=" '$(OS)' == 'Windows_NT' ">3.3.2.0</AssemblyVersion>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
         <Reference Include="Microsoft.CSharp" />
