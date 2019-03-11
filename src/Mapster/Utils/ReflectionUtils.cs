@@ -287,11 +287,9 @@ namespace Mapster
 
         public static Expression CreateDefault(this Type type)
         {
-            return type.GetTypeInfo().IsPrimitive
-                ? Expression.Constant(Activator.CreateInstance(type), type)
-                : type.CanBeNull()
+            return type.CanBeNull()
                 ? Expression.Constant(null, type)
-                : (Expression)Expression.Default(type);
+                : Expression.Constant(Activator.CreateInstance(type), type);
         }
 
         /// <summary>
