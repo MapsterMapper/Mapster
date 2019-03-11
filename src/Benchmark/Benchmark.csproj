@@ -12,31 +12,31 @@
         <PackageReference Include="FastExpressionCompiler" Version="1.10.1" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Mapster\Mapster.csproj" />
+        <ProjectReference Include="..\Mapster\Mapster.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <None Update="CustomerMapper.tt">
-        <Generator>TextTemplatingFileGenerator</Generator>
-        <LastGenOutput>CustomerMapper.cs</LastGenOutput>
-      </None>
-      <None Update="FooMapper.tt">
-        <Generator>TextTemplatingFileGenerator</Generator>
-        <LastGenOutput>FooMapper.cs</LastGenOutput>
-      </None>
+        <None Update="CustomerMapper.tt">
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>CustomerMapper.cs</LastGenOutput>
+        </None>
+        <None Update="FooMapper.tt">
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>FooMapper.cs</LastGenOutput>
+        </None>
     </ItemGroup>
     <ItemGroup>
-      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
     </ItemGroup>
     <ItemGroup>
-      <Compile Update="CustomerMapper.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>CustomerMapper.tt</DependentUpon>
-      </Compile>
-      <Compile Update="FooMapper.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>FooMapper.tt</DependentUpon>
-      </Compile>
+        <Compile Update="CustomerMapper.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>CustomerMapper.tt</DependentUpon>
+        </Compile>
+        <Compile Update="FooMapper.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>FooMapper.tt</DependentUpon>
+        </Compile>
     </ItemGroup>
 </Project>
