@@ -24,11 +24,16 @@ namespace Mapster.Utils
             return Expression.Not(exp);
         }
 
-        public static Expression Apply(this LambdaExpression lambda, params Expression[] exps)
+        public static Expression Apply(this LambdaExpression lambda, MapType mapType, params Expression[] exps)
+        {
+            return lambda.Apply(mapType != MapType.Projection, exps);
+        }
+
+        public static Expression Apply(this LambdaExpression lambda, bool allowInvoke, params Expression[] exps)
         {
             var replacer = new ParameterExpressionReplacer(lambda.Parameters, exps);
             var result = replacer.Visit(lambda.Body);
-            if (replacer.ReplaceCounts.Max() <= 1 || !exps.Any(IsComplex))
+            if (!allowInvoke || replacer.ReplaceCounts.Max() <= 1 || !exps.Any(IsComplex))
                 return result;
             return Expression.Invoke(lambda, exps);
         }

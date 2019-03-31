@@ -119,7 +119,7 @@ namespace Mapster.Adapters
                     }
                     if (member.SetterCondition != null)
                     {
-                        var condition = ExpressionEx.Not(member.SetterCondition.Apply(source, arg.DestinationType.CreateDefault()));
+                        var condition = ExpressionEx.Not(member.SetterCondition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault()));
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
                 }

@@ -28,7 +28,7 @@ namespace Mapster
                     return;
 
                 var param = lambda.Parameters.ToArray();
-                lambda = Expression.Lambda(Expression.OrElse(lambda.Body, condition.Apply(param[0], param[1])), param);
+                lambda = Expression.Lambda(Expression.OrElse(lambda.Body, condition.Apply(true, param[0], param[1])), param);
                 this[name] = lambda;
             }
             else

@@ -72,8 +72,8 @@ namespace Mapster
 
         public static string Identity(string s) => s;
 
-        internal static string PascalCase(string s) => string.Join("", BreakWords(s).Select(ProperCase));
-        internal static string CamelCase(string s) => string.Join("", BreakWords(s).Select((w, i) => i == 0 ? w.ToLower() : ProperCase(w)));
+        internal static string PascalCase(string s) => string.Concat(BreakWords(s).Select(ProperCase));
+        internal static string CamelCase(string s) => string.Concat(BreakWords(s).Select((w, i) => i == 0 ? w.ToLower() : ProperCase(w)));
         internal static string LowerCase(string s) => s.ToLower();
 
         private static string ProperCase(string s) => s.Length == 0 ? s : (char.ToUpper(s[0]) + s.Substring(1).ToLower());

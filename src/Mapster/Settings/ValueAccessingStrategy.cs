@@ -40,7 +40,7 @@ namespace Mapster
                     continue;
                 var invoke = resolver.Invoker == null
                     ? Expression.PropertyOrField(source, resolver.SourceMemberName)
-                    : resolver.Invoker.Apply(source);
+                    : resolver.Invoker.Apply(arg.MapType, source);
 
                 if (resolver.Condition == null)
                 {
@@ -48,7 +48,7 @@ namespace Mapster
                     break;
                 }
 
-                var condition = resolver.Condition.Apply(source);
+                var condition = resolver.Condition.Apply(arg.MapType, source);
                 invokes.Add(Tuple.Create(condition, invoke));
             }
 
@@ -178,16 +178,16 @@ namespace Mapster
 
                 Expression invoke = resolver.Invoker == null
                     ? Expression.Call(method, source.To(dictType), Expression.Constant(resolver.SourceMemberName))
-                    : resolver.Invoker.Apply(source);
+                    : resolver.Invoker.Apply(arg.MapType, source);
                 getter = lastCondition != null
-                    ? Expression.Condition(lastCondition.Apply(source), getter, invoke)
+                    ? Expression.Condition(lastCondition.Apply(arg.MapType, source), getter, invoke)
                     : invoke;
                 lastCondition = resolver.Condition;
                 if (resolver.Condition == null)
                     break;
             }
             if (lastCondition != null)
-                getter = Expression.Condition(lastCondition.Apply(source), getter, getter.Type.CreateDefault());
+                getter = Expression.Condition(lastCondition.Apply(arg.MapType, source), getter, getter.Type.CreateDefault());
             return getter;
         }
     }

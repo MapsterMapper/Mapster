@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
@@ -169,6 +170,17 @@ namespace Mapster
             return setter;
         }
 
+        public static TSetter Map<TSetter>(this TSetter setter, IEnumerable<KeyValuePair<string, string>> pairs) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            foreach (var item in pairs)
+            {
+                setter.Map(item.Key, item.Value);
+            }
+            return setter;
+        }
+
         public static TSetter EnableNonPublicMembers<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
@@ -216,6 +228,22 @@ namespace Mapster
             setter.CheckCompiled();
 
             setter.Settings.MapToConstructor = value;
+            return setter;
+        }
+
+        public static TSetter MaxDepth<TSetter>(this TSetter setter, int value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.MaxDepth = value;
+            return setter;
+        }
+
+        public static TSetter Unflattening<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.Unflattening = value;
             return setter;
         }
     }
@@ -379,16 +407,6 @@ namespace Mapster
             {
                 Settings.IgnoreIfs.Merge(member, condition);
             }
-            return this;
-        }
-
-        public TypeAdapterSetter<TSource, TDestination> TwoWaysMap<TDestinationMember, TSourceMember>(
-            Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TSourceMember>> source)
-        {
-            this.Map(member, source);
-            this.Config.ForType<TDestination, TSource>()
-                .Map(source, member);
             return this;
         }
 
@@ -559,6 +577,11 @@ namespace Mapster
             return this;
         }
 
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> TwoWays()
+        {
+            return new TwoWaysTypeAdapterSetter<TSource, TDestination>(this.Config);
+        }
+
         public void Compile()
         {
             this.Config.Compile(typeof(TSource), typeof(TDestination));
@@ -567,6 +590,218 @@ namespace Mapster
         public void CompileProjection()
         {
             this.Config.CompileProjection(typeof(TSource), typeof(TDestination));
+        }
+    }
+
+    public class TwoWaysTypeAdapterSetter<TSource, TDestination>
+    {
+        public TypeAdapterSetter<TSource, TDestination> SourceToDestinationSetter { get; }
+        public TypeAdapterSetter<TDestination, TSource> DestinationToSourceSetter { get; }
+
+        public TwoWaysTypeAdapterSetter(TypeAdapterConfig config)
+        {
+            SourceToDestinationSetter = config.ForType<TSource, TDestination>()
+                .Unflattening(true);
+            DestinationToSourceSetter = config.ForType<TDestination, TSource>()
+                .Unflattening(true);
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> AddDestinationTransform<TDestinationMember>(Expression<Func<TDestinationMember, TDestinationMember>> transform)
+        {
+            SourceToDestinationSetter.AddDestinationTransform(transform);
+            if (typeof(TSource) != typeof(TDestination))
+                DestinationToSourceSetter.AddDestinationTransform(transform);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Ignore(params string[] names)
+        {
+            SourceToDestinationSetter.Ignore(names);
+            foreach (var name in names)
+            {
+                DestinationToSourceSetter.IgnoreMember((model, _) => model.Name == name);
+            }
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IgnoreAttribute(params Type[] types)
+        {
+            SourceToDestinationSetter.IgnoreAttribute(types);
+            DestinationToSourceSetter.IgnoreAttribute(types);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IncludeAttribute(params Type[] types)
+        {
+            SourceToDestinationSetter.IncludeAttribute(types);
+            DestinationToSourceSetter.IncludeAttribute(types);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IgnoreMember(Func<IMemberModel, MemberSide, bool> predicate)
+        {
+            SourceToDestinationSetter.IgnoreMember(predicate);
+            DestinationToSourceSetter.IgnoreMember((model, side) => predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IncludeMember(Func<IMemberModel, MemberSide, bool> predicate)
+        {
+            SourceToDestinationSetter.IncludeMember(predicate);
+            DestinationToSourceSetter.IgnoreMember((model, side) => predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> ShallowCopyForSameType(bool value)
+        {
+            SourceToDestinationSetter.ShallowCopyForSameType(value);
+            DestinationToSourceSetter.ShallowCopyForSameType(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> EnumMappingStrategy(EnumMappingStrategy strategy)
+        {
+            SourceToDestinationSetter.EnumMappingStrategy(strategy);
+            DestinationToSourceSetter.EnumMappingStrategy(strategy);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IgnoreNullValues(bool value)
+        {
+            SourceToDestinationSetter.IgnoreNullValues(value);
+            DestinationToSourceSetter.IgnoreNullValues(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> PreserveReference(bool value)
+        {
+            SourceToDestinationSetter.PreserveReference(value);
+            DestinationToSourceSetter.PreserveReference(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> NameMatchingStrategy(NameMatchingStrategy value)
+        {
+            SourceToDestinationSetter.NameMatchingStrategy(value);
+            DestinationToSourceSetter.NameMatchingStrategy(new NameMatchingStrategy
+            {
+                SourceMemberNameConverter = value.DestinationMemberNameConverter,
+                DestinationMemberNameConverter = value.SourceMemberNameConverter,
+            });
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map<TSourceMember>(
+            string memberName,
+            Expression<Func<TSource, TSourceMember>> source)
+        {
+            SourceToDestinationSetter.Map(memberName, source);
+            DestinationToSourceSetter.Map(source, memberName);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map(string destinationMemberName, string sourceMemberName)
+        {
+            SourceToDestinationSetter.Map(destinationMemberName, sourceMemberName);
+            DestinationToSourceSetter.Map(sourceMemberName, destinationMemberName);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map(IEnumerable<KeyValuePair<string, string>> pairs)
+        {
+            foreach (var item in pairs)
+            {
+                SourceToDestinationSetter.Map(item.Key, item.Value);
+                DestinationToSourceSetter.Map(item.Value, item.Key);
+            }
+
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> EnableNonPublicMembers(bool value)
+        {
+            SourceToDestinationSetter.EnableNonPublicMembers(value);
+            DestinationToSourceSetter.EnableNonPublicMembers(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IgnoreNonMapped(bool value)
+        {
+            SourceToDestinationSetter.IgnoreNonMapped(value);
+            DestinationToSourceSetter.IgnoreNonMapped(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> AvoidInlineMapping(bool value)
+        {
+            SourceToDestinationSetter.AvoidInlineMapping(value);
+            DestinationToSourceSetter.AvoidInlineMapping(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> GetMemberName(Func<IMemberModel, string> func)
+        {
+            SourceToDestinationSetter.GetMemberName(func);
+            DestinationToSourceSetter.GetMemberName(func);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> MapToConstructor(bool value)
+        {
+            SourceToDestinationSetter.MapToConstructor(value);
+            DestinationToSourceSetter.MapToConstructor(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        {
+            foreach (var member in members)
+            {
+                var path = ReflectionUtils.GetMemberPath(member, true);
+                this.Ignore(path);
+            }
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map<TDestinationMember>(
+            Expression<Func<TDestination, TDestinationMember>> destinationMember,
+            string sourceMemberName)
+        {
+            SourceToDestinationSetter.Map(destinationMember, sourceMemberName);
+            DestinationToSourceSetter.Map(sourceMemberName, destinationMember);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TSourceMember>> source)
+        {
+            SourceToDestinationSetter.Map(member, source);
+            DestinationToSourceSetter.Map(source, member);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>()
+            where TDerivedSource : class, TSource
+            where TDerivedDestination : class, TDestination
+        {
+            SourceToDestinationSetter.Include<TDerivedSource, TDerivedDestination>();
+            DestinationToSourceSetter.Include<TDerivedDestination, TDerivedSource>();
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Inherits<TBaseSource, TBaseDestination>()
+        {
+            SourceToDestinationSetter.Inherits<TBaseSource, TBaseDestination>();
+            DestinationToSourceSetter.Inherits<TBaseDestination, TBaseSource>();
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> MaxDepth(int value)
+        {
+            SourceToDestinationSetter.MaxDepth(value);
+            DestinationToSourceSetter.MaxDepth(value);
+            return this;
         }
     }
 }

@@ -56,6 +56,16 @@ namespace Mapster
             get => Get("MapToConstructor");
             set => Set("MapToConstructor", value);
         }
+        public int? MaxDepth
+        {
+            get => Get<int?>("MaxDepth");
+            set => Set("MaxDepth", value);
+        }
+        public bool? Unflattening
+        {
+            get => Get("Unflattening");
+            set => Set("Unflattening", value);
+        }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {

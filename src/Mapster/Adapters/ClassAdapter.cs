@@ -122,7 +122,7 @@ namespace Mapster.Adapters
                 foreach (var kvp in conditions)
                 {
                     var condition = Expression.IfThen(
-                        ExpressionEx.Not(kvp.Key.Apply(source, destination)),
+                        ExpressionEx.Not(kvp.Key.Apply(arg.MapType, source, destination)),
                         Expression.Block(kvp.Value));
                     lines.Add(condition);
                 }

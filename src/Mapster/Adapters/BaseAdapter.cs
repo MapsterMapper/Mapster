@@ -244,7 +244,7 @@ namespace Mapster.Adapters
         {
             var afterMapping = mappingFactory(arg);
             var args = afterMapping.Parameters;
-            var invoke = afterMapping.Apply(source.To(args[0].Type), result.To(args[1].Type));
+            var invoke = afterMapping.Apply(arg.MapType, source.To(args[0].Type), result.To(args[1].Type));
             if (invoke.Type != typeof(void))
                 invoke = ExpressionEx.Assign(result, invoke);
             return invoke;
@@ -282,7 +282,7 @@ namespace Mapster.Adapters
             //if there is constructUsing, use constructUsing
             var constructUsing = arg.GetConstructUsing();
             if (constructUsing != null)
-                return constructUsing.Apply(source, destination).TrimConversion(true).To(arg.DestinationType);
+                return constructUsing.Apply(arg.MapType, source, destination).TrimConversion(true).To(arg.DestinationType);
 
             //if there is default constructor, use default constructor
             else if (arg.DestinationType.HasDefaultConstructor())
@@ -312,7 +312,7 @@ namespace Mapster.Adapters
             //adapt(source);
             var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destinationType, arg.MapType == MapType.MapToTarget ? MapType.Map : arg.MapType, arg.Context);
             var exp = !lambda.IsMultiLine() 
-                ? lambda.Apply(source)
+                ? lambda.Apply(arg.MapType, source)
                 : arg.Context.Config.SelfContainedCodeGeneration
                 ? (Expression)Expression.Invoke(lambda, source)
                 : arg.Context.Config.CreateMapInvokeExpression(source.Type, destinationType);
@@ -321,7 +321,7 @@ namespace Mapster.Adapters
             if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))
             {
                 var transform = arg.Settings.DestinationTransforms.Transforms[exp.Type];
-                exp = transform.Apply(exp);
+                exp = transform.Apply(arg.MapType, exp);
             }
             return exp.To(destinationType);
         }
@@ -337,7 +337,7 @@ namespace Mapster.Adapters
             //adapt(source, dest);
             var lambda = arg.Context.Config.CreateInlineMapExpression(source.Type, destination.Type, arg.MapType, arg.Context);
             var exp = !lambda.IsMultiLine()
-                ? lambda.Apply(source, destination)
+                ? lambda.Apply(arg.MapType, source, destination)
                 : arg.Context.Config.SelfContainedCodeGeneration
                 ? (Expression)Expression.Invoke(lambda, source, destination)
                 : arg.Context.Config.CreateMapToTargetInvokeExpression(source.Type, destination.Type);
@@ -346,7 +346,7 @@ namespace Mapster.Adapters
             if (arg.Settings.DestinationTransforms.Transforms.ContainsKey(exp.Type))
             {
                 var transform = arg.Settings.DestinationTransforms.Transforms[exp.Type];
-                exp = transform.Apply(exp);
+                exp = transform.Apply(arg.MapType, exp);
             }
             return exp.To(destination.Type);
         }

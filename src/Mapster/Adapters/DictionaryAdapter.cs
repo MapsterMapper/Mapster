@@ -76,7 +76,7 @@ namespace Mapster.Adapters
                 else 
                 {
                     var setWithCondition = Expression.IfThen(
-                        ExpressionEx.Not(ignoreIf.Value.Apply(source, destination)),
+                        ExpressionEx.Not(ignoreIf.Value.Apply(arg.MapType, source, destination)),
                         set);
                     dict.Add(ignoreIf.Key, setWithCondition);
                 }
