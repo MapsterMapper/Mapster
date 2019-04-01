@@ -40,8 +40,8 @@ namespace Mapster.Adapters
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
                 return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source, true));
             }
-            else
-                return CreateArraySet(source, destination, arg);
+
+            return CreateArraySet(source, destination, arg);
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)

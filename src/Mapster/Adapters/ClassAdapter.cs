@@ -54,17 +54,27 @@ namespace Mapster.Adapters
         {
             //new TDestination(src.Prop1, src.Prop2)
 
-            if (arg.GetConstructUsing() != null || arg.Settings.MapToConstructor != true)
+            if (arg.GetConstructUsing() != null || arg.Settings.MapToConstructor == null)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
-            var classConverter = arg.DestinationType.GetConstructors()
-                .OrderByDescending(it => it.GetParameters().Length)
-                .Select(GetClassModel)
-                .Select(it => CreateClassConverter(source, it, arg))
-                .FirstOrDefault(it => it != null);
+            ClassMapping classConverter;
+            var ctor = arg.Settings.MapToConstructor as ConstructorInfo;
+            if (ctor == null)
+            {
+                classConverter = arg.DestinationType.GetConstructors()
+                    .OrderByDescending(it => it.GetParameters().Length)
+                    .Select(GetClassModel)
+                    .Select(it => CreateClassConverter(source, it, arg))
+                    .FirstOrDefault(it => it != null);
+            }
+            else
+            {
+                var model = GetClassModel(ctor);
+                classConverter = CreateClassConverter(source, model, arg);
+            }
 
             if (classConverter == null)
-                throw new Exception();
+                return base.CreateInstantiationExpression(source, destination, arg);
 
             return CreateInstantiationExpression(source, classConverter, arg);
         }

@@ -8,7 +8,7 @@ namespace Mapster.Utils
         public override Expression Visit(Expression node)
         {
             if (node == null)
-                return node;
+                return null;
             switch (node.NodeType)
             {
                 case ExpressionType.ArrayIndex:

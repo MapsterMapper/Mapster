@@ -20,9 +20,6 @@ namespace Mapster.Adapters
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
             var properties = new List<MemberMapping>();
-            var includeResolvers = arg.Settings.Resolvers
-                .Where(it => it.DestinationMemberName == "")
-                .ToList();
 
             foreach (var destinationMember in destinationMembers)
             {

@@ -409,7 +409,7 @@ namespace Mapster
             else
             {
                 var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                              where m.Name == nameof(TypeAdapterConfig.GetMapFunction)
+                              where m.Name == nameof(GetMapFunction)
                               select m).First().MakeGenericMethod(sourceType, destinationType);
                 invoker = Expression.Call(Expression.Constant(this), method);
             }
@@ -421,7 +421,7 @@ namespace Mapster
         internal LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
         {
             var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                          where m.Name == nameof(TypeAdapterConfig.GetMapToTargetFunction)
+                          where m.Name == nameof(GetMapToTargetFunction)
                           select m).First().MakeGenericMethod(sourceType, destinationType);
             var invoker = Expression.Call(Expression.Constant(this), method);
             var p1 = Expression.Parameter(sourceType);

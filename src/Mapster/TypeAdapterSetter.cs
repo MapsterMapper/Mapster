@@ -227,7 +227,16 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.MapToConstructor = value;
+            setter.Settings.MapToConstructor = value ? "*" : null;
+            return setter;
+        }
+
+        public static TSetter MapToConstructor<TSetter>(this TSetter setter, ConstructorInfo constructorInfo)
+            where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.MapToConstructor = constructorInfo;
             return setter;
         }
 

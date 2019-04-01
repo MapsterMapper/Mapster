@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mapster.Models;
 
 namespace Mapster
@@ -50,11 +51,6 @@ namespace Mapster
         {
             get => Get("AvoidInlineMapping");
             set => Set("AvoidInlineMapping", value);
-        }
-        public bool? MapToConstructor
-        {
-            get => Get("MapToConstructor");
-            set => Set("MapToConstructor", value);
         }
         public int? MaxDepth
         {
@@ -109,6 +105,11 @@ namespace Mapster
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
             set => Set("ConverterToTargetFactory", value);
+        }
+        public object MapToConstructor
+        {
+            get => Get<object>("MapToConstructor");
+            set => Set("MapToConstructor", value);
         }
 
         internal bool Compiled { get; set; }
