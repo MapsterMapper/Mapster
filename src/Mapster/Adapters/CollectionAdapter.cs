@@ -12,6 +12,7 @@ namespace Mapster.Adapters
     {
         protected override int Score => -125;
         protected override bool UseTargetValue => true;
+        protected override ObjectType ObjectType => ObjectType.Collection;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

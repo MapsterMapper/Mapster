@@ -63,13 +63,13 @@ namespace Mapster.Adapters
             {
                 classConverter = arg.DestinationType.GetConstructors()
                     .OrderByDescending(it => it.GetParameters().Length)
-                    .Select(GetClassModel)
+                    .Select(it => GetConstructorModel(it, false))
                     .Select(it => CreateClassConverter(source, it, arg))
                     .FirstOrDefault(it => it != null);
             }
             else
             {
-                var model = GetClassModel(ctor);
+                var model = GetConstructorModel(ctor, true);
                 classConverter = CreateClassConverter(source, model, arg);
             }
 
@@ -91,7 +91,7 @@ namespace Mapster.Adapters
             //if (src.Prop2 != null)
             //  dest.Prop2 = convert(src.Prop2);
 
-            var classModel = GetClassModel(arg.DestinationType);
+            var classModel = GetSetterModel(arg);
             var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
@@ -152,7 +152,7 @@ namespace Mapster.Adapters
             var memberInit = exp as MemberInitExpression;
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
 
-            var classModel = GetClassModel(arg.DestinationType);
+            var classModel = GetSetterModel(arg);
             var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
@@ -184,14 +184,6 @@ namespace Mapster.Adapters
             }
 
             return Expression.MemberInit(newInstance, lines);
-        }
-
-        private ClassModel GetClassModel(Type destinationType)
-        {
-            return new ClassModel
-            {
-                Members = destinationType.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
-            };
         }
     }
 }

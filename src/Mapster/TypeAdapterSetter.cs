@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
 using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster
 {
@@ -148,6 +148,7 @@ namespace Mapster
             setter.Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
+                SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
                 Invoker = source,
                 Condition = null
             });
@@ -167,17 +168,6 @@ namespace Mapster
                 Condition = null
             });
 
-            return setter;
-        }
-
-        public static TSetter Map<TSetter>(this TSetter setter, IEnumerable<KeyValuePair<string, string>> pairs) where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-
-            foreach (var item in pairs)
-            {
-                setter.Map(item.Key, item.Value);
-            }
             return setter;
         }
 
@@ -228,15 +218,6 @@ namespace Mapster
             setter.CheckCompiled();
 
             setter.Settings.MapToConstructor = value ? "*" : null;
-            return setter;
-        }
-
-        public static TSetter MapToConstructor<TSetter>(this TSetter setter, ConstructorInfo constructorInfo)
-            where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-
-            setter.Settings.MapToConstructor = constructorInfo;
             return setter;
         }
 
@@ -346,6 +327,24 @@ namespace Mapster
             });
             return this;
         }
+
+        public TypeAdapterSetter<TDestination> MapToConstructor(ConstructorInfo ctor)
+        {
+            this.CheckCompiled();
+
+            if (ctor != null)
+            {
+                if (!typeof(TDestination).GetTypeInfo().IsAssignableFrom(ctor.DeclaringType.GetTypeInfo()))
+                    throw new ArgumentException("Constructor cannot be assigned to type TDestination", nameof(ctor));
+
+                if (ctor.DeclaringType.GetTypeInfo().IsAbstract)
+                    throw new ArgumentException("Constructor of abstract type cannot be created", nameof(ctor));
+            }
+
+            this.Settings.MapToConstructor = ctor;
+            return this;
+        }
+
     }
 
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TDestination>
@@ -390,6 +389,11 @@ namespace Mapster
             return (TypeAdapterSetter<TSource, TDestination>)base.AfterMapping(action);
         }
 
+        public new TypeAdapterSetter<TSource, TDestination> MapToConstructor(ConstructorInfo ctor)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>) base.MapToConstructor(ctor);
+        }
+
         #endregion
 
         public TypeAdapterSetter<TSource, TDestination> IgnoreIf(
@@ -428,6 +432,7 @@ namespace Mapster
             Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = ReflectionUtils.GetMemberPath(member),
+                SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
                 Invoker = source,
                 Condition = shouldMap
             });
@@ -443,6 +448,7 @@ namespace Mapster
             Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
+                SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
                 Invoker = source,
                 Condition = shouldMap
             });
@@ -574,10 +580,10 @@ namespace Mapster
             Type baseDestinationType = typeof(TBaseDestination);
 
             if (!baseSourceType.GetTypeInfo().IsAssignableFrom(typeof(TSource).GetTypeInfo()))
-                throw new InvalidCastException("In order to use inherits, TSource must inherit directly or indirectly from TBaseSource.");
+                throw new InvalidCastException("In order to use inherits, TSource must be inherited from TBaseSource.");
 
             if (!baseDestinationType.GetTypeInfo().IsAssignableFrom(typeof(TDestination).GetTypeInfo()))
-                throw new InvalidCastException("In order to use inherits, TDestination must inherit directly or indirectly from TBaseDestination.");
+                throw new InvalidCastException("In order to use inherits, TDestination must be inherited from TBaseDestination.");
 
             if (Config.RuleMap.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out var rule))
             {
@@ -713,17 +719,6 @@ namespace Mapster
         {
             SourceToDestinationSetter.Map(destinationMemberName, sourceMemberName);
             DestinationToSourceSetter.Map(sourceMemberName, destinationMemberName);
-            return this;
-        }
-
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map(IEnumerable<KeyValuePair<string, string>> pairs)
-        {
-            foreach (var item in pairs)
-            {
-                SourceToDestinationSetter.Map(item.Key, item.Value);
-                DestinationToSourceSetter.Map(item.Value, item.Key);
-            }
-
             return this;
         }
 

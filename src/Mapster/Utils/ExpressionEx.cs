@@ -17,6 +17,17 @@ namespace Mapster.Utils
             return Expression.Assign(left, middle);
         }
 
+        private static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
+        {
+            if (destType == srcType)
+                return true;
+
+            if (!destType.GetTypeInfo().IsValueType && !srcType.GetTypeInfo().IsValueType && destType.GetTypeInfo().IsAssignableFrom(srcType.GetTypeInfo()))
+                return true;
+
+            return false;
+        }
+
         public static Expression Not(Expression exp)
         {
             if (exp is UnaryExpression unary && unary.NodeType == ExpressionType.Not)

@@ -127,34 +127,31 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static string GetMemberPath(Expression expr, bool firstLevelOnly = false)
+        public static string GetMemberPath(LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
         {
             var props = new List<string>();
-            expr = expr.TrimConversion(true);
+            var expr = lambda.Body.TrimConversion(true);
             while (expr?.NodeType == ExpressionType.MemberAccess)
             {
                 if (firstLevelOnly && props.Count > 0)
+                {
+                    if (noError)
+                        return null;
                     throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(expr));
+                }
 
                 var memEx = (MemberExpression)expr;
                 props.Add(memEx.Member.Name);
                 expr = memEx.Expression;
             }
             if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
+            {
+                if (noError)
+                    return null;
                 throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(expr));
+            }
             props.Reverse();
             return string.Join(".", props);
-        }
-
-        public static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
-        {
-            if (destType == srcType)
-                return true;
-
-            if (!destType.GetTypeInfo().IsValueType && !srcType.GetTypeInfo().IsValueType && destType.GetTypeInfo().IsAssignableFrom(srcType.GetTypeInfo()))
-                return true;
-
-            return false;
         }
 
         public static bool IsRecordType(this Type type)

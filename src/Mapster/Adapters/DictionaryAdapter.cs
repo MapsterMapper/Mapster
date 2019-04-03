@@ -140,7 +140,7 @@ namespace Mapster.Adapters
             var listInit = exp as ListInitExpression;
             var newInstance = listInit?.NewExpression ?? (NewExpression)exp;
 
-            var classModel = GetClassModel(arg);
+            var classModel = GetSetterModel(arg);
             var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
@@ -164,7 +164,7 @@ namespace Mapster.Adapters
             return Expression.ListInit(newInstance, lines);
         }
 
-        private ClassModel GetClassModel(CompileArgument arg)
+        protected override ClassModel GetSetterModel(CompileArgument arg)
         {
             //get member name from map
             var destNames = arg.GetDestinationNames().AsEnumerable();
@@ -172,9 +172,12 @@ namespace Mapster.Adapters
             //get member name from properties
             if (arg.SourceType.GetDictionaryType() == null)
             {
+                var srcNames = arg.GetSourceNames();
                 var propNames = arg.SourceType.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
                     .Where(model => model.ShouldMapMember(arg, MemberSide.Source))
-                    .Select(model => arg.Settings.NameMatchingStrategy.SourceMemberNameConverter(model.Name));
+                    .Select(model => model.Name)
+                    .Where(name => !srcNames.Contains(name))
+                    .Select(name => arg.Settings.NameMatchingStrategy.SourceMemberNameConverter(name));
                 destNames = destNames.Union(propNames);
             }
 

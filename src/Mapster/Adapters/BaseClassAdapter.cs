@@ -10,7 +10,7 @@ namespace Mapster.Adapters
 {
     internal abstract class BaseClassAdapter : BaseAdapter
     {
-        protected override bool CheckExplicitMapping => true;
+        protected override ObjectType ObjectType => ObjectType.Class;
         protected override bool UseTargetValue => true;
 
         #region Build the Adapter Model
@@ -46,7 +46,7 @@ namespace Mapster.Adapters
                 else if (classModel.ConstructorInfo != null)
                 {
                     var info = (ParameterInfo)destinationMember.Info;
-                    if (!info.IsOptional)
+                    if (!info.IsOptional && !classModel.AllowDefault)
                         return null;
                     var propertyModel = new MemberMapping
                     {
@@ -126,12 +126,21 @@ namespace Mapster.Adapters
             return Expression.New(classConverter.ConstructorInfo, arguments);
         }
 
-        protected ClassModel GetClassModel(ConstructorInfo ctor)
+        protected virtual ClassModel GetConstructorModel(ConstructorInfo ctor, bool allowDefault)
         {
             return new ClassModel
             {
+                AllowDefault = allowDefault,
                 ConstructorInfo = ctor,
                 Members = ctor.GetParameters().Select(ReflectionUtils.CreateModel)
+            };
+        }
+
+        protected virtual ClassModel GetSetterModel(CompileArgument arg)
+        {
+            return new ClassModel
+            {
+                Members = arg.DestinationType.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
             };
         }
 
