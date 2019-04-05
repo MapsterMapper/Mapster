@@ -62,6 +62,11 @@ namespace Mapster
             get => Get("Unflattening");
             set => Set("Unflattening", value);
         }
+        public bool? SkipDestinationMemberCheck
+        {
+            get => Get("SkipDestinationMemberCheck");
+            set => Set("SkipDestinationMemberCheck", value);
+        }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {

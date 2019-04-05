@@ -63,13 +63,13 @@ namespace Mapster.Adapters
             {
                 classConverter = arg.DestinationType.GetConstructors()
                     .OrderByDescending(it => it.GetParameters().Length)
-                    .Select(it => GetConstructorModel(it, false))
+                    .Select(it => GetConstructorModel(it, true))
                     .Select(it => CreateClassConverter(source, it, arg))
                     .FirstOrDefault(it => it != null);
             }
             else
             {
-                var model = GetConstructorModel(ctor, true);
+                var model = GetConstructorModel(ctor, false);
                 classConverter = CreateClassConverter(source, model, arg);
             }
 

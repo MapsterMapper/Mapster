@@ -21,7 +21,7 @@ namespace Mapster.Adapters
                 return base.CreateInstantiationExpression(source, destination, arg);
 
             var ctor = arg.DestinationType.GetConstructors()[0];
-            var classModel = GetConstructorModel(ctor, true);
+            var classModel = GetConstructorModel(ctor, false);
             var classConverter = CreateClassConverter(source, classModel, arg);
             return CreateInstantiationExpression(source, classConverter, arg);
         }

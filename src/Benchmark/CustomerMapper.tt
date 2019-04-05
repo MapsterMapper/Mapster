@@ -1,6 +1,5 @@
 ﻿<#@ template debug="true" language="C#" #>
 <#@ output extension=".cs" #>
-
 <# /*@ Assembly Name="/usr/local/share/dotnet/sdk/2.2.103/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/netstandard.dll" */ #>
 <#@ Assembly Name="netstandard" #>
 <#@ Assembly Name="System.Core" #>
@@ -9,10 +8,9 @@
 <#@ Assembly Name="$(TargetDir)/Benchmark.dll" #>
 <#@ Assembly Name="$(TargetDir)/Mapster.dll" #>
 <#@ Assembly Name="$(TargetDir)/ExpressionTranslator.dll" #>
-<#@ import namespace="Benchmark.Classes" #> 
-<#@ import namespace="ExpressionDebugger" #> 
-<#@ import namespace="Mapster" #> 
-
+<#@ import namespace="Benchmark.Classes" #>
+<#@ import namespace="ExpressionDebugger" #>
+<#@ import namespace="Mapster" #>
 <# 
     TypeAdapterConfig.GlobalSettings.SelfContainedCodeGeneration = true;
     var foo = default(Customer);

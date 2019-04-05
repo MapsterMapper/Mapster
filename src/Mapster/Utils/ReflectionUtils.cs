@@ -55,20 +55,20 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            return type.GetFieldsAndProperties(allowNoSetter: false).Any();
+            return type.GetFieldsAndProperties(requireSetter: true).Any();
         }
 
-        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool allowNoSetter = true, BindingFlags accessorFlags = BindingFlags.Public)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool requireSetter = false, BindingFlags accessorFlags = BindingFlags.Public)
         {
             var bindingFlags = BindingFlags.Instance | accessorFlags;
 
             var properties = type.GetProperties(bindingFlags)
                 .Where(x => x.GetIndexParameters().Length == 0)
-                .Where(x => allowNoSetter || x.CanWrite)
+                .Where(x => !requireSetter || x.CanWrite)
                 .Select(CreateModel);
 
             var fields = type.GetFields(bindingFlags)
-                .Where(x => allowNoSetter || !x.IsInitOnly)
+                .Where(x => !requireSetter || !x.IsInitOnly)
                 .Select(CreateModel);
 
             return properties.Concat(fields);
@@ -94,12 +94,12 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
         }
 
-        public static Type GetInterface(this Type type, Func<Type, bool> predicate)
+        public static Type GetInterface(this Type type, Predicate<Type> predicate)
         {
             if (predicate(type))
                 return type;
 
-            return type.GetInterfaces().FirstOrDefault(predicate);
+            return Array.Find(type.GetInterfaces(), predicate);
         }
 
         public static Type GetGenericEnumerableType(this Type type)
@@ -137,7 +137,7 @@ namespace Mapster
                 {
                     if (noError)
                         return null;
-                    throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(expr));
+                    throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(lambda));
                 }
 
                 var memEx = (MemberExpression)expr;
@@ -148,7 +148,7 @@ namespace Mapster
             {
                 if (noError)
                     return null;
-                throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(expr));
+                throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(lambda));
             }
             props.Reverse();
             return string.Join(".", props);

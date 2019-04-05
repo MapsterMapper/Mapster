@@ -250,7 +250,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreIfs[ReflectionUtils.GetMemberPath(member, true)] = null;
+                Settings.IgnoreIfs[ReflectionUtils.GetMemberPath(member)] = null;
             }
             return this;
         }
@@ -404,7 +404,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                var name = ReflectionUtils.GetMemberPath(member, true);
+                var name = ReflectionUtils.GetMemberPath(member);
                 Settings.IgnoreIfs.Merge(name, condition);
             }
             return this;
@@ -545,6 +545,14 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(Expression<Func<TSource, TDestination, TDestination>> action)
+        {
+            this.CheckCompiled();
+
+            Settings.BeforeMappingFactories.Add(arg => action);
+            return this;
+        }
+
         public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TSource, TDestination>> action)
         {
             this.CheckCompiled();
@@ -619,6 +627,7 @@ namespace Mapster
                 .Unflattening(true);
             DestinationToSourceSetter = config.ForType<TDestination, TSource>()
                 .Unflattening(true);
+            DestinationToSourceSetter.Settings.SkipDestinationMemberCheck = true;
         }
 
         public TwoWaysTypeAdapterSetter<TSource, TDestination> AddDestinationTransform<TDestinationMember>(Expression<Func<TDestinationMember, TDestinationMember>> transform)
@@ -761,7 +770,7 @@ namespace Mapster
         {
             foreach (var member in members)
             {
-                var path = ReflectionUtils.GetMemberPath(member, true);
+                var path = ReflectionUtils.GetMemberPath(member);
                 this.Ignore(path);
             }
             return this;

@@ -1,9 +1,4 @@
 ﻿
- 
- 
- 
-
-
 using System;
 using System.Linq;
 using Benchmark.Classes;

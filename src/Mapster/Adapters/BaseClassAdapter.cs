@@ -46,8 +46,12 @@ namespace Mapster.Adapters
                 else if (classModel.ConstructorInfo != null)
                 {
                     var info = (ParameterInfo)destinationMember.Info;
-                    if (!info.IsOptional && !classModel.AllowDefault)
-                        return null;
+                    if (!info.IsOptional)
+                    {
+                        if (classModel.BreakOnUnmatched)
+                            return null;
+                        unmappedDestinationMembers.Add(destinationMember.Name);
+                    }
                     var propertyModel = new MemberMapping
                     {
                         Getter = null,
@@ -58,11 +62,15 @@ namespace Mapster.Adapters
                 }
                 else if (destinationMember.SetterModifier != AccessModifier.None)
                 {
+                    if (classModel.BreakOnUnmatched)
+                        return null;
                     unmappedDestinationMembers.Add(destinationMember.Name);
                 }
             }
 
-            if (arg.Context.Config.RequireDestinationMemberSource && unmappedDestinationMembers.Count > 0)
+            if (arg.Context.Config.RequireDestinationMemberSource && 
+                unmappedDestinationMembers.Count > 0 &&
+                arg.Settings.SkipDestinationMemberCheck != true)
             {
                 throw new InvalidOperationException($"The following members of destination class {arg.DestinationType} do not have a corresponding source member mapped or ignored:{string.Join(",", unmappedDestinationMembers)}");
             }
@@ -126,11 +134,11 @@ namespace Mapster.Adapters
             return Expression.New(classConverter.ConstructorInfo, arguments);
         }
 
-        protected virtual ClassModel GetConstructorModel(ConstructorInfo ctor, bool allowDefault)
+        protected virtual ClassModel GetConstructorModel(ConstructorInfo ctor, bool breakOnUnmatched)
         {
             return new ClassModel
             {
-                AllowDefault = allowDefault,
+                BreakOnUnmatched = breakOnUnmatched,
                 ConstructorInfo = ctor,
                 Members = ctor.GetParameters().Select(ReflectionUtils.CreateModel)
             };
@@ -140,7 +148,7 @@ namespace Mapster.Adapters
         {
             return new ClassModel
             {
-                Members = arg.DestinationType.GetFieldsAndProperties(allowNoSetter: false, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
+                Members = arg.DestinationType.GetFieldsAndProperties(requireSetter: true, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
             };
         }
 
