@@ -84,16 +84,22 @@ namespace Mapster
             return fn(this.Source, destination);
         }
 
-        public LambdaExpression CreateMapExpression<TDestination>()
+        public Expression<Func<TSource, TDestination>> CreateMapExpression<TDestination>()
         {
             var tuple = new TypeTuple(typeof(TSource), typeof(TDestination));
-            return this.Config.CreateMapExpression(tuple, MapType.Map);
+            return (Expression<Func<TSource, TDestination>>) this.Config.CreateMapExpression(tuple, MapType.Map);
         }
 
-        public LambdaExpression CreateMapToTargetExpression<TDestination>()
+        public Expression<Func<TSource, TDestination, TDestination>> CreateMapToTargetExpression<TDestination>()
         {
             var tuple = new TypeTuple(typeof(TSource), typeof(TDestination));
-            return this.Config.CreateMapExpression(tuple, MapType.MapToTarget);
+            return (Expression<Func<TSource, TDestination, TDestination>>) this.Config.CreateMapExpression(tuple, MapType.MapToTarget);
+        }
+
+        public Expression<Func<TSource, TDestination>> CreateProjectionExpression<TDestination>()
+        {
+            var tuple = new TypeTuple(typeof(TSource), typeof(TDestination));
+            return (Expression<Func<TSource, TDestination>>) this.Config.CreateMapExpression(tuple, MapType.Projection);
         }
     }
 }

@@ -92,16 +92,17 @@ namespace Mapster.Adapters
             //  dest.Prop2 = convert(src.Prop2);
 
             var classModel = GetSetterModel(arg);
-            var classConverter = CreateClassConverter(source, classModel, arg);
+            var classConverter = CreateClassConverter(source, classModel, arg, destination);
             var members = classConverter.Members;
 
             var lines = new List<Expression>();
             Dictionary<LambdaExpression, List<Expression>> conditions = null;
             foreach (var member in members)
             {
-                var value = arg.MapType == MapType.MapToTarget
-                    ? CreateAdaptToExpression(member.Getter, member.DestinationMember.GetExpression(destination), arg)
-                    : CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
+                var destMember = arg.MapType == MapType.MapToTarget
+                    ? member.DestinationMember.GetExpression(destination)
+                    : null;
+                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
 
                 Expression itemAssign = member.DestinationMember.SetExpression(destination, value);
                 if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
@@ -161,7 +162,7 @@ namespace Mapster.Adapters
                 lines.AddRange(memberInit.Bindings);
             foreach (var member in members)
             {
-                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
+                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
 
                 //special null property check for projection
                 //if we don't set null to property, EF will create empty object

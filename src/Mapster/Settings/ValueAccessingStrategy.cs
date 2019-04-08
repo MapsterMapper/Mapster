@@ -39,7 +39,7 @@ namespace Mapster
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
                     continue;
                 var invoke = resolver.Invoker == null
-                    ? Expression.PropertyOrField(source, resolver.SourceMemberName)
+                    ? ExpressionEx.PropertyOrField(source, resolver.SourceMemberName)
                     : resolver.Invoker.Apply(arg.MapType, source);
 
                 if (resolver.Condition == null)
@@ -106,21 +106,21 @@ namespace Mapster
         private static Expression GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var members = source.Type.GetFieldsAndProperties();
+            var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
             foreach (var member in members)
             {
                 if (!member.ShouldMapMember(arg, MemberSide.Source))
                     continue;
                 var sourceMemberName = member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
                 var propertyType = member.Type;
-                if (propertyType.GetTypeInfo().IsClass && propertyType != typeof(string)
-                    && propertyName.StartsWith(sourceMemberName))
+                if (propertyName.StartsWith(sourceMemberName) &&
+                    (propertyType.IsPoco() || propertyType.IsRecordType()))
                 {
                     var exp = member.GetExpression(source);
                     var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
                     if (ifTrue == null)
                         continue;
-                    if (arg.MapType == MapType.Projection)
+                    if (arg.MapType == MapType.Projection || !exp.Type.CanBeNull())
                         return ifTrue;
                     return Expression.Condition(
                         Expression.Equal(exp, Expression.Constant(null, exp.Type)),
@@ -133,6 +133,55 @@ namespace Mapster
                 }
             }
             return null;
+        }
+
+        internal static IEnumerable<InvokerModel> FindUnflatteningPairs(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        {
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+            var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+
+            foreach (var member in members)
+            {
+                if (!member.ShouldMapMember(arg, MemberSide.Source))
+                    continue;
+                var sourceMemberName = member.GetMemberName(arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
+                if (!sourceMemberName.StartsWith(destinationMemberName) || sourceMemberName == destinationMemberName)
+                    continue;
+                foreach (var prop in GetDeepUnflattening(destinationMember, sourceMemberName.Substring(destinationMemberName.Length).TrimStart('_'), arg))
+                {
+                    yield return new InvokerModel
+                    {
+                        SourceMemberName = member.Name,
+                        DestinationMemberName = destinationMember.Name + "." + prop
+                    };
+                }
+            }
+        }
+
+        private static IEnumerable<string> GetDeepUnflattening(IMemberModel destinationMember, string propertyName, CompileArgument arg)
+        {
+            var strategy = arg.Settings.NameMatchingStrategy;
+            var members = destinationMember.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+            foreach (var member in members)
+            {
+                if (!member.ShouldMapMember(arg, MemberSide.Destination))
+                    continue;
+                var destMemberName = member.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+                var propertyType = member.Type;
+                if (propertyName.StartsWith(destMemberName) &&
+                    (propertyType.IsPoco() || propertyType.IsRecordType()))
+                {
+                    foreach (var prop in GetDeepUnflattening(member, propertyName.Substring(destMemberName.Length).TrimStart('_'), arg))
+                    {
+                        yield return member.Name + "." + prop;
+                    }
+                }
+                else if (string.Equals(propertyName, destMemberName))
+                {
+                    yield return member.Name;
+                }
+            }
         }
 
         private static Expression DictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)

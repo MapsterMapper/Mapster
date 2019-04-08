@@ -1,12 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using Mapster.Models;
 
 namespace Mapster
 {
     public class CompileContext
     {
-        public readonly HashSet<TypeTuple> Running = new HashSet<TypeTuple>();
-        public readonly TypeAdapterConfig Config;
+        public HashSet<TypeTuple> Running { get; } = new HashSet<TypeTuple>();
+        public TypeAdapterConfig Config { get; }
+        public int? MaxDepth { get; set; }
+        public int Depth { get; set; }
+        public HashSet<ParameterExpression> ExtraParameters { get; } = new HashSet<ParameterExpression>();
+
+        internal bool IsSubFunction()
+        {
+            return this.MaxDepth.HasValue || this.ExtraParameters.Count > 0;
+        }
 
         public CompileContext(TypeAdapterConfig config)
         {

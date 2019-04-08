@@ -17,6 +17,12 @@ namespace Mapster.Utils
             return Expression.Assign(left, middle);
         }
 
+        public static Expression PropertyOrField(Expression expr, string path)
+        {
+            var props = path.Split('.');
+            return props.Aggregate(expr, Expression.PropertyOrField);
+        }
+
         private static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
         {
             if (destType == srcType)
@@ -49,6 +55,15 @@ namespace Mapster.Utils
             return Expression.Invoke(lambda, exps);
         }
 
+        public static LambdaExpression TrimParameters(this LambdaExpression lambda, int skip = 0)
+        {
+            var replacer = new ParameterExpressionReplacer(lambda.Parameters, lambda.Parameters.ToArray<Expression>());
+            replacer.Visit(lambda.Body);
+            if (replacer.ReplaceCounts.Skip(skip).All(n => n > 0))
+                return lambda;
+            return Expression.Lambda(lambda.Body, lambda.Parameters.Where((_, i) => i < skip || replacer.ReplaceCounts[i] > 0));
+        }
+
         public static Expression TrimConversion(this Expression exp, bool force = false)
         {
             while (exp.NodeType == ExpressionType.Convert || exp.NodeType == ExpressionType.ConvertChecked)
@@ -65,11 +80,8 @@ namespace Mapster.Utils
         public static Expression To(this Expression exp, Type type, bool force = false)
         {
             exp = exp.TrimConversion();
-            bool sameType = force ? type == exp.Type : type.IsReferenceAssignableFrom(exp.Type);
-            if (sameType)
-                return exp;
-            else
-                return Expression.Convert(exp, type);
+            var sameType = force ? type == exp.Type : type.IsReferenceAssignableFrom(exp.Type);
+            return sameType ? exp : Expression.Convert(exp, type);
         }
 
         public static Delegate Compile(this LambdaExpression exp, CompileArgument arg)

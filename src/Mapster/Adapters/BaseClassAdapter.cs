@@ -15,7 +15,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression destination = null)
         {
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
@@ -33,38 +33,61 @@ namespace Mapster.Adapters
                     .Select(fn => fn(source, destinationMember, arg))
                     .FirstOrDefault(result => result != null);
 
+                var nextIgnoreIfs = arg.Settings.IgnoreIfs.Next(destinationMember.Name);
+                var nextResolvers = arg.Settings.Resolvers
+                    .Where(it => !arg.Settings.IgnoreIfs.TryGetValue(it.DestinationMemberName, out var condition) || condition != null)
+                    .Select(it => it.Next(destinationMember.Name))
+                    .Where(it => it != null)
+                    .ToList();
+
+                var propertyModel = new MemberMapping
+                {
+                    Getter = getter,
+                    DestinationMember = destinationMember,
+                    SetterCondition = setterCondition,
+                    Resolvers = nextResolvers,
+                    IgnoreIfs = nextIgnoreIfs,
+                    Source = (ParameterExpression) source,
+                    Destination = (ParameterExpression) destination,
+                };
                 if (getter != null)
                 {
-                    var propertyModel = new MemberMapping
-                    {
-                        Getter = getter,
-                        DestinationMember = destinationMember,
-                        SetterCondition = setterCondition,
-                    };
                     properties.Add(propertyModel);
                 }
-                else if (classModel.ConstructorInfo != null)
+                else
                 {
-                    var info = (ParameterInfo)destinationMember.Info;
-                    if (!info.IsOptional)
+                    if (arg.Settings.IgnoreNonMapped != true &&
+                        arg.Settings.Unflattening == true &&
+                        arg.DestinationType.GetDictionaryType() != null &&
+                        arg.SourceType.GetDictionaryType() != null)
+                    {
+                        var extra = ValueAccessingStrategy.FindUnflatteningPairs(source, destinationMember, arg);
+                        nextResolvers.AddRange(extra);
+                    }
+
+                    if (classModel.ConstructorInfo != null)
+                    {
+                        var info = (ParameterInfo) destinationMember.Info;
+                        if (!info.IsOptional)
+                        {
+                            if (classModel.BreakOnUnmatched)
+                                return null;
+                            unmappedDestinationMembers.Add(destinationMember.Name);
+                        }
+
+                        properties.Add(propertyModel);
+                    }
+                    else if (propertyModel.HasSettings())
+                    {
+                        propertyModel.Getter = Expression.New(typeof(Never));
+                        properties.Add(propertyModel);
+                    }
+                    else if (destinationMember.SetterModifier != AccessModifier.None)
                     {
                         if (classModel.BreakOnUnmatched)
                             return null;
                         unmappedDestinationMembers.Add(destinationMember.Name);
                     }
-                    var propertyModel = new MemberMapping
-                    {
-                        Getter = null,
-                        DestinationMember = destinationMember,
-                        SetterCondition = setterCondition,
-                    };
-                    properties.Add(propertyModel);
-                }
-                else if (destinationMember.SetterModifier != AccessModifier.None)
-                {
-                    if (classModel.BreakOnUnmatched)
-                        return null;
-                    unmappedDestinationMembers.Add(destinationMember.Name);
                 }
             }
 
@@ -95,7 +118,6 @@ namespace Mapster.Adapters
                    && condition == null;
         }
 
-
         protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg)
         {
             var members = classConverter.Members;
@@ -115,7 +137,7 @@ namespace Mapster.Adapters
                 }
                 else
                 {
-                    getter = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
+                    getter = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
 
                     if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
                     {

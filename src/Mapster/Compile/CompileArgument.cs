@@ -8,12 +8,12 @@ namespace Mapster
 {
     public class CompileArgument
     {
-        public Type SourceType;
-        public Type DestinationType;
-        public MapType MapType;
-        public bool ExplicitMapping;
-        public TypeAdapterSettings Settings;
-        public CompileContext Context;
+        public Type SourceType { get; set; }
+        public Type DestinationType { get; set; }
+        public MapType MapType { get; set; }
+        public bool ExplicitMapping { get; set; }
+        public TypeAdapterSettings Settings { get; set; }
+        public CompileContext Context { get; set; }
 
         private HashSet<string> _srcNames;
         internal HashSet<string> GetSourceNames()

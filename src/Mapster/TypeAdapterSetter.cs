@@ -221,7 +221,7 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter MaxDepth<TSetter>(this TSetter setter, int value) where TSetter : TypeAdapterSetter
+        public static TSetter MaxDepth<TSetter>(this TSetter setter, int? value) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -623,10 +623,10 @@ namespace Mapster
 
         public TwoWaysTypeAdapterSetter(TypeAdapterConfig config)
         {
-            SourceToDestinationSetter = config.ForType<TSource, TDestination>()
-                .Unflattening(true);
-            DestinationToSourceSetter = config.ForType<TDestination, TSource>()
-                .Unflattening(true);
+            SourceToDestinationSetter = config.ForType<TSource, TDestination>();
+            DestinationToSourceSetter = config.ForType<TDestination, TSource>();
+
+            DestinationToSourceSetter.Unflattening(true);
             DestinationToSourceSetter.Settings.SkipDestinationMemberCheck = true;
         }
 

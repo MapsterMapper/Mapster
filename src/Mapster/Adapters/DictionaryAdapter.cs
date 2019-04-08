@@ -122,9 +122,8 @@ namespace Mapster.Adapters
             var destGetFn = GetFunction(arg, destDictType);
             var destSetFn = SetFunction(arg, destDictType);
 
-            var value = arg.MapType == MapType.MapToTarget
-                ? CreateAdaptToExpression(kvpValue, destGetFn(destination, key), arg)
-                : CreateAdaptExpression(kvpValue, destValueType, arg);
+            var destValue = arg.MapType == MapType.MapToTarget ? destGetFn(destination, key) : null;
+            var value = CreateAdaptExpression(kvpValue, destValueType, arg, destValue);
 
             return destSetFn(destination, key, value);
         }

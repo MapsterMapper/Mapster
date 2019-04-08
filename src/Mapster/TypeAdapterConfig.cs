@@ -336,19 +336,13 @@ namespace Mapster
             return Expression.Call(methodInfo, source, Expression.Quote(lambda));
         }
 
-        private static LambdaExpression CreateMapExpression(CompileArgument arg, bool allowNull = false)
+        private static LambdaExpression CreateMapExpression(CompileArgument arg)
         {
             var fn = arg.MapType == MapType.MapToTarget
                 ? arg.Settings.ConverterToTargetFactory
                 : arg.Settings.ConverterFactory;
             if (fn == null)
-            {
-                if (allowNull)
-                    return null;
-                else
-                    throw new CompileException(arg,
-                        new InvalidOperationException("ConverterFactory is not found"));
-            }
+                throw new CompileException(arg, new InvalidOperationException("ConverterFactory is not found"));
             try
             {
                 return fn(arg);
@@ -370,35 +364,55 @@ namespace Mapster
                 pNew);
         }
 
-        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context)
+        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context, MemberMapping mapping = null)
         {
             var tuple = new TypeTuple(sourceType, destinationType);
-            if (context.Running.Contains(tuple))
+            var subFunction = context.IsSubFunction();
+
+            if (!subFunction)
             {
-                if (mapType == MapType.Projection)
-                    throw new InvalidOperationException("Projection does not support circular reference");
-                return CreateMapInvokeExpression(sourceType, destinationType);
+                if (context.Running.Contains(tuple))
+                {
+                    if (mapType == MapType.Projection)
+                        throw new InvalidOperationException("Projection does not support circular reference");
+                    return CreateMapInvokeExpression(sourceType, destinationType, mapType);
+                }
+                context.Running.Add(tuple);
             }
 
-            context.Running.Add(tuple);
             try
             {
                 var arg = GetCompileArgument(tuple, mapType, context);
-                var exp = CreateMapExpression(arg, true);
-                if (exp != null)
-                    return exp;
-                if (mapType == MapType.MapToTarget)
-                    return CreateMapToTargetInvokeExpression(sourceType, destinationType);
-                else
-                    return CreateMapInvokeExpression(sourceType, destinationType);
+                if (mapping != null)
+                {
+                    arg.Settings.Resolvers.AddRange(mapping.Resolvers);
+                    arg.Settings.IgnoreIfs.Apply(mapping.IgnoreIfs);
+                }
+
+                return CreateMapExpression(arg);
             }
             finally
             {
-                context.Running.Remove(tuple);
+                if (!subFunction)
+                    context.Running.Remove(tuple);
             }
         }
 
-        internal LambdaExpression CreateMapInvokeExpression(Type sourceType, Type destinationType)
+        internal LambdaExpression CreateMapInvokeExpression(Type sourceType, Type destinationType, MapType mapType)
+        {
+            return mapType == MapType.MapToTarget
+                ? CreateMapToTargetInvokeExpression(sourceType, destinationType)
+                : CreateMapInvokeExpression(sourceType, destinationType);
+        }
+
+        private LambdaExpression CreateMapInvokeExpression(Type sourceType, Type destinationType)
+        {
+            var p = Expression.Parameter(sourceType);
+            var invoke = CreateMapInvokeExpressionBody(sourceType, destinationType, p);
+            return Expression.Lambda(invoke, p);
+        }
+
+        internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p)
         {
             Expression invoker;
             if (this == GlobalSettings)
@@ -409,24 +423,30 @@ namespace Mapster
             else
             {
                 var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                              where m.Name == nameof(GetMapFunction)
-                              select m).First().MakeGenericMethod(sourceType, destinationType);
+                    where m.Name == nameof(GetMapFunction)
+                    select m).First().MakeGenericMethod(sourceType, destinationType);
                 invoker = Expression.Call(Expression.Constant(this), method);
             }
-            var p = Expression.Parameter(sourceType);
-            var invoke = Expression.Call(invoker, "Invoke", null, p);
-            return Expression.Lambda(invoke, p);
+            return Expression.Call(invoker, "Invoke", null, p);
         }
 
-        internal LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
+        internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression p2)
         {
+            if (p2 == null)
+                return CreateMapInvokeExpressionBody(sourceType, destinationType, p1);
+
             var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                          where m.Name == nameof(GetMapToTargetFunction)
-                          select m).First().MakeGenericMethod(sourceType, destinationType);
+                where m.Name == nameof(GetMapToTargetFunction)
+                select m).First().MakeGenericMethod(sourceType, destinationType);
             var invoker = Expression.Call(Expression.Constant(this), method);
+            return Expression.Call(invoker, "Invoke", null, p1, p2);
+        }
+
+        private LambdaExpression CreateMapToTargetInvokeExpression(Type sourceType, Type destinationType)
+        {
             var p1 = Expression.Parameter(sourceType);
             var p2 = Expression.Parameter(destinationType);
-            var invoke = Expression.Call(invoker, "Invoke", null, p1, p2);
+            var invoke = CreateMapInvokeExpressionBody(sourceType, destinationType, p1, p2);
             return Expression.Lambda(invoke, p1, p2);
         }
 
@@ -458,7 +478,7 @@ namespace Mapster
             return result;
         }
 
-        CompileArgument GetCompileArgument(TypeTuple tuple, MapType mapType, CompileContext context)
+        private CompileArgument GetCompileArgument(TypeTuple tuple, MapType mapType, CompileContext context)
         {
             var setting = GetMergedSettings(tuple, mapType);
             var arg = new CompileArgument

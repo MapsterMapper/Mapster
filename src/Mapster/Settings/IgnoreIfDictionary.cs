@@ -35,5 +35,18 @@ namespace Mapster
                 this[name] = condition;
 
         }
+
+        internal IgnoreIfDictionary Next(string destMemberName)
+        {
+            var result = new IgnoreIfDictionary();
+            foreach (var member in this)
+            {
+                if (!member.Key.StartsWith(destMemberName + "."))
+                    continue;
+                result.Merge(member.Key.Substring(destMemberName.Length + 1), member.Value);
+            }
+
+            return result;
+        }
     }
 }

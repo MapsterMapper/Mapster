@@ -23,17 +23,13 @@ namespace Mapster.Utils
         {
             for (var i = 0; i < _from.Count; i++)
             {
-                if (node == _from[i])
-                {
-                    if (i >= _to.Length)
-                        return node.Type.CreateDefault();
+                if (node != _from[i])
+                    continue;
+                if (i >= _to.Length)
+                    return node.Type.CreateDefault();
 
-                    ReplaceCounts[i]++;
-                    if (node.Type == _to[i].Type)
-                        return _to[i];
-                    else
-                        return Expression.Convert(_to[i], node.Type);
-                }
+                ReplaceCounts[i]++;
+                return _to[i].To(node.Type, true);
             }
             return node;
         }
