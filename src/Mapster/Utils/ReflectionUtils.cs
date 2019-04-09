@@ -307,5 +307,11 @@ namespace Mapster
             return type.GetConstructor(Type.EmptyTypes) != null;
         }
 
+        public static IEnumerable<InvokerModel> Next(this IEnumerable<InvokerModel> resolvers, IgnoreIfDictionary ignoreIfs, ParameterExpression source, string destName)
+        {
+            return resolvers.Where(it => !ignoreIfs.TryGetValue(it.DestinationMemberName, out var condition) || condition != null)
+                    .Select(it => it.Next(source, destName))
+                    .Where(it => it != null);
+        }
     }
 }

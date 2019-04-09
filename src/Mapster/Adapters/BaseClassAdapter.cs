@@ -34,10 +34,7 @@ namespace Mapster.Adapters
                     .FirstOrDefault(result => result != null);
 
                 var nextIgnoreIfs = arg.Settings.IgnoreIfs.Next(destinationMember.Name);
-                var nextResolvers = arg.Settings.Resolvers
-                    .Where(it => !arg.Settings.IgnoreIfs.TryGetValue(it.DestinationMemberName, out var condition) || condition != null)
-                    .Select(it => it.Next(destinationMember.Name))
-                    .Where(it => it != null)
+                var nextResolvers = arg.Settings.Resolvers.Next(arg.Settings.IgnoreIfs, (ParameterExpression)source, destinationMember.Name)
                     .ToList();
 
                 var propertyModel = new MemberMapping
@@ -47,8 +44,8 @@ namespace Mapster.Adapters
                     SetterCondition = setterCondition,
                     Resolvers = nextResolvers,
                     IgnoreIfs = nextIgnoreIfs,
-                    Source = (ParameterExpression) source,
-                    Destination = (ParameterExpression) destination,
+                    Source = (ParameterExpression)source,
+                    Destination = (ParameterExpression)destination,
                 };
                 if (getter != null)
                 {
@@ -58,16 +55,17 @@ namespace Mapster.Adapters
                 {
                     if (arg.Settings.IgnoreNonMapped != true &&
                         arg.Settings.Unflattening == true &&
-                        arg.DestinationType.GetDictionaryType() != null &&
-                        arg.SourceType.GetDictionaryType() != null)
+                        arg.DestinationType.GetDictionaryType() == null &&
+                        arg.SourceType.GetDictionaryType() == null)
                     {
-                        var extra = ValueAccessingStrategy.FindUnflatteningPairs(source, destinationMember, arg);
+                        var extra = ValueAccessingStrategy.FindUnflatteningPairs(source, destinationMember, arg)
+                            .Next(arg.Settings.IgnoreIfs, (ParameterExpression)source, destinationMember.Name);
                         nextResolvers.AddRange(extra);
                     }
 
                     if (classModel.ConstructorInfo != null)
                     {
-                        var info = (ParameterInfo) destinationMember.Info;
+                        var info = (ParameterInfo)destinationMember.Info;
                         if (!info.IsOptional)
                         {
                             if (classModel.BreakOnUnmatched)
@@ -91,7 +89,7 @@ namespace Mapster.Adapters
                 }
             }
 
-            if (arg.Context.Config.RequireDestinationMemberSource && 
+            if (arg.Context.Config.RequireDestinationMemberSource &&
                 unmappedDestinationMembers.Count > 0 &&
                 arg.Settings.SkipDestinationMemberCheck != true)
             {

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Mapster.Utils;
 
 namespace Mapster.Models
 {
@@ -9,7 +10,7 @@ namespace Mapster.Models
         public string SourceMemberName;
         public LambdaExpression Condition;
 
-        public InvokerModel Next(string destMemberName)
+        public InvokerModel Next(ParameterExpression source, string destMemberName)
         {
             if (!this.DestinationMemberName.StartsWith(destMemberName + "."))
                 return null;
@@ -18,7 +19,7 @@ namespace Mapster.Models
             {
                 DestinationMemberName = this.DestinationMemberName.Substring(destMemberName.Length + 1),
                 Condition = this.Condition,
-                Invoker = this.Invoker,
+                Invoker = this.Invoker ?? Expression.Lambda(ExpressionEx.PropertyOrField(source, this.SourceMemberName), source),
                 SourceMemberName = this.SourceMemberName,
             };
         }

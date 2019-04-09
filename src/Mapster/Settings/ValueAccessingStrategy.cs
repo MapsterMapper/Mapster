@@ -40,6 +40,8 @@ namespace Mapster
                     continue;
                 var invoke = resolver.Invoker == null
                     ? ExpressionEx.PropertyOrField(source, resolver.SourceMemberName)
+                    : source.Type == typeof(Never)
+                    ? resolver.Invoker.Body
                     : resolver.Invoker.Apply(arg.MapType, source);
 
                 if (resolver.Condition == null)
