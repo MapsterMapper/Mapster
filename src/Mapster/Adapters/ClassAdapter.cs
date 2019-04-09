@@ -171,14 +171,9 @@ namespace Mapster.Adapters
                     && member.Getter.Type != member.DestinationMember.Type
                     && !member.Getter.Type.IsCollection()
                     && !member.DestinationMember.Type.IsCollection()
-                    && member.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute")
-                    && member.Getter.CanBeNull())
+                    && member.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute"))
                 {
-                    var compareNull = Expression.Equal(member.Getter, Expression.Constant(null, member.Getter.Type));
-                    value = Expression.Condition(
-                        compareNull,
-                        member.DestinationMember.Type.CreateDefault(),
-                        value);
+                    value = member.Getter.NullPropagate(value);
                 }
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info, value);
                 lines.Add(bind);

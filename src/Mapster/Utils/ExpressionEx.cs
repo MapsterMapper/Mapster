@@ -251,5 +251,17 @@ namespace Mapster.Utils
             detector.Visit(lambda);
             return detector.IsBlockExpression;
         }
+
+        public static Expression NullPropagate(this Expression exp, Expression value)
+        {
+            if (value.IsSingleValue() || !exp.CanBeNull())
+                return value;
+
+            var compareNull = Expression.Equal(exp, Expression.Constant(null, exp.Type));
+            return Expression.Condition(
+                compareNull,
+                value.Type.CreateDefault(),
+                value);
+        }
     }
 }

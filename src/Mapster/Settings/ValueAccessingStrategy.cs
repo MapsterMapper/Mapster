@@ -122,17 +122,11 @@ namespace Mapster
                     var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
                     if (ifTrue == null)
                         continue;
-                    if (arg.MapType == MapType.Projection || !exp.Type.CanBeNull())
-                        return ifTrue;
-                    return Expression.Condition(
-                        Expression.Equal(exp, Expression.Constant(null, exp.Type)),
-                        ifTrue.Type.CreateDefault(),
-                        ifTrue);
+                    return arg.MapType == MapType.Projection ? ifTrue : exp.NullPropagate(ifTrue);
                 }
-                else if (string.Equals(propertyName, sourceMemberName))
-                {
+
+                if (string.Equals(propertyName, sourceMemberName))
                     return member.GetExpression(source);
-                }
             }
             return null;
         }

@@ -84,6 +84,7 @@ namespace Mapster.Adapters
                 throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
 
             var oldMaxDepth = arg.Context.MaxDepth;
+            var oldDepth = arg.Context.Depth;
             try
             {
                 if (!arg.Context.MaxDepth.HasValue && arg.Settings.MaxDepth.HasValue)
@@ -93,8 +94,8 @@ namespace Mapster.Adapters
                 }
                 if (arg.Context.MaxDepth.HasValue)
                 {
-                    if (this.ObjectType != ObjectType.Primitive && arg.Context.Depth > arg.Context.MaxDepth.Value)
-                        return Expression.Constant(destination.Type.CreateDefault());
+                    if (this.ObjectType != ObjectType.Primitive && arg.Context.Depth >= arg.Context.MaxDepth.Value)
+                        return arg.DestinationType.CreateDefault();
                     if (this.ObjectType == ObjectType.Class)
                         arg.Context.Depth++;
                 }
@@ -108,8 +109,7 @@ namespace Mapster.Adapters
             }
             finally
             {
-                if (arg.Context.MaxDepth.HasValue && this.ObjectType == ObjectType.Class)
-                    arg.Context.Depth--;
+                arg.Context.Depth = oldDepth;
                 arg.Context.MaxDepth = oldMaxDepth;
             }
         }
@@ -286,14 +286,9 @@ namespace Mapster.Adapters
 
             var exp = CreateInlineExpression(source, arg);
 
-            if (arg.MapType != MapType.Projection && !exp.IsSingleValue() && source.CanBeNull())
-            {
-                var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
-                exp = Expression.Condition(
-                    compareNull,
-                    exp.Type.CreateDefault(),
-                    exp);
-            }
+            //projection null is handled by EF
+            if (arg.MapType != MapType.Projection)
+                exp = source.NullPropagate(exp);
 
             return exp;
         }
