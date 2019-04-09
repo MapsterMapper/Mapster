@@ -1,4 +1,5 @@
 ﻿using System;
+using ExpressionDebugger;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -27,10 +28,13 @@ namespace Mapster.Tests
                 Sub2ProperName = "Sub 2 name",
                 SubWithExtraNameProperName = "Some other name",
             };
+
             var dest = src.Adapt<ModelObject>();
 
-            dest.Sub2.ProperName.ShouldBe("Sub 2 name");
-            dest.SubWithExtraName.ProperName.ShouldBe("Some other name");
+            dest.Sub.ProperName.ShouldBe(src.SubProperName);
+            dest.Sub.SubSub.CoolProperty.ShouldBe(src.SubSubSubCoolProperty);
+            dest.Sub2.ProperName.ShouldBe(src.Sub2ProperName);
+            dest.SubWithExtraName.ProperName.ShouldBe(src.SubWithExtraNameProperName);
         }
 
         [TestMethod]
@@ -49,8 +53,10 @@ namespace Mapster.Tests
             };
             var dest = src.Adapt<ModelObject>();
 
-            dest.Sub2.ProperName.ShouldBe("Sub 2 name");
-            dest.SubWithExtraName.ProperName.ShouldBe("Some other name");
+            dest.Sub.ProperName.ShouldBe(src.SubProperName);
+            dest.Sub.SubSub.CoolProperty.ShouldBe(src.SubSubSubCoolProperty);
+            dest.Sub2.ProperName.ShouldBe(src.Sub2ProperName);
+            dest.SubWithExtraName.ProperName.ShouldBe(src.SubWithExtraNameProperName);
         }
 
         public class ModelObject

@@ -50,7 +50,7 @@ namespace Mapster.Utils
         {
             var replacer = new ParameterExpressionReplacer(lambda.Parameters, exps);
             var result = replacer.Visit(lambda.Body);
-            if (!allowInvoke || replacer.ReplaceCounts.Max() <= 1 || !exps.Any(IsComplex))
+            if (!allowInvoke || !replacer.ReplaceCounts.Where((n, i) => n > 1 && exps[i].IsComplex()).Any())
                 return result;
             return Expression.Invoke(lambda, exps);
         }
