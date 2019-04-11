@@ -9,9 +9,9 @@ namespace Mapster
 {
     public class TypeAdapterSettings: SettingStore
     {
-        public IgnoreIfDictionary IgnoreIfs
+        public IgnoreDictionary Ignore
         {
-            get => Get("IgnoreIfs", () => new IgnoreIfDictionary());
+            get => Get("Ignore", () => new IgnoreDictionary());
         }
         public TransformsCollection DestinationTransforms
         {

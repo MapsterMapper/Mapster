@@ -66,18 +66,21 @@ namespace Mapster.Adapters
                 .Where(name => name != null)
                 .ToHashSet();
 
-            //ignoreIf
+            //ignore
             var dict = new Dictionary<string, Expression>();
-            foreach (var ignoreIf in arg.Settings.IgnoreIfs)
+            foreach (var ignore in arg.Settings.Ignore)
             {
-                if (ignoreIf.Value == null)
-                    ignores.Add(ignoreIf.Key);
-                else 
+                if (ignore.Value.Condition == null)
+                    ignores.Add(ignore.Key);
+                else
                 {
+                    var body = ignore.Value.IsChildPath
+                        ? ignore.Value.Condition.Body
+                        : ignore.Value.Condition.Apply(arg.MapType, source, destination);
                     var setWithCondition = Expression.IfThen(
-                        ExpressionEx.Not(ignoreIf.Value.Apply(arg.MapType, source, destination)),
+                        ExpressionEx.Not(body),
                         set);
-                    dict.Add(ignoreIf.Key, setWithCondition);
+                    dict.Add(ignore.Key, setWithCondition);
                 }
             }
             

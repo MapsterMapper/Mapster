@@ -5,10 +5,11 @@ namespace Mapster.Models
 {
     public class InvokerModel
     {
-        public string DestinationMemberName;
-        public LambdaExpression Invoker;
-        public string SourceMemberName;
-        public LambdaExpression Condition;
+        public string DestinationMemberName { get; set; }
+        public LambdaExpression Invoker { get; set; }
+        public string SourceMemberName { get; set; }
+        public LambdaExpression Condition { get; set; }
+        public bool IsChildPath { get; set; }
 
         public InvokerModel Next(ParameterExpression source, string destMemberName)
         {
@@ -18,9 +19,14 @@ namespace Mapster.Models
             return new InvokerModel
             {
                 DestinationMemberName = this.DestinationMemberName.Substring(destMemberName.Length + 1),
-                Condition = this.Condition,
-                Invoker = this.Invoker ?? Expression.Lambda(ExpressionEx.PropertyOrField(source, this.SourceMemberName), source),
+                Condition = this.IsChildPath || this.Condition == null
+                    ? this.Condition
+                    : Expression.Lambda(this.Condition.Apply(source), source),
+                Invoker = this.IsChildPath
+                    ? this.Invoker
+                    : Expression.Lambda(this.Invoker?.Apply(source) ?? ExpressionEx.PropertyOrField(source, this.SourceMemberName), source),
                 SourceMemberName = this.SourceMemberName,
+                IsChildPath = true,
             };
         }
     }

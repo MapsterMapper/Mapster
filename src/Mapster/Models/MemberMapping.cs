@@ -7,15 +7,15 @@ namespace Mapster.Models
     {
         public Expression Getter;
         public IMemberModelEx DestinationMember;
-        public LambdaExpression SetterCondition;
-        public List<InvokerModel> Resolvers;
-        public IgnoreIfDictionary IgnoreIfs;
+        public IgnoreDictionary.IgnoreItem Ignore;
+        public List<InvokerModel> NextResolvers;
+        public IgnoreDictionary NextIgnore;
         public ParameterExpression Source;
         public ParameterExpression Destination;
 
         public bool HasSettings()
         {
-            return Resolvers.Count > 0 || IgnoreIfs.Count > 0;
+            return NextResolvers.Count > 0 || NextIgnore.Count > 0;
         }
     }
 }

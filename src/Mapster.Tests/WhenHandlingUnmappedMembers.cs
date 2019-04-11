@@ -83,6 +83,25 @@ namespace Mapster.Tests
         }
 
 
+        [TestMethod]
+        public void NoErrorWhenMapped()
+        {
+            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+            TypeAdapterConfig<SimpleDto, SimplePoco>.NewConfig()
+                .TwoWays()
+                .Map(dest => dest.Id, src => src.Id)
+                .Map(dest => dest.Name, src => src.Name);
+
+            var dto = new SimpleDto {Id = Guid.NewGuid(), Name = "TestName"};
+
+            var poco = dto.Adapt<SimplePoco>();
+            poco.Name.ShouldBe(dto.Name);
+
+            var dto2 = poco.Adapt<SimpleDto>();
+            dto2.Name.ShouldBe(poco.Name);
+        }
+
+
         #region TestClasses
 
         public class SimplePoco

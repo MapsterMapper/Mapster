@@ -40,12 +40,12 @@ namespace Mapster.Adapters
                 return false;
             }
 
-            //IgnoreIfs, IgnoreNullValue isn't supported by projection
+            //Ignore, IgnoreNullValue isn't supported by projection
             if (arg.MapType == MapType.Projection)
                 return true;
             if (arg.Settings.IgnoreNullValues == true)
                 return false;
-            if (arg.Settings.IgnoreIfs.Any(item => item.Value != null))
+            if (arg.Settings.Ignore.Any(item => item.Value.Condition != null))
                 return false;
             return true;
         }
@@ -96,7 +96,7 @@ namespace Mapster.Adapters
             var members = classConverter.Members;
 
             var lines = new List<Expression>();
-            Dictionary<LambdaExpression, List<Expression>> conditions = null;
+            Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>> conditions = null;
             foreach (var member in members)
             {
                 var destMember = arg.MapType == MapType.MapToTarget
@@ -111,16 +111,19 @@ namespace Mapster.Adapters
                     itemAssign = Expression.IfThen(condition, itemAssign);
                 }
 
-                if (member.SetterCondition != null)
+                if (member.Ignore.Condition != null)
                 {
                     if (conditions == null)
-                        conditions = new Dictionary<LambdaExpression, List<Expression>>();
-                    if (!conditions.TryGetValue(member.SetterCondition, out List<Expression> pendingAssign))
+                        conditions = new Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>();
+                    if (!conditions.TryGetValue(member.Ignore.Condition, out var tuple))
                     {
-                        pendingAssign = new List<Expression>();
-                        conditions[member.SetterCondition] = pendingAssign;
+                        var body = member.Ignore.IsChildPath
+                            ? member.Ignore.Condition.Body
+                            : member.Ignore.Condition.Apply(arg.MapType, source, destination);
+                        tuple = Tuple.Create(new List<Expression>(), body);
+                        conditions[member.Ignore.Condition] = tuple;
                     }
-                    pendingAssign.Add(itemAssign);
+                    tuple.Item1.Add(itemAssign);
                 }
                 else
                 {
@@ -133,8 +136,8 @@ namespace Mapster.Adapters
                 foreach (var kvp in conditions)
                 {
                     var condition = Expression.IfThen(
-                        ExpressionEx.Not(kvp.Key.Apply(arg.MapType, source, destination)),
-                        Expression.Block(kvp.Value));
+                        ExpressionEx.Not(kvp.Value.Item2),
+                        Expression.Block(kvp.Value.Item1));
                     lines.Add(condition);
                 }
             }

@@ -23,7 +23,7 @@ namespace Mapster.Adapters
 
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg, destinationMember, out var setterCondition))
+                if (ProcessIgnores(arg, destinationMember, out var ignore))
                     continue;
 
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
@@ -33,17 +33,17 @@ namespace Mapster.Adapters
                     .Select(fn => fn(source, destinationMember, arg))
                     .FirstOrDefault(result => result != null);
 
-                var nextIgnoreIfs = arg.Settings.IgnoreIfs.Next(destinationMember.Name);
-                var nextResolvers = arg.Settings.Resolvers.Next(arg.Settings.IgnoreIfs, (ParameterExpression)source, destinationMember.Name)
+                var nextIgnore = arg.Settings.Ignore.Next((ParameterExpression)source, (ParameterExpression)destination, destinationMember.Name);
+                var nextResolvers = arg.Settings.Resolvers.Next(arg.Settings.Ignore, (ParameterExpression)source, destinationMember.Name)
                     .ToList();
 
                 var propertyModel = new MemberMapping
                 {
                     Getter = getter,
                     DestinationMember = destinationMember,
-                    SetterCondition = setterCondition,
-                    Resolvers = nextResolvers,
-                    IgnoreIfs = nextIgnoreIfs,
+                    Ignore = ignore,
+                    NextResolvers = nextResolvers,
+                    NextIgnore = nextIgnore,
                     Source = (ParameterExpression)source,
                     Destination = (ParameterExpression)destination,
                 };
@@ -59,7 +59,7 @@ namespace Mapster.Adapters
                         arg.SourceType.GetDictionaryType() == null)
                     {
                         var extra = ValueAccessingStrategy.FindUnflatteningPairs(source, destinationMember, arg)
-                            .Next(arg.Settings.IgnoreIfs, (ParameterExpression)source, destinationMember.Name);
+                            .Next(arg.Settings.Ignore, (ParameterExpression)source, destinationMember.Name);
                         nextResolvers.AddRange(extra);
                     }
 
@@ -106,14 +106,14 @@ namespace Mapster.Adapters
         protected static bool ProcessIgnores(
             CompileArgument arg,
             IMemberModel destinationMember,
-            out LambdaExpression condition)
+            out IgnoreDictionary.IgnoreItem ignore)
         {
-            condition = null;
+            ignore = new IgnoreDictionary.IgnoreItem();
             if (!destinationMember.ShouldMapMember(arg, MemberSide.Destination))
                 return true;
 
-            return arg.Settings.IgnoreIfs.TryGetValue(destinationMember.Name, out condition)
-                   && condition == null;
+            return arg.Settings.Ignore.TryGetValue(destinationMember.Name, out ignore)
+                   && ignore.Condition == null;
         }
 
         protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg)
@@ -142,9 +142,12 @@ namespace Mapster.Adapters
                         var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
-                    if (member.SetterCondition != null)
+                    if (member.Ignore.Condition != null)
                     {
-                        var condition = ExpressionEx.Not(member.SetterCondition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault()));
+                        var body = member.Ignore.IsChildPath
+                            ? member.Ignore.Condition.Body
+                            : member.Ignore.Condition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault());
+                        var condition = ExpressionEx.Not(body);
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
                 }

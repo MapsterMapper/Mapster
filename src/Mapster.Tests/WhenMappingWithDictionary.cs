@@ -11,10 +11,15 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenMappingWithDictionary
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            TypeAdapterConfig.GlobalSettings.Clear();
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
-            TypeAdapterConfig.GlobalSettings.Clear();
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.Exact);
         }
 
@@ -44,9 +49,10 @@ namespace Mapster.Tests
                 Name = "test",
             };
 
-            TypeAdapterConfig<SimplePoco, Dictionary<string, object>>.NewConfig()
+            var config = new TypeAdapterConfig();
+            config.NewConfig<SimplePoco, Dictionary<string, object>>()
                 .Map("Code", c => c.Id);
-            var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
+            var dict = poco.Adapt<Dictionary<string, object>>(config);
 
             dict.Count.ShouldBe(2);
             dict["Code"].ShouldBe(poco.Id);
@@ -56,18 +62,26 @@ namespace Mapster.Tests
         [TestMethod]
         public void Object_To_Dictionary_CamelCase()
         {
-            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.ToCamelCase);
+            var config = new TypeAdapterConfig();
+            config.NewConfig<SimplePoco, Dictionary<string, object>>()
+                .TwoWays()
+                .NameMatchingStrategy(NameMatchingStrategy.ToCamelCase);
+
             var poco = new SimplePoco
             {
                 Id = Guid.NewGuid(),
                 Name = "test",
             };
 
-            var dict = TypeAdapter.Adapt<SimplePoco, Dictionary<string, object>>(poco);
+            var dict = poco.Adapt<SimplePoco, Dictionary<string, object>>(config);
 
             dict.Count.ShouldBe(2);
             dict["id"].ShouldBe(poco.Id);
             dict["name"].ShouldBe(poco.Name);
+
+            var poco2 = dict.Adapt<SimplePoco>(config);
+            poco2.Id.ShouldBe(dict["id"]);
+            poco2.Name.ShouldBe(dict["name"]);
         }
 
         [TestMethod]

@@ -52,7 +52,6 @@ namespace Mapster.Tests
             destination.Name.ShouldBe("TestMethod");
         }
 
-
         #region TestClasses
 
         public class SimplePoco

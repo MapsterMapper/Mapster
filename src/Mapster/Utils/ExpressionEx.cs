@@ -46,7 +46,12 @@ namespace Mapster.Utils
             return lambda.Apply(mapType != MapType.Projection, exps);
         }
 
-        public static Expression Apply(this LambdaExpression lambda, bool allowInvoke, params Expression[] exps)
+        public static Expression Apply(this LambdaExpression lambda, params ParameterExpression[] exps)
+        {
+            return lambda.Apply(false, exps.Cast<Expression>().ToArray());
+        }
+
+        private static Expression Apply(this LambdaExpression lambda, bool allowInvoke, params Expression[] exps)
         {
             var replacer = new ParameterExpressionReplacer(lambda.Parameters, exps);
             var result = replacer.Visit(lambda.Body);

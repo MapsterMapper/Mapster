@@ -385,8 +385,8 @@ namespace Mapster
                 var arg = GetCompileArgument(tuple, mapType, context);
                 if (mapping != null)
                 {
-                    arg.Settings.Resolvers.AddRange(mapping.Resolvers);
-                    arg.Settings.IgnoreIfs.Apply(mapping.IgnoreIfs);
+                    arg.Settings.Resolvers.AddRange(mapping.NextResolvers);
+                    arg.Settings.Ignore.Apply(mapping.NextIgnore);
                 }
 
                 return CreateMapExpression(arg);

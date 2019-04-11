@@ -40,7 +40,7 @@ namespace Mapster
                     continue;
                 var invoke = resolver.Invoker == null
                     ? ExpressionEx.PropertyOrField(source, resolver.SourceMemberName)
-                    : source.Type == typeof(Never)
+                    : resolver.IsChildPath
                     ? resolver.Invoker.Body
                     : resolver.Invoker.Apply(arg.MapType, source);
 
@@ -50,7 +50,9 @@ namespace Mapster
                     break;
                 }
 
-                var condition = resolver.Condition.Apply(arg.MapType, source);
+                var condition = resolver.IsChildPath
+                    ? resolver.Condition.Body
+                    : resolver.Condition.Apply(arg.MapType, source);
                 invokes.Add(Tuple.Create(condition, invoke));
             }
 
@@ -149,7 +151,7 @@ namespace Mapster
                     yield return new InvokerModel
                     {
                         SourceMemberName = member.Name,
-                        DestinationMemberName = destinationMember.Name + "." + prop
+                        DestinationMemberName = destinationMember.Name + "." + prop,
                     };
                 }
             }

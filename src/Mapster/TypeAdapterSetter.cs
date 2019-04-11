@@ -39,7 +39,7 @@ namespace Mapster
 
             foreach (var name in names)
             {
-                setter.Settings.IgnoreIfs[name] = null;
+                setter.Settings.Ignore[name] = new IgnoreDictionary.IgnoreItem();
             }
             return setter;
         }
@@ -250,7 +250,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreIfs[ReflectionUtils.GetMemberPath(member)] = null;
+                Settings.Ignore[ReflectionUtils.GetMemberPath(member)] = new IgnoreDictionary.IgnoreItem();
             }
             return this;
         }
@@ -405,7 +405,7 @@ namespace Mapster
             foreach (var member in members)
             {
                 var name = ReflectionUtils.GetMemberPath(member);
-                Settings.IgnoreIfs.Merge(name, condition);
+                Settings.Ignore.Merge(name, new IgnoreDictionary.IgnoreItem {Condition = condition});
             }
             return this;
         }
@@ -418,7 +418,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.IgnoreIfs.Merge(member, condition);
+                Settings.Ignore.Merge(member, new IgnoreDictionary.IgnoreItem {Condition = condition});
             }
             return this;
         }
