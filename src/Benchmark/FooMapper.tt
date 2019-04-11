@@ -1,5 +1,5 @@
 ﻿<#@ template debug="true" language="C#" #>
-<#@ output extension=".cs" #>
+<#@ output extension=".g.cs" #>
 <# /*@ Assembly Name="/usr/local/share/dotnet/sdk/2.2.103/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/netstandard.dll" */ #>
 <#@ Assembly Name="netstandard" #>
 <#@ Assembly Name="System.Core" #>

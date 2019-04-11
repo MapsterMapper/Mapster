@@ -3,8 +3,20 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.0</TargetFramework>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <CopyLocalLockFileAssemblies Condition=" '$(Configuration)'=='Debug' ">true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
+    <ItemGroup>
+      <Compile Include="CustomerMapper.g.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>CustomerMapper.tt</DependentUpon>
+      </Compile>
+      <Compile Include="FooMapper.g.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>FooMapper.tt</DependentUpon>
+      </Compile>
+    </ItemGroup>
     <ItemGroup>
         <PackageReference Include="ExpressionTranslator" Version="2.0.0" />
         <PackageReference Include="AutoMapper" Version="8.0.0" />
@@ -17,26 +29,14 @@
     <ItemGroup>
         <None Update="CustomerMapper.tt">
             <Generator>TextTemplatingFileGenerator</Generator>
-            <LastGenOutput>CustomerMapper.cs</LastGenOutput>
+            <LastGenOutput>CustomerMapper.g.cs</LastGenOutput>
         </None>
         <None Update="FooMapper.tt">
             <Generator>TextTemplatingFileGenerator</Generator>
-            <LastGenOutput>FooMapper.cs</LastGenOutput>
+            <LastGenOutput>FooMapper.g.cs</LastGenOutput>
         </None>
     </ItemGroup>
     <ItemGroup>
         <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Update="CustomerMapper.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>CustomerMapper.tt</DependentUpon>
-        </Compile>
-        <Compile Update="FooMapper.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>FooMapper.tt</DependentUpon>
-        </Compile>
     </ItemGroup>
 </Project>

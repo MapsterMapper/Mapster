@@ -34,64 +34,56 @@ namespace Benchmark
         
         private static AddressDTO[] func1(Address[] p2)
         {
-            AddressDTO[] result;
-            
             if (p2 == null)
             {
-                result = null;
+                return null;
             }
-            else
+            AddressDTO[] result = new AddressDTO[p2.Length];
+            
+            int v = 0;
+            
+            int i = 0;
+            int len = p2.Length;
+            
+            while (i < len)
             {
-                result = new AddressDTO[p2.Length];
-                
-                int v = 0;
-                
-                int i = 0;
-                int len = p2.Length;
-                
-                while (i < len)
+                Address item = p2[i];
+                result[v++] = item == null ? null : new AddressDTO()
                 {
-                    Address item = p2[i];
-                    result[v++] = item == null ? null : new AddressDTO()
-                    {
-                        Id = item.Id,
-                        City = item.City,
-                        Country = item.Country
-                    };
-                    i++;
-                }
+                    Id = item.Id,
+                    City = item.City,
+                    Country = item.Country
+                };
+                i++;
             }
             return result;
+            label1:
         }
         
         private static List<AddressDTO> func2(ICollection<Address> p3)
         {
-            List<AddressDTO> result;
-            
             if (p3 == null)
             {
-                result = null;
+                return null;
             }
-            else
+            List<AddressDTO> result = new List<AddressDTO>(p3.Count);
+            
+            ICollection<AddressDTO> list = result;
+            
+            IEnumerator<Address> enumerator = p3.GetEnumerator();
+            
+            while (enumerator.MoveNext())
             {
-                result = new List<AddressDTO>(p3.Count);
-                
-                ICollection<AddressDTO> list = result;
-                
-                IEnumerator<Address> enumerator = p3.GetEnumerator();
-                
-                while (enumerator.MoveNext())
+                Address item = enumerator.Current;
+                list.Add(item == null ? null : new AddressDTO()
                 {
-                    Address item = enumerator.Current;
-                    list.Add(item == null ? null : new AddressDTO()
-                    {
-                        Id = item.Id,
-                        City = item.City,
-                        Country = item.Country
-                    });
-                }
+                    Id = item.Id,
+                    City = item.City,
+                    Country = item.Country
+                });
             }
             return result;
+            label2:
         }
     }
 }

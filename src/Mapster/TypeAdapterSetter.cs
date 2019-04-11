@@ -545,14 +545,6 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(Expression<Func<TSource, TDestination, TDestination>> action)
-        {
-            this.CheckCompiled();
-
-            Settings.BeforeMappingFactories.Add(arg => action);
-            return this;
-        }
-
         public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TSource, TDestination>> action)
         {
             this.CheckCompiled();

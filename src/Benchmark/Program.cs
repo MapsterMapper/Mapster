@@ -33,14 +33,14 @@ namespace Benchmark
                 TestComplexTypes();
 
                 Console.WriteLine();
-                Console.WriteLine($"======================================================================================");
-                Console.WriteLine($"| Tests                | Time (ms) | Slower than Mapster | Slower than Mapster + FEC |");
-                Console.WriteLine($"======================================================================================");
-                Console.WriteLine($"| Mapster v3.1.8       | {  sMP,9} | { sMP / sMP,18:N2}X | {       sMP / sMF,24:N2}X |");
-                Console.WriteLine($"| Mapster v3.1.8 + FEC | {  sMF,9} | { sMF / sMP,18:N2}X | {       sMF / sMF,24:N2}X |");
-                Console.WriteLine($"| Automapper v7.0.1    | {  sAM,9} | { sAM / sMP,18:N2}X | {       sAM / sMF,24:N2}X |");
-                Console.WriteLine($"| ExpressMapper v1.9.1 | {  sEM,9} | { sEM / sMP,18:N2}X | {       sEM / sMF,24:N2}X |");
-                Console.WriteLine($"======================================================================================");
+                Console.WriteLine($"========================================================================================");
+                Console.WriteLine($"| Tests                | Time (ms) | Slower than Mapster | Slower than Mapster Codegen |");
+                Console.WriteLine($"========================================================================================");
+                Console.WriteLine($"| Mapster v4.0         | {  sMP,9} | { sMP / sMP,18:N2}X |   {       sMP / sMF,24:N2}X |");
+                Console.WriteLine($"| Mapster v4.0 Codegen | {  sMF,9} | { sMF / sMP,18:N2}X |   {       sMF / sMF,24:N2}X |");
+                Console.WriteLine($"| Automapper v8.0.0    | {  sAM,9} | { sAM / sMP,18:N2}X |   {       sAM / sMF,24:N2}X |");
+                Console.WriteLine($"| ExpressMapper v1.9.1 | {  sEM,9} | { sEM / sMP,18:N2}X |   {       sEM / sMF,24:N2}X |");
+                Console.WriteLine($"========================================================================================");
                 Console.WriteLine();
             }
 

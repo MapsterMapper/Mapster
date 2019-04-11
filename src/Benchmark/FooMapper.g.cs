@@ -36,45 +36,37 @@ namespace Benchmark
         
         private static Foo[] func2(Foo[] p3)
         {
-            Foo[] result;
-            
             if (p3 == null)
             {
-                result = null;
+                return null;
             }
-            else
+            Foo[] result = new Foo[p3.Length];
+            
+            int v = 0;
+            
+            int i = 0;
+            int len = p3.Length;
+            
+            while (i < len)
             {
-                result = new Foo[p3.Length];
-                
-                int v = 0;
-                
-                int i = 0;
-                int len = p3.Length;
-                
-                while (i < len)
-                {
-                    Foo item = p3[i];
-                    result[v++] = Map(item);
-                    i++;
-                }
+                Foo item = p3[i];
+                result[v++] = Map(item);
+                i++;
             }
             return result;
+            label1:
         }
         
         private static int[] func3(int[] p4)
         {
-            int[] result;
-            
             if (p4 == null)
             {
-                result = null;
+                return null;
             }
-            else
-            {
-                result = new int[p4.Length];
-                Array.Copy(p4, 0, result, 0, p4.Length);
-            }
+            int[] result = new int[p4.Length];
+            Array.Copy(p4, 0, result, 0, p4.Length);
             return result;
+            label2:
         }
     }
 }
