@@ -8,7 +8,7 @@ using Mapster.Utils;
 
 namespace Benchmark
 {
-    public static class FooMapper
+    public static partial class FooMapper
     {
         public static Foo Map(Foo p1)
         {
@@ -54,7 +54,7 @@ namespace Benchmark
                 i++;
             }
             return result;
-            label1:
+            
         }
         
         private static int[] func3(int[] p4)
@@ -66,7 +66,7 @@ namespace Benchmark
             int[] result = new int[p4.Length];
             Array.Copy(p4, 0, result, 0, p4.Length);
             return result;
-            label2:
+            
         }
     }
 }

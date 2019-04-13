@@ -5,7 +5,7 @@ using Benchmark.Classes;
 
 namespace Benchmark
 {
-    public static class CustomerMapper
+    public static partial class CustomerMapper
     {
         public static CustomerDTO Map(Customer p1)
         {
@@ -57,7 +57,7 @@ namespace Benchmark
                 i++;
             }
             return result;
-            label1:
+            
         }
         
         private static List<AddressDTO> func2(ICollection<Address> p3)
@@ -83,7 +83,7 @@ namespace Benchmark
                 });
             }
             return result;
-            label2:
+            
         }
     }
 }

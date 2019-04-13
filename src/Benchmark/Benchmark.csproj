@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
-        <CopyLocalLockFileAssemblies Condition=" '$(Configuration)'=='Debug' ">true</CopyLocalLockFileAssemblies>
+      <OutputType>Exe</OutputType>
+      <TargetFramework>netcoreapp2.0</TargetFramework>
+      <CopyLocalLockFileAssemblies Condition=" '$(Configuration)'=='Debug' ">true</CopyLocalLockFileAssemblies>
+      <DefaultItemExcludes>**/*.g.cs</DefaultItemExcludes>
     </PropertyGroup>
     <ItemGroup>
       <Compile Include="CustomerMapper.g.cs">
@@ -18,7 +19,7 @@
       </Compile>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="ExpressionTranslator" Version="2.0.0" />
+        <PackageReference Include="ExpressionTranslator" Version="2.1.0" />
         <PackageReference Include="AutoMapper" Version="8.0.0" />
         <PackageReference Include="Expressmapper" Version="1.9.1" />
         <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
