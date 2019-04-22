@@ -24,7 +24,7 @@ namespace Mapster.Adapters
             return arg.DestinationType.GetDictionaryType() != null;
         }
 
-        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
             if (!base.CanInline(source, destination, arg))
                 return false;
@@ -43,7 +43,7 @@ namespace Mapster.Adapters
             return false;
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             var listType = arg.DestinationType;
             if (arg.DestinationType.GetTypeInfo().IsInterface)

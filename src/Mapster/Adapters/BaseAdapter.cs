@@ -58,7 +58,7 @@ namespace Mapster.Adapters
 
         protected virtual void DecorateRule(TypeAdapterRule rule) { }
 
-        protected virtual bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        protected virtual bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
             if (arg.MapType == MapType.Projection)
                 return true;
@@ -78,7 +78,7 @@ namespace Mapster.Adapters
             return true;
         }
 
-        protected virtual Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
+        protected virtual Expression CreateExpressionBody(Expression source, Expression? destination, CompileArgument arg)
         {
             if (this.CheckExplicitMapping && arg.Context.Config.RequireExplicitMapping && !arg.ExplicitMapping)
                 throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
@@ -114,7 +114,7 @@ namespace Mapster.Adapters
             }
         }
 
-        protected Expression CreateBlockExpressionBody(Expression source, Expression destination, CompileArgument arg)
+        protected Expression CreateBlockExpressionBody(Expression source, Expression? destination, CompileArgument arg)
         {
             if (arg.MapType == MapType.Projection)
                 throw new InvalidOperationException("Mapping is invalid for projection");
@@ -145,7 +145,7 @@ namespace Mapster.Adapters
                 blocks.Add(drvdSourceAssign);
                 var cond = Expression.NotEqual(drvdSource, Expression.Constant(null, tuple.Source));
 
-                ParameterExpression drvdDest = null;
+                ParameterExpression? drvdDest = null;
                 if (destination != null)
                 {
                     drvdDest = Expression.Variable(tuple.Destination);
@@ -300,7 +300,7 @@ namespace Mapster.Adapters
         {
             return CreateInstantiationExpression(source, null, arg);
         }
-        protected virtual Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected virtual Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             //new TDestination()
 
@@ -339,14 +339,14 @@ namespace Mapster.Adapters
             }
         }
 
-        private static Expression CreateAdaptExpressionCore(Expression source, Type destinationType, CompileArgument arg, MemberMapping mapping = null, Expression destination = null)
+        private static Expression CreateAdaptExpressionCore(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping = null, Expression? destination = null)
         {
             var mapType = arg.MapType == MapType.MapToTarget && destination == null ? MapType.Map : arg.MapType;
             var extraParams = new HashSet<ParameterExpression>();
 
             try
             {
-                if (mapping?.HasSettings() == true)
+                if (mapping != null && mapping.HasSettings())
                 {
                     if (arg.Context.ExtraParameters.Add(mapping.Source))
                         extraParams.Add(mapping.Source);
@@ -368,11 +368,11 @@ namespace Mapster.Adapters
             }
         }
 
-        protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg, Expression destination = null)
+        protected Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg, Expression? destination = null)
         {
             return CreateAdaptExpression(source, destinationType, arg, null, destination);
         }
-        internal Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg, MemberMapping mapping, Expression destination = null)
+        internal Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping, Expression? destination = null)
         {
             if (source.Type == destinationType &&
                 (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))

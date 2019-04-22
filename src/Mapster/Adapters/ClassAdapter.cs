@@ -23,7 +23,7 @@ namespace Mapster.Adapters
             return arg.ExplicitMapping || arg.DestinationType.IsPoco();
         }
 
-        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
             if (!base.CanInline(source, destination, arg))
                 return false;
@@ -50,14 +50,14 @@ namespace Mapster.Adapters
             return true;
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             //new TDestination(src.Prop1, src.Prop2)
 
             if (arg.GetConstructUsing() != null || arg.Settings.MapToConstructor == null)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
-            ClassMapping classConverter;
+            ClassMapping? classConverter;
             var ctor = arg.Settings.MapToConstructor as ConstructorInfo;
             if (ctor == null)
             {
@@ -96,7 +96,7 @@ namespace Mapster.Adapters
             var members = classConverter.Members;
 
             var lines = new List<Expression>();
-            Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>> conditions = null;
+            Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>? conditions = null;
             foreach (var member in members)
             {
                 var destMember = arg.MapType == MapType.MapToTarget
@@ -105,7 +105,7 @@ namespace Mapster.Adapters
                 var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
 
                 Expression itemAssign = member.DestinationMember.SetExpression(destination, value);
-                if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
+                if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull())
                 {
                     var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                     itemAssign = Expression.IfThen(condition, itemAssign);

@@ -425,7 +425,7 @@ namespace Mapster
 
         public TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
         {
             this.CheckCompiled();
 
@@ -441,7 +441,7 @@ namespace Mapster
 
         public TypeAdapterSetter<TSource, TDestination> Map<TSourceMember>(
             string memberName,
-            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>> shouldMap = null)
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
         {
             this.CheckCompiled();
             

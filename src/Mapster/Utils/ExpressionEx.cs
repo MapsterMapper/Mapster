@@ -46,6 +46,14 @@ namespace Mapster.Utils
             return lambda.Apply(mapType != MapType.Projection, exps);
         }
 
+        public static Expression Apply(this LambdaExpression lambda, ParameterExpression p1, ParameterExpression? p2)
+        {
+            if (p2 == null)
+                return lambda.Apply(false, p1);
+            else
+                return lambda.Apply(false, p1, p2);
+        }
+
         public static Expression Apply(this LambdaExpression lambda, params ParameterExpression[] exps)
         {
             return lambda.Apply(false, exps.Cast<Expression>().ToArray());
@@ -115,16 +123,30 @@ namespace Mapster.Utils
             }
             else
             {
-                var countProperty = source.Type.GetProperty("Count");
+                var countProperty = GetCount(source.Type);
                 if (countProperty != null)
                     return Expression.Property(source, countProperty);  //list.Count
                 if (!allowCountAll)
-                    return null;
+                    return null!;
                 var countMethod = typeof(Enumerable).GetMethods()
                     .First(m => m.Name == nameof(Enumerable.Count) && m.GetParameters().Length == 1)
                     .MakeGenericMethod(source.Type.ExtractCollectionType());
                 return Expression.Call(countMethod, source);            //list.Count()
             }
+        }
+
+        private static PropertyInfo? GetCount(Type type)
+        {
+            var c = type.GetProperty("Count");
+            if (c != null)
+                return c;
+
+            //for IList<>
+            var elementType = type.ExtractCollectionType();
+            var collection = typeof(ICollection<>).MakeGenericType(elementType);
+            return collection.IsAssignableFrom(type)
+                ? collection.GetProperty("Count")
+                : null;
         }
 
         public static Expression ForLoop(Expression collection, ParameterExpression loopVar, params Expression[] loopContent)
@@ -148,7 +170,7 @@ namespace Mapster.Utils
                                let q = p.GetIndexParameters()
                                where q.Length == 1 && q[0].ParameterType == typeof(int)
                                select p).SingleOrDefault();
-                var count = collection.Type.GetProperty("Count");
+                var count = GetCount(collection.Type);
 
                 //if indexer is not found, fallback to foreach
                 if (indexer == null || count == null)
@@ -225,6 +247,7 @@ namespace Mapster.Utils
         {
             if (!exp.Type.CanBeNull())
                 return false;
+            
             var visitor = new NullableExpressionVisitor();
             visitor.Visit(exp);
             return visitor.CanBeNull.GetValueOrDefault();

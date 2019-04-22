@@ -14,7 +14,7 @@ namespace Mapster.Adapters
             return true;
         }
 
-        protected override Expression CreateExpressionBody(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateExpressionBody(Expression source, Expression? destination, CompileArgument arg)
         {
             Expression convert = source;
             var sourceType = arg.SourceType;

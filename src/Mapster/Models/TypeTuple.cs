@@ -12,7 +12,7 @@ namespace Mapster.Models
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as TypeTuple);
+            return Equals((obj as TypeTuple)!);
         }
 
         public override int GetHashCode()

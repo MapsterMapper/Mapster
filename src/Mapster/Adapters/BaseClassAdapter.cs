@@ -15,7 +15,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression destination = null)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null)
         {
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
@@ -33,19 +33,19 @@ namespace Mapster.Adapters
                     .Select(fn => fn(source, destinationMember, arg))
                     .FirstOrDefault(result => result != null);
 
-                var nextIgnore = arg.Settings.Ignore.Next((ParameterExpression)source, (ParameterExpression)destination, destinationMember.Name);
+                var nextIgnore = arg.Settings.Ignore.Next((ParameterExpression)source, (ParameterExpression?)destination, destinationMember.Name);
                 var nextResolvers = arg.Settings.Resolvers.Next(arg.Settings.Ignore, (ParameterExpression)source, destinationMember.Name)
                     .ToList();
 
                 var propertyModel = new MemberMapping
                 {
-                    Getter = getter,
+                    Getter = getter!,
                     DestinationMember = destinationMember,
                     Ignore = ignore,
                     NextResolvers = nextResolvers,
                     NextIgnore = nextIgnore,
                     Source = (ParameterExpression)source,
-                    Destination = (ParameterExpression)destination,
+                    Destination = (ParameterExpression?)destination,
                 };
                 if (getter != null)
                 {
@@ -69,7 +69,7 @@ namespace Mapster.Adapters
                         if (!info.IsOptional)
                         {
                             if (classModel.BreakOnUnmatched)
-                                return null;
+                                return null!;
                             unmappedDestinationMembers.Add(destinationMember.Name);
                         }
 
@@ -83,7 +83,7 @@ namespace Mapster.Adapters
                     else if (destinationMember.SetterModifier != AccessModifier.None)
                     {
                         if (classModel.BreakOnUnmatched)
-                            return null;
+                            return null!;
                         unmappedDestinationMembers.Add(destinationMember.Name);
                     }
                 }
@@ -137,7 +137,7 @@ namespace Mapster.Adapters
                 {
                     getter = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
 
-                    if (arg.Settings.IgnoreNullValues == true && member.Getter.Type.CanBeNull())
+                    if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull())
                     {
                         var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                         getter = Expression.Condition(condition, getter, defaultConst);

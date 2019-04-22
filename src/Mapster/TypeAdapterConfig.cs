@@ -364,7 +364,7 @@ namespace Mapster
                 pNew);
         }
 
-        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context, MemberMapping mapping = null)
+        internal LambdaExpression CreateInlineMapExpression(Type sourceType, Type destinationType, MapType mapType, CompileContext context, MemberMapping? mapping = null)
         {
             var tuple = new TypeTuple(sourceType, destinationType);
             var subFunction = context.IsSubFunction();
@@ -430,7 +430,7 @@ namespace Mapster
             return Expression.Call(invoker, "Invoke", null, p);
         }
 
-        internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression p2)
+        internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression? p2)
         {
             if (p2 == null)
                 return CreateMapInvokeExpressionBody(sourceType, destinationType, p1);
@@ -462,7 +462,7 @@ namespace Mapster
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
                             let priority = rule.Priority(arg)
                             where priority != null
-                            orderby priority.Value descending
+                            orderby priority!.Value descending
                             select rule.Settings).ToList();
             var result = new TypeAdapterSettings();
             foreach (var setting in settings)
@@ -611,7 +611,7 @@ namespace Mapster
 #if !NET40
             [CallerFilePath]
 #endif
-            string key1 = null,
+            string key1 = "",
 #if !NET40
             [CallerLineNumber]
 #endif

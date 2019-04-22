@@ -46,7 +46,7 @@ namespace Mapster
 
         }
 
-        internal IgnoreDictionary Next(ParameterExpression source, ParameterExpression destination, string destMemberName)
+        internal IgnoreDictionary Next(ParameterExpression source, ParameterExpression? destination, string destMemberName)
         {
             var result = new IgnoreDictionary();
             foreach (var member in this)

@@ -11,7 +11,7 @@ namespace Mapster.Models
         public List<InvokerModel> NextResolvers;
         public IgnoreDictionary NextIgnore;
         public ParameterExpression Source;
-        public ParameterExpression Destination;
+        public ParameterExpression? Destination;
 
         public bool HasSettings()
         {

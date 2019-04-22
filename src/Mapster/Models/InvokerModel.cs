@@ -8,10 +8,10 @@ namespace Mapster.Models
         public string DestinationMemberName { get; set; }
         public LambdaExpression Invoker { get; set; }
         public string SourceMemberName { get; set; }
-        public LambdaExpression Condition { get; set; }
+        public LambdaExpression? Condition { get; set; }
         public bool IsChildPath { get; set; }
 
-        public InvokerModel Next(ParameterExpression source, string destMemberName)
+        public InvokerModel? Next(ParameterExpression source, string destMemberName)
         {
             if (!this.DestinationMemberName.StartsWith(destMemberName + "."))
                 return null;

@@ -15,8 +15,8 @@ namespace Mapster
     public class MapContext
     {
         [ThreadStatic]
-        private static MapContext _current;
-        public static MapContext Current
+        private static MapContext? _current;
+        public static MapContext? Current
         {
             get { return _current; }
             set { _current = value; }

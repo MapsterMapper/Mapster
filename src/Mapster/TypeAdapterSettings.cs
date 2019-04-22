@@ -73,9 +73,9 @@ namespace Mapster
         {
             get => Get("ShouldMapMember", () => new List<Func<IMemberModel, MemberSide, bool?>>());
         }
-        public List<Func<Expression, IMemberModel, CompileArgument, Expression>> ValueAccessingStrategies
+        public List<Func<Expression, IMemberModel, CompileArgument, Expression?>> ValueAccessingStrategies
         {
-            get => Get("ValueAccessingStrategies", () => new List<Func<Expression, IMemberModel, CompileArgument, Expression>>());
+            get => Get("ValueAccessingStrategies", () => new List<Func<Expression, IMemberModel, CompileArgument, Expression?>>());
         }
         public List<InvokerModel> Resolvers
         {
@@ -93,9 +93,9 @@ namespace Mapster
         {
             get => Get("Includes", () => new List<TypeTuple>());
         }
-        public List<Func<IMemberModel, string>> GetMemberNames
+        public List<Func<IMemberModel, string?>> GetMemberNames
         {
-            get => Get("GetMemberNames", () => new List<Func<IMemberModel, string>>());
+            get => Get("GetMemberNames", () => new List<Func<IMemberModel, string?>>());
         }
         public Func<CompileArgument, LambdaExpression> ConstructUsingFactory
         {
@@ -112,9 +112,9 @@ namespace Mapster
             get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
             set => Set("ConverterToTargetFactory", value);
         }
-        public object MapToConstructor
+        public object? MapToConstructor
         {
-            get => Get<object>("MapToConstructor");
+            get => Get<object?>("MapToConstructor");
             set => Set("MapToConstructor", value);
         }
 

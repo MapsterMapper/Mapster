@@ -20,7 +20,7 @@ namespace Mapster.Adapters
             return dictType?.GetGenericArguments()[0] == typeof(string);
         }
 
-        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
             if (!base.CanInline(source, destination, arg))
                 return false;

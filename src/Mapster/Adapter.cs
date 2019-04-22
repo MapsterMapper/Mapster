@@ -22,7 +22,7 @@ namespace Mapster
         public TDestination Adapt<TDestination>(object source)
         {
             if (source == null)
-                return default(TDestination);
+                return default(TDestination)!;
             var type = source.GetType();
             var fn = _config.GetDynamicMapFunction<TDestination>(type);
             return fn(source);

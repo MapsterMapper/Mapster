@@ -18,7 +18,7 @@ namespace Mapster
                 _booleanStore[key] = value;
         }
 
-        public void Set(string key, object value)
+        public void Set(string key, object? value)
         {
             if (value == null)
                 _objectStore.Remove(key);
@@ -41,7 +41,7 @@ namespace Mapster
             var value = _objectStore.GetValueOrDefault(key);
             if (value == null)
             {
-                _objectStore[key] = value = initializer();
+                _objectStore[key] = value = initializer()!;
             }
             return (T)value;
         }

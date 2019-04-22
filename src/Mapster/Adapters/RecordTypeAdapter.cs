@@ -13,7 +13,7 @@ namespace Mapster.Adapters
             return arg.DestinationType.IsRecordType();
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             //new TDestination(src.Prop1, src.Prop2)
 

@@ -17,9 +17,12 @@ namespace Mapster.Adapters
             throw new NotImplementedException();
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
-            return _lambda.Apply(arg.MapType, source, destination);
+            if (destination == null)
+                return _lambda.Apply(arg.MapType, source);
+            else
+                return _lambda.Apply(arg.MapType, source, destination);
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)

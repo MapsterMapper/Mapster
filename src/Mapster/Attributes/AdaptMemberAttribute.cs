@@ -7,7 +7,7 @@ namespace Mapster
         | AttributeTargets.Property)]
     public class AdaptMemberAttribute : Attribute
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public AdaptMemberAttribute() { }
         public AdaptMemberAttribute(string name)

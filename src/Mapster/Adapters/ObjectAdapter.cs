@@ -11,7 +11,7 @@ namespace Mapster.Adapters
             return arg.SourceType == typeof(object) || arg.DestinationType == typeof(object);
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             var srcType = arg.SourceType;
             var destType = arg.DestinationType;

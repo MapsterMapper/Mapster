@@ -16,12 +16,12 @@ namespace Mapster.Adapters
                    && arg.DestinationType.IsArray;
         }
 
-        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
             return arg.MapType == MapType.Projection;
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
             return Expression.NewArrayBounds(

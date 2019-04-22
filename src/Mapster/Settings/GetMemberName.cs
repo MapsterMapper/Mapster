@@ -5,6 +5,6 @@ namespace Mapster
 {
     public static class GetMemberName
     {
-        public static readonly Func<IMemberModel, string> AdaptMember = model => model.GetCustomAttribute<AdaptMemberAttribute>()?.Name;
+        public static readonly Func<IMemberModel, string?> AdaptMember = model => model.GetCustomAttribute<AdaptMemberAttribute>()?.Name;
     }
 }

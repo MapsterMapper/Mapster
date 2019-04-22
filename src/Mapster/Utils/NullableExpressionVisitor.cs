@@ -1,4 +1,10 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mapster.Utils
 {
@@ -37,11 +43,13 @@ namespace Mapster.Utils
                     CanBeNull = false;
                     return node;
                 case ExpressionType.Assign:
+                case ExpressionType.Call:
                 case ExpressionType.Coalesce:
                 case ExpressionType.Conditional:
                 case ExpressionType.Constant:
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:
+                case ExpressionType.MemberAccess:
                     return base.Visit(node);
                 default:
                     CanBeNull = true;
@@ -60,6 +68,36 @@ namespace Mapster.Utils
             var rightCanNull = CanBeNull;
 
             CanBeNull = leftCanNull.GetValueOrDefault() || rightCanNull.GetValueOrDefault();
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            CanBeNull = node.Method.ReturnParameter?.GetCustomAttributesData().All(IsNullable) ?? true;
+            return node;
+        }
+
+        private static bool IsNullable(CustomAttributeData attr)
+        {
+            if (attr.GetAttributeType().Name != "NullableAttribute")
+                return true;
+
+            return IsNullable(attr.ConstructorArguments);
+        }
+
+        private static bool IsNullable(IList<CustomAttributeTypedArgument> args)
+        {
+            if (args.Count == 0)
+                return true;
+
+            var arg = args[0];
+            if (arg.Value is byte[] bytes)
+                return bytes.Length == 0 || bytes[0] != 1;
+            else if (arg.Value is ReadOnlyCollection<CustomAttributeTypedArgument> a)
+                return IsNullable(a);
+            else if (arg.Value is byte b)
+                return b != 1;
+            else
+                return true;
         }
 
         protected override Expression VisitBinary(BinaryExpression node)
@@ -87,6 +125,12 @@ namespace Mapster.Utils
         protected override Expression VisitConstant(ConstantExpression node)
         {
             CanBeNull = node.Value == null;
+            return node;
+        }
+
+        protected override Expression VisitMember(MemberExpression node)
+        {
+            CanBeNull = node.Member.GetCustomAttributesData().All(IsNullable);
             return node;
         }
     }

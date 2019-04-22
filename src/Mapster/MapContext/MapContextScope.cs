@@ -9,7 +9,7 @@ namespace Mapster
         private readonly bool _isRootScope;
         public MapContextScope()
         {
-            this.Context = MapContext.Current;
+            this.Context = MapContext.Current!;
             if (this.Context == null)
             {
                 _isRootScope = true;
@@ -28,8 +28,8 @@ namespace Mapster
             using (var context = new MapContextScope())
             {
                 var dict = context.Context.References;
-                if (!dict.TryGetValue(key, out var reference))
-                    dict[key] = reference = mapFn(key);
+                if (!dict.TryGetValue(key!, out var reference))
+                    dict[key!] = reference = mapFn(key)!;
                 return (TResult)reference;
             }
         }

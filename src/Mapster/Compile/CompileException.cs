@@ -5,8 +5,6 @@ namespace Mapster
 {
     public class CompileException : InvalidOperationException
     {
-        public CompileException() { }
-
         public CompileException(CompileArgument argument, Exception innerException) : base(null, innerException)
         {
             this.Argument = argument;
@@ -19,6 +17,6 @@ namespace Mapster
             $"type={this.Argument.MapType}";
 
         public CompileArgument Argument { get; }
-        public LambdaExpression Expression { get; internal set; }
+        public LambdaExpression? Expression { get; internal set; }
     }
 }

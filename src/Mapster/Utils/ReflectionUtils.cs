@@ -30,8 +30,30 @@ namespace Mapster
         };
 
 #if NET40
-        public static Type GetTypeInfo(this Type type) {
+        public static Type GetTypeInfo(this Type type)
+        {
             return type;
+        }
+
+        public static Type GetAttributeType(this CustomAttributeData data)
+        {
+            return data.Constructor.DeclaringType;
+        }
+#else
+        public static Type GetAttributeType(this CustomAttributeData data)
+        {
+            return data.AttributeType;
+        }
+#endif
+
+#if NETSTANDARD1_3
+        public static IEnumerable<CustomAttributeData> GetCustomAttributesData(this ParameterInfo parameter)
+        {
+            return parameter.CustomAttributes;
+        }
+        public static IEnumerable<CustomAttributeData> GetCustomAttributesData(this MemberInfo member)
+        {
+            return member.CustomAttributes;
         }
 #endif
 
@@ -107,7 +129,7 @@ namespace Mapster
             return type.GetInterface(IsGenericEnumerableType);
         }
 
-        public static Expression CreateConvertMethod(Type srcType, Type destType, Expression source)
+        public static Expression? CreateConvertMethod(Type srcType, Type destType, Expression source)
         {
             var name = _primitiveTypes.GetValueOrDefault(destType);
 
@@ -136,7 +158,7 @@ namespace Mapster
                 if (firstLevelOnly && props.Count > 0)
                 {
                     if (noError)
-                        return null;
+                        return null!;
                     throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(lambda));
                 }
 
@@ -147,7 +169,7 @@ namespace Mapster
             if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
             {
                 if (noError)
-                    return null;
+                    return null!;
                 throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(lambda));
             }
             props.Reverse();
@@ -270,7 +292,7 @@ namespace Mapster
             return names.Contains(member.Name);
         }
 
-        public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string>> getMemberNames, Func<string, string> nameConverter)
+        public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string?>> getMemberNames, Func<string, string> nameConverter)
         {
             return getMemberNames.Select(predicate => predicate(member))
                 .FirstOrDefault(name => name != null)
@@ -311,7 +333,7 @@ namespace Mapster
         {
             return resolvers.Where(it => !ignore.TryGetValue(it.DestinationMemberName, out var item) || item.Condition != null)
                     .Select(it => it.Next(source, destName))
-                    .Where(it => it != null);
+                    .Where(it => it != null)!;
         }
     }
 }

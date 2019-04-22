@@ -24,7 +24,7 @@ namespace Mapster
 #if !NET40
             [CallerFilePath]
 #endif
-            string key1 = null,
+            string key1 = "",
 #if !NET40
             [CallerLineNumber]
 #endif

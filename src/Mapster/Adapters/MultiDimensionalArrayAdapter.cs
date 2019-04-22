@@ -18,12 +18,12 @@ namespace Mapster.Adapters
                    && arg.DestinationType.GetArrayRank() > 1;
         }
 
-        protected override bool CanInline(Expression source, Expression destination, CompileArgument arg)
+        protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
             return false;
         }
 
-        protected override Expression CreateInstantiationExpression(Expression source, Expression destination, CompileArgument arg)
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source, arg.DestinationType));
         }
