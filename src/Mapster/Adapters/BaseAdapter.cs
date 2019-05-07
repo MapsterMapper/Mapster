@@ -65,8 +65,8 @@ namespace Mapster.Adapters
 
             //these settings cannot inline for Map/MapToTarget
             if (arg.Settings.PreserveReference == true &&
-                !arg.SourceType.GetTypeInfo().IsValueType &&
-                !arg.DestinationType.GetTypeInfo().IsValueType)
+                arg.SourceType.IsObjectReference() &&
+                arg.DestinationType.IsObjectReference())
                 return false;
             if (arg.Settings.AfterMappingFactories.Count > 0)
                 return false;
@@ -221,8 +221,8 @@ namespace Mapster.Adapters
                 //  return result;
                 //}
                 if (arg.Settings.PreserveReference == true &&
-                    !arg.SourceType.GetTypeInfo().IsValueType &&
-                    !arg.DestinationType.GetTypeInfo().IsValueType)
+                    arg.SourceType.IsObjectReference() &&
+                    arg.DestinationType.IsObjectReference())
                 {
                     var scope = Expression.Variable(typeof(MapContextScope), "scope");
                     vars.Add(scope);

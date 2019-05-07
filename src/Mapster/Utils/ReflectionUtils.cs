@@ -335,5 +335,10 @@ namespace Mapster
                     .Select(it => it.Next(source, destName))
                     .Where(it => it != null)!;
         }
+
+        public static bool IsObjectReference(this Type type)
+        {
+            return !type.GetTypeInfo().IsValueType && type != typeof(string);
+        }
     }
 }
