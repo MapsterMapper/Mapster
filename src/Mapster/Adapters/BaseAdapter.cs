@@ -168,7 +168,7 @@ namespace Mapster.Adapters
 
             //new TDest();
             var set = CreateInstantiationExpression(source, destination, arg);
-            if (destination != null && this.UseTargetValue && arg.GetConstructUsing()?.Parameters.Count != 2)
+            if (destination != null && this.UseTargetValue && arg.GetConstructUsing()?.Parameters.Count != 2 && destination.CanBeNull())
             {
                 //dest ?? new TDest();
                 set = Expression.Coalesce(destination, set);
