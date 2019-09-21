@@ -18,6 +18,10 @@ namespace Mapster.Adapters
             if (destinationType == typeof(string))
             {
                 var method = source.Type.GetMethod("ToString", Type.EmptyTypes);
+                if (method == null)
+                {
+                    method = typeof(object).GetMethod("ToString", Type.EmptyTypes);
+                }
                 return Expression.Call(source, method);
             }
             else //if (sourceType == typeof(string))
