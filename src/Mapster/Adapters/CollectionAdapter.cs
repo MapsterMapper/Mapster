@@ -11,7 +11,7 @@ namespace Mapster.Adapters
     internal class CollectionAdapter : BaseAdapter
     {
         protected override int Score => -125;
-        protected override bool UseTargetValue => true;
+        protected override bool UseTargetValue => false;
         protected override ObjectType ObjectType => ObjectType.Collection;
 
         protected override bool CanMap(PreCompileArgument arg)
@@ -80,15 +80,11 @@ namespace Mapster.Adapters
                 ? typeof(ICollection<>).MakeGenericType(destinationElementType)
                 : typeof(IList);
             var tmp = Expression.Variable(listType, "list");
-            var actions = new List<Expression> {
-                ExpressionEx.Assign(tmp, destination) //convert to list type
-            };
-            if (arg.MapType == MapType.MapToTarget)
+            var actions = new List<Expression>
             {
-                var clear = listType.GetMethod("Clear", Type.EmptyTypes);
-                actions.Add(Expression.Call(tmp, clear));
-            }
-            actions.Add(CreateListSet(source, tmp, arg));
+                ExpressionEx.Assign(tmp, destination), //convert to list type
+                CreateListSet(source, tmp, arg)
+            };
             return Expression.Block(new[] { tmp }, actions);
         }
 
