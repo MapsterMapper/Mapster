@@ -7,10 +7,16 @@ namespace Mapster
 {
     public class IgnoreDictionary : Dictionary<string, IgnoreDictionary.IgnoreItem>, IApplyable<IgnoreDictionary>
     {
-        public struct IgnoreItem
+        public readonly struct IgnoreItem
         {
-            public LambdaExpression Condition { get; set; }
-            public bool IsChildPath { get; set; }
+            public IgnoreItem(LambdaExpression condition, bool isChildPath)
+            {
+                Condition = condition;
+                IsChildPath = isChildPath;
+            }
+
+            public LambdaExpression Condition { get; }
+            public bool IsChildPath { get; }
         }
 
         public void Apply(object other)
@@ -26,7 +32,7 @@ namespace Mapster
             }
         }
 
-        internal void Merge(string name, IgnoreDictionary.IgnoreItem src)
+        internal void Merge(string name, in IgnoreItem src)
         {
             if (src.Condition != null && this.TryGetValue(name, out var item))
             {
@@ -35,11 +41,9 @@ namespace Mapster
 
                 var param = src.Condition.Parameters.ToArray();
                 var body = item.IsChildPath ? item.Condition.Body : item.Condition.Apply(param[0], param[1]);
-                this[name] = new IgnoreItem
-                {
-                    Condition = Expression.Lambda(Expression.OrElse(src.Condition.Body, body), param),
-                    IsChildPath = src.IsChildPath
-                };
+                var condition = Expression.Lambda(Expression.OrElse(src.Condition.Body, body), param);
+
+                this[name] = new IgnoreItem(condition, src.IsChildPath);
             }
             else
                 this[name] = src;
@@ -53,13 +57,12 @@ namespace Mapster
             {
                 if (!member.Key.StartsWith(destMemberName + "."))
                     continue;
-                var next = new IgnoreItem
-                {
-                    Condition = member.Value.IsChildPath || member.Value.Condition == null
-                        ? member.Value.Condition
-                        : Expression.Lambda(member.Value.Condition.Apply(source, destination), source, destination),
-                    IsChildPath = true
-                };
+
+                var condition = member.Value.IsChildPath || member.Value.Condition == null
+                    ? member.Value.Condition
+                    : Expression.Lambda(member.Value.Condition.Apply(source, destination), source, destination);
+
+                var next = new IgnoreItem(condition, true);
                 result.Merge(member.Key.Substring(destMemberName.Length + 1), next);
             }
 
