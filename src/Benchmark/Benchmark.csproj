@@ -19,6 +19,7 @@
       </Compile>
     </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
         <PackageReference Include="ExpressionTranslator" Version="2.1.0" />
         <PackageReference Include="AutoMapper" Version="8.0.0" />
         <PackageReference Include="Expressmapper" Version="1.9.1" />
