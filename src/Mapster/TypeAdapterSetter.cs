@@ -405,7 +405,7 @@ namespace Mapster
             foreach (var member in members)
             {
                 var name = ReflectionUtils.GetMemberPath(member);
-                Settings.Ignore.Merge(name, new IgnoreDictionary.IgnoreItem {Condition = condition});
+                Settings.Ignore.Merge(name, new IgnoreDictionary.IgnoreItem(condition, false));
             }
             return this;
         }
@@ -418,7 +418,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.Ignore.Merge(member, new IgnoreDictionary.IgnoreItem {Condition = condition});
+                Settings.Ignore.Merge(member, new IgnoreDictionary.IgnoreItem(condition, false));
             }
             return this;
         }
