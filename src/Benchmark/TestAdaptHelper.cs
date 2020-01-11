@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using AutoMapper;
 using Benchmark.Classes;
 using Mapster;
@@ -9,18 +8,13 @@ namespace Benchmark
 {
     public static class TestAdaptHelper
     {
-        static TestAdaptHelper()
+        private static readonly IMapper _mapper = new Mapper(new MapperConfiguration(cfg =>
         {
-            Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<Foo, Foo>();
-                cfg.CreateMap<Address, Address>();
-                cfg.CreateMap<Address, AddressDTO>();
-                cfg.CreateMap<Customer, CustomerDTO>();
-            });
-
-            TypeAdapterConfig.GlobalSettings.Compiler = TypeAdapterConfig.GlobalSettings.Compiler; //switch compiler
-        }
+            cfg.CreateMap<Foo, Foo>();
+            cfg.CreateMap<Address, Address>();
+            cfg.CreateMap<Address, AddressDTO>();
+            cfg.CreateMap<Customer, CustomerDTO>();
+        }));
 
         public static Customer SetupCustomerInstance()
         {
@@ -79,7 +73,7 @@ namespace Benchmark
 
             ExpressMapper.Mapper.Map<Foo, Foo>(fooInstance); //exercise
 
-            Mapper.Map<Foo, Foo>(fooInstance); //exercise
+            _mapper.Map<Foo, Foo>(fooInstance); //exercise
         }
 
         public static void Configure(Customer customerInstance)
@@ -89,17 +83,7 @@ namespace Benchmark
 
             ExpressMapper.Mapper.Map<Customer, CustomerDTO>(customerInstance);  //exercise
 
-            Mapper.Map<Customer, CustomerDTO>(customerInstance);    //exercise
-        }
-
-        public static void TestMapsterAdapter<TSrc, TDest>(TSrc item, int iterations, ref double counter)
-            where TSrc : class
-            where TDest : class, new()
-        {
-            var time = LoopWithTime(item, get => get.Adapt<TSrc, TDest>(), iterations);
-            counter += time;
-
-            Console.WriteLine("Mapster:\t\t" + time);
+            _mapper.Map<Customer, CustomerDTO>(customerInstance);    //exercise
         }
 
         public static void TestMapsterAdapter<TSrc, TDest>(TSrc item, int iterations)
@@ -109,46 +93,18 @@ namespace Benchmark
             Loop(item, get => get.Adapt<TSrc, TDest>(), iterations);
         }
 
-        public static void TestExpressMapper<TSrc, TDest>(TSrc item, int iterations, ref double counter)
-            where TSrc : class
-            where TDest : class, new()
-        {
-            var time = LoopWithTime(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
-            counter += time;
-
-            Console.WriteLine("ExpressMapper:\t\t" + time);
-        }
-
         public static void TestExpressMapper<TSrc, TDest>(TSrc item, int iterations)
             where TSrc : class
             where TDest : class, new()
         {
-            Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
-        }
-
-        public static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations, ref double counter)
-            where TSrc : class
-            where TDest : class, new()
-        {
-            var time = LoopWithTime(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
-            counter += time;
-
-            Console.WriteLine("AutoMapper:\t\t" + time);
+            Loop(item, get => ExpressMapper.Mapper.Map<TSrc, TDest>(get), iterations);
         }
 
         public static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)
             where TSrc : class
             where TDest : class, new()
         {
-            Loop(item, get => Mapper.Map<TSrc, TDest>(get), iterations);
-        }
-
-        public static void TestCodeGen(Foo item, int iterations, ref double counter)
-        {
-            var time = LoopWithTime(item, get => FooMapper.Map(get), iterations);
-            counter += time;
-
-            Console.WriteLine("Codegen:\t\t" + time);
+            Loop(item, get => _mapper.Map<TSrc, TDest>(get), iterations);
         }
 
         public static void TestCodeGen(Foo item, int iterations)
@@ -156,67 +112,14 @@ namespace Benchmark
             Loop(item, get => FooMapper.Map(get), iterations);
         }
 
-        public static void TestCodeGen(Customer item, int iterations, ref double counter)
-        {
-            var time = LoopWithTime(item, get => CustomerMapper.Map(get), iterations);
-            counter += time;
-
-            Console.WriteLine("Codegen:\t\t" + time);
-        }
-
         public static void TestCodeGen(Customer item, int iterations)
         {
             Loop(item, get => CustomerMapper.Map(get), iterations);
         }
 
-        public static void TestCustomerNative(Customer item, int iterations)
-        {
-            Console.WriteLine("Handwritten Mapper:\t" + LoopWithTime(item, get =>
-            {
-                var dto = new CustomerDTO();
-
-                dto.Id = get.Id;
-                dto.Name = get.Name;
-                dto.AddressCity = get.Address.City;
-
-                dto.Address = new Address { Id = get.Address.Id, Street = get.Address.Street, Country = get.Address.Country, City = get.Address.City };
-
-                dto.HomeAddress = new AddressDTO { Id = get.HomeAddress.Id, Country = get.HomeAddress.Country, City = get.HomeAddress.City };
-
-                dto.Addresses = new AddressDTO[get.Addresses.Length];
-                for (int i = 0; i < get.Addresses.Length; i++)
-                {
-                    dto.Addresses[i] = new AddressDTO { Id = get.Addresses[i].Id, Country = get.Addresses[i].Country, City = get.Addresses[i].City };
-                }
-
-                dto.WorkAddresses = new List<AddressDTO>();
-                foreach (var workAddress in get.WorkAddresses)
-                {
-                    dto.WorkAddresses.Add(new AddressDTO { Id = workAddress.Id, Country = workAddress.Country, City = workAddress.City });
-                }
-
-            }, iterations));
-        }
-
         private static void Loop<T>(T item, Action<T> action, int iterations)
         {
             for (var i = 0; i < iterations; i++) action(item);
-        }
-
-        private static long LoopWithTime<T>(T item, Action<T> action, int iterations)
-        {
-            return Time(item, a =>
-            {
-                for (var i = 0; i < iterations; i++) action(a);
-            });
-        }
-
-        private static long Time<T>(T item, Action<T> action)
-        {
-            var sw = Stopwatch.StartNew();
-            action(item);
-            sw.Stop();
-            return sw.ElapsedMilliseconds;
         }
     }
 }
