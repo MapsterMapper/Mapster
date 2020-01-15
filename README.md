@@ -51,11 +51,16 @@ using (MyDbContext context = new MyDbContext())
 - Map to constructor
 
 ### Why Mapster?
-#### Performance
-Don't let other libraries slow you down, Mapster performance is at least 2.5 times faster!  
-And 3.x times faster with [FastExpressionCompiler](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler) and [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)!
+#### Performance & Memory efficient
+Mapster was designed to be efficient on both speed and memory. You could gain 5x faster while using only 1/3 of memory.
+And you could gain 13x faster with [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)!
 
-![image](https://user-images.githubusercontent.com/5763993/46615061-8cc78980-cb41-11e8-8bea-b04d9fcabccd.png)
+|                    Method |           Mean |       StdDev |        Error |       Gen 0 | Gen 1 | Gen 2 |  Allocated |
+|-------------------------- |---------------:|-------------:|-------------:|------------:|------:|------:|-----------:|
+|           &#39;Mapster 4.1.1&#39; | 1,388,744.4 us |  3,987.51 us |  6,028.54 us | 312000.0000 |     - |     - | 1251.22 MB |
+| &#39;Mapster 4.1.1 (Codegen)&#39; |   505,727.6 us |  2,525.21 us |  3,817.75 us | 312000.0000 |     - |     - | 1251.22 MB |
+|     &#39;ExpressMapper 1.9.1&#39; | 3,122,200.4 us | 11,701.40 us | 19,663.45 us | 604000.0000 |     - |     - | 2418.52 MB |
+|        &#39;AutoMapper 9.0.0&#39; | 6,883,546.7 us | 28,159.65 us | 42,573.37 us | 911000.0000 |     - |     - | 3646.85 MB |
 
 #### Step into debugging
 
