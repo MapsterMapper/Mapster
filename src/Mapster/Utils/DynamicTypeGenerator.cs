@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
@@ -45,11 +46,22 @@ namespace Mapster.Utils
         private static Type CreateTypeForInterface(Type interfaceType)
         {
             TypeBuilder builder = _moduleBuilder.DefineType("GeneratedType_" + Interlocked.Increment(ref _generatedCounter));
-            builder.AddInterfaceImplementation(interfaceType);
 
-            foreach (PropertyInfo prop in interfaceType.GetProperties())
+            foreach (Type currentInterface in GetAllInterfaces(interfaceType))
             {
-                CreateProperty(interfaceType, builder, prop);
+                builder.AddInterfaceImplementation(currentInterface);
+                foreach (PropertyInfo prop in currentInterface.GetProperties())
+                {
+                    CreateProperty(currentInterface, builder, prop);
+                }
+                foreach (MethodInfo method in currentInterface.GetMethods())
+                {
+                    // MethodAttributes.SpecialName are methods for property getters and setters.
+                    if (!method.Attributes.HasFlag(MethodAttributes.SpecialName))
+                    {
+                        CreateMethod(builder, method);
+                    }
+                }
             }
 
 #if NETSTANDARD2_0
@@ -59,9 +71,33 @@ namespace Mapster.Utils
 #endif
         }
 
+        // GetProperties() and GetMethods() do not return properties/methods from parent interfaces,
+        // so we need to process every one of them.
+        private static IEnumerable<Type> GetAllInterfaces(Type interfaceType)
+        {
+            var allInterfaces = new List<Type>();
+            var interfaceQueue = new Queue<Type>();
+            allInterfaces.Add(interfaceType);
+            interfaceQueue.Enqueue(interfaceType);
+            while (interfaceQueue.Count > 0)
+            {
+                var currentInterface = interfaceQueue.Dequeue();
+                foreach (var subInterface in currentInterface.GetInterfaces())
+                {
+                    if (allInterfaces.Contains(subInterface))
+                    {
+                        continue;
+                    }
+                    allInterfaces.Add(subInterface);
+                    interfaceQueue.Enqueue(subInterface);
+                }
+            }
+            return allInterfaces;
+        }
+
         private static void CreateProperty(Type interfaceType, TypeBuilder builder, PropertyInfo prop)
         {
-            const BindingFlags interfacePropMethodsFlags = BindingFlags.Instance | BindingFlags.Public;
+            const BindingFlags interfacePropMethodFlags = BindingFlags.Instance | BindingFlags.Public;
             // The property set and get methods require a special set of attributes.
             const MethodAttributes classPropMethodAttrs
                 = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
@@ -79,7 +115,7 @@ namespace Mapster.Utils
                 propGetIL.Emit(OpCodes.Ldfld, propField);
                 propGetIL.Emit(OpCodes.Ret);
 
-                MethodInfo interfaceGetMethod = interfaceType.GetMethod(getMethodName, interfacePropMethodsFlags);
+                MethodInfo interfaceGetMethod = interfaceType.GetMethod(getMethodName, interfacePropMethodFlags);
                 builder.DefineMethodOverride(propGet, interfaceGetMethod);
                 propBuilder.SetGetMethod(propGet);
             }
@@ -95,10 +131,35 @@ namespace Mapster.Utils
                 propSetIL.Emit(OpCodes.Stfld, propField);
                 propSetIL.Emit(OpCodes.Ret);
 
-                MethodInfo interfaceSetMethod = interfaceType.GetMethod(setMethodName, interfacePropMethodsFlags);
+                MethodInfo interfaceSetMethod = interfaceType.GetMethod(setMethodName, interfacePropMethodFlags);
                 builder.DefineMethodOverride(propSet, interfaceSetMethod);
                 propBuilder.SetSetMethod(propSet);
             }
+        }
+
+        private static void CreateMethod(TypeBuilder builder, MethodInfo interfaceMethod)
+        {
+            Type[] parameterTypes = null;
+            ParameterInfo[] parameters = interfaceMethod.GetParameters();
+            if (parameters.Length > 0)
+            {
+                parameterTypes = new Type[parameters.Length];
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    parameterTypes[i] = parameters[i].ParameterType;
+                }
+            }
+
+            MethodBuilder classMethod = builder.DefineMethod(
+                interfaceMethod.Name,
+                MethodAttributes.Public | MethodAttributes.Virtual,
+                interfaceMethod.CallingConvention,
+                interfaceMethod.ReturnType,
+                parameterTypes);
+            ILGenerator classMethodIL = classMethod.GetILGenerator();
+            classMethodIL.ThrowException(typeof(NotImplementedException));
+
+            builder.DefineMethodOverride(classMethod, interfaceMethod);
         }
     }
 }
