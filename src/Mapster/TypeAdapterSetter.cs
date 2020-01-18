@@ -236,6 +236,14 @@ namespace Mapster
             setter.Settings.Unflattening = value;
             return setter;
         }
+
+        public static TSetter UseInterfaceHierarchy<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.UseInterfaceHierarchy = value;
+            return setter;
+        }
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -444,7 +452,7 @@ namespace Mapster
             Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
         {
             this.CheckCompiled();
-            
+
             Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
@@ -553,7 +561,7 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>() 
+        public TypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>()
             where TDerivedSource: class, TSource
             where TDerivedDestination: class, TDestination
         {
@@ -806,6 +814,13 @@ namespace Mapster
         {
             SourceToDestinationSetter.MaxDepth(value);
             DestinationToSourceSetter.MaxDepth(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> UseInterfaceHierarchy(bool value)
+        {
+            SourceToDestinationSetter.UseInterfaceHierarchy(value);
+            DestinationToSourceSetter.UseInterfaceHierarchy(value);
             return this;
         }
     }

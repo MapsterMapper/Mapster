@@ -79,10 +79,14 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            return type.GetFieldsAndProperties(requireSetter: true).Any();
+            return type.GetFieldsAndProperties(useInterfaceHierarchy: true, requireSetter: true).Any();
         }
 
-        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool requireSetter = false, BindingFlags accessorFlags = BindingFlags.Public)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(
+            this Type type,
+            bool? useInterfaceHierarchy,
+            bool requireSetter = false,
+            BindingFlags accessorFlags = BindingFlags.Public)
         {
             var bindingFlags = BindingFlags.Instance | accessorFlags;
 
@@ -99,9 +103,9 @@ namespace Mapster
             IEnumerable<IMemberModelEx> fields;
 
 #if NETSTANDARD1_3
-            if (type.IsInterface())
+            if (type.IsInterface() && (useInterfaceHierarchy == true))
 #else
-            if (type.IsInterface)
+            if (type.IsInterface && (useInterfaceHierarchy == true))
 #endif
             {
                 IEnumerable<Type> allInterfaces = GetAllInterfaces(type);
@@ -232,7 +236,7 @@ namespace Mapster
                 return false;
 
             //no public setter
-            var props = type.GetFieldsAndProperties().ToList();
+            var props = type.GetFieldsAndProperties(useInterfaceHierarchy: true).ToList();
             if (props.Any(p => p.SetterModifier == AccessModifier.Public))
                 return false;
 
