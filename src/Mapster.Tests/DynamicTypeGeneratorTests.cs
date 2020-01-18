@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 
 namespace Mapster.Tests
 {
@@ -25,17 +26,29 @@ namespace Mapster.Tests
             int Value { get; set; }
         }
 
+        public class Foo
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
         public interface IComplexBaseInterface
         {
             int Id { get; set; }
+            Foo Foo { get; set; }
             void BaseMethod();
         }
 
         public interface IComplexInterface : IComplexBaseInterface
         {
             string Name { get; set; }
+            int? NullableInt { get; set; }
             int ReadOnlyProp { get; }
             int WriteOnlyProp { set; }
+            IEnumerable<int> Ints { get; set; }
+            IEnumerable<Foo> Foos { get; set; }
+            int[] IntArray { get; set; }
+            Foo[] FooArray { get; set; }
             void SimpleMethod();
             int ComplexMethod(byte b, ref int i, out string s);
         }
@@ -93,10 +106,18 @@ namespace Mapster.Tests
             instance.ShouldNotBeNull();
 
             instance.Id = 42;
+            instance.Foo = new Foo();
+            instance.NullableInt = 123;
             instance.Name = "Lorem ipsum";
             instance.WriteOnlyProp = 24;
+            instance.Ints = new List<int>();
+            instance.IntArray = new int[2];
+            instance.Foos = new List<Foo>();
+            instance.FooArray = new Foo[2];
 
             instance.Id.ShouldBe(42);
+            instance.Foo.ShouldNotBeNull();
+            instance.NullableInt.ShouldBe(123);
             instance.Name.ShouldBe("Lorem ipsum");
             instance.ReadOnlyProp.ShouldBe(0);
 
