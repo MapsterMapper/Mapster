@@ -28,13 +28,21 @@ namespace Mapster.Utils
 
         private static void CheckInterfaceType(Type interfaceType)
         {
+#if NETSTANDARD1_3
+            if (!interfaceType.IsInterface())
+#else
             if (!interfaceType.IsInterface)
+#endif
             {
                 const string msg = "Cannot create dynamic type for {0}, because it is not an interface.\n" +
                     "Target type full name: {1}";
                 throw new InvalidOperationException(string.Format(msg, interfaceType.Name, interfaceType.FullName));
             }
+#if NETSTANDARD1_3
+            if (!interfaceType.IsVisible())
+#else
             if (!interfaceType.IsVisible)
+#endif
             {
                 const string msg = "Cannot adapt to interface {0}, because it is not accessible outside its assembly.\n" +
                     "Interface full name: {1}";
@@ -65,6 +73,8 @@ namespace Mapster.Utils
 
 #if NETSTANDARD2_0
             return builder.CreateTypeInfo();
+#elif NETSTANDARD1_3
+            return builder.CreateTypeInfo().AsType();
 #else
             return builder.CreateType();
 #endif

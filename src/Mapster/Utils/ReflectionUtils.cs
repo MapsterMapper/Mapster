@@ -55,6 +55,8 @@ namespace Mapster
         {
             return member.CustomAttributes;
         }
+        public static bool IsInterface(this Type type) => type.GetTypeInfo().IsInterface;
+        public static bool IsVisible(this Type type) => type.GetTypeInfo().IsVisible;
 #endif
 
         public static bool IsNullable(this Type type)
@@ -96,7 +98,11 @@ namespace Mapster
             IEnumerable<IMemberModelEx> properties;
             IEnumerable<IMemberModelEx> fields;
 
+#if NETSTANDARD1_3
+            if (type.IsInterface())
+#else
             if (type.IsInterface)
+#endif
             {
                 IEnumerable<Type> allInterfaces = GetAllInterfaces(type);
                 properties = allInterfaces.SelectMany(currentInterface => getPropertiesFunc(currentInterface));
