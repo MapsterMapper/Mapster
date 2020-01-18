@@ -8,7 +8,6 @@ namespace Mapster.Tests
     [TestClass]
     public class DynamicTypeGeneratorTests
     {
-
         private interface INotVisibleInterface
         {
             int Id { get; set; }
@@ -58,7 +57,6 @@ namespace Mapster.Tests
             ISimpleInterface instance = (ISimpleInterface)Activator.CreateInstance(iClass);
 
             instance.ShouldNotBeNull();
-            instance.ShouldBeAssignableTo<ISimpleInterface>();
 
             instance.Id = 42;
             instance.Name = "Lorem ipsum";
@@ -75,7 +73,6 @@ namespace Mapster.Tests
             IInheritedInterface instance = (IInheritedInterface)Activator.CreateInstance(iClass);
 
             instance.ShouldNotBeNull();
-            instance.ShouldBeAssignableTo<IInheritedInterface>();
 
             instance.Id = 42;
             instance.Name = "Lorem ipsum";
@@ -94,7 +91,6 @@ namespace Mapster.Tests
             IComplexInterface instance = (IComplexInterface)Activator.CreateInstance(iClass);
 
             instance.ShouldNotBeNull();
-            instance.ShouldBeAssignableTo<IComplexInterface>();
 
             instance.Id = 42;
             instance.Name = "Lorem ipsum";

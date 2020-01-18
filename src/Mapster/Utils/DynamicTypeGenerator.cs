@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
@@ -47,7 +46,7 @@ namespace Mapster.Utils
         {
             TypeBuilder builder = _moduleBuilder.DefineType("GeneratedType_" + Interlocked.Increment(ref _generatedCounter));
 
-            foreach (Type currentInterface in GetAllInterfaces(interfaceType))
+            foreach (Type currentInterface in ReflectionUtils.GetAllInterfaces(interfaceType))
             {
                 builder.AddInterfaceImplementation(currentInterface);
                 foreach (PropertyInfo prop in currentInterface.GetProperties())
@@ -69,30 +68,6 @@ namespace Mapster.Utils
 #else
             return builder.CreateType();
 #endif
-        }
-
-        // GetProperties() and GetMethods() do not return properties/methods from parent interfaces,
-        // so we need to process every one of them.
-        private static IEnumerable<Type> GetAllInterfaces(Type interfaceType)
-        {
-            var allInterfaces = new List<Type>();
-            var interfaceQueue = new Queue<Type>();
-            allInterfaces.Add(interfaceType);
-            interfaceQueue.Enqueue(interfaceType);
-            while (interfaceQueue.Count > 0)
-            {
-                var currentInterface = interfaceQueue.Dequeue();
-                foreach (var subInterface in currentInterface.GetInterfaces())
-                {
-                    if (allInterfaces.Contains(subInterface))
-                    {
-                        continue;
-                    }
-                    allInterfaces.Add(subInterface);
-                    interfaceQueue.Enqueue(subInterface);
-                }
-            }
-            return allInterfaces;
         }
 
         private static void CreateProperty(Type interfaceType, TypeBuilder builder, PropertyInfo prop)
