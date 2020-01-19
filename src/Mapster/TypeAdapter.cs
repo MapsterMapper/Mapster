@@ -36,7 +36,7 @@ namespace Mapster
         public static TDestination Adapt<TDestination>(this object source, TypeAdapterConfig config)
         {
             if (source == null)
-                return default(TDestination)!;
+                return default!;
             var type = source.GetType();
             var fn = config.GetDynamicMapFunction<TDestination>(type);
             return fn(source);

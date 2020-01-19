@@ -18,36 +18,23 @@ namespace Mapster.Utils
 #endif
         private static readonly ModuleBuilder _moduleBuilder = _assemblyBuilder.DefineDynamicModule("Classes");
         private static readonly ConcurrentDictionary<Type, Type> _generated = new ConcurrentDictionary<Type, Type>();
-        private static int _generatedCounter = 0;
+        private static int _generatedCounter;
 
         public static Type GetTypeForInterface(Type interfaceType)
         {
-            CheckInterfaceType(interfaceType);
-            return _generated.GetOrAdd(interfaceType, (key) => CreateTypeForInterface(key));
-        }
-
-        private static void CheckInterfaceType(Type interfaceType)
-        {
-#if NETSTANDARD1_3
-            if (!interfaceType.IsInterface())
-#else
-            if (!interfaceType.IsInterface)
-#endif
+            if (!interfaceType.GetTypeInfo().IsInterface)
             {
                 const string msg = "Cannot create dynamic type for {0}, because it is not an interface.\n" +
-                    "Target type full name: {1}";
+                                   "Target type full name: {1}";
                 throw new InvalidOperationException(string.Format(msg, interfaceType.Name, interfaceType.FullName));
             }
-#if NETSTANDARD1_3
-            if (!interfaceType.IsVisible())
-#else
-            if (!interfaceType.IsVisible)
-#endif
+            if (!interfaceType.GetTypeInfo().IsVisible)
             {
                 const string msg = "Cannot adapt to interface {0}, because it is not accessible outside its assembly.\n" +
-                    "Interface full name: {1}";
+                                   "Interface full name: {1}";
                 throw new InvalidOperationException(string.Format(msg, interfaceType.Name, interfaceType.FullName));
             }
+            return _generated.GetOrAdd(interfaceType, CreateTypeForInterface);
         }
 
         private static Type CreateTypeForInterface(Type interfaceType)
@@ -72,7 +59,7 @@ namespace Mapster.Utils
             }
 
 #if NETSTANDARD2_0
-            return builder.CreateTypeInfo();
+            return builder.CreateTypeInfo()!;
 #elif NETSTANDARD1_3
             return builder.CreateTypeInfo().AsType();
 #else
@@ -124,7 +111,7 @@ namespace Mapster.Utils
 
         private static void CreateMethod(TypeBuilder builder, MethodInfo interfaceMethod)
         {
-            Type[] parameterTypes = null;
+            Type[]? parameterTypes = null;
             ParameterInfo[] parameters = interfaceMethod.GetParameters();
             if (parameters.Length > 0)
             {

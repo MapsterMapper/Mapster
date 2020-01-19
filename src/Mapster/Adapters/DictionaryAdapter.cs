@@ -175,7 +175,7 @@ namespace Mapster.Adapters
             if (arg.SourceType.GetDictionaryType() == null)
             {
                 var srcNames = arg.GetSourceNames();
-                var propNames = arg.SourceType.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
+                var propNames = arg.SourceType.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
                     .Where(model => model.ShouldMapMember(arg, MemberSide.Source))
                     .Select(model => model.Name)
                     .Where(name => !srcNames.Contains(name))

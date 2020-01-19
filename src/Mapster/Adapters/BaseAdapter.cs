@@ -333,11 +333,7 @@ namespace Mapster.Adapters
             }
 
             //if mapping to interface, create dynamic type implementing it
-#if NETSTANDARD1_3
-            else if (destination is null && arg.DestinationType.IsInterface())
-#else
-            else if (destination is null && arg.DestinationType.IsInterface)
-#endif
+            else if (arg.DestinationType.GetTypeInfo().IsInterface)
             {
                 return Expression.New(DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType));
             }

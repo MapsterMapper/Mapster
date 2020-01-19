@@ -171,7 +171,7 @@ namespace Mapster.Adapters
         {
             return new ClassModel
             {
-                Members = arg.DestinationType.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, requireSetter: true, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
+                Members = arg.DestinationType.GetFieldsAndProperties(requireSetter: true, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
             };
         }
 

@@ -67,12 +67,6 @@ namespace Mapster
             set => Set("SkipDestinationMemberCheck", value);
         }
 
-        public bool? UseInterfaceHierarchy
-        {
-            get => Get(nameof(UseInterfaceHierarchy));
-            set => Set(nameof(UseInterfaceHierarchy), value);
-        }
-
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {
             get => Get("ShouldMapMember", () => new List<Func<IMemberModel, MemberSide, bool?>>());

@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
 using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster
 {
@@ -234,14 +233,6 @@ namespace Mapster
             setter.CheckCompiled();
 
             setter.Settings.Unflattening = value;
-            return setter;
-        }
-
-        public static TSetter UseInterfaceHierarchy<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
-        {
-            setter.CheckCompiled();
-
-            setter.Settings.UseInterfaceHierarchy = value;
             return setter;
         }
     }
@@ -814,13 +805,6 @@ namespace Mapster
         {
             SourceToDestinationSetter.MaxDepth(value);
             DestinationToSourceSetter.MaxDepth(value);
-            return this;
-        }
-
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> UseInterfaceHierarchy(bool value)
-        {
-            SourceToDestinationSetter.UseInterfaceHierarchy(value);
-            DestinationToSourceSetter.UseInterfaceHierarchy(value);
             return this;
         }
     }

@@ -36,7 +36,7 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
-        public void MapToInheritedInterface_InterfaceHierarchyEnabled()
+        public void MapToInheritedInterface()
         {
             var dto = new InheritedDto
             {
@@ -47,7 +47,6 @@ namespace Mapster.Tests
             };
 
             var config = new TypeAdapterConfig();
-            config.Default.UseInterfaceHierarchy(true);
 
             IInheritedDto idto = dto.Adapt<IInheritedDto>(config);
 
@@ -61,7 +60,7 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
-        public void MapToInheritedInterface_InterfaceHierarchyDisabled()
+        public void MapToInstanceWithInterface()
         {
             var dto = new InheritedDto
             {
@@ -72,31 +71,6 @@ namespace Mapster.Tests
             };
 
             var config = new TypeAdapterConfig();
-
-            IInheritedDto idto = dto.Adapt<IInheritedDto>(config);
-
-            idto.ShouldNotBeNull();
-            idto.ShouldSatisfyAllConditions(
-                () => idto.Id.ShouldBe(default),
-                () => idto.Name.ShouldBeNull(),
-                () => idto.DateOfBirth.ShouldBe(dto.DateOfBirth),
-                () => idto.UnmappedTarget.ShouldBeNull()
-            );
-        }
-
-        [TestMethod]
-        public void MapToInstanceWithInterface_InterfaceHierarchyEnabled()
-        {
-            var dto = new InheritedDto
-            {
-                Id = 1,
-                Name = "Test",
-                DateOfBirth = new DateTime(1978, 12, 10),
-                UnmappedSource = "Lorem ipsum"
-            };
-
-            var config = new TypeAdapterConfig();
-            config.Default.UseInterfaceHierarchy(true);
 
             IInheritedDto target = new ImplementedDto();
             dto.Adapt(target, config);
@@ -105,29 +79,6 @@ namespace Mapster.Tests
             target.ShouldSatisfyAllConditions(
                 () => target.Id.ShouldBe(dto.Id),
                 () => target.Name.ShouldBe(dto.Name),
-                () => target.DateOfBirth.ShouldBe(dto.DateOfBirth),
-                () => target.UnmappedTarget.ShouldBeNull()
-            );
-        }
-
-        [TestMethod]
-        public void MapToInstanceWithInterface_InterfaceHierarchyDisabled()
-        {
-            var dto = new InheritedDto
-            {
-                Id = 1,
-                Name = "Test",
-                DateOfBirth = new DateTime(1978, 12, 10),
-                UnmappedSource = "Lorem ipsum"
-            };
-
-            IInheritedDto target = new ImplementedDto();
-            dto.Adapt(target);
-
-            target.ShouldNotBeNull();
-            target.ShouldSatisfyAllConditions(
-                () => target.Id.ShouldBe(default),
-                () => target.Name.ShouldBeNull(),
                 () => target.DateOfBirth.ShouldBe(dto.DateOfBirth),
                 () => target.UnmappedTarget.ShouldBeNull()
             );

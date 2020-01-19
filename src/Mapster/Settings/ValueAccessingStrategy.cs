@@ -75,7 +75,7 @@ namespace Mapster
 
         private static Expression? PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
-            var members = source.Type.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+            var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             return members
@@ -110,7 +110,7 @@ namespace Mapster
         private static Expression? GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var members = source.Type.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+            var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
             foreach (var member in members)
             {
                 if (!member.ShouldMapMember(arg, MemberSide.Source))
@@ -137,7 +137,7 @@ namespace Mapster
         {
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
-            var members = source.Type.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+            var members = source.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
 
             foreach (var member in members)
             {
@@ -160,7 +160,7 @@ namespace Mapster
         private static IEnumerable<string> GetDeepUnflattening(IMemberModel destinationMember, string propertyName, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var members = destinationMember.Type.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
+            var members = destinationMember.Type.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public);
             foreach (var member in members)
             {
                 if (!member.ShouldMapMember(arg, MemberSide.Destination))
