@@ -85,6 +85,26 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void MapToReadOnlyInterface()
+        {
+            var dto = new Dto
+            {
+                Id = 1,
+                Name = "Test",
+                UnmappedSource = "Lorem ipsum"
+            };
+
+            var idto = dto.Adapt<IReadOnlyInterface>();
+
+            idto.ShouldNotBeNull();
+            idto.ShouldSatisfyAllConditions(
+                () => idto.Id.ShouldBe(dto.Id),
+                () => idto.Name.ShouldBe(dto.Name)
+            );
+        }
+
+
+        [TestMethod]
         public void MapToComplexInterface()
         {
             var subItem = new ComplexDto
@@ -193,6 +213,12 @@ namespace Mapster.Tests
         {
             int Id { get; set; }
             string Name { get; set; }
+        }
+
+        public interface IReadOnlyInterface
+        {
+            int Id { get; }
+            string Name { get; }
         }
 
         public interface IInterfaceWithMethods

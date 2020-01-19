@@ -227,6 +227,10 @@ namespace Mapster
             if (props.Any(p => p.SetterModifier == AccessModifier.Public))
                 return false;
 
+            //interface, ctor will automatically created
+            if (type.GetTypeInfo().IsInterface)
+                return true;
+
             //1 non-empty constructor
             var ctors = type.GetConstructors().Where(ctor => ctor.GetParameters().Length > 0).ToList();
             if (ctors.Count != 1)

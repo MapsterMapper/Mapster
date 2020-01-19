@@ -61,7 +61,10 @@ namespace Mapster.Adapters
             var ctor = arg.Settings.MapToConstructor as ConstructorInfo;
             if (ctor == null)
             {
-                classConverter = arg.DestinationType.GetConstructors()
+                var destType = arg.DestinationType.GetTypeInfo().IsInterface
+                    ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType)
+                    : arg.DestinationType;
+                classConverter = destType.GetConstructors()
                     .OrderByDescending(it => it.GetParameters().Length)
                     .Select(it => GetConstructorModel(it, true))
                     .Select(it => CreateClassConverter(source, it, arg))

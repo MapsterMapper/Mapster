@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -20,7 +21,10 @@ namespace Mapster.Adapters
             if (arg.GetConstructUsing() != null)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
-            var ctor = arg.DestinationType.GetConstructors()[0];
+            var destType = arg.DestinationType.GetTypeInfo().IsInterface
+                ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType)
+                : arg.DestinationType;
+            var ctor = destType.GetConstructors()[0];
             var classModel = GetConstructorModel(ctor, false);
             var classConverter = CreateClassConverter(source, classModel, arg);
             return CreateInstantiationExpression(source, classConverter, arg);

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
@@ -8,7 +10,7 @@ namespace Mapster.Utils
 {
     internal static class DynamicTypeGenerator
     {
-        private const string DynamicAssemblyName = "MapsterGeneratedTypes";
+        private const string DynamicAssemblyName = "Mapster.Dynamic";
 
         private static readonly AssemblyBuilder _assemblyBuilder =
 #if NET40
@@ -16,7 +18,7 @@ namespace Mapster.Utils
 #else
             AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(DynamicAssemblyName), AssemblyBuilderAccess.Run);
 #endif
-        private static readonly ModuleBuilder _moduleBuilder = _assemblyBuilder.DefineDynamicModule("Classes");
+        private static readonly ModuleBuilder _moduleBuilder = _assemblyBuilder.DefineDynamicModule("Mapster.Dynamic");
         private static readonly ConcurrentDictionary<Type, Type> _generated = new ConcurrentDictionary<Type, Type>();
         private static int _generatedCounter;
 
@@ -44,9 +46,13 @@ namespace Mapster.Utils
             foreach (Type currentInterface in ReflectionUtils.GetAllInterfaces(interfaceType))
             {
                 builder.AddInterfaceImplementation(currentInterface);
+                var args = new List<FieldBuilder>();
                 foreach (PropertyInfo prop in currentInterface.GetProperties())
                 {
-                    CreateProperty(currentInterface, builder, prop);
+                    FieldBuilder propField = builder.DefineField("_" + NameMatchingStrategy.CamelCase(prop.Name), prop.PropertyType, FieldAttributes.Private);
+                    CreateProperty(currentInterface, builder, prop, propField);
+                    if (!prop.CanWrite)
+                        args.Add(propField);
                 }
                 foreach (MethodInfo method in currentInterface.GetMethods())
                 {
@@ -55,6 +61,23 @@ namespace Mapster.Utils
                     {
                         CreateMethod(builder, method);
                     }
+                }
+
+                if (args.Count > 0)
+                {
+                    var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public, 
+                        CallingConventions.Standard,
+                        args.Select(it => it.FieldType).ToArray());
+                    var ctorIL = ctorBuilder.GetILGenerator();
+                    for (var i = 0; i < args.Count; i++)
+                    {
+                        var arg = args[i];
+                        ctorBuilder.DefineParameter(i + 1, ParameterAttributes.None, arg.Name.Substring(1));
+                        ctorIL.Emit(OpCodes.Ldarg_0);
+                        ctorIL.Emit(OpCodes.Ldarg_S, i + 1);
+                        ctorIL.Emit(OpCodes.Stfld, arg);
+                    }
+                    ctorIL.Emit(OpCodes.Ret);
                 }
             }
 
@@ -67,14 +90,13 @@ namespace Mapster.Utils
 #endif
         }
 
-        private static void CreateProperty(Type interfaceType, TypeBuilder builder, PropertyInfo prop)
+        private static void CreateProperty(Type interfaceType, TypeBuilder builder, PropertyInfo prop, FieldBuilder propField)
         {
             const BindingFlags interfacePropMethodFlags = BindingFlags.Instance | BindingFlags.Public;
             // The property set and get methods require a special set of attributes.
             const MethodAttributes classPropMethodAttrs
                 = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
-            FieldBuilder propField = builder.DefineField("_" + prop.Name, prop.PropertyType, FieldAttributes.Private);
             PropertyBuilder propBuilder = builder.DefineProperty(prop.Name, PropertyAttributes.None, prop.PropertyType, null);
 
             if (prop.CanRead)
