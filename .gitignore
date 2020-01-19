@@ -180,3 +180,4 @@ deploy/output
 project.lock.json
 /src/.vs
 /.vs
+src/.idea
