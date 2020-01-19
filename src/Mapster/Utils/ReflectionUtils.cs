@@ -55,6 +55,8 @@ namespace Mapster
         {
             return member.CustomAttributes;
         }
+        public static bool IsInterface(this Type type) => type.GetTypeInfo().IsInterface;
+        public static bool IsVisible(this Type type) => type.GetTypeInfo().IsVisible;
 #endif
 
         public static bool IsNullable(this Type type)
@@ -77,23 +79,70 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            return type.GetFieldsAndProperties(requireSetter: true).Any();
+            return type.GetFieldsAndProperties(useInterfaceHierarchy: true, requireSetter: true).Any();
         }
 
-        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool requireSetter = false, BindingFlags accessorFlags = BindingFlags.Public)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(
+            this Type type,
+            bool? useInterfaceHierarchy,
+            bool requireSetter = false,
+            BindingFlags accessorFlags = BindingFlags.Public)
         {
             var bindingFlags = BindingFlags.Instance | accessorFlags;
 
-            var properties = type.GetProperties(bindingFlags)
+            IEnumerable<IMemberModelEx> getPropertiesFunc(Type t) => t.GetProperties(bindingFlags)
                 .Where(x => x.GetIndexParameters().Length == 0)
                 .Where(x => !requireSetter || x.CanWrite)
                 .Select(CreateModel);
 
-            var fields = type.GetFields(bindingFlags)
+            IEnumerable<IMemberModelEx> getFieldsFunc(Type t) => t.GetFields(bindingFlags)
                 .Where(x => !requireSetter || !x.IsInitOnly)
                 .Select(CreateModel);
 
+            IEnumerable<IMemberModelEx> properties;
+            IEnumerable<IMemberModelEx> fields;
+
+#if NETSTANDARD1_3
+            if (type.IsInterface() && (useInterfaceHierarchy == true))
+#else
+            if (type.IsInterface && (useInterfaceHierarchy == true))
+#endif
+            {
+                IEnumerable<Type> allInterfaces = GetAllInterfaces(type);
+                properties = allInterfaces.SelectMany(currentInterface => getPropertiesFunc(currentInterface));
+                fields = allInterfaces.SelectMany(currentInterface => getFieldsFunc(currentInterface));
+            }
+            else
+            {
+                properties = getPropertiesFunc(type);
+                fields = getFieldsFunc(type);
+            }
+
             return properties.Concat(fields);
+        }
+
+        // GetProperties(), GetFields(), GetMethods() do not return properties/methods from parent interfaces,
+        // so we need to process every one of them separately.
+        public static IEnumerable<Type> GetAllInterfaces(Type interfaceType)
+        {
+            var allInterfaces = new List<Type>();
+            var interfaceQueue = new Queue<Type>();
+            allInterfaces.Add(interfaceType);
+            interfaceQueue.Enqueue(interfaceType);
+            while (interfaceQueue.Count > 0)
+            {
+                var currentInterface = interfaceQueue.Dequeue();
+                foreach (var subInterface in currentInterface.GetInterfaces())
+                {
+                    if (allInterfaces.Contains(subInterface))
+                    {
+                        continue;
+                    }
+                    allInterfaces.Add(subInterface);
+                    interfaceQueue.Enqueue(subInterface);
+                }
+            }
+            return allInterfaces;
         }
 
         public static bool IsCollection(this Type type)
@@ -187,7 +236,7 @@ namespace Mapster
                 return false;
 
             //no public setter
-            var props = type.GetFieldsAndProperties().ToList();
+            var props = type.GetFieldsAndProperties(useInterfaceHierarchy: true).ToList();
             if (props.Any(p => p.SetterModifier == AccessModifier.Public))
                 return false;
 

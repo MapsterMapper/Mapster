@@ -26,7 +26,7 @@ namespace Mapster.Adapters
                 return false;
 
             //allow inline for dict-to-dict, only when IgnoreNonMapped
-            return arg.SourceType.GetDictionaryType() == null 
+            return arg.SourceType.GetDictionaryType() == null
                 || arg.Settings.IgnoreNonMapped == true;
         }
 
@@ -83,7 +83,7 @@ namespace Mapster.Adapters
                     dict.Add(ignore.Key, setWithCondition);
                 }
             }
-            
+
             //dict to switch
             if (dict.Count > 0 || ignores.Count > 0)
             {
@@ -175,7 +175,7 @@ namespace Mapster.Adapters
             if (arg.SourceType.GetDictionaryType() == null)
             {
                 var srcNames = arg.GetSourceNames();
-                var propNames = arg.SourceType.GetFieldsAndProperties(accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
+                var propNames = arg.SourceType.GetFieldsAndProperties(useInterfaceHierarchy: arg.Settings.UseInterfaceHierarchy, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
                     .Where(model => model.ShouldMapMember(arg, MemberSide.Source))
                     .Select(model => model.Name)
                     .Where(name => !srcNames.Contains(name))

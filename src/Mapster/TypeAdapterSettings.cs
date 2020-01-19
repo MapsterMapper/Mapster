@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Mapster.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
-using Mapster.Adapters;
-using Mapster.Models;
 
 namespace Mapster
 {
-    public class TypeAdapterSettings: SettingStore
+    public class TypeAdapterSettings : SettingStore
     {
         public IgnoreDictionary Ignore
         {
@@ -67,6 +65,12 @@ namespace Mapster
         {
             get => Get("SkipDestinationMemberCheck");
             set => Set("SkipDestinationMemberCheck", value);
+        }
+
+        public bool? UseInterfaceHierarchy
+        {
+            get => Get(nameof(UseInterfaceHierarchy));
+            set => Set(nameof(UseInterfaceHierarchy), value);
         }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember

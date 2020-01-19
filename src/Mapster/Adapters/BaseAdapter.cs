@@ -183,7 +183,7 @@ namespace Mapster.Adapters
                 {
                     var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                     blocks.Add(
-                        Expression.IfThen(compareNull, 
+                        Expression.IfThen(compareNull,
                             Expression.Return(label, arg.DestinationType.CreateDefault()))
                     );
                 }
@@ -250,7 +250,7 @@ namespace Mapster.Adapters
                     assignActions.Add(refAssign);
 
                     var usingBody = Expression.Block(
-                        new[] { cache, references, result }, 
+                        new[] { cache, references, result },
                         new Expression[] {assignReferences, setResult}
                             .Concat(assignActions)
                             .Concat(settingActions));
@@ -330,6 +330,16 @@ namespace Mapster.Adapters
                        typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
                        Expression.Constant("Cannot instantiate type: " + arg.DestinationType.Name)),
                    arg.DestinationType);
+            }
+
+            //if mapping to interface, create dynamic type implementing it
+#if NETSTANDARD1_3
+            else if (destination is null && arg.DestinationType.IsInterface())
+#else
+            else if (destination is null && arg.DestinationType.IsInterface)
+#endif
+            {
+                return Expression.New(DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType));
             }
 
             //otherwise throw
