@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using AutoMapper;
 using Benchmark.Classes;
+using ExpressionDebugger;
+using FastExpressionCompiler;
 using Mapster;
 
 namespace Benchmark
@@ -66,23 +69,52 @@ namespace Benchmark
             };
         }
 
-        public static void Configure(Foo fooInstance)
+        private static readonly Func<LambdaExpression, Delegate> _defaultCompiler = TypeAdapterConfig.GlobalSettings.Compiler;
+
+        private static void SetupCompiler(MapsterCompilerType type)
         {
+            switch (type)
+            {
+                case MapsterCompilerType.Default:
+                    TypeAdapterConfig.GlobalSettings.Compiler = _defaultCompiler;
+                    break;
+                case MapsterCompilerType.Roslyn:
+                    TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileWithDebugInfo();
+                    break;
+                case MapsterCompilerType.FEC:
+                    TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type));
+            }
+        }
+        public static void ConfigureMapster(Foo fooInstance, MapsterCompilerType type)
+        {
+            SetupCompiler(type);
             TypeAdapterConfig.GlobalSettings.Compile(typeof(Foo), typeof(Foo)); //recompile
             fooInstance.Adapt<Foo, Foo>(); //exercise
-
+        }
+        public static void ConfigureExpressMapper(Foo fooInstance)
+        {
             ExpressMapper.Mapper.Map<Foo, Foo>(fooInstance); //exercise
-
+        }
+        public static void ConfigureAutoMapper(Foo fooInstance)
+        {
             _mapper.Map<Foo, Foo>(fooInstance); //exercise
         }
 
-        public static void Configure(Customer customerInstance)
+        public static void ConfigureMapster(Customer customerInstance, MapsterCompilerType type)
         {
+            SetupCompiler(type);
             TypeAdapterConfig.GlobalSettings.Compile(typeof(Customer), typeof(CustomerDTO));    //recompile
             customerInstance.Adapt<Customer, CustomerDTO>();    //exercise
-
+        }
+        public static void ConfigureExpressMapper(Customer customerInstance)
+        {
             ExpressMapper.Mapper.Map<Customer, CustomerDTO>(customerInstance);  //exercise
-
+        }
+        public static void ConfigureAutoMapper(Customer customerInstance)
+        {
             _mapper.Map<Customer, CustomerDTO>(customerInstance);    //exercise
         }
 
@@ -121,5 +153,12 @@ namespace Benchmark
         {
             for (var i = 0; i < iterations; i++) action(item);
         }
+    }
+
+    public enum MapsterCompilerType
+    {
+        Default,
+        Roslyn,
+        FEC,
     }
 }

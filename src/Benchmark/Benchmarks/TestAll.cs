@@ -8,11 +8,25 @@ namespace Benchmark.Benchmarks
         private Foo fooInstance;
         private Customer customerInstance;
 
-        [Params(1000, 10_000, 100_000, 1_000_000)]
+        [Params(1000, 10_000, 100_000)]//, 1_000_000)]
         public int Iterations { get; set; }
 
         [Benchmark(Description = "Mapster 4.1.1")]
         public void MapsterTest()
+        {
+            TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
+            TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(customerInstance, Iterations);
+        }
+
+        [Benchmark(Description = "Mapster 4.1.1 (Roslyn)")]
+        public void RoslynTest()
+        {
+            TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
+            TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(customerInstance, Iterations);
+        }
+
+        [Benchmark(Description = "Mapster 4.1.1 (FEC)")]
+        public void FecTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(customerInstance, Iterations);
@@ -39,13 +53,59 @@ namespace Benchmark.Benchmarks
             TestAdaptHelper.TestAutoMapper<Customer, CustomerDTO>(customerInstance, Iterations);
         }
 
-        [GlobalSetup]
-        public void Setup()
+        [GlobalSetup(Target = nameof(MapsterTest))]
+        public void SetupMapster()
         {
             fooInstance = TestAdaptHelper.SetupFooInstance();
-            TestAdaptHelper.Configure(fooInstance);
             customerInstance = TestAdaptHelper.SetupCustomerInstance();
-            TestAdaptHelper.Configure(customerInstance);
+            TestAdaptHelper.ConfigureMapster(fooInstance, MapsterCompilerType.Default);
+            TestAdaptHelper.ConfigureMapster(customerInstance, MapsterCompilerType.Default);
         }
+
+        [GlobalSetup(Target = nameof(RoslynTest))]
+        public void SetupRoslyn()
+        {
+            fooInstance = TestAdaptHelper.SetupFooInstance();
+            customerInstance = TestAdaptHelper.SetupCustomerInstance();
+            TestAdaptHelper.ConfigureMapster(fooInstance, MapsterCompilerType.Roslyn);
+            TestAdaptHelper.ConfigureMapster(customerInstance, MapsterCompilerType.Roslyn);
+        }
+
+        [GlobalSetup(Target = nameof(FecTest))]
+        public void SetupFec()
+        {
+            fooInstance = TestAdaptHelper.SetupFooInstance();
+            customerInstance = TestAdaptHelper.SetupCustomerInstance();
+            TestAdaptHelper.ConfigureMapster(fooInstance, MapsterCompilerType.FEC);
+            TestAdaptHelper.ConfigureMapster(customerInstance, MapsterCompilerType.FEC);
+        }
+
+        [GlobalSetup(Target = nameof(CodegenTest))]
+        public void SetupCodegen()
+        {
+            fooInstance = TestAdaptHelper.SetupFooInstance();
+            customerInstance = TestAdaptHelper.SetupCustomerInstance();
+            FooMapper.Map(fooInstance);
+            CustomerMapper.Map(customerInstance);
+        }
+
+        [GlobalSetup(Target = nameof(ExpressMapperTest))]
+        public void SetupExpressMapper()
+        {
+            fooInstance = TestAdaptHelper.SetupFooInstance();
+            customerInstance = TestAdaptHelper.SetupCustomerInstance();
+            TestAdaptHelper.ConfigureExpressMapper(fooInstance);
+            TestAdaptHelper.ConfigureExpressMapper(customerInstance);
+        }
+
+        [GlobalSetup(Target = nameof(AutoMapperTest))]
+        public void SetupAutoMapper()
+        {
+            fooInstance = TestAdaptHelper.SetupFooInstance();
+            customerInstance = TestAdaptHelper.SetupCustomerInstance();
+            TestAdaptHelper.ConfigureAutoMapper(fooInstance);
+            TestAdaptHelper.ConfigureAutoMapper(customerInstance);
+        }
+
     }
 }
