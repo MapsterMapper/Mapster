@@ -53,15 +53,19 @@ using (MyDbContext context = new MyDbContext())
 ### Why Mapster?
 #### Performance & Memory efficient
 Mapster was designed to be efficient on both speed and memory. You could gain 5x faster while using only 1/3 of memory.
-And you could gain 12x faster with [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler) or [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)!
+And you could gain 12x faster with various choices!
+- [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)
+- [Roslyn Compiler](https://github.com/MapsterMapper/Mapster/wiki/Debugging)
+- [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)
 
 |                    Method |           Mean |       StdDev |        Error |       Gen 0 | Gen 1 | Gen 2 |  Allocated |
 |-------------------------- |---------------:|-------------:|-------------:|------------:|------:|------:|-----------:|
-|           'Mapster 4.1.1' | 115,052.1 us |   699.30 us | 1,337.05 us | 31000.0000 |     - |     - | 124.36 MB |
-|     'Mapster 4.1.1 (FEC)' |  51,206.8 us |   301.53 us |   506.70 us | 29600.0000 |     - |     - | 118.26 MB |
-| 'Mapster 4.1.1 (Codegen)' |  48,275.3 us |   337.06 us |   644.46 us | 31090.9091 |     - |     - | 124.36 MB |
-|     'ExpressMapper 1.9.1' | 248,149.0 us | 1,564.35 us | 2,628.78 us | 59000.0000 |     - |     - | 236.51 MB |
-|        'AutoMapper 9.0.0' | 596,706.8 us | 5,422.30 us | 9,111.82 us | 87000.0000 |     - |     - | 350.95 MB |
+|           'Mapster 4.1.1' | 115.31 ms | 0.849 ms | 1.426 ms | 31000.0000 |     - |     - | 124.36 MB |
+|  'Mapster 4.1.1 (Roslyn)' |  53.55 ms | 0.342 ms | 0.654 ms | 31100.0000 |     - |     - | 124.36 MB |
+|     'Mapster 4.1.1 (FEC)' |  54.70 ms | 1.023 ms | 1.546 ms | 29600.0000 |     - |     - | 118.26 MB |
+| 'Mapster 4.1.1 (Codegen)' |  48.22 ms | 0.868 ms | 1.312 ms | 31090.9091 |     - |     - | 124.36 MB |
+|     'ExpressMapper 1.9.1' | 260.04 ms | 6.340 ms | 9.585 ms | 59000.0000 |     - |     - | 236.51 MB |
+|        'AutoMapper 9.0.0' | 601.23 ms | 3.869 ms | 6.501 ms | 87000.0000 |     - |     - | 350.95 MB |
 
 
 #### Step into debugging
