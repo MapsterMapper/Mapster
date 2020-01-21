@@ -53,14 +53,20 @@ using (MyDbContext context = new MyDbContext())
 ### Why Mapster?
 #### Performance & Memory efficient
 Mapster was designed to be efficient on both speed and memory. You could gain 5x faster while using only 1/3 of memory.
-And you could gain 13x faster with [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)!
+And you could gain to 12x faster with various choices!
+- [Roslyn Compiler](https://github.com/MapsterMapper/Mapster/wiki/Debugging)
+- [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)
+- [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)
 
 |                    Method |           Mean |       StdDev |        Error |       Gen 0 | Gen 1 | Gen 2 |  Allocated |
 |-------------------------- |---------------:|-------------:|-------------:|------------:|------:|------:|-----------:|
-|           &#39;Mapster 4.1.1&#39; | 1,388,744.4 us |  3,987.51 us |  6,028.54 us | 312000.0000 |     - |     - | 1251.22 MB |
-| &#39;Mapster 4.1.1 (Codegen)&#39; |   505,727.6 us |  2,525.21 us |  3,817.75 us | 312000.0000 |     - |     - | 1251.22 MB |
-|     &#39;ExpressMapper 1.9.1&#39; | 3,122,200.4 us | 11,701.40 us | 19,663.45 us | 604000.0000 |     - |     - | 2418.52 MB |
-|        &#39;AutoMapper 9.0.0&#39; | 6,883,546.7 us | 28,159.65 us | 42,573.37 us | 911000.0000 |     - |     - | 3646.85 MB |
+|           'Mapster 4.1.1' | 115.31 ms | 0.849 ms | 1.426 ms | 31000.0000 |     - |     - | 124.36 MB |
+|  'Mapster 4.1.1 (Roslyn)' |  53.55 ms | 0.342 ms | 0.654 ms | 31100.0000 |     - |     - | 124.36 MB |
+|     'Mapster 4.1.1 (FEC)' |  54.70 ms | 1.023 ms | 1.546 ms | 29600.0000 |     - |     - | 118.26 MB |
+| 'Mapster 4.1.1 (Codegen)' |  48.22 ms | 0.868 ms | 1.312 ms | 31090.9091 |     - |     - | 124.36 MB |
+|     'ExpressMapper 1.9.1' | 260.04 ms | 6.340 ms | 9.585 ms | 59000.0000 |     - |     - | 236.51 MB |
+|        'AutoMapper 9.0.0' | 601.23 ms | 3.869 ms | 6.501 ms | 87000.0000 |     - |     - | 350.95 MB |
+
 
 #### Step into debugging
 
