@@ -53,14 +53,16 @@ using (MyDbContext context = new MyDbContext())
 ### Why Mapster?
 #### Performance & Memory efficient
 Mapster was designed to be efficient on both speed and memory. You could gain 5x faster while using only 1/3 of memory.
-And you could gain 13x faster with [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)!
+And you could gain 12x faster with [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler) or [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)!
 
 |                    Method |           Mean |       StdDev |        Error |       Gen 0 | Gen 1 | Gen 2 |  Allocated |
 |-------------------------- |---------------:|-------------:|-------------:|------------:|------:|------:|-----------:|
-|           &#39;Mapster 4.1.1&#39; | 1,388,744.4 us |  3,987.51 us |  6,028.54 us | 312000.0000 |     - |     - | 1251.22 MB |
-| &#39;Mapster 4.1.1 (Codegen)&#39; |   505,727.6 us |  2,525.21 us |  3,817.75 us | 312000.0000 |     - |     - | 1251.22 MB |
-|     &#39;ExpressMapper 1.9.1&#39; | 3,122,200.4 us | 11,701.40 us | 19,663.45 us | 604000.0000 |     - |     - | 2418.52 MB |
-|        &#39;AutoMapper 9.0.0&#39; | 6,883,546.7 us | 28,159.65 us | 42,573.37 us | 911000.0000 |     - |     - | 3646.85 MB |
+|           'Mapster 4.1.1' | 115,052.1 us |   699.30 us | 1,337.05 us | 31000.0000 |     - |     - | 124.36 MB |
+|     'Mapster 4.1.1 (FEC)' |  51,206.8 us |   301.53 us |   506.70 us | 29600.0000 |     - |     - | 118.26 MB |
+| 'Mapster 4.1.1 (Codegen)' |  48,275.3 us |   337.06 us |   644.46 us | 31090.9091 |     - |     - | 124.36 MB |
+|     'ExpressMapper 1.9.1' | 248,149.0 us | 1,564.35 us | 2,628.78 us | 59000.0000 |     - |     - | 236.51 MB |
+|        'AutoMapper 9.0.0' | 596,706.8 us | 5,422.30 us | 9,111.82 us | 87000.0000 |     - |     - | 350.95 MB |
+
 
 #### Step into debugging
 
