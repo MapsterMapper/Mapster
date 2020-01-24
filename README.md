@@ -53,7 +53,7 @@ using (MyDbContext context = new MyDbContext())
 ### Why Mapster?
 #### Performance & Memory efficient
 Mapster was designed to be efficient on both speed and memory. You could gain 5x faster while using only 1/3 of memory.
-And you could gain to 12x faster with various choices!
+And you could gain to 12x faster with
 - [Roslyn Compiler](https://github.com/MapsterMapper/Mapster/wiki/Debugging)
 - [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)
 - [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)
