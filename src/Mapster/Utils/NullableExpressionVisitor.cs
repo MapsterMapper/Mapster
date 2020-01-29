@@ -15,7 +15,7 @@ namespace Mapster.Utils
         public override Expression Visit(Expression node)
         {
             if (CanBeNull.HasValue || node == null)
-                return node;
+                return node!;
             switch (node.NodeType)
             {
                 case ExpressionType.AndAlso:

@@ -6,13 +6,17 @@ using System.Runtime.CompilerServices;
 
 namespace Mapster
 {
-    public class TypeAdapterBuilder<TSource>
+    public class TypeAdapterBuilder<TSource> : IAdapterBuilder<TSource>
     {
         TSource Source { get; }
+        TSource IAdapterBuilder<TSource>.Source => this.Source;
         TypeAdapterConfig Config { get; set; }
+        TypeAdapterConfig IAdapterBuilder.Config => this.Config;
 
-        private Dictionary<string, object> _parameters;
-        Dictionary<string, object> Parameters => _parameters ?? (_parameters = new Dictionary<string, object>());
+        private Dictionary<string, object>? _parameters;
+        Dictionary<string, object> Parameters => _parameters ??= new Dictionary<string, object>();
+        Dictionary<string, object> IAdapterBuilder.Parameters => this.Parameters;
+        bool IAdapterBuilder.HasParameter => _parameters != null && _parameters.Count > 0;
 
         internal TypeAdapterBuilder(TSource source, TypeAdapterConfig config)
         {
@@ -40,18 +44,27 @@ namespace Mapster
             return this;
         }
 
+        private MapContextScope createMapContextScope()
+        {
+            var scope = new MapContextScope();
+            var parameters = scope.Context.Parameters;
+            foreach (var kvp in this.Parameters)
+            {
+                parameters[kvp.Key] = kvp.Value;
+            }
+
+            return scope;
+        }
+
+        MapContextScope IAdapterBuilder.CreateMapContextScope() => createMapContextScope();
+
         public TDestination AdaptToType<TDestination>()
         {
             if (_parameters == null)
                 return Map<TDestination>();
 
-            using (var scope = new MapContextScope())
+            using (this.createMapContextScope())
             {
-                var parameters = scope.Context.Parameters;
-                foreach (var kvp in _parameters)
-                {
-                    parameters[kvp.Key] = kvp.Value;
-                }
                 return Map<TDestination>();
             }
         }
@@ -67,13 +80,8 @@ namespace Mapster
             if (_parameters == null)
                 return MapToTarget(destination);
 
-            using (var scope = new MapContextScope())
+            using (this.createMapContextScope())
             {
-                var parameters = scope.Context.Parameters;
-                foreach (var kvp in _parameters)
-                {
-                    parameters[kvp.Key] = kvp.Value;
-                }
                 return MapToTarget(destination);
             }
         }

@@ -7,7 +7,7 @@ namespace Mapster
     {
         public static TypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source)
         {
-            return BuildAdapter(source, TypeAdapterConfig.GlobalSettings);
+            return new TypeAdapterBuilder<TSource>(source, TypeAdapterConfig.GlobalSettings);
         }
 
         public static TypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source, TypeAdapterConfig config)
@@ -175,6 +175,7 @@ namespace Mapster
         /// </summary>
         /// <param name="config">Configuration</param>
         /// <returns>Instance of the adapter.</returns>
+        [Obsolete("Use new Mapper instead")]
         public static IAdapter GetInstance(TypeAdapterConfig? config = null)
         {
             return new Adapter(config ?? TypeAdapterConfig.GlobalSettings);

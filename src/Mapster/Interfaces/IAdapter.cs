@@ -2,6 +2,7 @@
 
 namespace Mapster
 {
+    [Obsolete("Please use IMapper instead")]
     public interface IAdapter
     {
         TypeAdapterBuilder<TSource> BuildAdapter<TSource>(TSource source);

@@ -17,28 +17,24 @@
         <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <RootNamespace>Mapster</RootNamespace>
-        <Version>4.1.1</Version>
-        <AssemblyVersion>4.1.1.0</AssemblyVersion>
+        <Version>5.0.0-PRE4</Version>
         <LangVersion>8.0</LangVersion>
-        <Nullable>enable</Nullable>
+        <Nullable Condition=" '$(Configuration)'=='Debug' ">enable</Nullable>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
         <Reference Include="Microsoft.CSharp" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
         <Reference Include="Microsoft.CSharp" />
-        <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-        <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
         <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-        <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
-        <PackageReference Include="System.Runtime" Version="4.3.0" />
-        <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-        <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
+        <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+        <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-        <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+        <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     </ItemGroup>
 </Project>

@@ -43,8 +43,6 @@ namespace Mapster.Tests
         {
             string Name { get; set; }
             int? NullableInt { get; set; }
-            int ReadOnlyProp { get; }
-            int WriteOnlyProp { set; }
             IEnumerable<int> Ints { get; set; }
             IEnumerable<Foo> Foos { get; set; }
             int[] IntArray { get; set; }
@@ -109,7 +107,6 @@ namespace Mapster.Tests
             instance.Foo = new Foo();
             instance.NullableInt = 123;
             instance.Name = "Lorem ipsum";
-            instance.WriteOnlyProp = 24;
             instance.Ints = new List<int>();
             instance.IntArray = new int[2];
             instance.Foos = new List<Foo>();
@@ -119,7 +116,6 @@ namespace Mapster.Tests
             instance.Foo.ShouldNotBeNull();
             instance.NullableInt.ShouldBe(123);
             instance.Name.ShouldBe("Lorem ipsum");
-            instance.ReadOnlyProp.ShouldBe(0);
 
             int i = 0;
             string s = null;

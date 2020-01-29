@@ -10,7 +10,7 @@ namespace Benchmark
 {
     public static class TestAdaptHelper
     {
-        private static readonly IMapper _mapper = new Mapper(new MapperConfiguration(cfg =>
+        private static readonly AutoMapper.IMapper _mapper = new AutoMapper.Mapper(new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<Foo, Foo>();
             cfg.CreateMap<Address, Address>();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MapsterMapper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -15,10 +16,10 @@ namespace Mapster.Tests
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Compile();
 
-            IAdapter instance = TypeAdapter.GetInstance();
-            var source = new SimplePoco {Id = new Guid(), Name = "TestMethod"};
+            IMapper instance = new Mapper();
+            var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestMethod"};
 
-            var destination = instance.Adapt<SimpleDto>(source);
+            var destination = instance.Map<SimpleDto>(source);
 
             destination.Name.ShouldBe(source.Name);
         }
@@ -32,8 +33,8 @@ namespace Mapster.Tests
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            IAdapter instance = TypeAdapter.GetInstance();
-            SimpleDto dto = instance.Adapt<SimplePoco, SimpleDto>(poco);
+            IMapper instance = new Mapper();
+            SimpleDto dto = instance.Map<SimplePoco, SimpleDto>(poco);
 
             dto.Id.ShouldBe(poco.Id);
             dto.Name.ShouldBeNull();
@@ -49,11 +50,25 @@ namespace Mapster.Tests
 
             var poco = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            IAdapter instance = TypeAdapter.GetInstance();
-            SimpleDto dto = instance.Adapt<SimplePoco, SimpleDto>(poco);
+            IMapper instance = new Mapper();
+            SimpleDto dto = instance.Map<SimplePoco, SimpleDto>(poco);
 
             dto.Id.ShouldBe(poco.Id);
             dto.Name.ShouldBe("TestName");
+        }
+
+        [TestMethod]
+        public void Map_With_Adapter()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Compile();
+
+            IMapper instance = new Mapper();
+            var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestMethod"};
+
+            var destination = instance.From(source).AdaptToType<SimpleDto>();
+
+            destination.Name.ShouldBe(source.Name);
         }
 
         #region TestClasses

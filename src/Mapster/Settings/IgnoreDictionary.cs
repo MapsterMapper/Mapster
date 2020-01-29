@@ -9,13 +9,13 @@ namespace Mapster
     {
         public readonly struct IgnoreItem
         {
-            public IgnoreItem(LambdaExpression condition, bool isChildPath)
+            public IgnoreItem(LambdaExpression? condition, bool isChildPath)
             {
                 Condition = condition;
                 IsChildPath = isChildPath;
             }
 
-            public LambdaExpression Condition { get; }
+            public LambdaExpression? Condition { get; }
             public bool IsChildPath { get; }
         }
 

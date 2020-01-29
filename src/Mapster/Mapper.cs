@@ -1,49 +1,49 @@
 ﻿using System;
 using System.Reflection;
+using Mapster;
 
-namespace Mapster
+namespace MapsterMapper
 {
-    [Obsolete("Please use Mapper instead")]
-    public class Adapter : IAdapter
+    public class Mapper : IMapper
     {
-        readonly TypeAdapterConfig _config;
+        public TypeAdapterConfig Config { get; }
 
-        public Adapter() : this(TypeAdapterConfig.GlobalSettings) { }
+        public Mapper() : this(TypeAdapterConfig.GlobalSettings) { }
 
-        public Adapter(TypeAdapterConfig config)
+        public Mapper(TypeAdapterConfig config)
         {
-            _config = config;
+            Config = config;
         }
 
-        public TypeAdapterBuilder<TSource> BuildAdapter<TSource>(TSource source)
+        public virtual TypeAdapterBuilder<TSource> From<TSource>(TSource source)
         {
-            return new TypeAdapterBuilder<TSource>(source, _config);
+            return new TypeAdapterBuilder<TSource>(source, Config);
         }
 
-        public TDestination Adapt<TDestination>(object source)
+        public virtual TDestination Map<TDestination>(object source)
         {
             if (source == null)
                 return default!;
             var type = source.GetType();
-            var fn = _config.GetDynamicMapFunction<TDestination>(type);
+            var fn = Config.GetDynamicMapFunction<TDestination>(type);
             return fn(source);
         }
 
-        public TDestination Adapt<TSource, TDestination>(TSource source)
+        public virtual TDestination Map<TSource, TDestination>(TSource source)
         {
-            var fn = _config.GetMapFunction<TSource, TDestination>();
+            var fn = Config.GetMapFunction<TSource, TDestination>();
             return fn(source);
         }
 
-        public TDestination Adapt<TSource, TDestination>(TSource source, TDestination destination)
+        public virtual TDestination Map<TSource, TDestination>(TSource source, TDestination destination)
         {
-            var fn = _config.GetMapToTargetFunction<TSource, TDestination>();
+            var fn = Config.GetMapToTargetFunction<TSource, TDestination>();
             return fn(source, destination);
         }
 
-        public object Adapt(object source, Type sourceType, Type destinationType)
+        public virtual object Map(object source, Type sourceType, Type destinationType)
         {
-            var del = _config.GetMapFunction(sourceType, destinationType);
+            var del = Config.GetMapFunction(sourceType, destinationType);
             if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)
             {
                 dynamic fn = del;
@@ -57,9 +57,9 @@ namespace Mapster
             }
         }
 
-        public object Adapt(object source, object destination, Type sourceType, Type destinationType)
+        public virtual object Map(object source, object destination, Type sourceType, Type destinationType)
         {
-            var del = _config.GetMapToTargetFunction(sourceType, destinationType);
+            var del = Config.GetMapToTargetFunction(sourceType, destinationType);
             if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)
             {
                 dynamic fn = del;

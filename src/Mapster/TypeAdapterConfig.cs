@@ -1,6 +1,5 @@
 ﻿using Mapster.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -15,8 +14,8 @@ namespace Mapster
     {
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
 
-        private static TypeAdapterConfig _globalSettings;
-        public static TypeAdapterConfig GlobalSettings => _globalSettings ?? (_globalSettings = new TypeAdapterConfig());
+        private static TypeAdapterConfig? _globalSettings;
+        public static TypeAdapterConfig GlobalSettings => _globalSettings ??= new TypeAdapterConfig();
 
         private static List<TypeAdapterRule> CreateRuleTemplate()
         {
@@ -83,7 +82,7 @@ namespace Mapster
         public bool AllowImplicitSourceInheritance { get; set; } = true;
         public bool SelfContainedCodeGeneration { get; set; }
 
-        internal static Func<LambdaExpression, Delegate> DefaultCompiler = lambda => lambda.Compile();
+        internal static readonly Func<LambdaExpression, Delegate> DefaultCompiler = lambda => lambda.Compile();
         public Func<LambdaExpression, Delegate> Compiler { get; set; } = DefaultCompiler;
 
         public List<TypeAdapterRule> Rules { get; internal set; }
@@ -159,19 +158,18 @@ namespace Mapster
 
         private TypeAdapterSettings GetSettings(TypeTuple key)
         {
-            if (!this.RuleMap.TryGetValue(key, out var rule))
+            if (this.RuleMap.TryGetValue(key, out var rule)) 
+                return rule.Settings;
+            lock (this.RuleMap)
             {
-                lock (this.RuleMap)
-                {
-                    if (!this.RuleMap.TryGetValue(key, out rule))
-                    {
-                        rule = key.Source == typeof(void)
-                            ? CreateDestinationTypeRule(key)
-                            : CreateTypeTupleRule(key);
-                        this.Rules.Add(rule);
-                        this.RuleMap.Add(key, rule);
-                    }
-                }
+                if (this.RuleMap.TryGetValue(key, out rule)) 
+                    return rule.Settings;
+
+                rule = key.Source == typeof(void)
+                    ? CreateDestinationTypeRule(key)
+                    : CreateTypeTupleRule(key);
+                this.Rules.Add(rule);
+                this.RuleMap.Add(key, rule);
             }
             return rule.Settings;
         }
@@ -239,12 +237,11 @@ namespace Mapster
             return score;
         }
 
-        private object AddToHash(Hashtable hash, TypeTuple key, Func<TypeTuple, object> func)
+        private T AddToHash<T>(Dictionary<TypeTuple, T> hash, TypeTuple key, Func<TypeTuple, T> func)
         {
             lock (hash)
             {
-                var del = hash[key];
-                if (del != null)
+                if (hash.TryGetValue(key, out var del))
                     return del;
 
                 del = func(key);
@@ -257,7 +254,7 @@ namespace Mapster
             }
         }
 
-        private readonly Hashtable _mapDict = new Hashtable();
+        private readonly Dictionary<TypeTuple, Delegate> _mapDict = new Dictionary<TypeTuple, Delegate>();
         public Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination>)GetMapFunction(typeof(TSource), typeof(TDestination));
@@ -265,12 +262,12 @@ namespace Mapster
         internal Delegate GetMapFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object del = _mapDict[key] ?? AddToHash(_mapDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.Map)));
-
-            return (Delegate)del;
+            if (!_mapDict.TryGetValue(key, out var del))
+                del = AddToHash(_mapDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.Map)));
+            return del;
         }
 
-        private readonly Hashtable _mapToTargetDict = new Hashtable();
+        private readonly Dictionary<TypeTuple, Delegate> _mapToTargetDict = new Dictionary<TypeTuple, Delegate>();
         public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination, TDestination>)GetMapToTargetFunction(typeof(TSource), typeof(TDestination));
@@ -278,12 +275,12 @@ namespace Mapster
         internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object del = _mapToTargetDict[key] ?? AddToHash(_mapToTargetDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.MapToTarget)));
-
-            return (Delegate)del;
+            if (!_mapToTargetDict.TryGetValue(key, out var del)) 
+                del = AddToHash(_mapToTargetDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.MapToTarget)));
+            return del;
         }
 
-        private readonly Hashtable _projectionDict = new Hashtable();
+        private readonly Dictionary<TypeTuple, MethodCallExpression> _projectionDict = new Dictionary<TypeTuple, MethodCallExpression>();
         internal Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
         {
             var del = GetProjectionCallExpression(typeof(TSource), typeof(TDestination));
@@ -293,19 +290,19 @@ namespace Mapster
         internal MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            object del = _projectionDict[key] ?? AddToHash(_projectionDict, key, CreateProjectionCallExpression);
-
-            return (MethodCallExpression)del;
+            if (!_projectionDict.TryGetValue(key, out var del))
+                del = AddToHash(_projectionDict, key, CreateProjectionCallExpression);
+            return del;
         }
 
-        private Hashtable _dynamicMapDict;
+        private Dictionary<TypeTuple, Delegate> _dynamicMapDict;
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
             if (_dynamicMapDict == null)
-                _dynamicMapDict = new Hashtable();
+                _dynamicMapDict = new Dictionary<TypeTuple, Delegate>();
             var key = new TypeTuple(sourceType, typeof(TDestination));
-            object del = _dynamicMapDict[key] ?? AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
-
+            if (!_dynamicMapDict.TryGetValue(key, out var del)) 
+                del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
             return (Func<object, TDestination>)del;
         }
 
@@ -606,7 +603,7 @@ namespace Mapster
             return fn(this);
         }
 
-        private Hashtable _inlineConfigs;
+        private Dictionary<string, TypeAdapterConfig> _inlineConfigs;
         public TypeAdapterConfig Fork(Action<TypeAdapterConfig> action,
 #if !NET40
             [CallerFilePath]
@@ -618,23 +615,21 @@ namespace Mapster
             int key2 = 0)
         {
             if (_inlineConfigs == null)
-                _inlineConfigs = new Hashtable();
+                _inlineConfigs = new Dictionary<string, TypeAdapterConfig>();
             var key = key1 + '|' + key2;
-            var config = _inlineConfigs[key];
-            if (config != null)
-                return (TypeAdapterConfig)config;
+            if (_inlineConfigs.TryGetValue(key, out var config))
+                return config;
 
             lock (_inlineConfigs)
             {
-                config = _inlineConfigs[key];
-                if (config != null)
-                    return (TypeAdapterConfig)config;
+                if (_inlineConfigs.TryGetValue(key, out config))
+                    return config;
 
                 var cloned = this.Clone();
                 action(cloned);
                 _inlineConfigs[key] = config = cloned;
             }
-            return (TypeAdapterConfig)config;
+            return config;
         }
     }
 

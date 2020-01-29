@@ -2,17 +2,18 @@
 
 namespace Mapster.Models
 {
-    public class TypeTuple : IEquatable<TypeTuple>
+    public struct TypeTuple : IEquatable<TypeTuple>
     {
         public bool Equals(TypeTuple other)
         {
-            if (ReferenceEquals(null, other)) return false;
             return Source == other.Source && Destination == other.Destination;
         }
 
         public override bool Equals(object obj)
         {
-            return Equals((obj as TypeTuple)!);
+            if (!(obj is TypeTuple))
+                return false;
+            return Equals((TypeTuple)obj);
         }
 
         public override int GetHashCode()
@@ -25,13 +26,11 @@ namespace Mapster.Models
 
         public static bool operator ==(TypeTuple left, TypeTuple right)
         {
-            if (ReferenceEquals(null, left)) return ReferenceEquals(null, right);
             return left.Equals(right);
         }
 
         public static bool operator !=(TypeTuple left, TypeTuple right)
         {
-            if (ReferenceEquals(null, left)) return !ReferenceEquals(null, right);
             return !left.Equals(right);
         }
 

@@ -11,7 +11,7 @@ namespace Benchmark
             {
                 typeof(TestSimpleTypes),
                 typeof(TestComplexTypes),
-                typeof(TestAll)
+                typeof(TestAll),
             });
 
             switcher.Run(args, new Config());

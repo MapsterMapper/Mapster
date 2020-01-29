@@ -9,7 +9,7 @@ namespace Mapster.Utils
         public override Expression Visit(Expression node)
         {
             if (this.IsBlockExpression || node == null)
-                return node;
+                return node!;
 
             switch (node.NodeType)
             {

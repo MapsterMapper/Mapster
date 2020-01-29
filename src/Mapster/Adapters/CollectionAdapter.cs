@@ -79,6 +79,10 @@ namespace Mapster.Adapters
             var listType = destination.Type.GetGenericEnumerableType() != null
                 ? typeof(ICollection<>).MakeGenericType(destinationElementType)
                 : typeof(IList);
+
+            if (listType == destination.Type)
+                return CreateListSet(source, destination, arg);
+
             var tmp = Expression.Variable(listType, "list");
             var actions = new List<Expression>
             {
