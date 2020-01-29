@@ -10,6 +10,7 @@ namespace Mapster.Adapters
     public class MultiDimensionalArrayAdapter : BaseAdapter
     {
         protected override int Score => -122;
+        protected override ObjectType ObjectType => ObjectType.Collection;
 
         protected override bool CanMap(PreCompileArgument arg)
         {

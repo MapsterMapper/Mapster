@@ -11,7 +11,7 @@ namespace Mapster.Adapters
     internal class CollectionAdapter : BaseAdapter
     {
         protected override int Score => -125;
-        protected override bool UseTargetValue => false;
+        protected override bool UseTargetValue => true;
         protected override ObjectType ObjectType => ObjectType.Collection;
 
         protected override bool CanMap(PreCompileArgument arg)
@@ -76,20 +76,32 @@ namespace Mapster.Adapters
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
             var destinationElementType = destination.Type.ExtractCollectionType();
-            var listType = destination.Type.GetGenericEnumerableType() != null
-                ? typeof(ICollection<>).MakeGenericType(destinationElementType)
-                : typeof(IList);
+            var shouldConvert = destination.Type.GetMethod("Add", new[] { destinationElementType }) == null;
 
-            if (listType == destination.Type)
-                return CreateListSet(source, destination, arg);
-
-            var tmp = Expression.Variable(listType, "list");
-            var actions = new List<Expression>
+            //var list = (ICollection<>)dest;
+            var actions = new List<Expression>();
+            var list = destination;
+            if (shouldConvert)
             {
-                ExpressionEx.Assign(tmp, destination), //convert to list type
-                CreateListSet(source, tmp, arg)
-            };
-            return Expression.Block(new[] { tmp }, actions);
+                var listType = destination.Type.GetGenericEnumerableType() != null
+                    ? typeof(ICollection<>).MakeGenericType(destinationElementType)
+                    : typeof(IList);
+                list = Expression.Variable(listType, "list");
+                actions.Add(ExpressionEx.Assign(list, destination)); //convert to list type
+            }
+
+            //list.Clear();
+            if (arg.MapType == MapType.MapToTarget)
+            {
+                var clear = list.Type.GetMethod("Clear", Type.EmptyTypes);
+                actions.Add(Expression.Call(list, clear));
+            }
+
+            actions.Add(CreateListSet(source, list, arg));
+
+            if (shouldConvert)
+                return Expression.Block(new[] { (ParameterExpression)list }, actions);
+            return Expression.Block(actions);
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)

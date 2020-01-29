@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -18,13 +19,13 @@ namespace Mapster.Tests
             b.List.ShouldBe(new List<int>{1,2,3});
         }
 
-        internal class Foo
+        public class Foo
         {
             public double A { get; set; }
             public List<int> List { get; set; }
         }
 
-        internal class Bar
+        public class Bar
         {
             public double A { get; set; }
             public List<int> List { get; set; }
