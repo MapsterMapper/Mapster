@@ -185,7 +185,7 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static string GetMemberPath(LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
+        public static string? GetMemberPath(LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
         {
             var props = new List<string>();
             var expr = lambda.Body.TrimConversion(true);
@@ -194,7 +194,7 @@ namespace Mapster
                 if (firstLevelOnly && props.Count > 0)
                 {
                     if (noError)
-                        return null!;
+                        return null;
                     throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(lambda));
                 }
 
@@ -205,7 +205,7 @@ namespace Mapster
             if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
             {
                 if (noError)
-                    return null!;
+                    return null;
                 throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(lambda));
             }
             props.Reverse();
@@ -330,6 +330,12 @@ namespace Mapster
                 return result == true;
             var names = side == MemberSide.Destination ? arg.GetDestinationNames() : arg.GetSourceNames();
             return names.Contains(member.Name);
+        }
+
+        public static bool UseDestinationValue(this IMemberModel member, CompileArgument arg)
+        {
+            var predicates = arg.Settings.UseDestinationValues;
+            return predicates.Any(predicate => predicate(member));
         }
 
         public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string?>> getMemberNames, Func<string, string> nameConverter)

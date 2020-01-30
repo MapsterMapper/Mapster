@@ -235,6 +235,14 @@ namespace Mapster
             setter.Settings.Unflattening = value;
             return setter;
         }
+
+        public static TSetter UseDestinationValue<TSetter>(this TSetter setter, Func<IMemberModel, bool> func) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.UseDestinationValues.Add(func);
+            return setter;
+        }
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -249,7 +257,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.Ignore[ReflectionUtils.GetMemberPath(member)] = new IgnoreDictionary.IgnoreItem();
+                Settings.Ignore[ReflectionUtils.GetMemberPath(member)!] = new IgnoreDictionary.IgnoreItem();
             }
             return this;
         }
@@ -263,7 +271,7 @@ namespace Mapster
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = ReflectionUtils.GetMemberPath(member),
+                DestinationMemberName = ReflectionUtils.GetMemberPath(member)!,
                 Invoker = invoker,
                 Condition = null
             });
@@ -278,7 +286,7 @@ namespace Mapster
 
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = ReflectionUtils.GetMemberPath(destinationMember),
+                DestinationMemberName = ReflectionUtils.GetMemberPath(destinationMember)!,
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
@@ -333,17 +341,16 @@ namespace Mapster
 
             if (ctor != null)
             {
-                if (!typeof(TDestination).GetTypeInfo().IsAssignableFrom(ctor.DeclaringType.GetTypeInfo()))
+                if (!typeof(TDestination).GetTypeInfo().IsAssignableFrom(ctor.DeclaringType!.GetTypeInfo()))
                     throw new ArgumentException("Constructor cannot be assigned to type TDestination", nameof(ctor));
 
-                if (ctor.DeclaringType.GetTypeInfo().IsAbstract)
+                if (ctor.DeclaringType!.GetTypeInfo().IsAbstract)
                     throw new ArgumentException("Constructor of abstract type cannot be created", nameof(ctor));
             }
 
             this.Settings.MapToConstructor = ctor;
             return this;
         }
-
     }
 
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TDestination>
@@ -359,7 +366,7 @@ namespace Mapster
             return (TypeAdapterSetter<TSource, TDestination>)base.Ignore(members);
         }
 
-        public  new TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+        public new TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
             Expression<Func<TSourceMember>> source)
         {
@@ -403,7 +410,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                var name = ReflectionUtils.GetMemberPath(member);
+                var name = ReflectionUtils.GetMemberPath(member)!;
                 Settings.Ignore.Merge(name, new IgnoreDictionary.IgnoreItem(condition, false));
             }
             return this;
@@ -430,7 +437,7 @@ namespace Mapster
 
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = ReflectionUtils.GetMemberPath(member),
+                DestinationMemberName = ReflectionUtils.GetMemberPath(member)!,
                 SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
                 Invoker = source,
                 Condition = shouldMap
@@ -761,7 +768,7 @@ namespace Mapster
         {
             foreach (var member in members)
             {
-                var path = ReflectionUtils.GetMemberPath(member);
+                var path = ReflectionUtils.GetMemberPath(member)!;
                 this.Ignore(path);
             }
             return this;

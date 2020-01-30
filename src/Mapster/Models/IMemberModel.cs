@@ -7,7 +7,7 @@ namespace Mapster.Models
     {
         Type Type { get; }
         string Name { get; }
-        object Info { get; }
+        object? Info { get; }
         AccessModifier SetterModifier { get; }
         AccessModifier AccessModifier { get; }
 

@@ -12,6 +12,7 @@ namespace Mapster.Models
         public IgnoreDictionary NextIgnore;
         public ParameterExpression Source;
         public ParameterExpression? Destination;
+        public bool UseDestinationValue;
 
         public bool HasSettings()
         {

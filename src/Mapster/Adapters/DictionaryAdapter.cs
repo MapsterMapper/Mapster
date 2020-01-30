@@ -100,11 +100,13 @@ namespace Mapster.Adapters
             //  dest[kvp.Key] = convert(kvp.Value);
             var kvpValueType = kvpType.GetGenericArguments()[1];
             if (arg.Settings.IgnoreNullValues == true && kvpValueType.CanBeNull())
+            {
                 set = Expression.IfThen(
                     Expression.NotEqual(
                         Expression.Property(kvp, "Value"),
                         Expression.Constant(null, kvpValueType)),
                     set);
+            }
 
             //foreach (var kvp in source) {
             //  dest[kvp.Key] = convert(kvp.Value);

@@ -102,17 +102,25 @@ namespace Mapster.Adapters
             Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>? conditions = null;
             foreach (var member in members)
             {
-                var destMember = arg.MapType == MapType.MapToTarget
+                if (!member.UseDestinationValue && member.DestinationMember.SetterModifier == AccessModifier.None)
+                    continue;
+
+                var destMember = arg.MapType == MapType.MapToTarget || member.UseDestinationValue
                     ? member.DestinationMember.GetExpression(destination)
                     : null;
-                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
-
-                Expression itemAssign = member.DestinationMember.SetExpression(destination, value);
-                if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull())
+                
+                var adapt = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
+                if (!member.UseDestinationValue)
                 {
-                    var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
-                    itemAssign = Expression.IfThen(condition, itemAssign);
+                    adapt = member.DestinationMember.SetExpression(destination, adapt);
+                    if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull())
+                    {
+                        var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
+                        adapt = Expression.IfThen(condition, adapt);
+                    }
                 }
+                else if (!adapt.IsComplex())
+                    continue;
 
                 if (member.Ignore.Condition != null)
                 {
@@ -126,12 +134,10 @@ namespace Mapster.Adapters
                         tuple = Tuple.Create(new List<Expression>(), body);
                         conditions[member.Ignore.Condition] = tuple;
                     }
-                    tuple.Item1.Add(itemAssign);
+                    tuple.Item1.Add(adapt);
                 }
                 else
-                {
-                    lines.Add(itemAssign);
-                }
+                    lines.Add(adapt);
             }
 
             if (conditions != null)
@@ -148,7 +154,7 @@ namespace Mapster.Adapters
             return lines.Count > 0 ? (Expression)Expression.Block(lines) : Expression.Empty();
         }
 
-        protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
+        protected override Expression? CreateInlineExpression(Expression source, CompileArgument arg)
         {
             //new TDestination {
             //  Prop1 = convert(src.Prop1),
@@ -168,6 +174,11 @@ namespace Mapster.Adapters
                 lines.AddRange(memberInit.Bindings);
             foreach (var member in members)
             {
+                if (member.UseDestinationValue)
+                    return null;
+                if (member.DestinationMember.SetterModifier == AccessModifier.None)
+                    continue;
+
                 var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
 
                 //special null property check for projection

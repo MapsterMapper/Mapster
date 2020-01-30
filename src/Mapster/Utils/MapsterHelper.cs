@@ -9,7 +9,7 @@ namespace Mapster.Utils
     {
         public static U GetValueOrDefault<T, U>(IDictionary<T, U> dict, T key)
         {
-            return dict.TryGetValue(key, out var value) ? value : default(U)!;
+            return dict.TryGetValue(key, out var value) ? value : default!;
         }
 
         public static U FlexibleGet<U>(IDictionary<string, U> dict, string key, Func<string, string> keyConverter)

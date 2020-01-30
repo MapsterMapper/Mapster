@@ -50,6 +50,10 @@ namespace Mapster
                         {
                             GetMemberName.AdaptMember,              //get name using AdaptMember attribute
                         },
+                        UseDestinationValues =
+                        {
+                            UseDestinationValue.Attribute,
+                        },
                         ValueAccessingStrategies =
                         {
                             ValueAccessingStrategy.CustomResolver,  //get value from Map

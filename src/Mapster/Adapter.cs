@@ -41,7 +41,7 @@ namespace Mapster
             return fn(source, destination);
         }
 
-        public object Adapt(object source, Type sourceType, Type destinationType)
+        public object? Adapt(object source, Type sourceType, Type destinationType)
         {
             var del = _config.GetMapFunction(sourceType, destinationType);
             if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)
@@ -57,7 +57,7 @@ namespace Mapster
             }
         }
 
-        public object Adapt(object source, object destination, Type sourceType, Type destinationType)
+        public object? Adapt(object source, object destination, Type sourceType, Type destinationType)
         {
             var del = _config.GetMapToTargetFunction(sourceType, destinationType);
             if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)

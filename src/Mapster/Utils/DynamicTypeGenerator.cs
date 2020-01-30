@@ -43,12 +43,14 @@ namespace Mapster.Utils
         {
             TypeBuilder builder = _moduleBuilder.DefineType("GeneratedType_" + Interlocked.Increment(ref _generatedCounter));
 
+            var args = new List<FieldBuilder>();
+            int propCount = 0;
             foreach (Type currentInterface in ReflectionUtils.GetAllInterfaces(interfaceType))
             {
                 builder.AddInterfaceImplementation(currentInterface);
-                var args = new List<FieldBuilder>();
                 foreach (PropertyInfo prop in currentInterface.GetProperties())
                 {
+                    propCount++;
                     FieldBuilder propField = builder.DefineField("_" + NameMatchingStrategy.CamelCase(prop.Name), prop.PropertyType, FieldAttributes.Private);
                     CreateProperty(currentInterface, builder, prop, propField);
                     if (!prop.CanWrite)
@@ -62,26 +64,29 @@ namespace Mapster.Utils
                         CreateMethod(builder, method);
                     }
                 }
-
-                if (args.Count > 0)
-                {
-                    var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public, 
-                        CallingConventions.Standard,
-                        args.Select(it => it.FieldType).ToArray());
-                    var ctorIL = ctorBuilder.GetILGenerator();
-                    for (var i = 0; i < args.Count; i++)
-                    {
-                        var arg = args[i];
-                        ctorBuilder.DefineParameter(i + 1, ParameterAttributes.None, arg.Name.Substring(1));
-                        ctorIL.Emit(OpCodes.Ldarg_0);
-                        ctorIL.Emit(OpCodes.Ldarg_S, i + 1);
-                        ctorIL.Emit(OpCodes.Stfld, arg);
-                    }
-                    ctorIL.Emit(OpCodes.Ret);
-                }
             }
 
-#if NETSTANDARD2_0
+            if (propCount == 0)
+                throw new InvalidOperationException($"No default constructor for type '{interfaceType.Name}', please use 'ConstructUsing' or 'MapWith'");
+
+            if (args.Count == propCount)
+            {
+                var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public, 
+                    CallingConventions.Standard,
+                    args.Select(it => it.FieldType).ToArray());
+                var ctorIL = ctorBuilder.GetILGenerator();
+                for (var i = 0; i < args.Count; i++)
+                {
+                    var arg = args[i];
+                    ctorBuilder.DefineParameter(i + 1, ParameterAttributes.None, arg.Name.Substring(1));
+                    ctorIL.Emit(OpCodes.Ldarg_0);
+                    ctorIL.Emit(OpCodes.Ldarg_S, i + 1);
+                    ctorIL.Emit(OpCodes.Stfld, arg);
+                }
+                ctorIL.Emit(OpCodes.Ret);
+            }
+
+#if NETSTANDARD2_0 || NETCOREAPP3_0
             return builder.CreateTypeInfo()!;
 #elif NETSTANDARD1_3
             return builder.CreateTypeInfo().AsType();

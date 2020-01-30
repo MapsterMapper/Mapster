@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Mapster.Utils;
 using System.Collections;
+using Mapster.Utils;
 
 namespace Mapster
 {
@@ -33,7 +33,7 @@ namespace Mapster
 
         public T Get<T>(string key)
         {
-            return (T)_objectStore.GetValueOrDefault(key);
+            return (T)_objectStore.GetValueOrDefault(key)!;
         }
 
         public T Get<T>(string key, Func<T> initializer)
@@ -67,13 +67,13 @@ namespace Mapster
                     var value = kvp.Value;
                     if (value is IApplyable)
                     {
-                        var applyable = (IApplyable)Activator.CreateInstance(value.GetType());
+                        var applyable = (IApplyable)Activator.CreateInstance(value.GetType())!;
                         applyable.Apply(value);
                         value = applyable;
                     }
                     else if (value is IList side)
                     {
-                        var list = (IList)Activator.CreateInstance(value.GetType());
+                        var list = (IList)Activator.CreateInstance(value.GetType())!;
                         foreach (var item in side)
                             list.Add(item);
                         value = list;

@@ -112,7 +112,7 @@ namespace Mapster.Utils
             }
         }
 
-        public static Expression CreateCountExpression(Expression source, bool allowCountAll)
+        public static Expression? CreateCountExpression(Expression source, bool allowCountAll)
         {
             if (source.Type.IsArray)
             {
@@ -127,7 +127,7 @@ namespace Mapster.Utils
                 if (countProperty != null)
                     return Expression.Property(source, countProperty);  //list.Count
                 if (!allowCountAll)
-                    return null!;
+                    return null;
                 var countMethod = typeof(Enumerable).GetMethods()
                     .First(m => m.Name == nameof(Enumerable.Count) && m.GetParameters().Length == 1)
                     .MakeGenericMethod(source.Type.ExtractCollectionType());
@@ -184,7 +184,7 @@ namespace Mapster.Utils
 
             var breakLabel = Expression.Label("LoopBreak");
 
-            var loop = Expression.Block(new[] { i, len },
+            return Expression.Block(new[] { i, len },
                 iAssign,
                 lenAssign,
                 Expression.Loop(
@@ -199,8 +199,6 @@ namespace Mapster.Utils
                     ),
                     breakLabel)
             );
-
-            return loop;
         }
 
         public static Expression ForEach(Expression collection, ParameterExpression loopVar, params Expression[] loopContent)
@@ -227,7 +225,7 @@ namespace Mapster.Utils
             Expression current = Expression.Property(enumeratorVar, "Current");
             if (!isGeneric)
                 current = Expression.Convert(current, elementType);
-            var loop = Expression.Block(new[] { enumeratorVar },
+            return Expression.Block(new[] { enumeratorVar },
                 enumeratorAssign,
                 Expression.Loop(
                     Expression.IfThenElse(
@@ -239,8 +237,6 @@ namespace Mapster.Utils
                     ),
                     breakLabel)
             );
-
-            return loop;
         }
 
         public static bool CanBeNull(this Expression exp)

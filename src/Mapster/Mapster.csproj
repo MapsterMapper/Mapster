@@ -19,7 +19,7 @@
         <RootNamespace>Mapster</RootNamespace>
         <Version>5.0.0-PRE4</Version>
         <LangVersion>8.0</LangVersion>
-        <Nullable Condition=" '$(Configuration)'=='Debug' ">enable</Nullable>
+        <Nullable Condition="'$(TargetFramework)' == 'netcoreapp3.0'">enable</Nullable>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
         <Reference Include="Microsoft.CSharp" />

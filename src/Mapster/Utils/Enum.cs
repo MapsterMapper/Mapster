@@ -20,6 +20,7 @@ namespace Mapster.Utils
         private static readonly ulong[] _flagList;
         private static readonly string _zeroString;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3963:\"static\" fields should be initialized inline", Justification = "<Pending>")]
         static Enum()
         {
             var p = Expression.Parameter(typeof (TEnum));
@@ -41,7 +42,7 @@ namespace Mapster.Utils
             if (_isFlag)
             {
                 _flagList = ((TEnum[]) Enum.GetValues(typeof (TEnum))).Select(_toUlong).Where(x => x > 0).OrderBy(x => x).ToArray();
-                _zeroString = _toEnum(0).ToString();
+                _zeroString = _toEnum(0).ToString()!;
             }
         }
 

@@ -103,7 +103,7 @@ namespace Mapster
         /// <param name="sourceType">The type of the source object.</param>
         /// <param name="destinationType">The type of the destination object.</param>
         /// <returns>Adapted destination type.</returns>
-        public static object Adapt(this object source, Type sourceType, Type destinationType)
+        public static object? Adapt(this object source, Type sourceType, Type destinationType)
         {
             return Adapt(source, sourceType, destinationType, TypeAdapterConfig.GlobalSettings);
         }
@@ -116,7 +116,7 @@ namespace Mapster
         /// <param name="destinationType">The type of the destination object.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
-        public static object Adapt(this object source, Type sourceType, Type destinationType, TypeAdapterConfig config)
+        public static object? Adapt(this object source, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
             var del = config.GetMapFunction(sourceType, destinationType);
             if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)
@@ -140,7 +140,7 @@ namespace Mapster
         /// <param name="sourceType">The type of the source object.</param>
         /// <param name="destinationType">The type of the destination object.</param>
         /// <returns>Adapted destination type.</returns>
-        public static object Adapt(this object source, object destination, Type sourceType, Type destinationType)
+        public static object? Adapt(this object source, object destination, Type sourceType, Type destinationType)
         {
             return Adapt(source, destination, sourceType, destinationType, TypeAdapterConfig.GlobalSettings);
         }
@@ -154,7 +154,7 @@ namespace Mapster
         /// <param name="destinationType">The type of the destination object.</param>
         /// <param name="config">Configuration</param>
         /// <returns>Adapted destination type.</returns>
-        public static object Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config)
+        public static object? Adapt(this object source, object destination, Type sourceType, Type destinationType, TypeAdapterConfig config)
         {
             var del = config.GetMapToTargetFunction(sourceType, destinationType);
             if (sourceType.GetTypeInfo().IsVisible && destinationType.GetTypeInfo().IsVisible)

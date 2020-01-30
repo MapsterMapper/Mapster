@@ -8,14 +8,14 @@ namespace Mapster
     {
         private readonly Dictionary<Type, LambdaExpression> _transforms = new Dictionary<Type, LambdaExpression>();
 
-        public Expression<Func<T, T>> Get<T>()
+        public Expression<Func<T, T>>? Get<T>()
         {
             _transforms.TryGetValue(typeof(T), out var found);
 
-            return (Expression<Func<T, T>>)found;
+            return (Expression<Func<T, T>>?)found;
         }
 
-        public LambdaExpression Get(Type type)
+        public LambdaExpression? Get(Type type)
         {
             _transforms.TryGetValue(type, out var found);
 

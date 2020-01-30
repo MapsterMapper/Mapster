@@ -46,6 +46,7 @@ namespace Mapster.Adapters
                     NextIgnore = nextIgnore,
                     Source = (ParameterExpression)source,
                     Destination = (ParameterExpression?)destination,
+                    UseDestinationValue = arg.MapType != MapType.Projection && destinationMember.UseDestinationValue(arg),
                 };
                 if (getter != null)
                 {
@@ -65,7 +66,7 @@ namespace Mapster.Adapters
 
                     if (classModel.ConstructorInfo != null)
                     {
-                        var info = (ParameterInfo)destinationMember.Info;
+                        var info = (ParameterInfo)destinationMember.Info!;
                         if (!info.IsOptional)
                         {
                             if (classModel.BreakOnUnmatched)
@@ -123,7 +124,7 @@ namespace Mapster.Adapters
             var arguments = new List<Expression>();
             foreach (var member in members)
             {
-                var parameterInfo = (ParameterInfo)member.DestinationMember.Info;
+                var parameterInfo = (ParameterInfo)member.DestinationMember.Info!;
                 var defaultConst = parameterInfo.IsOptional
                     ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
                     : parameterInfo.ParameterType.CreateDefault();
@@ -136,12 +137,6 @@ namespace Mapster.Adapters
                 else
                 {
                     getter = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
-
-                    if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull())
-                    {
-                        var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
-                        getter = Expression.Condition(condition, getter, defaultConst);
-                    }
                     if (member.Ignore.Condition != null)
                     {
                         var body = member.Ignore.IsChildPath
@@ -171,7 +166,7 @@ namespace Mapster.Adapters
         {
             return new ClassModel
             {
-                Members = arg.DestinationType.GetFieldsAndProperties(requireSetter: true, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
+                Members = arg.DestinationType.GetFieldsAndProperties(false, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
             };
         }
 

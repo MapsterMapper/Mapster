@@ -95,6 +95,10 @@ namespace Mapster
         {
             get => Get("GetMemberNames", () => new List<Func<IMemberModel, string?>>());
         }
+        public List<Func<IMemberModel, bool>> UseDestinationValues
+        {
+            get => Get("UseDestinationValues", () => new List<Func<IMemberModel, bool>>());
+        }
         public Func<CompileArgument, LambdaExpression> ConstructUsingFactory
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConstructUsingFactory");

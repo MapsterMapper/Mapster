@@ -74,6 +74,8 @@ namespace Mapster.Adapters
                 return false;
             if (arg.Settings.Includes.Count > 0)
                 return false;
+            if (arg.Settings.AvoidInlineMapping == true)
+                return false;
 
             return true;
         }
@@ -100,9 +102,14 @@ namespace Mapster.Adapters
                         arg.Context.Depth++;
                 }
 
-                if (CanInline(source, destination, arg) && arg.Settings.AvoidInlineMapping != true)
-                    return CreateInlineExpressionBody(source, arg).To(arg.DestinationType, true);
-                else if (arg.Context.Running.Count > 1 && !arg.Context.Config.SelfContainedCodeGeneration && !arg.Context.IsSubFunction())
+                if (CanInline(source, destination, arg))
+                {
+                    var exp = CreateInlineExpressionBody(source, arg);
+                    if (exp != null)
+                        return exp.To(arg.DestinationType, true);
+                }
+                
+                if (arg.Context.Running.Count > 1 && !arg.Context.Config.SelfContainedCodeGeneration && !arg.Context.IsSubFunction())
                     return arg.Context.Config.CreateMapInvokeExpressionBody(source.Type, arg.DestinationType, source, destination);
                 else
                     return CreateBlockExpressionBody(source, destination, arg);
@@ -191,8 +198,8 @@ namespace Mapster.Adapters
                 //if (object.ReferenceEquals(source, destination))
                 //  return destination;
                 if (destination != null && 
-                    !source.Type.GetTypeInfo().IsValueType &&
-                    !destination.Type.GetTypeInfo().IsValueType &&
+                    source.Type.IsObjectReference() &&
+                    destination.Type.IsObjectReference() &&
                     (source.Type.IsAssignableFrom(destination.Type) || destination.Type.IsAssignableFrom(source.Type)))
                 {
                     var refEquals = Expression.Call(typeof(object), nameof(ReferenceEquals), null, source, destination);
@@ -290,11 +297,13 @@ namespace Mapster.Adapters
             return invoke;
         }
 
-        protected Expression CreateInlineExpressionBody(Expression source, CompileArgument arg)
+        protected Expression? CreateInlineExpressionBody(Expression source, CompileArgument arg)
         {
             //source == null ? default(TDestination) : adapt(source)
 
             var exp = CreateInlineExpression(source, arg);
+            if (exp == null)
+                return null;
 
             //projection null is handled by EF
             if (arg.MapType != MapType.Projection)
@@ -304,7 +313,7 @@ namespace Mapster.Adapters
         }
 
         protected abstract Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg);
-        protected abstract Expression CreateInlineExpression(Expression source, CompileArgument arg);
+        protected abstract Expression? CreateInlineExpression(Expression source, CompileArgument arg);
 
         protected Expression CreateInstantiationExpression(Expression source, CompileArgument arg)
         {
@@ -357,7 +366,9 @@ namespace Mapster.Adapters
 
         private static Expression CreateAdaptExpressionCore(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping = null, Expression? destination = null)
         {
-            var mapType = arg.MapType == MapType.MapToTarget && destination == null ? MapType.Map : arg.MapType;
+            var mapType = arg.MapType == MapType.MapToTarget && destination == null ? MapType.Map :
+                mapping?.UseDestinationValue == true ? MapType.MapToTarget :
+                arg.MapType;
             var extraParams = new HashSet<ParameterExpression>();
 
             try

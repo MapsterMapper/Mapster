@@ -23,7 +23,7 @@ namespace Mapster.Models
 
         public string Name { get; }
 
-        public object Info => null!;
+        public object? Info => null;
 
         public AccessModifier SetterModifier => AccessModifier.Public;
 

@@ -1,8 +1,8 @@
-﻿using Mapster.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Mapster.Utils;
 
 namespace Mapster
 {
@@ -15,15 +15,15 @@ namespace Mapster
         public TypeAdapterSettings Settings { get; set; }
         public CompileContext Context { get; set; }
 
-        private HashSet<string> _srcNames;
+        private HashSet<string>? _srcNames;
         internal HashSet<string> GetSourceNames()
         {
             return _srcNames ??= (from it in Settings.Resolvers
                 where it.SourceMemberName != null
-                select it.SourceMemberName.Split('.').First()).ToHashSet();
+                select it.SourceMemberName!.Split('.').First()).ToHashSet();
         }
 
-        private HashSet<string> _destNames;
+        private HashSet<string>? _destNames;
         internal HashSet<string> GetDestinationNames()
         {
             return _destNames ??= (from it in Settings.Resolvers
