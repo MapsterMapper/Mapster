@@ -17,10 +17,10 @@ namespace Mapster.Utils
             return Expression.Assign(left, middle);
         }
 
-        public static Expression PropertyOrField(Expression expr, string path)
+        public static Expression PropertyOrFieldPath(Expression expr, string path)
         {
             var props = path.Split('.');
-            return props.Aggregate(expr, Expression.PropertyOrField);
+            return expr.NullPropagate(props);
         }
 
         private static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
@@ -46,17 +46,12 @@ namespace Mapster.Utils
             return lambda.Apply(mapType != MapType.Projection, exps);
         }
 
-        public static Expression Apply(this LambdaExpression lambda, ParameterExpression p1, ParameterExpression? p2)
+        public static Expression Apply(this LambdaExpression lambda, ParameterExpression p1, ParameterExpression? p2 = null)
         {
             if (p2 == null)
                 return lambda.Apply(false, p1);
             else
                 return lambda.Apply(false, p1, p2);
-        }
-
-        public static Expression Apply(this LambdaExpression lambda, params ParameterExpression[] exps)
-        {
-            return lambda.Apply(false, exps.Cast<Expression>().ToArray());
         }
 
         private static Expression Apply(this LambdaExpression lambda, bool allowInvoke, params Expression[] exps)
@@ -243,7 +238,7 @@ namespace Mapster.Utils
         {
             if (!exp.Type.CanBeNull())
                 return false;
-            
+
             var visitor = new NullableExpressionVisitor();
             visitor.Visit(exp);
             return visitor.CanBeNull.GetValueOrDefault();
@@ -286,6 +281,22 @@ namespace Mapster.Utils
                 compareNull,
                 value.Type.CreateDefault(),
                 value);
+        }
+
+        public static Expression NullPropagate(this Expression exp, string[] props, int i = 0)
+        {
+            if (props.Length <= i)
+                return exp;
+            var head = Expression.PropertyOrField(exp, props[i]);
+            var tail = NullPropagate(head, props, i + 1);
+            if (!exp.CanBeNull())
+                return tail;
+
+            var compareNull = Expression.Equal(exp, Expression.Constant(null, exp.Type));
+            return Expression.Condition(
+                compareNull,
+                tail.Type.CreateDefault(),
+                tail);
         }
     }
 }

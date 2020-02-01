@@ -28,7 +28,7 @@ namespace Mapster
         {
             var config = arg.Settings;
             var resolvers = config.Resolvers;
-            if (resolvers == null || resolvers.Count <= 0)
+            if (resolvers == null || resolvers.Count == 0)
                 return null;
 
             var invokes = new List<Tuple<Expression, Expression>>();
@@ -38,21 +38,15 @@ namespace Mapster
             {
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
                     continue;
-                var invoke = resolver.Invoker == null
-                    ? ExpressionEx.PropertyOrField(source, resolver.SourceMemberName)
-                    : resolver.IsChildPath
-                    ? resolver.Invoker.Body
-                    : resolver.Invoker.Apply(arg.MapType, source);
 
-                if (resolver.Condition == null)
+                var invoke = resolver.GetInvokingExpression(source, arg.MapType);
+                var condition = resolver.GetConditionExpression(source, arg.MapType);
+                if (condition == null)
                 {
                     getter = invoke;
                     break;
                 }
 
-                var condition = resolver.IsChildPath
-                    ? resolver.Condition.Body
-                    : resolver.Condition.Apply(arg.MapType, source);
                 invokes.Add(Tuple.Create(condition, invoke));
             }
 
@@ -208,7 +202,7 @@ namespace Mapster
         {
             var config = arg.Settings;
             var resolvers = config.Resolvers;
-            if (resolvers == null || resolvers.Count <= 0)
+            if (resolvers == null || resolvers.Count == 0)
                 return null;
             var dictType = source.Type.GetDictionaryType();
             if (dictType == null)
@@ -217,7 +211,7 @@ namespace Mapster
             var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault)).MakeGenericMethod(args);
 
             Expression? getter = null;
-            LambdaExpression? lastCondition = null;
+            Expression? lastCondition = null;
             foreach (var resolver in resolvers)
             {
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
@@ -225,16 +219,16 @@ namespace Mapster
 
                 Expression invoke = resolver.Invoker == null
                     ? Expression.Call(method, source.To(dictType), Expression.Constant(resolver.SourceMemberName))
-                    : resolver.Invoker.Apply(arg.MapType, source);
+                    : resolver.GetInvokingExpression(source, arg.MapType);
                 getter = lastCondition != null
-                    ? Expression.Condition(lastCondition.Apply(arg.MapType, source), getter, invoke)
+                    ? Expression.Condition(lastCondition, getter, invoke)
                     : invoke;
-                lastCondition = resolver.Condition;
-                if (resolver.Condition == null)
+                lastCondition = resolver.GetConditionExpression(source, arg.MapType);
+                if (lastCondition == null)
                     break;
             }
             if (lastCondition != null)
-                getter = Expression.Condition(lastCondition.Apply(arg.MapType, source), getter!, getter!.Type.CreateDefault());
+                getter = Expression.Condition(lastCondition, getter!, getter!.Type.CreateDefault());
             return getter;
         }
     }

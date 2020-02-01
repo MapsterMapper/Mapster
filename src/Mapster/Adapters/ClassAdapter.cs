@@ -108,7 +108,7 @@ namespace Mapster.Adapters
                 var destMember = arg.MapType == MapType.MapToTarget || member.UseDestinationValue
                     ? member.DestinationMember.GetExpression(destination)
                     : null;
-                
+
                 var adapt = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
                 if (!member.UseDestinationValue)
                 {
@@ -192,7 +192,7 @@ namespace Mapster.Adapters
                 {
                     value = member.Getter.NullPropagate(value);
                 }
-                var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info, value);
+                var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, value);
                 lines.Add(bind);
             }
 

@@ -6,7 +6,7 @@ namespace Mapster.Models
     public class InvokerModel
     {
         public string DestinationMemberName { get; set; }
-        public LambdaExpression Invoker { get; set; }
+        public LambdaExpression? Invoker { get; set; }
         public string? SourceMemberName { get; set; }
         public LambdaExpression? Condition { get; set; }
         public bool IsChildPath { get; set; }
@@ -24,10 +24,26 @@ namespace Mapster.Models
                     : Expression.Lambda(this.Condition.Apply(source), source),
                 Invoker = this.IsChildPath
                     ? this.Invoker
-                    : Expression.Lambda(this.Invoker?.Apply(source) ?? ExpressionEx.PropertyOrField(source, this.SourceMemberName!), source),
+                    : Expression.Lambda(this.GetInvokingExpression(source), source),
                 SourceMemberName = this.SourceMemberName,
                 IsChildPath = true,
             };
+        }
+
+        public Expression GetInvokingExpression(Expression exp, MapType mapType = MapType.Map)
+        {
+            if (this.IsChildPath)
+                return this.Invoker!.Body;
+            return this.SourceMemberName != null
+                ? ExpressionEx.PropertyOrFieldPath(exp, this.SourceMemberName)
+                : this.Invoker!.Apply(mapType, exp);
+        }
+
+        public Expression? GetConditionExpression(Expression exp, MapType mapType = MapType.Map)
+        {
+            return this.IsChildPath
+                ? this.Condition?.Body
+                : this.Condition?.Apply(mapType, exp);
         }
     }
 }

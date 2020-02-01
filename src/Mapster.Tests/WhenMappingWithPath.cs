@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -40,6 +41,23 @@ namespace Mapster.Tests
 
             var dto2 = poco.Child.Adapt<Dto>();
             dto2.Address.Number.ShouldBe(poco.Child.Address.Number + "test");
+        }
+
+        [TestMethod]
+        public void MapPath_AllowNull()
+        {
+            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileWithDebugInfo();
+            TypeAdapterConfig<Poco, Dto>.NewConfig()
+                .Map(dest => dest.Location, src => src.Child.Address.Location);
+
+            var poco = new Poco
+            {
+                Id = Guid.NewGuid(),
+                Child = new ChildPoco()
+            };
+            var dto = poco.Adapt<Dto>();
+            dto.Id.ShouldBe(poco.Id);
+            dto.Location.ShouldBeNull();
         }
 
         [TestMethod]
@@ -156,6 +174,7 @@ namespace Mapster.Tests
         {
             public Guid Id { get; set; }
             public Address Address { get; set; }
+            public string Location { get; set; }
         }
     }
 }

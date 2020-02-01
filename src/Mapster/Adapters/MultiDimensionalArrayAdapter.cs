@@ -38,7 +38,7 @@ namespace Mapster.Adapters
                 {
                     yield return Expression.Constant(1);
                 }
-                yield return ExpressionEx.CreateCountExpression(source, true);
+                yield return ExpressionEx.CreateCountExpression(source, true)!;
             }
             else
             {
@@ -66,8 +66,8 @@ namespace Mapster.Adapters
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
                 return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source, true));
             }
-            else
-                return CreateArraySet(source, destination, arg);
+
+            return CreateArraySet(source, destination, arg);
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
@@ -103,7 +103,7 @@ namespace Mapster.Adapters
 
             var method = typeof(Array).GetMethod("GetLength", new[] { typeof(int) });
             block.AddRange(
-                vlenx.Select((vlen, i) => 
+                vlenx.Select((vlen, i) =>
                     Expression.Assign(
                         vlen,
                         Expression.Call(destination, method, Expression.Constant(i)))));

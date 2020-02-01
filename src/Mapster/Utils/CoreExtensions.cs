@@ -9,7 +9,7 @@ namespace Mapster.Utils
             return NameMatchingStrategy.PascalCase(name);
         }
 
-#if !NETCOREAPP3_0
+#if !NETCOREAPP
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
         {
             return new HashSet<T>(source);

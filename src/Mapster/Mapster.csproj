@@ -19,7 +19,7 @@
         <RootNamespace>Mapster</RootNamespace>
         <Version>5.0.0-PRE4</Version>
         <LangVersion>8.0</LangVersion>
-        <Nullable Condition="'$(TargetFramework)' == 'netcoreapp3.0'">enable</Nullable>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
         <Reference Include="Microsoft.CSharp" />
@@ -36,5 +36,8 @@
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
         <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
         <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="..\.editorconfig" Link=".editorconfig" />
     </ItemGroup>
 </Project>
