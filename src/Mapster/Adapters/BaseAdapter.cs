@@ -307,7 +307,7 @@ namespace Mapster.Adapters
 
             //projection null is handled by EF
             if (arg.MapType != MapType.Projection)
-                exp = source.NullPropagate(exp);
+                exp = source.NotNullReturn(exp);
 
             return exp;
         }

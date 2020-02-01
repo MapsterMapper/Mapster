@@ -185,33 +185,6 @@ namespace Mapster
             return type.IsNullable() ? type.GetGenericArguments()[0] : type;
         }
 
-        public static string? GetMemberPath(LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
-        {
-            var props = new List<string>();
-            var expr = lambda.Body.TrimConversion(true);
-            while (expr?.NodeType == ExpressionType.MemberAccess)
-            {
-                if (firstLevelOnly && props.Count > 0)
-                {
-                    if (noError)
-                        return null;
-                    throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(lambda));
-                }
-
-                var memEx = (MemberExpression)expr;
-                props.Add(memEx.Member.Name);
-                expr = memEx.Expression;
-            }
-            if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
-            {
-                if (noError)
-                    return null;
-                throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(lambda));
-            }
-            props.Reverse();
-            return string.Join(".", props);
-        }
-
         public static bool IsRecordType(this Type type)
         {
             //not nullable

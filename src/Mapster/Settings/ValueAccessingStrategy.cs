@@ -118,7 +118,7 @@ namespace Mapster
                     var ifTrue = GetDeepFlattening(exp, propertyName.Substring(sourceMemberName.Length).TrimStart('_'), arg);
                     if (ifTrue == null)
                         continue;
-                    return arg.MapType == MapType.Projection ? ifTrue : exp.NullPropagate(ifTrue);
+                    return ifTrue;
                 }
 
                 if (string.Equals(propertyName, sourceMemberName))

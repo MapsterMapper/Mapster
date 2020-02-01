@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
 using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster
 {
@@ -147,7 +148,7 @@ namespace Mapster
             setter.Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
-                SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
+                SourceMemberName = source.GetMemberPath(noError: true),
                 Invoker = source,
                 Condition = null
             });
@@ -257,7 +258,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                Settings.Ignore[ReflectionUtils.GetMemberPath(member)!] = new IgnoreDictionary.IgnoreItem();
+                Settings.Ignore[member.GetMemberPath()!] = new IgnoreDictionary.IgnoreItem();
             }
             return this;
         }
@@ -269,9 +270,15 @@ namespace Mapster
             this.CheckCompiled();
 
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
+            if (member.IsIdentity())
+            {
+                Settings.ExtraSources.Add(invoker);
+                return this;
+            }
+
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = ReflectionUtils.GetMemberPath(member)!,
+                DestinationMemberName = member.GetMemberPath()!,
                 Invoker = invoker,
                 Condition = null
             });
@@ -284,9 +291,15 @@ namespace Mapster
         {
             this.CheckCompiled();
 
+            if (destinationMember.IsIdentity())
+            {
+                Settings.ExtraSources.Add(sourceMemberName);
+                return this;
+            }
+
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = ReflectionUtils.GetMemberPath(destinationMember)!,
+                DestinationMemberName = destinationMember.GetMemberPath()!,
                 SourceMemberName = sourceMemberName,
                 Condition = null
             });
@@ -410,7 +423,7 @@ namespace Mapster
 
             foreach (var member in members)
             {
-                var name = ReflectionUtils.GetMemberPath(member)!;
+                var name = member.GetMemberPath()!;
                 Settings.Ignore.Merge(name, new IgnoreDictionary.IgnoreItem(condition, false));
             }
             return this;
@@ -435,10 +448,17 @@ namespace Mapster
         {
             this.CheckCompiled();
 
+            var sourceName = source.GetMemberPath(noError: true);
+            if (member.IsIdentity())
+            {
+                Settings.ExtraSources.Add((object)sourceName ?? source);
+                return this;
+            }
+
             Settings.Resolvers.Add(new InvokerModel
             {
-                DestinationMemberName = ReflectionUtils.GetMemberPath(member)!,
-                SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
+                DestinationMemberName = member.GetMemberPath()!,
+                SourceMemberName = sourceName,
                 Invoker = source,
                 Condition = shouldMap
             });
@@ -454,7 +474,7 @@ namespace Mapster
             Settings.Resolvers.Add(new InvokerModel
             {
                 DestinationMemberName = memberName,
-                SourceMemberName = ReflectionUtils.GetMemberPath(source, noError: true),
+                SourceMemberName = source.GetMemberPath(noError: true),
                 Invoker = source,
                 Condition = shouldMap
             });
@@ -768,7 +788,7 @@ namespace Mapster
         {
             foreach (var member in members)
             {
-                var path = ReflectionUtils.GetMemberPath(member)!;
+                var path = member.GetMemberPath()!;
                 this.Ignore(path);
             }
             return this;

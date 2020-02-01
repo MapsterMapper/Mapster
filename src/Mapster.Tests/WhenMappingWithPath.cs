@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -46,7 +45,6 @@ namespace Mapster.Tests
         [TestMethod]
         public void MapPath_AllowNull()
         {
-            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileWithDebugInfo();
             TypeAdapterConfig<Poco, Dto>.NewConfig()
                 .Map(dest => dest.Location, src => src.Child.Address.Location);
 

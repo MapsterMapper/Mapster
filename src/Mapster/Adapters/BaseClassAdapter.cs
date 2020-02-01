@@ -21,6 +21,12 @@ namespace Mapster.Adapters
             var unmappedDestinationMembers = new List<string>();
             var properties = new List<MemberMapping>();
 
+            var sources = new List<Expression> {source};
+            sources.AddRange(
+                arg.Settings.ExtraSources.Select(src =>
+                    src is LambdaExpression lambda 
+                        ? lambda.Apply(arg.MapType, source) 
+                        : ExpressionEx.PropertyOrFieldPath(source, (string)src)));
             foreach (var destinationMember in destinationMembers)
             {
                 if (ProcessIgnores(arg, destinationMember, out var ignore))
@@ -29,8 +35,9 @@ namespace Mapster.Adapters
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
                 if (arg.Settings.IgnoreNonMapped == true)
                     resolvers = resolvers.Where(ValueAccessingStrategy.CustomResolvers.Contains);
-                var getter = resolvers
-                    .Select(fn => fn(source, destinationMember, arg))
+                var getter = (from fn in resolvers
+                        from src in sources
+                        select fn(src, destinationMember, arg))
                     .FirstOrDefault(result => result != null);
 
                 var nextIgnore = arg.Settings.Ignore.Next((ParameterExpression)source, (ParameterExpression?)destination, destinationMember.Name);
@@ -39,7 +46,6 @@ namespace Mapster.Adapters
 
                 var propertyModel = new MemberMapping
                 {
-                    Getter = getter!,
                     DestinationMember = destinationMember,
                     Ignore = ignore,
                     NextResolvers = nextResolvers,
@@ -50,6 +56,9 @@ namespace Mapster.Adapters
                 };
                 if (getter != null)
                 {
+                    propertyModel.Getter = arg.MapType == MapType.Projection 
+                        ? getter 
+                        : getter.ApplyNullPropagation();
                     properties.Add(propertyModel);
                 }
                 else

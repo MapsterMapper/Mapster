@@ -79,6 +79,10 @@ namespace Mapster
         {
             get => Get("Resolvers", () => new List<InvokerModel>());
         }
+        public List<object> ExtraSources
+        {
+            get => Get("ExtraSources", () => new List<object>());
+        }
         public List<Func<CompileArgument, LambdaExpression>> BeforeMappingFactories
         {
             get => Get("BeforeMappingFactories", () => new List<Func<CompileArgument, LambdaExpression>>());

@@ -190,7 +190,7 @@ namespace Mapster.Adapters
                     && !member.DestinationMember.Type.IsCollection()
                     && member.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute"))
                 {
-                    value = member.Getter.NullPropagate(value);
+                    value = member.Getter.NotNullReturn(value);
                 }
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, value);
                 lines.Add(bind);

@@ -20,7 +20,7 @@ namespace Mapster.Utils
         public static Expression PropertyOrFieldPath(Expression expr, string path)
         {
             var props = path.Split('.');
-            return expr.NullPropagate(props);
+            return props.Aggregate(expr, Expression.PropertyOrField);
         }
 
         private static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
@@ -271,7 +271,7 @@ namespace Mapster.Utils
             return detector.IsBlockExpression;
         }
 
-        public static Expression NullPropagate(this Expression exp, Expression value)
+        public static Expression NotNullReturn(this Expression exp, Expression value)
         {
             if (value.IsSingleValue() || !exp.CanBeNull())
                 return value;
@@ -283,20 +283,62 @@ namespace Mapster.Utils
                 value);
         }
 
-        public static Expression NullPropagate(this Expression exp, string[] props, int i = 0)
+        public static Expression ApplyNullPropagation(this Expression getter)
         {
-            if (props.Length <= i)
-                return exp;
-            var head = Expression.PropertyOrField(exp, props[i]);
-            var tail = NullPropagate(head, props, i + 1);
-            if (!exp.CanBeNull())
-                return tail;
+            var current = getter;
+            var result = getter;
+            while (current.NodeType == ExpressionType.MemberAccess)
+            {
+                var memEx = (MemberExpression) current;
+                var expr = memEx.Expression;
+                if (expr == null)
+                    break;
+                if (expr.NodeType == ExpressionType.Parameter) 
+                    return result;
 
-            var compareNull = Expression.Equal(exp, Expression.Constant(null, exp.Type));
-            return Expression.Condition(
-                compareNull,
-                tail.Type.CreateDefault(),
-                tail);
+                if (expr.CanBeNull())
+                {
+                    var compareNull = Expression.Equal(expr, Expression.Constant(null, expr.Type));
+                    result = Expression.Condition(compareNull, result.Type.CreateDefault(), result);
+                }
+
+                current = expr;
+            }
+
+            return getter;
+        }
+
+        public static string? GetMemberPath(this LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
+        {
+            var props = new List<string>();
+            var expr = lambda.Body.TrimConversion(true);
+            while (expr?.NodeType == ExpressionType.MemberAccess)
+            {
+                if (firstLevelOnly && props.Count > 0)
+                {
+                    if (noError)
+                        return null;
+                    throw new ArgumentException("Only first level members are allowed (eg. obj => obj.Child)", nameof(lambda));
+                }
+
+                var memEx = (MemberExpression)expr;
+                props.Add(memEx.Member.Name);
+                expr = memEx.Expression;
+            }
+            if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
+            {
+                if (noError)
+                    return null;
+                throw new ArgumentException("Allow only member access (eg. obj => obj.Child.Name)", nameof(lambda));
+            }
+            props.Reverse();
+            return string.Join(".", props);
+        }
+
+        public static bool IsIdentity(this LambdaExpression lambda)
+        {
+            var expr = lambda.Body.TrimConversion(true);
+            return lambda.Parameters.Count == 1 && lambda.Parameters[0] == expr;
         }
     }
 }
