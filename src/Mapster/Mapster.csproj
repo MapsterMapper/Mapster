@@ -1,43 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
-        <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
-        <Authors>chaowlert;eric_swann</Authors>
-        <TargetFrameworks>netstandard2.0;netstandard1.3;net45;net40</TargetFrameworks>
-        <AssemblyName>Mapster</AssemblyName>
-        <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
-        <SignAssembly>true</SignAssembly>
-        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-        <PackageId>Mapster</PackageId>
-        <PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
-        <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
-        <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/MapsterMapper/Mapster/blob/master/LICENSE</PackageLicenseUrl>
-        <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <RootNamespace>Mapster</RootNamespace>
-        <Version>5.0.0-PRE4</Version>
-        <LangVersion>8.0</LangVersion>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
-        <Reference Include="Microsoft.CSharp" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-        <Reference Include="Microsoft.CSharp" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-        <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-        <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-        <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-        <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-        <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Include="..\.editorconfig" Link=".editorconfig" />
-    </ItemGroup>
+  <PropertyGroup>
+    <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
+    <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
+    <Authors>chaowlert;eric_swann</Authors>
+    <TargetFrameworks>netstandard2.0;netstandard1.3;net45;net40</TargetFrameworks>
+    <AssemblyName>Mapster</AssemblyName>
+    <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>Mapster</PackageId>
+    <PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <RootNamespace>Mapster</RootNamespace>
+    <Version>5.0.0</Version>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

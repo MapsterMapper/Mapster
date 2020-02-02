@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-using ExpressionDebugger;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -38,7 +36,7 @@ namespace Mapster.Tests
             poco.Name.ShouldBe(dto.Name);
             poco.Extras.ShouldBe(sub.Extras);
         }
-        
+
         public class SubDto
         {
             public string Extras { get; set; }

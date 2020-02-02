@@ -5,7 +5,7 @@ namespace Mapster.Models
 {
     internal class MemberMapping
     {
-        public Expression? Getter;
+        public Expression Getter;
         public IMemberModelEx DestinationMember;
         public IgnoreDictionary.IgnoreItem Ignore;
         public List<InvokerModel> NextResolvers;

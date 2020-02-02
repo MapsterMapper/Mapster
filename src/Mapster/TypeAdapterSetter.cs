@@ -451,7 +451,7 @@ namespace Mapster
             var sourceName = source.GetMemberPath(noError: true);
             if (member.IsIdentity())
             {
-                Settings.ExtraSources.Add((object)sourceName ?? source);
+                Settings.ExtraSources.Add((object?)sourceName ?? source);
                 return this;
             }
 

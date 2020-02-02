@@ -16,6 +16,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Tests", "Mapster.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{D00BFDEA-33A4-4F20-A577-2E8C06C391D0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.AspNetCore", "Sample.AspNetCore\Sample.AspNetCore.csproj", "{B350A4CA-775C-4966-BA51-825A68489C87}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{D00BFDEA-33A4-4F20-A577-2E8C06C391D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D00BFDEA-33A4-4F20-A577-2E8C06C391D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D00BFDEA-33A4-4F20-A577-2E8C06C391D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B350A4CA-775C-4966-BA51-825A68489C87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B350A4CA-775C-4966-BA51-825A68489C87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B350A4CA-775C-4966-BA51-825A68489C87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B350A4CA-775C-4966-BA51-825A68489C87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
