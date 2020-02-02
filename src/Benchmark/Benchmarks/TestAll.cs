@@ -8,31 +8,31 @@ namespace Benchmark.Benchmarks
         private Foo fooInstance;
         private Customer customerInstance;
 
-        [Params(1000, 10_000, 100_000)]//, 1_000_000)]
+        [Params(100_000)]//, 1_000_000)]
         public int Iterations { get; set; }
 
-        [Benchmark(Description = "Mapster 4.1.1")]
+        [Benchmark(Description = "Mapster 5.0.0")]
         public void MapsterTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 4.1.1 (Roslyn)")]
+        [Benchmark(Description = "Mapster 5.0.0 (Roslyn)")]
         public void RoslynTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 4.1.1 (FEC)")]
+        [Benchmark(Description = "Mapster 5.0.0 (FEC)")]
         public void FecTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 4.1.1 (Codegen)")]
+        [Benchmark(Description = "Mapster 5.0.0 (Codegen)")]
         public void CodegenTest()
         {
             TestAdaptHelper.TestCodeGen(fooInstance, Iterations);
