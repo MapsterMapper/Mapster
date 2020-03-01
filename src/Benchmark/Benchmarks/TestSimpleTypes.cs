@@ -16,13 +16,13 @@ namespace Benchmark.Benchmarks
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
         }
         
-        [Benchmark(Description = "Mapster 4.1.1 (Roslyn)")]
+        [Benchmark(Description = "Mapster 5.0.0 (Roslyn)")]
         public void RoslynTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 4.1.1 (FEC)")]
+        [Benchmark(Description = "Mapster 5.0.0 (FEC)")]
         public void FecTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(fooInstance, Iterations);
