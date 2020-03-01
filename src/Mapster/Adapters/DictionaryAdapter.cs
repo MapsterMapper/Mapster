@@ -30,14 +30,45 @@ namespace Mapster.Adapters
                 || arg.Settings.IgnoreNonMapped == true;
         }
 
+        protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
+        {
+            if (arg.DestinationType.GetTypeInfo().IsInterface)
+            {
+                var dict = arg.DestinationType.GetDictionaryType()!;
+                var dictArgs = dict.GetGenericArguments();
+                var dictType = typeof(Dictionary<,>).MakeGenericType(dictArgs);
+                return Expression.New(dictType);
+            }
+            return base.CreateInstantiationExpression(source, destination, arg);
+        }
+
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            var mapped = base.CreateBlockExpression(source, destination, arg);
+            var dictArgs = destination.Type.GetDictionaryType()!.GetGenericArguments();
+            var shouldConvert = destination.Type.GetMethod("Add", dictArgs) == null;
+            
+            //var dict = (IDictionary<,>)dest;
+            var actions = new List<Expression>();
+            var dict = destination;
+            if (shouldConvert)
+            {
+                var dictType = typeof(IDictionary<,>).MakeGenericType(dictArgs);
+                dict = Expression.Variable(dictType, "dict");
+                actions.Add(ExpressionEx.Assign(dict, destination)); //convert to dict type
+            }
 
-            //if source is not dict type, use ClassAdapter
+            var mapped = base.CreateBlockExpression(source, dict, arg);
+            if (mapped.NodeType != ExpressionType.Default)
+                actions.Add(mapped);
+
+            //if source is not dict type, use ClassAdapter only
             var srcDictType = arg.SourceType.GetDictionaryType();
             if (srcDictType == null || arg.Settings.IgnoreNonMapped == true)
-                return mapped;
+            {
+                return shouldConvert && mapped.NodeType != ExpressionType.Default
+                    ? Expression.Block(new[] {(ParameterExpression)dict}, actions)
+                    : mapped;
+            }
 
             var keyType = srcDictType.GetGenericArguments().First();
             var kvpType = source.Type.ExtractCollectionType();
@@ -46,7 +77,7 @@ namespace Mapster.Adapters
             var keyAssign = Expression.Assign(key, Expression.Property(kvp, "Key"));
 
             //dest[kvp.Key] = convert(kvp.Value);
-            var set = CreateSetFromKvp(kvp, key, destination, arg);
+            var set = CreateSetFromKvp(kvp, key, dict, arg);
             if (arg.Settings.NameMatchingStrategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
             {
                 set = Expression.Block(
@@ -67,7 +98,7 @@ namespace Mapster.Adapters
                 .ToHashSet();
 
             //ignore
-            var dict = new Dictionary<string, Expression>();
+            var ignoreIfs = new Dictionary<string, Expression>();
             foreach (var ignore in arg.Settings.Ignore)
             {
                 if (ignore.Value.Condition == null)
@@ -76,18 +107,18 @@ namespace Mapster.Adapters
                 {
                     var body = ignore.Value.IsChildPath
                         ? ignore.Value.Condition.Body
-                        : ignore.Value.Condition.Apply(arg.MapType, source, destination);
+                        : ignore.Value.Condition.Apply(arg.MapType, source, dict);
                     var setWithCondition = Expression.IfThen(
                         ExpressionEx.Not(body),
                         set);
-                    dict.Add(ignore.Key, setWithCondition);
+                    ignoreIfs.Add(ignore.Key, setWithCondition);
                 }
             }
 
             //dict to switch
-            if (dict.Count > 0 || ignores.Count > 0)
+            if (ignoreIfs.Count > 0 || ignores.Count > 0)
             {
-                var cases = dict
+                var cases = ignoreIfs
                     .Select(k => Expression.SwitchCase(k.Value, Expression.Constant(k.Key)))
                     .ToList();
                 if (ignores.Count > 0)
@@ -113,16 +144,17 @@ namespace Mapster.Adapters
             //}
             set = Expression.Block(new[] { key }, keyAssign, set);
             var loop = ExpressionEx.ForEach(source, kvp, set);
-            return mapped.NodeType == ExpressionType.Default
-                ? loop
-                : Expression.Block(mapped, loop);
+            actions.Add(loop);
+            return shouldConvert
+                ? Expression.Block(new[] {(ParameterExpression)dict}, actions)
+                : Expression.Block(actions);
         }
 
         private Expression CreateSetFromKvp(Expression kvp, Expression key, Expression destination, CompileArgument arg)
         {
             var kvpValue = Expression.Property(kvp, "Value");
 
-            var destDictType = arg.DestinationType.GetDictionaryType();
+            var destDictType = destination.Type.GetDictionaryType()!;
             var destValueType = destDictType.GetGenericArguments()[1];
             var destGetFn = GetFunction(arg, destDictType);
             var destSetFn = SetFunction(arg, destDictType);
@@ -148,7 +180,7 @@ namespace Mapster.Adapters
             var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
 
-            var dictType = arg.DestinationType.GetDictionaryType();
+            var dictType = exp.Type.GetDictionaryType()!;
             var keyType = dictType.GetGenericArguments()[0];
             var valueType = dictType.GetGenericArguments()[1];
             var add = dictType.GetMethod("Add", new[] { keyType, valueType });
@@ -186,14 +218,14 @@ namespace Mapster.Adapters
             }
 
             //create model
-            var dictType = arg.DestinationType.GetDictionaryType();
-            var valueType = dictType.GetGenericArguments()[1];
+            var dictArgs = arg.DestinationType.GetDictionaryType()!.GetGenericArguments();
+            var dictType = typeof(IDictionary<,>).MakeGenericType(dictArgs);
 
             var getFn = GetFunction(arg, dictType);
             var setFn = SetFunction(arg, dictType);
 
             var sourceModels = destNames
-                .Select(name => new KeyValuePairModel(name, valueType, getFn, setFn))
+                .Select(name => new KeyValuePairModel(name, dictArgs[1], getFn, setFn))
                 .ToList();
 
             return new ClassModel
@@ -205,20 +237,19 @@ namespace Mapster.Adapters
         private static Func<Expression, Expression, Expression> GetFunction(CompileArgument arg, Type dictType)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
+            var args = dictType.GetGenericArguments();
             if (strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
             {
-                var args = dictType.GetGenericArguments();
                 var getMethod = typeof(MapsterHelper).GetMethods()
-                    .First(m => m.Name == nameof(MapsterHelper.FlexibleGet))
+                    .First(m => m.Name == nameof(MapsterHelper.FlexibleGet) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
                     .MakeGenericMethod(args[1]);
                 var destNameConverter = MapsterHelper.GetConverterExpression(strategy.DestinationMemberNameConverter);
                 return (dict, key) => Expression.Call(getMethod, dict, key, destNameConverter);
             }
             else
             {
-                var args = dictType.GetGenericArguments();
                 var getMethod = typeof(MapsterHelper).GetMethods()
-                    .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault))
+                    .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
                     .MakeGenericMethod(args);
                 return (dict, key) => Expression.Call(getMethod, dict, key);
             }

@@ -12,12 +12,28 @@ namespace Mapster.Utils
             return dict.TryGetValue(key, out var value) ? value : default!;
         }
 
+#if !NET40
+        public static U GetValueOrDefault<T, U>(IReadOnlyDictionary<T, U> dict, T key)
+        {
+            return dict.TryGetValue(key, out var value) ? value : default!;
+        }
+#endif
+
         public static U FlexibleGet<U>(IDictionary<string, U> dict, string key, Func<string, string> keyConverter)
         {
             return (from kvp in dict
                     where keyConverter(kvp.Key) == key
                     select kvp.Value).FirstOrDefault();
         }
+
+#if !NET40
+        public static U FlexibleGet<U>(IReadOnlyDictionary<string, U> dict, string key, Func<string, string> keyConverter)
+        {
+            return (from kvp in dict
+                where keyConverter(kvp.Key) == key
+                select kvp.Value).FirstOrDefault();
+        }
+#endif
 
         public static void FlexibleSet<U>(IDictionary<string, U> dict, string key, Func<string, string> keyConverter, U value)
         {

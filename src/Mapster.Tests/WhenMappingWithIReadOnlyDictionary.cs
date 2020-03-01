@@ -7,7 +7,7 @@ using Shouldly;
 namespace Mapster.Tests
 {
     [TestClass]
-    public class WhenMappingWithDictionary
+    public class WhenMappingWithIReadOnlyDictionary
     {
         [TestInitialize]
         public void Setup()
@@ -30,7 +30,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
 
-            var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
+            var dict = TypeAdapter.Adapt<IReadOnlyDictionary<string, object>>(poco);
 
             dict.Count.ShouldBe(2);
             dict["Id"].ShouldBe(poco.Id);
@@ -48,9 +48,9 @@ namespace Mapster.Tests
             };
 
             var config = new TypeAdapterConfig();
-            config.NewConfig<SimplePoco, Dictionary<string, object>>()
+            config.NewConfig<SimplePoco, IReadOnlyDictionary<string, object>>()
                 .Map("Code", c => c.Id);
-            var dict = poco.Adapt<Dictionary<string, object>>(config);
+            var dict = poco.Adapt<IReadOnlyDictionary<string, object>>(config);
 
             dict.Count.ShouldBe(2);
             dict["Code"].ShouldBe(poco.Id);
@@ -61,7 +61,7 @@ namespace Mapster.Tests
         public void Object_To_Dictionary_CamelCase()
         {
             var config = new TypeAdapterConfig();
-            config.NewConfig<SimplePoco, IDictionary<string, object>>()
+            config.NewConfig<SimplePoco, IReadOnlyDictionary<string, object>>()
                 .TwoWays()
                 .NameMatchingStrategy(NameMatchingStrategy.ToCamelCase);
 
@@ -71,7 +71,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
 
-            var dict = poco.Adapt<SimplePoco, IDictionary<string, object>>(config);
+            var dict = poco.Adapt<SimplePoco, IReadOnlyDictionary<string, object>>(config);
 
             dict.Count.ShouldBe(2);
             dict["id"].ShouldBe(poco.Id);
@@ -92,7 +92,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
 
-            var dict = new Dictionary<string, object>
+            IReadOnlyDictionary<string, object> dict = new Dictionary<string, object>
             {
                 ["id"] = Guid.NewGuid()
             };
@@ -107,7 +107,7 @@ namespace Mapster.Tests
         [TestMethod]
         public void Object_To_Dictionary_Ignore_Null_Values()
         {
-            TypeAdapterConfig<SimplePoco, Dictionary<string, object>>.NewConfig()
+            TypeAdapterConfig<SimplePoco, IReadOnlyDictionary<string, object>>.NewConfig()
                 .IgnoreNullValues(true);
 
             var poco = new SimplePoco
@@ -116,7 +116,7 @@ namespace Mapster.Tests
                 Name = null,
             };
 
-            var dict = TypeAdapter.Adapt<Dictionary<string, object>>(poco);
+            var dict = TypeAdapter.Adapt<IReadOnlyDictionary<string, object>>(poco);
 
             dict.Count.ShouldBe(1);
             dict["Id"].ShouldBe(poco.Id);
@@ -130,8 +130,10 @@ namespace Mapster.Tests
                 ["Id"] = Guid.NewGuid(),
                 ["Foo"] = "test",
             };
+            TypeAdapterConfig<IReadOnlyDictionary<string, object>, SimplePoco>.NewConfig()
+                .Compile();
 
-            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            var poco = TypeAdapter.Adapt<IReadOnlyDictionary<string, object>, SimplePoco>(dict);
             poco.Id.ShouldBe(dict["Id"]);
             poco.Name.ShouldBeNull();
         }
@@ -146,10 +148,11 @@ namespace Mapster.Tests
                 ["Foo"] = "test",
             };
 
-            TypeAdapterConfig<Dictionary<string, object>, SimplePoco>.NewConfig()
-                .Map(c => c.Id, "Code");
+            TypeAdapterConfig<IReadOnlyDictionary<string, object>, SimplePoco>.NewConfig()
+                .Map(c => c.Id, "Code")
+                .Compile();
 
-            var poco = TypeAdapter.Adapt<SimplePoco>(dict);
+            var poco = TypeAdapter.Adapt<IReadOnlyDictionary<string, object>, SimplePoco>(dict);
             poco.Id.ShouldBe(dict["Code"]);
             poco.Name.ShouldBeNull();
         }
@@ -158,6 +161,8 @@ namespace Mapster.Tests
         public void Dictionary_To_Object_CamelCase()
         {
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.FromCamelCase);
+            TypeAdapterConfig<IReadOnlyDictionary<string, object>, SimplePoco>.NewConfig()
+                .Compile();
             var dict = new Dictionary<string, object>
             {
                 ["id"] = Guid.NewGuid(),
@@ -165,7 +170,7 @@ namespace Mapster.Tests
                 ["foo"] = "test",
             };
 
-            var poco = TypeAdapter.Adapt<Dictionary<string, object>, SimplePoco>(dict);
+            var poco = TypeAdapter.Adapt<IReadOnlyDictionary<string, object>, SimplePoco>(dict);
             poco.Id.ShouldBe(dict["id"]);
             poco.Name.ShouldBeNull();
         }
@@ -182,7 +187,7 @@ namespace Mapster.Tests
                 ["foo"] = "test",
             };
 
-            var poco = TypeAdapter.Adapt<SimplePoco>(dict, config);
+            var poco = TypeAdapter.Adapt<IReadOnlyDictionary<string, object>, SimplePoco>(dict, config);
             poco.Id.ShouldBe(dict["id"]);
             poco.Name.ShouldBe(dict["Name"]);
         }
@@ -197,24 +202,24 @@ namespace Mapster.Tests
         [TestMethod]
         public void Dictionary_Of_String()
         {
-            var dict = new Dictionary<string, int>
+            IReadOnlyDictionary<string, int> dict = new Dictionary<string, int>
             {
                 ["a"] = 1
             };
-            var result = dict.Adapt<Dictionary<string, int>>();
+            var result = dict.Adapt<IReadOnlyDictionary<string, int>>();
             result["a"].ShouldBe(1);
         }
 
         [TestMethod]
         public void Dictionary_Of_String_Mix()
         {
-            TypeAdapterConfig<Dictionary<string, int?>, Dictionary<string, int>>.NewConfig()
+            TypeAdapterConfig<IReadOnlyDictionary<string, int?>, IReadOnlyDictionary<string, int>>.NewConfig()
                 .Map("A", "a")
                 .Ignore("c")
                 .IgnoreIf((src, dest) => src.Count > 3, "d")
                 .IgnoreNullValues(true)
                 .NameMatchingStrategy(NameMatchingStrategy.ConvertSourceMemberName(s => "_" + s));
-            var dict = new Dictionary<string, int?>
+            IReadOnlyDictionary<string, int?> dict = new Dictionary<string, int?>
             {
                 ["a"] = 1,
                 ["b"] = 2,
@@ -222,7 +227,7 @@ namespace Mapster.Tests
                 ["d"] = 4,
                 ["e"] = null,
             };
-            var result = dict.Adapt<Dictionary<string, int?>, Dictionary<string, int>>();
+            var result = dict.Adapt<IReadOnlyDictionary<string, int>>();
             result.Count.ShouldBe(2);
             result["A"].ShouldBe(1);
             result["_b"].ShouldBe(2);
@@ -239,8 +244,6 @@ namespace Mapster.Tests
             };
 
             var result = instanceWithDictionary.Adapt<OtherClassWithIntKeyDictionary>();
-            result.Dict.ShouldContainKey(1);
-            result.Dict.ShouldContainKey(100);
             result.Dict[1].Name.ShouldBe("one");
             result.Dict[100].Name.ShouldBe("one hundred");
         }
@@ -256,8 +259,6 @@ namespace Mapster.Tests
             };
 
             var result = instanceWithDictionary.Adapt<ClassWithIntKeyIDictionary>();
-            result.Dict.ShouldContainKey(1);
-            result.Dict.ShouldContainKey(100);
             result.Dict[1].Name.ShouldBe("one");
             result.Dict[100].Name.ShouldBe("one hundred");
             result.Dict.ShouldNotBeSameAs(instanceWithDictionary.Dict);
@@ -286,32 +287,32 @@ namespace Mapster.Tests
 
         public class A
         {
-            public Dictionary<int, decimal> Prop { get; set; }
+            public IReadOnlyDictionary<int, decimal> Prop { get; set; }
         }
 
         public class ClassWithIntKeyDictionary
         {
-            public Dictionary<int, SimplePoco> Dict { get; set; }
+            public IReadOnlyDictionary<int, SimplePoco> Dict { get; set; }
         }
 
         public class ClassWithIntKeyIDictionary
         {
-            public IDictionary<int, SimplePoco> Dict { get; set; }
+            public IReadOnlyDictionary<int, SimplePoco> Dict { get; set; }
         }
 
         public class OtherClassWithIntKeyDictionary
         {
-            public Dictionary<int, SimplePoco> Dict { get; set; }
+            public IReadOnlyDictionary<int, SimplePoco> Dict { get; set; }
         }
 
         public class ClassWithPocoKeyDictionary
         {
-            public Dictionary<SimplePoco, int> Dict { get; set; }
+            public IReadOnlyDictionary<SimplePoco, int> Dict { get; set; }
         }
 
         public class OtherClassWithPocoKeyDictionary
         {
-            public Dictionary<SimplePoco, int> Dict { get; set; }
+            public IReadOnlyDictionary<SimplePoco, int> Dict { get; set; }
         }
     }
 }

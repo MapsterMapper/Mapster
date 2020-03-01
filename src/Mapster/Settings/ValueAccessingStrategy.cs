@@ -188,12 +188,16 @@ namespace Mapster
             var args = dictType.GetGenericArguments();
             if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
             {
-                var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.FlexibleGet)).MakeGenericMethod(args[1]);
+                var method = typeof(MapsterHelper).GetMethods()
+                    .First(m => m.Name == nameof(MapsterHelper.FlexibleGet) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
+                    .MakeGenericMethod(args[1]);
                 return Expression.Call(method, source.To(dictType), key, MapsterHelper.GetConverterExpression(strategy.SourceMemberNameConverter));
             }
             else
             {
-                var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault)).MakeGenericMethod(args);
+                var method = typeof(MapsterHelper).GetMethods()
+                    .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
+                    .MakeGenericMethod(args);
                 return Expression.Call(method, source.To(dictType), key);
             }
         }
@@ -208,7 +212,9 @@ namespace Mapster
             if (dictType == null)
                 return null;
             var args = dictType.GetGenericArguments();
-            var method = typeof(MapsterHelper).GetMethods().First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault)).MakeGenericMethod(args);
+            var method = typeof(MapsterHelper).GetMethods()
+                .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
+                .MakeGenericMethod(args);
 
             Expression? getter = null;
             Expression? lastCondition = null;

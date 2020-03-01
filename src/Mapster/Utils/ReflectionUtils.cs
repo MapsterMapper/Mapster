@@ -152,7 +152,7 @@ namespace Mapster
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
         }
 
-        public static Type GetInterface(this Type type, Predicate<Type> predicate)
+        public static Type? GetInterface(this Type type, Predicate<Type> predicate)
         {
             if (predicate(type))
                 return type;
@@ -160,7 +160,7 @@ namespace Mapster
             return Array.Find(type.GetInterfaces(), predicate);
         }
 
-        public static Type GetGenericEnumerableType(this Type type)
+        public static Type? GetGenericEnumerableType(this Type type)
         {
             return type.GetInterface(IsGenericEnumerableType);
         }
@@ -263,15 +263,25 @@ namespace Mapster
             return false;
         }
 
-        public static Type GetDictionaryType(this Type destinationType)
+        public static Type? GetDictionaryType(this Type destinationType)
         {
-            return destinationType.GetInterface(type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+#if !NET40
+            if (destinationType.GetTypeInfo().IsInterface
+                && destinationType.GetTypeInfo().IsGenericType
+                && destinationType.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
+            {
+                return destinationType;
+            }
+#endif
+            return destinationType.GetInterface(type => 
+                type.GetTypeInfo().IsGenericType && 
+                type.GetGenericTypeDefinition() == typeof(IDictionary<,>) );
         }
 
         public static AccessModifier GetAccessModifier(this FieldInfo memberInfo)
         {
             if (memberInfo.IsFamilyOrAssembly)
-                return AccessModifier.Protected | AccessModifier.Internal;
+                return AccessModifier.ProtectedInternal;
             if (memberInfo.IsFamily)
                 return AccessModifier.Protected;
             if (memberInfo.IsAssembly)
@@ -284,7 +294,7 @@ namespace Mapster
         public static AccessModifier GetAccessModifier(this MethodBase methodBase)
         {
             if (methodBase.IsFamilyOrAssembly)
-                return AccessModifier.Protected | AccessModifier.Internal;
+                return AccessModifier.ProtectedInternal;
             if (methodBase.IsFamily)
                 return AccessModifier.Protected;
             if (methodBase.IsAssembly)

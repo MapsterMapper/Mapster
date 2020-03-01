@@ -8,3 +8,6 @@ dotnet_diagnostic.RCS1238.severity = suggestion
 
 # S3358: Ternary operators should not be nested
 dotnet_diagnostic.S3358.severity = suggestion
+
+# S125: Sections of code should not be commented out
+dotnet_diagnostic.S125.severity = suggestion
