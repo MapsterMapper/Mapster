@@ -175,17 +175,7 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            if (value)
-            {
-                setter.Settings.ShouldMapMember.Remove(ShouldMapMember.AllowPublic);
-                setter.Settings.ShouldMapMember.Add(ShouldMapMember.AllowNonPublic);
-            }
-            else
-            {
-                setter.Settings.ShouldMapMember.Remove(ShouldMapMember.AllowNonPublic);
-                setter.Settings.ShouldMapMember.Add(ShouldMapMember.AllowPublic);
-            }
-
+            setter.Settings.EnableNonPublicMembers = value;
             return setter;
         }
 
@@ -690,7 +680,7 @@ namespace Mapster
         public TwoWaysTypeAdapterSetter<TSource, TDestination> IncludeMember(Func<IMemberModel, MemberSide, bool> predicate)
         {
             SourceToDestinationSetter.IncludeMember(predicate);
-            DestinationToSourceSetter.IgnoreMember((model, side) => predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
+            DestinationToSourceSetter.IncludeMember((model, side) => predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
             return this;
         }
 

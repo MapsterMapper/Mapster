@@ -175,7 +175,7 @@ namespace Mapster.Adapters
         {
             return new ClassModel
             {
-                Members = arg.DestinationType.GetFieldsAndProperties(false, accessorFlags: BindingFlags.NonPublic | BindingFlags.Public)
+                Members = arg.DestinationType.GetFieldsAndProperties(true)
             };
         }
 

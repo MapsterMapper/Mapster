@@ -66,6 +66,11 @@ namespace Mapster
             get => Get("SkipDestinationMemberCheck");
             set => Set("SkipDestinationMemberCheck", value);
         }
+        public bool? EnableNonPublicMembers
+        {
+            get => Get("EnableNonPublicMembers");
+            set => Set("EnableNonPublicMembers", value);
+        }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {

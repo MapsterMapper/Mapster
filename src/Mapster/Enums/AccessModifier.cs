@@ -10,6 +10,7 @@ namespace Mapster
         Protected = 2,
         Internal = 4,
         ProtectedInternal = 6,
+        NonPublic = 7,
         Public = 8,
     }
 }

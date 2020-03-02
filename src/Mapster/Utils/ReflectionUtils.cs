@@ -77,35 +77,29 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            return type.GetFieldsAndProperties(requireSetter: true).Any();
+            return type.GetFieldsAndProperties().Any(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) != 0);
         }
 
-        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type,
-            bool requireSetter = false,
-            BindingFlags accessorFlags = BindingFlags.Public)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool includeNonPublic = false)
         {
-            var bindingFlags = BindingFlags.Instance | accessorFlags;
-
-            IEnumerable<IMemberModelEx> getPropertiesFunc(Type t) => t.GetProperties(bindingFlags)
-                .Where(x => x.GetIndexParameters().Length == 0)
-                .Where(x => !requireSetter || x.CanWrite)
-                .Select(CreateModel);
-
-            IEnumerable<IMemberModelEx> getFieldsFunc(Type t) => t.GetFields(bindingFlags)
-                .Where(x => !requireSetter || !x.IsInitOnly)
-                .Select(CreateModel);
-
+            var bindingFlags = BindingFlags.Instance | BindingFlags.Public;
+            if (includeNonPublic)
+                bindingFlags |= BindingFlags.NonPublic;
+            
             if (type.GetTypeInfo().IsInterface)
             {
                 var allInterfaces = GetAllInterfaces(type);
-                return allInterfaces.SelectMany(getPropertiesFunc);
+                return allInterfaces.SelectMany(GetPropertiesFunc);
             }
-            else
-            {
-                var properties = getPropertiesFunc(type);
-                var fields = getFieldsFunc(type);
-                return properties.Concat(fields);
-            }
+
+            return GetPropertiesFunc(type).Concat(GetFieldsFunc(type));
+
+            IEnumerable<IMemberModelEx> GetPropertiesFunc(Type t) => t.GetProperties(bindingFlags)
+                .Where(x => x.GetIndexParameters().Length == 0)
+                .Select(CreateModel);
+
+            IEnumerable<IMemberModelEx> GetFieldsFunc(Type t) => t.GetFields(bindingFlags)
+                .Select(CreateModel);
         }
 
         // GetProperties(), GetFields(), GetMethods() do not return properties/methods from parent interfaces,
@@ -311,6 +305,12 @@ namespace Mapster
                 .FirstOrDefault(it => it != null);
             if (result != null)
                 return result == true;
+            if (arg.Settings.EnableNonPublicMembers == true)
+            {
+                result = Mapster.ShouldMapMember.AllowNonPublic(member, side);
+                if (result != null)
+                    return result == true;
+            }
             var names = side == MemberSide.Destination ? arg.GetDestinationNames() : arg.GetSourceNames();
             return names.Contains(member.Name);
         }
