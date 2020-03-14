@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -52,6 +53,34 @@ namespace Mapster.Tests
             destination.Name.ShouldBe("TestMethod");
         }
 
+        [TestMethod]
+        public void Adapter_Destination_Transform_Collection()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.AddDestinationTransform((IReadOnlyList<ChildDto> list) => list ?? new List<ChildDto>());
+
+            var source = new CollectionPoco();
+            var destination = source.Adapt<CollectionDto>(config);
+
+            destination.Children.ShouldNotBeNull();
+        }
+
+        [TestMethod]
+        public void Adapter_Destination_Transform_Collection_Generic()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.AddDestinationTransform(DestinationTransform.EmptyCollectionIfNull);
+
+            var source = new CollectionPoco();
+            var destination = source.Adapt<CollectionDto>(config);
+
+            destination.Children.Count.ShouldBe(0);
+            destination.Array.Length.ShouldBe(0);
+            destination.MultiDimentionalArray.Length.ShouldBe(0);
+            destination.ChildDict.Count.ShouldBe(0);
+            destination.Set.Count.ShouldBe(0);
+        }
+
         #region TestClasses
 
         public class SimplePoco
@@ -84,6 +113,10 @@ namespace Mapster.Tests
             public string Name { get; set; }
 
             public List<ChildPoco> Children { get; set; }
+            public int[] Array { get; set; }
+            public double[,] MultiDimentionalArray { get; set; }
+            public Dictionary<string, ChildPoco> ChildDict { get; set; }
+            public HashSet<string> Set { get; set; }
         }
 
         public class CollectionDto
@@ -92,6 +125,10 @@ namespace Mapster.Tests
             public string Name { get; set; }
 
             public IReadOnlyList<ChildDto> Children { get; internal set; }
+            public int[] Array { get; set; }
+            public double[,] MultiDimentionalArray { get; set; }
+            public IReadOnlyDictionary<string, ChildDto> ChildDict { get; set; }
+            public HashSet<string> Set { get; set; }
         }
 
         #endregion
