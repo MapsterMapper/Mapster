@@ -44,7 +44,7 @@ namespace Mapster
             return this;
         }
 
-        private MapContextScope createMapContextScope()
+        private MapContextScope CreateMapContextScope()
         {
             var scope = new MapContextScope();
             var parameters = scope.Context.Parameters;
@@ -56,14 +56,14 @@ namespace Mapster
             return scope;
         }
 
-        MapContextScope IAdapterBuilder.CreateMapContextScope() => createMapContextScope();
+        MapContextScope IAdapterBuilder.CreateMapContextScope() => CreateMapContextScope();
 
         public TDestination AdaptToType<TDestination>()
         {
             if (_parameters == null)
                 return Map<TDestination>();
 
-            using (this.createMapContextScope())
+            using (this.CreateMapContextScope())
             {
                 return Map<TDestination>();
             }
@@ -80,7 +80,7 @@ namespace Mapster
             if (_parameters == null)
                 return MapToTarget(destination);
 
-            using (this.createMapContextScope())
+            using (this.CreateMapContextScope())
             {
                 return MapToTarget(destination);
             }

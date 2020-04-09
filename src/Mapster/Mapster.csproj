@@ -22,6 +22,7 @@
     <Version>5.2.0</Version>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <NoWarn>1701;1702;8618</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <Reference Include="Microsoft.CSharp" />
