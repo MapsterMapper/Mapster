@@ -11,7 +11,7 @@ namespace Mapster
         public static readonly DestinationTransform EmptyCollectionIfNull = new DestinationTransform
         {
             Condition = type => type.IsArray
-                || type.IsListCompatible()
+                || type.IsCollectionCompatible()
                 || type.GetDictionaryType() != null,
             TransformFunc = type =>
             {
@@ -31,11 +31,17 @@ namespace Mapster
                         var dictType = typeof(Dictionary<,>).MakeGenericType(dictArgs);
                         newExp = Expression.New(dictType);
                     }
-                    else
+                    else if (type.IsAssignableFromList())
                     {
                         var elemType = type.ExtractCollectionType();
                         var listType = typeof(List<>).MakeGenericType(elemType);
                         newExp = Expression.New(listType);
+                    }
+                    else //if (type.IsAssignableFromSet())
+                    {
+                        var elemType = type.ExtractCollectionType();
+                        var setType = typeof(HashSet<>).MakeGenericType(elemType);
+                        newExp = Expression.New(setType);
                     }
                 }
                 else

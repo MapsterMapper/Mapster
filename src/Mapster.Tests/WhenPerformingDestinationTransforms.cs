@@ -128,7 +128,7 @@ namespace Mapster.Tests
             public int[] Array { get; set; }
             public double[,] MultiDimentionalArray { get; set; }
             public IReadOnlyDictionary<string, ChildDto> ChildDict { get; set; }
-            public HashSet<string> Set { get; set; }
+            public ISet<string> Set { get; set; }
         }
 
         #endregion

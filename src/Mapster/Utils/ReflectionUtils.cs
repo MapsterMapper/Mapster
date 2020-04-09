@@ -238,11 +238,23 @@ namespace Mapster
             return type.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo());
         }
 
-        public static bool IsListCompatible(this Type type)
+        public static bool IsAssignableFromSet(this Type type)
+        {
+            var elementType = type.ExtractCollectionType();
+            var setType = typeof(HashSet<>).MakeGenericType(elementType);
+            return type.GetTypeInfo().IsAssignableFrom(setType.GetTypeInfo());
+        }
+        
+        public static bool IsAssignableFromCollection(this Type type)
+        {
+            return type.IsAssignableFromList() || type.IsAssignableFromSet();
+        }
+
+        public static bool IsCollectionCompatible(this Type type)
         {
             var typeInfo = type.GetTypeInfo();
             if (typeInfo.IsInterface)
-                return type.IsAssignableFromList();
+                return type.IsAssignableFromCollection();
 
             if (typeInfo.IsAbstract)
                 return false;
