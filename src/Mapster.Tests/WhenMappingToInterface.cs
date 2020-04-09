@@ -208,7 +208,36 @@ namespace Mapster.Tests
             ex.InnerException.ShouldBeOfType<InvalidOperationException>();
             ex.InnerException.Message.ShouldContain("not accessible", "Correct InvalidOperationException must be thrown.");
         }
+        
+        [TestMethod]
+        public void MapToInheritedInterfaceWithoutProperties()
+        {            
+            var config = TypeAdapterConfig.GlobalSettings;
+            TypeAdapterConfig<IInheritedDtoWithoutProperties, InheritedDto>.NewConfig()
+                .Map(d => d.Id, s => s.Id)
+                .Map(d => d.Name, s => s.Name)
+                .IgnoreNonMapped(true);
 
+            config.Compile();
+
+            /// doesn't reach this point
+            var dto = new ImplementedDto
+            {
+                Id = 1,
+                Name = "Test",
+                DateOfBirth = new DateTime(1978, 12, 10),
+            } as IInheritedDtoWithoutProperties;
+
+            var idto = dto.Adapt<InheritedDto>(config);
+            idto.Id.ShouldBe(dto.Id);
+            idto.Name.ShouldBe(dto.Name);
+            idto.DateOfBirth.ShouldBe(default);
+            idto.UnmappedSource.ShouldBeNull();
+        }
+
+        public interface IInheritedDtoWithoutProperties : IInheritedDto
+        {
+        }
         private interface INotVisibleInterface
         {
             int Id { get; set; }
@@ -255,7 +284,7 @@ namespace Mapster.Tests
             public string UnmappedSource { get; set; }
         }
 
-        public class ImplementedDto : IInheritedDto
+        public class ImplementedDto : IInheritedDtoWithoutProperties
         {
             public int Id { get; set; }
             public string Name { get; set; }

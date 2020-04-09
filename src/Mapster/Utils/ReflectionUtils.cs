@@ -104,9 +104,9 @@ namespace Mapster
 
         // GetProperties(), GetFields(), GetMethods() do not return properties/methods from parent interfaces,
         // so we need to process every one of them separately.
-        public static IEnumerable<Type> GetAllInterfaces(Type interfaceType)
+        public static IEnumerable<Type> GetAllInterfaces(this Type interfaceType)
         {
-            var allInterfaces = new HashSet<Type>();
+            var allInterfaces = new List<Type>();
             var interfaceQueue = new Queue<Type>();
             allInterfaces.Add(interfaceType);
             interfaceQueue.Enqueue(interfaceType);
@@ -116,9 +116,7 @@ namespace Mapster
                 foreach (var subInterface in currentInterface.GetInterfaces())
                 {
                     if (allInterfaces.Contains(subInterface))
-                    {
                         continue;
-                    }
                     allInterfaces.Add(subInterface);
                     interfaceQueue.Enqueue(subInterface);
                 }

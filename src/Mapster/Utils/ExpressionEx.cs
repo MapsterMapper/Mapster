@@ -20,7 +20,21 @@ namespace Mapster.Utils
         public static Expression PropertyOrFieldPath(Expression expr, string path)
         {
             var props = path.Split('.');
-            return props.Aggregate(expr, Expression.PropertyOrField);
+            return props.Aggregate(expr, PropertyOrField);
+        }
+
+        private static Expression PropertyOrField(Expression expr, string prop)
+        {
+            var type = expr.Type;
+            if (type.GetTypeInfo().IsInterface)
+            {
+                var allTypes = type.GetAllInterfaces();
+                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                var interfaceType = allTypes.FirstOrDefault(it => it.GetProperty(prop, flags) != null || it.GetField(prop, flags) != null);
+                if (interfaceType != null)
+                    expr = Expression.Convert(expr, interfaceType);
+            }
+            return Expression.PropertyOrField(expr, prop);
         }
 
         private static bool IsReferenceAssignableFrom(this Type destType, Type srcType)
