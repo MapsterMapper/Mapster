@@ -1,6 +1,7 @@
 ﻿using System;
 using Mapster;
 
+// ReSharper disable once CheckNamespace
 namespace MapsterMapper
 {
     public interface IMapper

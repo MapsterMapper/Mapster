@@ -18,7 +18,7 @@ namespace Mapster.Adapters
         {
             if (!arg.SourceType.IsCollection() || !arg.DestinationType.IsCollection())
                 return false;
-            if (arg.DestinationType.IsListCompatible())
+            if (arg.DestinationType.IsCollectionCompatible())
                 return true;
 
             return arg.DestinationType.GetDictionaryType() != null;
@@ -31,7 +31,7 @@ namespace Mapster.Adapters
 
             if (arg.MapType == MapType.Projection)
             {
-                if (arg.DestinationType.IsAssignableFromList())
+                if (arg.DestinationType.IsAssignableFromCollection())
                     return true;
 
                 throw new InvalidOperationException($"{arg.DestinationType} is not supported for projection, please consider using List<>");
@@ -54,10 +54,15 @@ namespace Mapster.Adapters
                     var dictArgs = dict.GetGenericArguments();
                     listType = typeof(Dictionary<,>).MakeGenericType(dictArgs);
                 }
-                else
+                else if (arg.DestinationType.IsAssignableFromList())
                 {
                     var destinationElementType = arg.DestinationType.ExtractCollectionType();
                     listType = typeof(List<>).MakeGenericType(destinationElementType);
+                }
+                else // if (arg.DestinationType.IsAssignableFromSet())
+                {
+                    var destinationElementType = arg.DestinationType.ExtractCollectionType();
+                    listType = typeof(HashSet<>).MakeGenericType(destinationElementType);
                 }
             }
             var count = ExpressionEx.CreateCountExpression(source, false);

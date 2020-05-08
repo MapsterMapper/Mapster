@@ -11,9 +11,9 @@ namespace Mapster
         {
             get => Get("Ignore", () => new IgnoreDictionary());
         }
-        public TransformsCollection DestinationTransforms
+        public List<DestinationTransform> DestinationTransforms
         {
-            get => Get("DestinationTransforms", () => new TransformsCollection());
+            get => Get("DestinationTransforms", () => new List<DestinationTransform>());
         }
         public NameMatchingStrategy NameMatchingStrategy
         {

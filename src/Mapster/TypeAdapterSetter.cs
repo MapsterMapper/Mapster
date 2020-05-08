@@ -29,7 +29,19 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.DestinationTransforms.Upsert(transform);
+            setter.Settings.DestinationTransforms.Add(new DestinationTransform
+            {
+                Condition = t => t == typeof(TDestinationMember),
+                TransformFunc = _ => transform,
+            });
+            return setter;
+        }
+
+        public static TSetter AddDestinationTransform<TSetter>(this TSetter setter, DestinationTransform transform) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.DestinationTransforms.Add(transform);
             return setter;
         }
 
@@ -639,6 +651,14 @@ namespace Mapster
         }
 
         public TwoWaysTypeAdapterSetter<TSource, TDestination> AddDestinationTransform<TDestinationMember>(Expression<Func<TDestinationMember, TDestinationMember>> transform)
+        {
+            SourceToDestinationSetter.AddDestinationTransform(transform);
+            if (typeof(TSource) != typeof(TDestination))
+                DestinationToSourceSetter.AddDestinationTransform(transform);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> AddDestinationTransform(DestinationTransform transform)
         {
             SourceToDestinationSetter.AddDestinationTransform(transform);
             if (typeof(TSource) != typeof(TDestination))

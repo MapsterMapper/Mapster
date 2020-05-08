@@ -2,6 +2,7 @@
 using System.Reflection;
 using Mapster;
 
+// ReSharper disable once CheckNamespace
 namespace MapsterMapper
 {
     public class Mapper : IMapper

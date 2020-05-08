@@ -48,6 +48,7 @@ namespace Mapster.Tests
         public IList<int> ZZ { get; set; }
         public Departments[] RelatedDepartments { get; set; }
         public ICollection<XProject> Projects { get; set; }
+        public ISet<string> Sets { get; set; }
     }
 
     public class PersonDTO
@@ -69,6 +70,7 @@ namespace Mapster.Tests
         public List<int> ZZ { get; set; }
         public Departments[] RelatedDepartments { get; set; }
         public List<YProject> Projects { get; set; }
+        public ISet<string> Sets { get; set; }
 
     }
 
@@ -105,7 +107,8 @@ namespace Mapster.Tests
                 YY = new List<int> { 22, 33 },
                 ZZ = new List<int> { 44, 55 },
                 ReadOnlyCountries = new List<string> { "Turkey", "Germany" },
-                RelatedDepartments = new Departments[] { Departments.IT, Departments.Finance }
+                RelatedDepartments = new Departments[] { Departments.IT, Departments.Finance },
+                Sets = new HashSet<string> { "Foo", "Bar"}
             };
 
             var dto = TypeAdapter.Adapt<Person, PersonDTO>(person);
@@ -147,7 +150,10 @@ namespace Mapster.Tests
             Assert.IsTrue(dto.ZZ.Count == 2 && dto.ZZ.First() == 44 && dto.ZZ.Last() == 55);
 
             Assert.IsNotNull(dto.RelatedDepartments);
-            Assert.IsTrue(dto.RelatedDepartments.Length == 2 && dto.RelatedDepartments[0] == Departments.IT && dto.RelatedDepartments[1] == Departments.Finance);           
+            Assert.IsTrue(dto.RelatedDepartments.Length == 2 && dto.RelatedDepartments[0] == Departments.IT && dto.RelatedDepartments[1] == Departments.Finance);    
+            
+            Assert.IsNotNull(dto.Sets);
+            Assert.IsTrue(dto.Sets.Count == 2 && dto.Sets.Contains("Foo") && dto.Sets.Contains("Bar"));
         }
 
         [TestMethod]

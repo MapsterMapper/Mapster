@@ -104,9 +104,9 @@ namespace Mapster
 
         // GetProperties(), GetFields(), GetMethods() do not return properties/methods from parent interfaces,
         // so we need to process every one of them separately.
-        public static IEnumerable<Type> GetAllInterfaces(Type interfaceType)
+        public static IEnumerable<Type> GetAllInterfaces(this Type interfaceType)
         {
-            var allInterfaces = new HashSet<Type>();
+            var allInterfaces = new List<Type>();
             var interfaceQueue = new Queue<Type>();
             allInterfaces.Add(interfaceType);
             interfaceQueue.Enqueue(interfaceType);
@@ -116,9 +116,7 @@ namespace Mapster
                 foreach (var subInterface in currentInterface.GetInterfaces())
                 {
                     if (allInterfaces.Contains(subInterface))
-                    {
                         continue;
-                    }
                     allInterfaces.Add(subInterface);
                     interfaceQueue.Enqueue(subInterface);
                 }
@@ -238,11 +236,23 @@ namespace Mapster
             return type.GetTypeInfo().IsAssignableFrom(listType.GetTypeInfo());
         }
 
-        public static bool IsListCompatible(this Type type)
+        public static bool IsAssignableFromSet(this Type type)
+        {
+            var elementType = type.ExtractCollectionType();
+            var setType = typeof(HashSet<>).MakeGenericType(elementType);
+            return type.GetTypeInfo().IsAssignableFrom(setType.GetTypeInfo());
+        }
+        
+        public static bool IsAssignableFromCollection(this Type type)
+        {
+            return type.IsAssignableFromList() || type.IsAssignableFromSet();
+        }
+
+        public static bool IsCollectionCompatible(this Type type)
         {
             var typeInfo = type.GetTypeInfo();
             if (typeInfo.IsInterface)
-                return type.IsAssignableFromList();
+                return type.IsAssignableFromCollection();
 
             if (typeInfo.IsAbstract)
                 return false;

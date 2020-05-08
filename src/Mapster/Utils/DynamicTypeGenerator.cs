@@ -123,7 +123,7 @@ namespace Mapster.Utils
             {
                 // Define the "set" accessor method for property.
                 string setMethodName = "set_" + prop.Name;
-                MethodBuilder propSet = builder.DefineMethod(setMethodName, classPropMethodAttrs, null, new Type[] { prop.PropertyType });
+                MethodBuilder propSet = builder.DefineMethod(setMethodName, classPropMethodAttrs, null, new[] { prop.PropertyType });
                 ILGenerator propSetIL = propSet.GetILGenerator();
                 propSetIL.Emit(OpCodes.Ldarg_0);
                 propSetIL.Emit(OpCodes.Ldarg_1);

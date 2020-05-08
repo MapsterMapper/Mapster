@@ -299,7 +299,7 @@ namespace Mapster
             return del;
         }
 
-        private Dictionary<TypeTuple, Delegate> _dynamicMapDict;
+        private Dictionary<TypeTuple, Delegate>? _dynamicMapDict;
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
             if (_dynamicMapDict == null)
@@ -593,7 +593,7 @@ namespace Mapster
             _dynamicMapDict?.Remove(key);
         }
 
-        private static TypeAdapterConfig _cloneConfig;
+        private static TypeAdapterConfig? _cloneConfig;
         public TypeAdapterConfig Clone()
         {
             if (_cloneConfig == null)
@@ -607,7 +607,7 @@ namespace Mapster
             return fn(this);
         }
 
-        private Dictionary<string, TypeAdapterConfig> _inlineConfigs;
+        private Dictionary<string, TypeAdapterConfig>? _inlineConfigs;
         public TypeAdapterConfig Fork(Action<TypeAdapterConfig> action,
 #if !NET40
             [CallerFilePath]
