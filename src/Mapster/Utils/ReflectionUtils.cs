@@ -333,9 +333,11 @@ namespace Mapster
 
         public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string?>> getMemberNames, Func<string, string> nameConverter)
         {
-            return getMemberNames.Select(predicate => predicate(member))
+            var memberName = getMemberNames.Select(predicate => predicate(member))
                 .FirstOrDefault(name => name != null)
-                ?? nameConverter(member.Name);
+                ?? member.Name;
+
+            return nameConverter(memberName);
         }
 
         public static bool IsPrimitiveKind(this Type type)
