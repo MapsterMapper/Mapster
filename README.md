@@ -3,6 +3,8 @@
 ## Mapster - The Mapper of Your Domain
 Writing mapping method is machine job. Do not waste your time, let Mapster do it.
 
+[![NuGet](https://img.shields.io/nuget/v/Mapster.svg)](https://www.nuget.org/packages/Mapster)
+
 ### Get it
 ```
 PM> Install-Package Mapster
