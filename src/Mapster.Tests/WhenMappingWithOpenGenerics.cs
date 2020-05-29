@@ -22,6 +22,20 @@ namespace Mapster.Tests
             dto.value.ShouldBe(poco.Value);
         }
 
+        [TestMethod]
+        public void Setting_From_OpenGeneric_Has_No_SideEffect()
+        {
+            var config = new TypeAdapterConfig();
+            config
+                .NewConfig(typeof(A<>), typeof(B<>))
+                .Map("BProperty", "AProperty");
+
+            var a = new A<C> { AProperty = "A" };
+            var c = new C { BProperty = "C" };
+            var b = a.Adapt<B<C>>(config); // successful mapping
+            var cCopy = c.Adapt<C>(config);
+        }
+
         public class GenericPoco<T>
         {
             public T Value { get; set; }
@@ -31,6 +45,11 @@ namespace Mapster.Tests
         {
             public T value { get; set; }
         }
-            
+         
+        class A<T> { public string AProperty { get; set; } }
+
+        class B<T> { public string BProperty { get; set; } }
+
+        class C { public string BProperty { get; set; } }
     }
 }

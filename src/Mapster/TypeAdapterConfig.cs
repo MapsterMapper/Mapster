@@ -219,7 +219,9 @@ namespace Mapster
                     score--;
                     type1 = type1.GetTypeInfo().BaseType;
                 }
-                return type1 == null ? null : (int?)score;
+                return type1 != null && type1.GetTypeInfo().IsGenericType && type1.GetGenericTypeDefinition() == type2 
+                    ? (int?)score
+                    : null;
             }
             if (!allowInheritance)
                 return null;
@@ -302,8 +304,7 @@ namespace Mapster
         private Dictionary<TypeTuple, Delegate>? _dynamicMapDict;
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
-            if (_dynamicMapDict == null)
-                _dynamicMapDict = new Dictionary<TypeTuple, Delegate>();
+            _dynamicMapDict ??= new Dictionary<TypeTuple, Delegate>();
             var key = new TypeTuple(sourceType, typeof(TDestination));
             if (!_dynamicMapDict.TryGetValue(key, out var del)) 
                 del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
@@ -618,8 +619,7 @@ namespace Mapster
 #endif
             int key2 = 0)
         {
-            if (_inlineConfigs == null)
-                _inlineConfigs = new Dictionary<string, TypeAdapterConfig>();
+            _inlineConfigs ??= new Dictionary<string, TypeAdapterConfig>();
             var key = key1 + '|' + key2;
             if (_inlineConfigs.TryGetValue(key, out var config))
                 return config;
