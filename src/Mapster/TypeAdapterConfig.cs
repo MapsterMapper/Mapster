@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Mapster.Adapters;
 using Mapster.Utils;
+using System.Collections.Concurrent;
 
 namespace Mapster
 {
@@ -91,7 +92,7 @@ namespace Mapster
 
         public List<TypeAdapterRule> Rules { get; internal set; }
         public TypeAdapterSetter Default { get; internal set; }
-        public Dictionary<TypeTuple, TypeAdapterRule> RuleMap { get; internal set; } = new Dictionary<TypeTuple, TypeAdapterRule>();
+        public ConcurrentDictionary<TypeTuple, TypeAdapterRule> RuleMap { get; internal set; } = new ConcurrentDictionary<TypeTuple, TypeAdapterRule>();
 
         public TypeAdapterConfig()
         {
@@ -173,7 +174,7 @@ namespace Mapster
                     ? CreateDestinationTypeRule(key)
                     : CreateTypeTupleRule(key);
                 this.Rules.Add(rule);
-                this.RuleMap.Add(key, rule);
+                this.RuleMap.TryAdd(key, rule);
             }
             return rule.Settings;
         }
@@ -243,7 +244,7 @@ namespace Mapster
             return score;
         }
 
-        private T AddToHash<T>(Dictionary<TypeTuple, T> hash, TypeTuple key, Func<TypeTuple, T> func)
+        private T AddToHash<T>(ConcurrentDictionary<TypeTuple, T> hash, TypeTuple key, Func<TypeTuple, T> func)
         {
             lock (hash)
             {
@@ -260,7 +261,7 @@ namespace Mapster
             }
         }
 
-        private readonly Dictionary<TypeTuple, Delegate> _mapDict = new Dictionary<TypeTuple, Delegate>();
+        private readonly ConcurrentDictionary<TypeTuple, Delegate> _mapDict = new ConcurrentDictionary<TypeTuple, Delegate>();
         public Func<TSource, TDestination> GetMapFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination>)GetMapFunction(typeof(TSource), typeof(TDestination));
@@ -273,7 +274,7 @@ namespace Mapster
             return del;
         }
 
-        private readonly Dictionary<TypeTuple, Delegate> _mapToTargetDict = new Dictionary<TypeTuple, Delegate>();
+        private readonly ConcurrentDictionary<TypeTuple, Delegate> _mapToTargetDict = new ConcurrentDictionary<TypeTuple, Delegate>();
         public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
         {
             return (Func<TSource, TDestination, TDestination>)GetMapToTargetFunction(typeof(TSource), typeof(TDestination));
@@ -286,7 +287,7 @@ namespace Mapster
             return del;
         }
 
-        private readonly Dictionary<TypeTuple, MethodCallExpression> _projectionDict = new Dictionary<TypeTuple, MethodCallExpression>();
+        private readonly ConcurrentDictionary<TypeTuple, MethodCallExpression> _projectionDict = new ConcurrentDictionary<TypeTuple, MethodCallExpression>();
         internal Expression<Func<TSource, TDestination>> GetProjectionExpression<TSource, TDestination>()
         {
             var del = GetProjectionCallExpression(typeof(TSource), typeof(TDestination));
@@ -301,10 +302,10 @@ namespace Mapster
             return del;
         }
 
-        private Dictionary<TypeTuple, Delegate>? _dynamicMapDict;
+        private ConcurrentDictionary<TypeTuple, Delegate>? _dynamicMapDict;
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
-            _dynamicMapDict ??= new Dictionary<TypeTuple, Delegate>();
+            _dynamicMapDict ??= new ConcurrentDictionary<TypeTuple, Delegate>();
             var key = new TypeTuple(sourceType, typeof(TDestination));
             if (!_dynamicMapDict.TryGetValue(key, out var del)) 
                 del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
@@ -585,13 +586,13 @@ namespace Mapster
         {
             if (this.RuleMap.TryGetValue(key, out var rule))
             {
-                this.RuleMap.Remove(key);
+                this.RuleMap.TryRemove(key, out _);
                 this.Rules.Remove(rule);
             }
-            _mapDict.Remove(key);
-            _mapToTargetDict.Remove(key);
-            _projectionDict.Remove(key);
-            _dynamicMapDict?.Remove(key);
+            _mapDict.TryRemove(key, out _);
+            _mapToTargetDict.TryRemove(key, out _);
+            _projectionDict.TryRemove(key, out _);
+            _dynamicMapDict?.TryRemove(key, out _);
         }
 
         private static TypeAdapterConfig? _cloneConfig;

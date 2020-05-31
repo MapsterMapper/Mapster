@@ -32,14 +32,14 @@ namespace Mapster.Tests
             TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco);
         }
 
-        [TestMethod, TestCategory("speed"), Ignore]
+        [TestMethod, TestCategory("speed")]
         public void Race_Condition_Produces_Error()
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
-            var exception = Should.Throw<AggregateException>(() =>
+            Should.NotThrow(() =>
             {
                 for (int i = 0; i < 100; i++)
                 {
@@ -56,7 +56,8 @@ namespace Mapster.Tests
                 }
             });
 
-            exception.InnerException.ShouldBeOfType(typeof(CompileException));
+            //Type should map at the end because mapping has completed.
+            TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco);
 
         }
 
@@ -68,7 +69,7 @@ namespace Mapster.Tests
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
-            Should.Throw<AggregateException>(() =>
+            Should.NotThrow(() =>
             {
                 for (int i = 0; i < 100; i++)
                 {
