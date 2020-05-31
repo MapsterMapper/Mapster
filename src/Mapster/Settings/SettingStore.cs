@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections;
 using Mapster.Utils;
+using System.Collections.Concurrent;
 
 namespace Mapster
 {
     public class SettingStore: IApplyable<SettingStore>
     {
-        private readonly Dictionary<string, object> _objectStore = new Dictionary<string, object>();
-        private readonly Dictionary<string, bool?> _booleanStore = new Dictionary<string, bool?>();
+        private readonly ConcurrentDictionary<string, object> _objectStore = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, bool?> _booleanStore = new ConcurrentDictionary<string, bool?>();
 
         public void Set(string key, bool? value)
         {
             if (value == null)
-                _booleanStore.Remove(key);
+                _booleanStore.TryRemove(key, out _);
             else
                 _booleanStore[key] = value;
         }
@@ -21,7 +21,7 @@ namespace Mapster
         public void Set(string key, object? value)
         {
             if (value == null)
-                _objectStore.Remove(key);
+                _objectStore.TryRemove(key, out _);
             else
                 _objectStore[key] = value;
         }

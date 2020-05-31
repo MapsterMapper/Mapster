@@ -1,11 +1,11 @@
 ﻿using Mapster.Utils;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace Mapster
 {
-    public class IgnoreDictionary : Dictionary<string, IgnoreDictionary.IgnoreItem>, IApplyable<IgnoreDictionary>
+    public class IgnoreDictionary : ConcurrentDictionary<string, IgnoreDictionary.IgnoreItem>, IApplyable<IgnoreDictionary>
     {
         public readonly struct IgnoreItem
         {
