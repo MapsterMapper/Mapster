@@ -9,7 +9,7 @@ namespace Mapster
     {
         private readonly ConcurrentDictionary<string, object> _objectStore = new ConcurrentDictionary<string, object>();
         private readonly ConcurrentDictionary<string, bool?> _booleanStore = new ConcurrentDictionary<string, bool?>();
-       
+
         public void Set(string key, bool? value)
         {
             if (value == null)
@@ -41,7 +41,7 @@ namespace Mapster
             var value = _objectStore.GetValueOrDefault(key);
             if (value == null)
             {
-                _objectStore.AddOrUpdate(key,  value = initializer()!, (key, oldValue) => value);
+                _objectStore.AddOrUpdate(key, value = initializer()!, (updateKey, oldValue) => value);
             }
             return (T)value;
         }
@@ -93,6 +93,11 @@ namespace Mapster
                             foreach (var item in side)
                                 list.Add(item);
                         }
+                    }
+                    else
+                    {
+                        foreach (var item in side)
+                            list.Add(item);
                     }
                 }
             }

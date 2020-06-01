@@ -1,14 +1,14 @@
-﻿using Mapster.Models;
-using System;
+﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Mapster.Adapters;
+using Mapster.Models;
 using Mapster.Utils;
-using System.Collections.Concurrent;
-using System.Collections;
 
 namespace Mapster
 {
@@ -588,13 +588,17 @@ namespace Mapster
             if (this.RuleMap.TryGetValue(key, out var rule))
             {
                 this.RuleMap.TryRemove(key, out _);
-                var lockable = this.Rules as ICollection;
+                var lockable = Rules as ICollection;
                 if (!lockable.IsSynchronized)
                 {
                     lock (lockable.SyncRoot)
                     {
                         this.Rules.Remove(rule);
                     }
+                }
+                else
+                {
+                    this.Rules.Remove(rule);
                 }
             }
             _mapDict.TryRemove(key, out _);

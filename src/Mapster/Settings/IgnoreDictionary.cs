@@ -43,10 +43,10 @@ namespace Mapster
                 var body = item.IsChildPath ? item.Condition.Body : item.Condition.Apply(param[0], param[1]);
                 var condition = Expression.Lambda(Expression.OrElse(src.Condition.Body, body), param);
 
-                this[name] = new IgnoreItem(condition, src.IsChildPath);
+                TryUpdate(name, new IgnoreItem(condition, src.IsChildPath), item);
             }
             else
-                this[name] = src;
+                TryAdd(name, src);
 
         }
 
