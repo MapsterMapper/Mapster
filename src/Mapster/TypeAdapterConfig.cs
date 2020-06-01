@@ -588,7 +588,7 @@ namespace Mapster
             if (this.RuleMap.TryGetValue(key, out var rule))
             {
                 this.RuleMap.TryRemove(key, out _);
-                var lockable = Rules as ICollection;
+                var lockable = this.Rules as ICollection;
                 if (!lockable.IsSynchronized)
                 {
                     lock (lockable.SyncRoot)
