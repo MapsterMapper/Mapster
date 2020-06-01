@@ -9,7 +9,7 @@ namespace Mapster
     {
         private readonly ConcurrentDictionary<string, object> _objectStore = new ConcurrentDictionary<string, object>();
         private readonly ConcurrentDictionary<string, bool?> _booleanStore = new ConcurrentDictionary<string, bool?>();
-
+       
         public void Set(string key, bool? value)
         {
             if (value == null)
@@ -41,7 +41,7 @@ namespace Mapster
             var value = _objectStore.GetValueOrDefault(key);
             if (value == null)
             {
-                _objectStore[key] = value = initializer()!;
+                _objectStore.AddOrUpdate(key,  value = initializer()!, (key, oldValue) => value);
             }
             return (T)value;
         }
@@ -56,7 +56,7 @@ namespace Mapster
             foreach (var kvp in other._booleanStore)
             {
                 if (_booleanStore.GetValueOrDefault(kvp.Key) == null)
-                    _booleanStore[kvp.Key] = kvp.Value;
+                    _booleanStore.AddOrUpdate(kvp.Key, kvp.Value, (key, oldValue) => kvp.Value);
             }
 
             foreach (var kvp in other._objectStore)
@@ -78,7 +78,7 @@ namespace Mapster
                             list.Add(item);
                         value = list;
                     }
-                    _objectStore[kvp.Key] = value;
+                    _objectStore.AddOrUpdate(kvp.Key, value, (key, oldValue) => value);
                 }
                 else if (self is IApplyable applyable)
                 {
@@ -86,8 +86,14 @@ namespace Mapster
                 }
                 else if (self is IList list && kvp.Value is IList side)
                 {
-                    foreach (var item in side)
-                        list.Add(item);
+                    if (!list.IsSynchronized)
+                    {
+                        lock (list.SyncRoot)
+                        {
+                            foreach (var item in side)
+                                list.Add(item);
+                        }
+                    }
                 }
             }
         }

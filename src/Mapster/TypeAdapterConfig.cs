@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Mapster.Adapters;
 using Mapster.Utils;
 using System.Collections.Concurrent;
+using System.Collections;
 
 namespace Mapster
 {
@@ -587,7 +588,14 @@ namespace Mapster
             if (this.RuleMap.TryGetValue(key, out var rule))
             {
                 this.RuleMap.TryRemove(key, out _);
-                this.Rules.Remove(rule);
+                var lockable = this.Rules as ICollection;
+                if (!lockable.IsSynchronized)
+                {
+                    lock (lockable.SyncRoot)
+                    {
+                        this.Rules.Remove(rule);
+                    }
+                }
             }
             _mapDict.TryRemove(key, out _);
             _mapToTargetDict.TryRemove(key, out _);

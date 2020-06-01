@@ -22,7 +22,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
-            var simplePoco = new WhenAddingCustomMappings.SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
+            var simplePoco = new WhenAddingCustomMappings.SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
             TypeAdapterConfig<WhenAddingCustomMappings.SimplePoco, WeirdPoco>.NewConfig()
                 .Map(dest => dest.IHaveADifferentId, src => src.Id)
@@ -37,9 +37,9 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
-            var simplePoco = new WhenAddingCustomMappings.SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
+            var simplePoco = new WhenAddingCustomMappings.SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
-            Should.NotThrow(() =>
+            var exception = Should.Throw<AggregateException>(() =>
             {
                 for (int i = 0; i < 100; i++)
                 {
@@ -56,8 +56,7 @@ namespace Mapster.Tests
                 }
             });
 
-            //Type should map at the end because mapping has completed.
-            TypeAdapter.Adapt<WhenAddingCustomMappings.SimplePoco, WeirdPoco>(simplePoco);
+            exception.InnerException.ShouldBeOfType(typeof(CompileException));
 
         }
 
@@ -69,20 +68,20 @@ namespace Mapster.Tests
 
             var simplePoco = new WhenAddingCustomMappings.SimplePoco { Id = Guid.NewGuid(), Name = "TestName" };
 
-            Should.NotThrow(() =>
+            Should.Throw<AggregateException>(() =>
             {
                 for (int i = 0; i < 100; i++)
                 {
-                   Parallel.Invoke(
-                        () =>
-                        {
-                            TypeAdapterConfig<WhenAddingCustomMappings.SimplePoco, WeirdPoco>.NewConfig()
-                                .Map(dest => dest.IHaveADifferentId, src => src.Id)
-                                .Map(dest => dest.MyNamePropertyIsDifferent, src => src.Name)
-                                .Ignore(dest => dest.Children);
-                        },
-                        () => { TypeAdapter.Adapt<WeirdPoco>(simplePoco); }
-                        );
+                    Parallel.Invoke(
+                         () =>
+                         {
+                             TypeAdapterConfig<WhenAddingCustomMappings.SimplePoco, WeirdPoco>.NewConfig()
+                                 .Map(dest => dest.IHaveADifferentId, src => src.Id)
+                                 .Map(dest => dest.MyNamePropertyIsDifferent, src => src.Name)
+                                 .Ignore(dest => dest.Children);
+                         },
+                         () => { TypeAdapter.Adapt<WeirdPoco>(simplePoco); }
+                         );
                 }
             });
 
