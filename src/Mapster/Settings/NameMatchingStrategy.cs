@@ -16,10 +16,8 @@ namespace Mapster
         }
         public void Apply(NameMatchingStrategy other)
         {
-            if (this.SourceMemberNameConverter == null)
-                this.SourceMemberNameConverter = other.SourceMemberNameConverter;
-            if (this.DestinationMemberNameConverter == null)
-                this.DestinationMemberNameConverter = other.DestinationMemberNameConverter;
+            this.SourceMemberNameConverter ??= other.SourceMemberNameConverter;
+            this.DestinationMemberNameConverter ??= other.DestinationMemberNameConverter;
         }
 
         public static readonly NameMatchingStrategy Exact = new NameMatchingStrategy

@@ -501,10 +501,7 @@ namespace Mapster
             {
                 var adapter = new DelegateAdapter(converterFactory);
                 Settings.ConverterFactory = adapter.CreateAdaptFunc;
-                if (Settings.ConverterToTargetFactory == null)
-                {
-                    Settings.ConverterToTargetFactory = adapter.CreateAdaptToTargetFunc;
-                }
+                Settings.ConverterToTargetFactory ??= adapter.CreateAdaptToTargetFunc;
             }
             else
             {

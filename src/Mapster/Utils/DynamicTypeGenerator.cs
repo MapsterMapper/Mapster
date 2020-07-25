@@ -45,7 +45,7 @@ namespace Mapster.Utils
 
             var args = new List<FieldBuilder>();
             int propCount = 0;
-            foreach (Type currentInterface in ReflectionUtils.GetAllInterfaces(interfaceType))
+            foreach (Type currentInterface in interfaceType.GetAllInterfaces())
             {
                 builder.AddInterfaceImplementation(currentInterface);
                 foreach (PropertyInfo prop in currentInterface.GetProperties())
@@ -74,16 +74,16 @@ namespace Mapster.Utils
                 var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public, 
                     CallingConventions.Standard,
                     args.Select(it => it.FieldType).ToArray());
-                var ctorIL = ctorBuilder.GetILGenerator();
+                var ctorIl = ctorBuilder.GetILGenerator();
                 for (var i = 0; i < args.Count; i++)
                 {
                     var arg = args[i];
                     ctorBuilder.DefineParameter(i + 1, ParameterAttributes.None, arg.Name.Substring(1));
-                    ctorIL.Emit(OpCodes.Ldarg_0);
-                    ctorIL.Emit(OpCodes.Ldarg_S, i + 1);
-                    ctorIL.Emit(OpCodes.Stfld, arg);
+                    ctorIl.Emit(OpCodes.Ldarg_0);
+                    ctorIl.Emit(OpCodes.Ldarg_S, i + 1);
+                    ctorIl.Emit(OpCodes.Stfld, arg);
                 }
-                ctorIL.Emit(OpCodes.Ret);
+                ctorIl.Emit(OpCodes.Ret);
             }
 
 #if NETSTANDARD2_0 || NETCOREAPP3_0
@@ -109,10 +109,10 @@ namespace Mapster.Utils
                 // Define the "get" accessor method for property.
                 string getMethodName = "get_" + prop.Name;
                 MethodBuilder propGet = builder.DefineMethod(getMethodName, classPropMethodAttrs, prop.PropertyType, null);
-                ILGenerator propGetIL = propGet.GetILGenerator();
-                propGetIL.Emit(OpCodes.Ldarg_0);
-                propGetIL.Emit(OpCodes.Ldfld, propField);
-                propGetIL.Emit(OpCodes.Ret);
+                ILGenerator propGetIl = propGet.GetILGenerator();
+                propGetIl.Emit(OpCodes.Ldarg_0);
+                propGetIl.Emit(OpCodes.Ldfld, propField);
+                propGetIl.Emit(OpCodes.Ret);
 
                 MethodInfo interfaceGetMethod = interfaceType.GetMethod(getMethodName, interfacePropMethodFlags);
                 builder.DefineMethodOverride(propGet, interfaceGetMethod);
@@ -124,11 +124,11 @@ namespace Mapster.Utils
                 // Define the "set" accessor method for property.
                 string setMethodName = "set_" + prop.Name;
                 MethodBuilder propSet = builder.DefineMethod(setMethodName, classPropMethodAttrs, null, new[] { prop.PropertyType });
-                ILGenerator propSetIL = propSet.GetILGenerator();
-                propSetIL.Emit(OpCodes.Ldarg_0);
-                propSetIL.Emit(OpCodes.Ldarg_1);
-                propSetIL.Emit(OpCodes.Stfld, propField);
-                propSetIL.Emit(OpCodes.Ret);
+                ILGenerator propSetIl = propSet.GetILGenerator();
+                propSetIl.Emit(OpCodes.Ldarg_0);
+                propSetIl.Emit(OpCodes.Ldarg_1);
+                propSetIl.Emit(OpCodes.Stfld, propField);
+                propSetIl.Emit(OpCodes.Ret);
 
                 MethodInfo interfaceSetMethod = interfaceType.GetMethod(setMethodName, interfacePropMethodFlags);
                 builder.DefineMethodOverride(propSet, interfaceSetMethod);
@@ -155,8 +155,8 @@ namespace Mapster.Utils
                 interfaceMethod.CallingConvention,
                 interfaceMethod.ReturnType,
                 parameterTypes);
-            ILGenerator classMethodIL = classMethod.GetILGenerator();
-            classMethodIL.ThrowException(typeof(NotImplementedException));
+            ILGenerator classMethodIl = classMethod.GetILGenerator();
+            classMethodIl.ThrowException(typeof(NotImplementedException));
 
             builder.DefineMethodOverride(classMethod, interfaceMethod);
         }
