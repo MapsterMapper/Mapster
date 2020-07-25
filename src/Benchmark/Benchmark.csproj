@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
       <OutputType>Exe</OutputType>
-      <TargetFramework>netcoreapp2.0</TargetFramework>
+      <TargetFramework>netcoreapp3.1</TargetFramework>
       <CopyLocalLockFileAssemblies Condition=" '$(Configuration)'=='Debug' ">true</CopyLocalLockFileAssemblies>
       <DefaultItemExcludes>**/*.g.cs</DefaultItemExcludes>
     </PropertyGroup>
@@ -19,10 +19,10 @@
       </Compile>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
         <PackageReference Include="ExpressionDebugger" Version="2.1.2" />
         <PackageReference Include="ExpressionTranslator" Version="2.1.0" />
-        <PackageReference Include="AutoMapper" Version="9.0.0" />
+        <PackageReference Include="AutoMapper" Version="10.0.0" />
         <PackageReference Include="Expressmapper" Version="1.9.1" />
         <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     </ItemGroup>
