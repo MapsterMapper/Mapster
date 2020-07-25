@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
-using Mapster.Utils;
 
 namespace Mapster
 {
@@ -28,22 +27,22 @@ namespace Mapster
 
         public bool? Get(string key)
         {
-            return _booleanStore.GetValueOrDefault(key);
+            return _booleanStore.TryGetValue(key, out var value) ? value : null;
         }
 
-        public T Get<T>(string key)
+        public T? Get<T>(string key) where T : class
         {
-            return (T)_objectStore.GetValueOrDefault(key)!;
+            return _objectStore.TryGetValue(key, out var value) ? (T)value : null;
         }
 
-        public T Get<T>(string key, Func<T> initializer)
+        public T Get<T>(string key, Func<T> initializer) where T : class
         {
-            var value = _objectStore.GetValueOrDefault(key);
+            var value = Get<T>(key);
             if (value == null)
             {
-                _objectStore[key] = value = initializer()!;
+                _objectStore[key] = value = initializer();
             }
-            return (T)value;
+            return value;
         }
 
         public virtual void Apply(object other)
@@ -55,13 +54,13 @@ namespace Mapster
         {
             foreach (var kvp in other._booleanStore)
             {
-                if (_booleanStore.GetValueOrDefault(kvp.Key) == null)
+                if (Get(kvp.Key) == null)
                     _booleanStore[kvp.Key] = kvp.Value;
             }
 
             foreach (var kvp in other._objectStore)
             {
-                var self = _objectStore.GetValueOrDefault(kvp.Key);
+                var self = Get<object>(kvp.Key);
                 if (self == null)
                 {
                     var value = kvp.Value;

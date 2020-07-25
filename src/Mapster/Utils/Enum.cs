@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+// ReSharper disable StaticMemberInGenericType
 
 namespace Mapster.Utils
 {
@@ -42,7 +43,7 @@ namespace Mapster.Utils
             if (_isFlag)
             {
                 _flagList = ((TEnum[]) Enum.GetValues(typeof (TEnum))).Select(_toUlong).Where(x => x > 0).OrderBy(x => x).ToArray();
-                _zeroString = _toEnum(0).ToString()!;
+                _zeroString = _toEnum(0).ToString();
             }
         }
 

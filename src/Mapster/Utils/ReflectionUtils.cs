@@ -159,9 +159,7 @@ namespace Mapster
 
         public static Expression? CreateConvertMethod(Type srcType, Type destType, Expression source)
         {
-            var name = _primitiveTypes.GetValueOrDefault(destType);
-
-            if (name == null)
+            if (!_primitiveTypes.TryGetValue(destType, out var name))
                 return null;
 
             var method = typeof(Convert).GetMethod(name, new[] { srcType });

@@ -14,11 +14,6 @@ namespace Mapster.Utils
         {
             return new HashSet<T>(source);
         }
-
-        public static U GetValueOrDefault<T, U>(this IDictionary<T, U> dict, T key)
-        {
-            return dict.TryGetValue(key, out var value) ? value : default;
-        }
 #endif
 
     }

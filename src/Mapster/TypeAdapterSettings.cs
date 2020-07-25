@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+// ReSharper disable ArrangeAccessorOwnerBody
 
 namespace Mapster
 {
@@ -53,7 +54,7 @@ namespace Mapster
         }
         public int? MaxDepth
         {
-            get => Get<int?>("MaxDepth");
+            get => (int?) Get<object>("MaxDepth");
             set => Set("MaxDepth", value);
         }
         public bool? Unflattening
@@ -108,24 +109,24 @@ namespace Mapster
         {
             get => Get("UseDestinationValues", () => new List<Func<IMemberModel, bool>>());
         }
-        public Func<CompileArgument, LambdaExpression> ConstructUsingFactory
+        public Func<CompileArgument, LambdaExpression>? ConstructUsingFactory
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConstructUsingFactory");
             set => Set("ConstructUsingFactory", value);
         }
-        public Func<CompileArgument, LambdaExpression> ConverterFactory
+        public Func<CompileArgument, LambdaExpression>? ConverterFactory
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConverterFactory");
             set => Set("ConverterFactory", value);
         }
-        public Func<CompileArgument, LambdaExpression> ConverterToTargetFactory
+        public Func<CompileArgument, LambdaExpression>? ConverterToTargetFactory
         {
             get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
             set => Set("ConverterToTargetFactory", value);
         }
         public object? MapToConstructor
         {
-            get => Get<object?>("MapToConstructor");
+            get => Get<object>("MapToConstructor");
             set => Set("MapToConstructor", value);
         }
 

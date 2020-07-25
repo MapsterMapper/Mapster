@@ -124,8 +124,7 @@ namespace Mapster.Adapters
 
                 if (member.Ignore.Condition != null)
                 {
-                    if (conditions == null)
-                        conditions = new Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>();
+                    conditions ??= new Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>();
                     if (!conditions.TryGetValue(member.Ignore.Condition, out var tuple))
                     {
                         var body = member.Ignore.IsChildPath

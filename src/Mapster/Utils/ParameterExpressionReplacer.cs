@@ -48,7 +48,7 @@ namespace Mapster.Utils
                 return cond;
             var equal = cond.Test.NodeType == ExpressionType.Equal;
             var target = leftIsNull ? bin.Right : bin.Left;
-            if (target.CanBeNull())
+            if (target!.CanBeNull())
                 return cond;
             return equal ? cond.IfFalse : cond.IfTrue;
         }

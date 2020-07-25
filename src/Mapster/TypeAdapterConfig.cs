@@ -464,7 +464,7 @@ namespace Mapster
             var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
                             let priority = rule.Priority(arg)
                             where priority != null
-                            orderby priority!.Value descending
+                            orderby priority.Value descending
                             select rule.Settings).ToList();
             var result = new TypeAdapterSettings();
             foreach (var setting in settings)
