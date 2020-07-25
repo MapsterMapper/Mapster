@@ -37,12 +37,7 @@ namespace Mapster
 
         public T Get<T>(string key, Func<T> initializer) where T : class
         {
-            var value = Get<T>(key);
-            if (value == null)
-            {
-                _objectStore.AddOrUpdate(key, value = initializer(), (updateKey, oldValue) => value);
-            }
-            return value;
+            return (T)_objectStore.GetOrAdd(key, _ => initializer());
         }
 
         public virtual void Apply(object other)
@@ -54,50 +49,28 @@ namespace Mapster
         {
             foreach (var kvp in other._booleanStore)
             {
-                if (Get(kvp.Key) == null)
-                    _booleanStore.AddOrUpdate(kvp.Key, kvp.Value, (key, oldValue) => kvp.Value);
+                _booleanStore.TryAdd(kvp.Key, kvp.Value);
             }
 
             foreach (var kvp in other._objectStore)
             {
-                var self = Get<object>(kvp.Key);
-                if (self == null)
+                var self = _objectStore.GetOrAdd(kvp.Key, key =>
                 {
                     var value = kvp.Value;
                     if (value is IApplyable)
-                    {
-                        var applyable = (IApplyable)Activator.CreateInstance(value.GetType())!;
-                        applyable.Apply(value);
-                        value = applyable;
-                    }
-                    else if (value is IList side)
-                    {
-                        var list = (IList)Activator.CreateInstance(value.GetType())!;
-                        foreach (var item in side)
-                            list.Add(item);
-                        value = list;
-                    }
-                    _objectStore.AddOrUpdate(kvp.Key, value, (key, oldValue) => value);
-                }
-                else if (self is IApplyable applyable)
+                        return (IApplyable)Activator.CreateInstance(value.GetType())!;
+                    if (value is IList)
+                        return (IList)Activator.CreateInstance(value.GetType())!;
+                    return value;
+                });
+                if (self is IApplyable applyable)
                 {
                     applyable.Apply(kvp.Value);
                 }
                 else if (self is IList list && kvp.Value is IList side)
                 {
-                    if (!list.IsSynchronized)
-                    {
-                        lock (list.SyncRoot)
-                        {
-                            foreach (var item in side)
-                                list.Add(item);
-                        }
-                    }
-                    else
-                    {
-                        foreach (var item in side)
-                            list.Add(item);
-                    }
+                    foreach (var item in side)
+                        list.Add(item);
                 }
             }
         }

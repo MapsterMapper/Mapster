@@ -584,7 +584,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            Config.Rules.Add(new TypeAdapterRule
+            Config.Rules.LockAdd(new TypeAdapterRule
             {
                 Priority = arg =>
                     arg.SourceType == typeof(TDerivedSource) &&

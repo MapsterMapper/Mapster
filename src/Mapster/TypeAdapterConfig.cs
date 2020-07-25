@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +14,7 @@ namespace Mapster
     public class TypeAdapterConfig
     {
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
-
-        private static TypeAdapterConfig? _globalSettings;
-        public static TypeAdapterConfig GlobalSettings => _globalSettings ??= new TypeAdapterConfig();
+        public static TypeAdapterConfig GlobalSettings { get; } = new TypeAdapterConfig();
 
         private static List<TypeAdapterRule> CreateRuleTemplate()
         {
@@ -88,8 +85,7 @@ namespace Mapster
         public bool AllowImplicitSourceInheritance { get; set; } = true;
         public bool SelfContainedCodeGeneration { get; set; }
 
-        internal static readonly Func<LambdaExpression, Delegate> DefaultCompiler = lambda => lambda.Compile();
-        public Func<LambdaExpression, Delegate> Compiler { get; set; } = DefaultCompiler;
+        public Func<LambdaExpression, Delegate> Compiler { get; set; } = lambda => lambda.Compile();
 
         public List<TypeAdapterRule> Rules { get; internal set; }
         public TypeAdapterSetter Default { get; internal set; }
@@ -114,7 +110,7 @@ namespace Mapster
                 Priority = arg => canMap(arg.SourceType, arg.DestinationType, arg.MapType) ? (int?)25 : null,
                 Settings = new TypeAdapterSettings(),
             };
-            this.Rules.Add(rule);
+            this.Rules.LockAdd(rule);
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
@@ -125,7 +121,7 @@ namespace Mapster
                 Priority = arg => canMap(arg) ? (int?)25 : null,
                 Settings = new TypeAdapterSettings(),
             };
-            this.Rules.Add(rule);
+            this.Rules.LockAdd(rule);
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
@@ -164,19 +160,14 @@ namespace Mapster
 
         private TypeAdapterSettings GetSettings(TypeTuple key)
         {
-            if (this.RuleMap.TryGetValue(key, out var rule)) 
-                return rule.Settings;
-            lock (this.RuleMap)
+            var rule = this.RuleMap.GetOrAdd(key, types =>
             {
-                if (this.RuleMap.TryGetValue(key, out rule)) 
-                    return rule.Settings;
-
-                rule = key.Source == typeof(void)
-                    ? CreateDestinationTypeRule(key)
-                    : CreateTypeTupleRule(key);
-                this.Rules.Add(rule);
-                this.RuleMap.TryAdd(key, rule);
-            }
+                var r = types.Source == typeof(void)
+                    ? CreateDestinationTypeRule(types)
+                    : CreateTypeTupleRule(types);
+                this.Rules.LockAdd(r);
+                return r;
+            });
             return rule.Settings;
         }
 
@@ -247,19 +238,16 @@ namespace Mapster
 
         private T AddToHash<T>(ConcurrentDictionary<TypeTuple, T> hash, TypeTuple key, Func<TypeTuple, T> func)
         {
-            lock (hash)
+            return hash.GetOrAdd(key, types =>
             {
-                if (hash.TryGetValue(key, out var del))
-                    return del;
+                var del = func(types);
+                hash[types] = del;
 
-                del = func(key);
-                hash[key] = del;
-
-                this.RuleMap.TryGetValue(key, out var rule);
-                if (rule != null)
+                if (this.RuleMap.TryGetValue(types, out var rule))
                     rule.Settings.Compiled = true;
                 return del;
-            }
+
+            });
         }
 
         private readonly ConcurrentDictionary<TypeTuple, Delegate> _mapDict = new ConcurrentDictionary<TypeTuple, Delegate>();
@@ -303,10 +291,9 @@ namespace Mapster
             return del;
         }
 
-        private ConcurrentDictionary<TypeTuple, Delegate>? _dynamicMapDict;
+        private readonly ConcurrentDictionary<TypeTuple, Delegate> _dynamicMapDict = new ConcurrentDictionary<TypeTuple, Delegate>();
         internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
-            _dynamicMapDict ??= new ConcurrentDictionary<TypeTuple, Delegate>();
             var key = new TypeTuple(sourceType, typeof(TDestination));
             if (!_dynamicMapDict.TryGetValue(key, out var del)) 
                 del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
@@ -463,15 +450,18 @@ namespace Mapster
                 MapType = mapType,
                 ExplicitMapping = this.RuleMap.ContainsKey(tuple),
             };
-            var settings = (from rule in this.Rules.Reverse<TypeAdapterRule>()
-                            let priority = rule.Priority(arg)
-                            where priority != null
-                            orderby priority.Value descending
-                            select rule.Settings).ToList();
             var result = new TypeAdapterSettings();
-            foreach (var setting in settings)
+            lock (this.Rules)
             {
-                result.Apply(setting);
+                var settings = from rule in this.Rules.Reverse<TypeAdapterRule>()
+                    let priority = rule.Priority(arg)
+                    where priority != null
+                    orderby priority.Value descending
+                    select rule.Settings;
+                foreach (var setting in settings)
+                {
+                    result.Apply(setting);
+                }
             }
 
             //remove recursive include types
@@ -585,43 +575,30 @@ namespace Mapster
 
         private void Remove(TypeTuple key)
         {
-            if (this.RuleMap.TryGetValue(key, out var rule))
-            {
-                this.RuleMap.TryRemove(key, out _);
-                var lockable = this.Rules as ICollection;
-                if (!lockable.IsSynchronized)
-                {
-                    lock (lockable.SyncRoot)
-                    {
-                        this.Rules.Remove(rule);
-                    }
-                }
-                else
-                {
-                    this.Rules.Remove(rule);
-                }
-            }
+            if (this.RuleMap.TryRemove(key, out var rule))
+                this.Rules.LockRemove(rule);
             _mapDict.TryRemove(key, out _);
             _mapToTargetDict.TryRemove(key, out _);
             _projectionDict.TryRemove(key, out _);
             _dynamicMapDict?.TryRemove(key, out _);
         }
 
-        private static TypeAdapterConfig? _cloneConfig;
-        public TypeAdapterConfig Clone()
+        private static readonly Lazy<TypeAdapterConfig> _cloneConfig = new Lazy<TypeAdapterConfig>(() =>
         {
-            if (_cloneConfig == null)
-            {
-                _cloneConfig = new TypeAdapterConfig();
-                _cloneConfig.Default.Settings.PreserveReference = true;
-                _cloneConfig.ForType<TypeAdapterSettings, TypeAdapterSettings>()
-                    .MapWith(src => src.Clone(), true);
-            }
-            var fn = _cloneConfig.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
+            var config = new TypeAdapterConfig();
+            config.Default.Settings.PreserveReference = true;
+            config.ForType<TypeAdapterSettings, TypeAdapterSettings>()
+                .MapWith(src => src.Clone(), true);
+            return config;
+        });
+        public TypeAdapterConfig Clone()
+        { 
+            var fn = _cloneConfig.Value.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
             return fn(this);
         }
 
-        private Dictionary<string, TypeAdapterConfig>? _inlineConfigs;
+        private readonly ConcurrentDictionary<string, TypeAdapterConfig> _inlineConfigs =
+            new ConcurrentDictionary<string, TypeAdapterConfig>();
         public TypeAdapterConfig Fork(Action<TypeAdapterConfig> action,
 #if !NET40
             [CallerFilePath]
@@ -632,21 +609,13 @@ namespace Mapster
 #endif
             int key2 = 0)
         {
-            _inlineConfigs ??= new Dictionary<string, TypeAdapterConfig>();
-            var key = key1 + '|' + key2;
-            if (_inlineConfigs.TryGetValue(key, out var config))
-                return config;
-
-            lock (_inlineConfigs)
+            var key = $"{key1}|{key2}";
+            return _inlineConfigs.GetOrAdd(key, _ =>
             {
-                if (_inlineConfigs.TryGetValue(key, out config))
-                    return config;
-
                 var cloned = this.Clone();
                 action(cloned);
-                _inlineConfigs[key] = config = cloned;
-            }
-            return config;
+                return cloned;
+            });
         }
     }
 
