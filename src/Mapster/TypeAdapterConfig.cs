@@ -292,12 +292,30 @@ namespace Mapster
         }
 
         private readonly ConcurrentDictionary<TypeTuple, Delegate> _dynamicMapDict = new ConcurrentDictionary<TypeTuple, Delegate>();
-        internal Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
+        public Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
             var key = new TypeTuple(sourceType, typeof(TDestination));
             if (!_dynamicMapDict.TryGetValue(key, out var del)) 
                 del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
             return (Func<object, TDestination>)del;
+        }
+
+        private Expression CreateSelfExpression()
+        {
+            if (this == GlobalSettings)
+                return Expression.Property(null, typeof(TypeAdapterConfig).GetProperty(nameof(GlobalSettings)));
+            else
+                return Expression.Constant(this);
+        }
+
+        internal Expression CreateDynamicMapInvokeExpressionBody(Type destinationType, Expression p1)
+        {
+            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                where m.Name == nameof(GetDynamicMapFunction)
+                select m).First().MakeGenericMethod(destinationType);
+            var getType = typeof(object).GetMethod(nameof(GetType));
+            var invoker = Expression.Call(CreateSelfExpression(), method, Expression.Call(p1, getType));
+            return Expression.Call(invoker, "Invoke", null, p1);
         }
 
         internal LambdaExpression CreateMapExpression(TypeTuple tuple, MapType mapType)
@@ -427,20 +445,17 @@ namespace Mapster
                 var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                     where m.Name == nameof(GetMapFunction)
                     select m).First().MakeGenericMethod(sourceType, destinationType);
-                invoker = Expression.Call(Expression.Constant(this), method);
+                invoker = Expression.Call(CreateSelfExpression(), method);
             }
             return Expression.Call(invoker, "Invoke", null, p);
         }
 
-        internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression? p2)
+        internal Expression CreateMapToTargetInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression p2)
         {
-            if (p2 == null)
-                return CreateMapInvokeExpressionBody(sourceType, destinationType, p1);
-
             var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 where m.Name == nameof(GetMapToTargetFunction)
                 select m).First().MakeGenericMethod(sourceType, destinationType);
-            var invoker = Expression.Call(Expression.Constant(this), method);
+            var invoker = Expression.Call(CreateSelfExpression(), method);
             return Expression.Call(invoker, "Invoke", null, p1, p2);
         }
 
@@ -448,7 +463,7 @@ namespace Mapster
         {
             var p1 = Expression.Parameter(sourceType);
             var p2 = Expression.Parameter(destinationType);
-            var invoke = CreateMapInvokeExpressionBody(sourceType, destinationType, p1, p2);
+            var invoke = CreateMapToTargetInvokeExpressionBody(sourceType, destinationType, p1, p2);
             return Expression.Lambda(invoke, p1, p2);
         }
 

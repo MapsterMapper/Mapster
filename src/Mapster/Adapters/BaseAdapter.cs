@@ -108,9 +108,16 @@ namespace Mapster.Adapters
                     if (exp != null)
                         return exp.To(arg.DestinationType, true);
                 }
-                
-                if (arg.Context.Running.Count > 1 && !arg.Context.Config.SelfContainedCodeGeneration && !arg.Context.IsSubFunction())
-                    return arg.Context.Config.CreateMapInvokeExpressionBody(source.Type, arg.DestinationType, source, destination);
+
+                if (arg.Context.Running.Count > 1 && 
+                    !arg.Context.Config.SelfContainedCodeGeneration &&
+                    !arg.Context.IsSubFunction())
+                {
+                    if (destination == null)
+                        return arg.Context.Config.CreateMapInvokeExpressionBody(source.Type, arg.DestinationType, source);
+                    else 
+                        return arg.Context.Config.CreateMapToTargetInvokeExpressionBody(source.Type, arg.DestinationType, source, destination);
+                }
                 else
                     return CreateBlockExpressionBody(source, destination, arg);
             }

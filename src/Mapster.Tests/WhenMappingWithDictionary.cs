@@ -278,6 +278,22 @@ namespace Mapster.Tests
             result.Dict.Keys.Any(k => k.Name == "one hundred").ShouldBeTrue();
         }
 
+        [TestMethod]
+        public void MapNestedDictionariesToClasses()
+        {
+            var pet = new Dictionary<string, object> {{"Name", "Fluffy"}, {"Type", "Cat"}};
+            var dictionary = new Dictionary<string, object>
+            {
+                {"Name", "Alice"},
+                {"Pet", pet}
+            };
+
+            var person = dictionary.Adapt<Person>();
+            person.Name.ShouldBe(dictionary["Name"]);
+            person.Pet.Name.ShouldBe(pet["Name"]);
+            person.Pet.Type.ShouldBe(pet["Type"]);
+        }
+
         public class SimplePoco
         {
             public Guid Id { get; set; }
@@ -313,5 +329,18 @@ namespace Mapster.Tests
         {
             public Dictionary<SimplePoco, int> Dict { get; set; }
         }
+
+        public class Person
+        {
+            public string Name { get; set; }
+            public Pet Pet { get; set; }
+        }
+
+        public class Pet
+        {
+            public string Name { get; set; }
+            public string Type { get; set; }
+        }
+
     }
 }

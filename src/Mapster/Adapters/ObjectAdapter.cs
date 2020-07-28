@@ -17,11 +17,9 @@ namespace Mapster.Adapters
             var destType = arg.DestinationType;
             if (srcType == destType)
                 return source;
-            else if (destType == typeof(object))
+            if (destType == typeof(object))
                 return Expression.Convert(source, destType);
-            else //if (srcType == typeof(object))
-                return ReflectionUtils.CreateConvertMethod(srcType, destType, source)
-                    ?? Expression.Convert(source, destType);
+            return arg.Context.Config.CreateDynamicMapInvokeExpressionBody(arg.DestinationType, source);
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
