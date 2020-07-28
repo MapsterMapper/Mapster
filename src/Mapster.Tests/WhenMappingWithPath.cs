@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using ExpressionDebugger;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -154,6 +156,29 @@ namespace Mapster.Tests
             dto2.Address.Location.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void TestMappingToSelf()
+        {
+            var config = new TypeAdapterConfig();
+            config.NewConfig<Post, Post>()
+                .Map(nameof(Post.Secret), x => default(string))
+                .Map(nameof(Post.Dic) + ".Secret", x => default(string));
+
+            var p1 = new Post
+            {
+                Secret = "Test", 
+                Dic = new Dictionary<string, string>
+                {
+                    { "Secret", "test" }, 
+                    {"B", "test2" }
+                }
+            };
+
+            p1.Adapt(p1, config);
+            p1.Dic["Secret"].ShouldBeNull();
+            p1.Secret.ShouldBeNull();
+        }
+
         public class Poco
         {
             public Guid Id { get; set; }
@@ -173,6 +198,12 @@ namespace Mapster.Tests
             public Guid Id { get; set; }
             public Address Address { get; set; }
             public string Location { get; set; }
+        }
+
+        public class Post
+        {
+            public IDictionary<string,string> Dic { get; set; }
+            public string Secret { get; set; }
         }
     }
 }

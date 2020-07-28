@@ -11,7 +11,6 @@ namespace Mapster.Adapters
     internal class CollectionAdapter : BaseAdapter
     {
         protected override int Score => -125;
-        protected override bool UseTargetValue => true;
         protected override ObjectType ObjectType => ObjectType.Collection;
 
         protected override bool CanMap(PreCompileArgument arg)
@@ -93,13 +92,6 @@ namespace Mapster.Adapters
                     : typeof(IList);
                 list = Expression.Variable(listType, "list");
                 actions.Add(ExpressionEx.Assign(list, destination)); //convert to list type
-            }
-
-            //list.Clear();
-            if (arg.MapType == MapType.MapToTarget)
-            {
-                var clear = list.Type.GetMethod("Clear", Type.EmptyTypes);
-                actions.Add(Expression.Call(list, clear));
             }
 
             actions.Add(CreateListSet(source, list, arg));

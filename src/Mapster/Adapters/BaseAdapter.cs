@@ -195,17 +195,6 @@ namespace Mapster.Adapters
                     );
                 }
 
-                //if (object.ReferenceEquals(source, destination))
-                //  return destination;
-                if (destination != null && 
-                    source.Type.IsObjectReference() &&
-                    destination.Type.IsObjectReference() &&
-                    (source.Type.IsAssignableFrom(destination.Type) || destination.Type.IsAssignableFrom(source.Type)))
-                {
-                    var refEquals = Expression.Call(typeof(object), nameof(ReferenceEquals), null, source, destination);
-                    blocks.Add(Expression.IfThen(refEquals, Expression.Return(label, destination)));
-                }
-
                 //var result = new TDest();
                 var result = Expression.Variable(arg.DestinationType, "result");
                 var assign = Expression.Assign(result, set);

@@ -70,6 +70,21 @@ namespace Mapster.Adapters
                     : mapped;
             }
 
+            
+            //if (object.ReferenceEquals(source, destination))
+            //  return destination;
+            LabelTarget? label = null;
+            if (destination != null && 
+                source.Type.IsObjectReference() &&
+                destination.Type.IsObjectReference() &&
+                (source.Type.IsAssignableFrom(destination.Type) || destination.Type.IsAssignableFrom(source.Type)))
+            {
+                label = Expression.Label(arg.DestinationType);
+                var refEquals = Expression.Call(typeof(object), nameof(ReferenceEquals), null, source, destination);
+                actions.Add(Expression.IfThen(refEquals, Expression.Return(label, destination)));
+            }
+
+
             var keyType = srcDictType.GetGenericArguments().First();
             var kvpType = source.Type.ExtractCollectionType();
             var kvp = Expression.Variable(kvpType, "kvp");
@@ -145,6 +160,10 @@ namespace Mapster.Adapters
             set = Expression.Block(new[] { key }, keyAssign, set);
             var loop = ExpressionEx.ForEach(source, kvp, set);
             actions.Add(loop);
+
+            if (label != null)
+                actions.Add(Expression.Label(label, arg.DestinationType.CreateDefault()));
+
             return shouldConvert
                 ? Expression.Block(new[] {(ParameterExpression)dict}, actions)
                 : Expression.Block(actions);
