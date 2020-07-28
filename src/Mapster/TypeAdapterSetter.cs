@@ -617,6 +617,14 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TSource, TDestination> Fork(Action<TypeAdapterConfig> action)
+        {
+            this.CheckCompiled();
+
+            Settings.Fork = action;
+            return this;
+        }
+
         public TwoWaysTypeAdapterSetter<TSource, TDestination> TwoWays()
         {
             return new TwoWaysTypeAdapterSetter<TSource, TDestination>(this.Config);
@@ -839,6 +847,13 @@ namespace Mapster
         {
             SourceToDestinationSetter.MaxDepth(value);
             DestinationToSourceSetter.MaxDepth(value);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Fork(Action<TypeAdapterConfig> action)
+        {
+            SourceToDestinationSetter.Fork(action);
+            DestinationToSourceSetter.Fork(action);
             return this;
         }
     }

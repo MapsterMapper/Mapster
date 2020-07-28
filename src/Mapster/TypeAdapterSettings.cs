@@ -10,124 +10,129 @@ namespace Mapster
     {
         public IgnoreDictionary Ignore
         {
-            get => Get("Ignore", () => new IgnoreDictionary());
+            get => Get(nameof(Ignore), () => new IgnoreDictionary());
         }
         public List<DestinationTransform> DestinationTransforms
         {
-            get => Get("DestinationTransforms", () => new List<DestinationTransform>());
+            get => Get(nameof(DestinationTransforms), () => new List<DestinationTransform>());
         }
         public NameMatchingStrategy NameMatchingStrategy
         {
-            get => Get("NameMatchingStrategy", () => new NameMatchingStrategy());
-            set => Set("NameMatchingStrategy", value);
+            get => Get(nameof(NameMatchingStrategy), () => new NameMatchingStrategy());
+            set => Set(nameof(NameMatchingStrategy), value);
         }
 
         public bool? PreserveReference
         {
-            get => Get("PreserveReference");
-            set => Set("PreserveReference", value);
+            get => Get(nameof(PreserveReference));
+            set => Set(nameof(PreserveReference), value);
         }
         public bool? ShallowCopyForSameType
         {
-            get => Get("ShallowCopyForSameType");
-            set => Set("ShallowCopyForSameType", value);
+            get => Get(nameof(ShallowCopyForSameType));
+            set => Set(nameof(ShallowCopyForSameType), value);
         }
         public bool? IgnoreNullValues
         {
-            get => Get("IgnoreNullValues");
-            set => Set("IgnoreNullValues", value);
+            get => Get(nameof(IgnoreNullValues));
+            set => Set(nameof(IgnoreNullValues), value);
         }
         public bool? MapEnumByName
         {
-            get => Get("MapEnumByName");
-            set => Set("MapEnumByName", value);
+            get => Get(nameof(MapEnumByName));
+            set => Set(nameof(MapEnumByName), value);
         }
         public bool? IgnoreNonMapped
         {
-            get => Get("IgnoreNonMapped");
-            set => Set("IgnoreNonMapped", value);
+            get => Get(nameof(IgnoreNonMapped));
+            set => Set(nameof(IgnoreNonMapped), value);
         }
         public bool? AvoidInlineMapping
         {
-            get => Get("AvoidInlineMapping");
-            set => Set("AvoidInlineMapping", value);
+            get => Get(nameof(AvoidInlineMapping));
+            set => Set(nameof(AvoidInlineMapping), value);
         }
         public int? MaxDepth
         {
-            get => (int?) Get<object>("MaxDepth");
-            set => Set("MaxDepth", value);
+            get => (int?) Get<object>(nameof(MaxDepth));
+            set => Set(nameof(MaxDepth), value);
         }
         public bool? Unflattening
         {
-            get => Get("Unflattening");
-            set => Set("Unflattening", value);
+            get => Get(nameof(Unflattening));
+            set => Set(nameof(Unflattening), value);
         }
         public bool? SkipDestinationMemberCheck
         {
-            get => Get("SkipDestinationMemberCheck");
-            set => Set("SkipDestinationMemberCheck", value);
+            get => Get(nameof(SkipDestinationMemberCheck));
+            set => Set(nameof(SkipDestinationMemberCheck), value);
         }
         public bool? EnableNonPublicMembers
         {
-            get => Get("EnableNonPublicMembers");
-            set => Set("EnableNonPublicMembers", value);
+            get => Get(nameof(EnableNonPublicMembers));
+            set => Set(nameof(EnableNonPublicMembers), value);
         }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {
-            get => Get("ShouldMapMember", () => new List<Func<IMemberModel, MemberSide, bool?>>());
+            get => Get(nameof(ShouldMapMember), () => new List<Func<IMemberModel, MemberSide, bool?>>());
         }
         public List<Func<Expression, IMemberModel, CompileArgument, Expression?>> ValueAccessingStrategies
         {
-            get => Get("ValueAccessingStrategies", () => new List<Func<Expression, IMemberModel, CompileArgument, Expression?>>());
+            get => Get(nameof(ValueAccessingStrategies), () => new List<Func<Expression, IMemberModel, CompileArgument, Expression?>>());
         }
         public List<InvokerModel> Resolvers
         {
-            get => Get("Resolvers", () => new List<InvokerModel>());
+            get => Get(nameof(Resolvers), () => new List<InvokerModel>());
         }
         public List<object> ExtraSources
         {
-            get => Get("ExtraSources", () => new List<object>());
+            get => Get(nameof(ExtraSources), () => new List<object>());
         }
         public List<Func<CompileArgument, LambdaExpression>> BeforeMappingFactories
         {
-            get => Get("BeforeMappingFactories", () => new List<Func<CompileArgument, LambdaExpression>>());
+            get => Get(nameof(BeforeMappingFactories), () => new List<Func<CompileArgument, LambdaExpression>>());
         }
         public List<Func<CompileArgument, LambdaExpression>> AfterMappingFactories
         {
-            get => Get("AfterMappingFactories", () => new List<Func<CompileArgument, LambdaExpression>>());
+            get => Get(nameof(AfterMappingFactories), () => new List<Func<CompileArgument, LambdaExpression>>());
         }
         public List<TypeTuple> Includes
         {
-            get => Get("Includes", () => new List<TypeTuple>());
+            get => Get(nameof(Includes), () => new List<TypeTuple>());
         }
         public List<Func<IMemberModel, string?>> GetMemberNames
         {
-            get => Get("GetMemberNames", () => new List<Func<IMemberModel, string?>>());
+            get => Get(nameof(GetMemberNames), () => new List<Func<IMemberModel, string?>>());
         }
         public List<Func<IMemberModel, bool>> UseDestinationValues
         {
-            get => Get("UseDestinationValues", () => new List<Func<IMemberModel, bool>>());
+            get => Get(nameof(UseDestinationValues), () => new List<Func<IMemberModel, bool>>());
         }
         public Func<CompileArgument, LambdaExpression>? ConstructUsingFactory
         {
-            get => Get<Func<CompileArgument, LambdaExpression>>("ConstructUsingFactory");
-            set => Set("ConstructUsingFactory", value);
+            get => Get<Func<CompileArgument, LambdaExpression>>(nameof(ConstructUsingFactory));
+            set => Set(nameof(ConstructUsingFactory), value);
         }
         public Func<CompileArgument, LambdaExpression>? ConverterFactory
         {
-            get => Get<Func<CompileArgument, LambdaExpression>>("ConverterFactory");
-            set => Set("ConverterFactory", value);
+            get => Get<Func<CompileArgument, LambdaExpression>>(nameof(ConverterFactory));
+            set => Set(nameof(ConverterFactory), value);
         }
         public Func<CompileArgument, LambdaExpression>? ConverterToTargetFactory
         {
-            get => Get<Func<CompileArgument, LambdaExpression>>("ConverterToTargetFactory");
-            set => Set("ConverterToTargetFactory", value);
+            get => Get<Func<CompileArgument, LambdaExpression>>(nameof(ConverterToTargetFactory));
+            set => Set(nameof(ConverterToTargetFactory), value);
         }
         public object? MapToConstructor
         {
-            get => Get<object>("MapToConstructor");
-            set => Set("MapToConstructor", value);
+            get => Get<object>(nameof(MapToConstructor));
+            set => Set(nameof(MapToConstructor), value);
+        }
+        public Action<TypeAdapterConfig>? Fork
+        {
+            get => Get<Action<TypeAdapterConfig>>(nameof(Fork));
+            set => Set(nameof(Fork), value);
         }
 
         internal bool Compiled { get; set; }

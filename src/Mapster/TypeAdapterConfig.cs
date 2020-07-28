@@ -304,13 +304,24 @@ namespace Mapster
         {
             var context = new CompileContext(this);
             context.Running.Add(tuple);
+            Action<TypeAdapterConfig>? fork = null;
             try
             {
                 var arg = GetCompileArgument(tuple, mapType, context);
+                fork = arg.Settings.Fork;
+                if (fork != null)
+                {
+                    var cloned = this.Clone();
+                    fork(cloned);
+                    context.Configs.Push(cloned);
+                    arg.Settings = cloned.GetMergedSettings(tuple, mapType);
+                }
                 return CreateMapExpression(arg);
             }
             finally
             {
+                if (fork != null)
+                    context.Configs.Pop();
                 context.Running.Remove(tuple);
             }
         }
@@ -475,7 +486,7 @@ namespace Mapster
         private CompileArgument GetCompileArgument(TypeTuple tuple, MapType mapType, CompileContext context)
         {
             var setting = GetMergedSettings(tuple, mapType);
-            var arg = new CompileArgument
+            return new CompileArgument
             {
                 SourceType = tuple.Source,
                 DestinationType = tuple.Destination,
@@ -484,7 +495,6 @@ namespace Mapster
                 Context = context,
                 Settings = setting,
             };
-            return arg;
         }
 
         public void Compile()
@@ -597,8 +607,9 @@ namespace Mapster
             return fn(this);
         }
 
-        private readonly ConcurrentDictionary<string, TypeAdapterConfig> _inlineConfigs =
-            new ConcurrentDictionary<string, TypeAdapterConfig>();
+        private ConcurrentDictionary<string, TypeAdapterConfig>? _inlineConfigs;
+        private ConcurrentDictionary<string, TypeAdapterConfig> InlineConfigs =>
+            _inlineConfigs ??= new ConcurrentDictionary<string, TypeAdapterConfig>();
         public TypeAdapterConfig Fork(Action<TypeAdapterConfig> action,
 #if !NET40
             [CallerFilePath]
@@ -610,7 +621,7 @@ namespace Mapster
             int key2 = 0)
         {
             var key = $"{key1}|{key2}";
-            return _inlineConfigs.GetOrAdd(key, _ =>
+            return InlineConfigs.GetOrAdd(key, _ =>
             {
                 var cloned = this.Clone();
                 action(cloned);

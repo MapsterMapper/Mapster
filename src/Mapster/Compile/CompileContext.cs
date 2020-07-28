@@ -7,7 +7,8 @@ namespace Mapster
     public class CompileContext
     {
         public HashSet<TypeTuple> Running { get; } = new HashSet<TypeTuple>();
-        public TypeAdapterConfig Config { get; }
+        public Stack<TypeAdapterConfig> Configs { get; } = new Stack<TypeAdapterConfig>();
+        public TypeAdapterConfig Config => Configs.Peek();
         public int? MaxDepth { get; set; }
         public int Depth { get; set; }
         public HashSet<ParameterExpression> ExtraParameters { get; } = new HashSet<ParameterExpression>();
@@ -19,7 +20,7 @@ namespace Mapster
 
         public CompileContext(TypeAdapterConfig config)
         {
-            this.Config = config;
+            Configs.Push(config);
         }
     }
 }

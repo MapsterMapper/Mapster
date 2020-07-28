@@ -4,7 +4,7 @@ namespace Mapster
 {
     public class TypeAdapterRule
     {
-        public Func<PreCompileArgument, int?> Priority;
-        public TypeAdapterSettings Settings;
+        public Func<PreCompileArgument, int?> Priority { get; set; }
+        public TypeAdapterSettings Settings { get; set; }
     }
 }
