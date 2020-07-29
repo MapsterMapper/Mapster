@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Sample.AspNetCore.Models
+namespace Mapster.EFCore.Tests.Models
 {
     public class Course
     {
@@ -11,5 +11,4 @@ namespace Sample.AspNetCore.Models
         public int Credits { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; }
-    }
-}
+    }}

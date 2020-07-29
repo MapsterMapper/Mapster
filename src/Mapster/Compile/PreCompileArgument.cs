@@ -2,11 +2,12 @@
 
 namespace Mapster
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1104:Fields should not have public accessibility", Justification = "<Pending>")]
     public class PreCompileArgument
     {
-        public Type SourceType { get; set; }
-        public Type DestinationType { get; set; }
-        public MapType MapType { get; set; }
-        public bool ExplicitMapping { get; set; }
+        public Type SourceType;
+        public Type DestinationType;
+        public MapType MapType;
+        public bool ExplicitMapping;
     }
 }

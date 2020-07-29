@@ -11,19 +11,14 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenScanningForRegisters
     {
-        [TestInitialize]
-        public void Setup()
-        {
-            TypeAdapterConfig.GlobalSettings.Clear();
-        }
-
         [TestMethod]
         public void Registers_Are_Found()
         {
-            IList<IRegister> registers = TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
+            var config = new TypeAdapterConfig();
+            IList<IRegister> registers = config.Scan(Assembly.GetExecutingAssembly());
             registers.Count.ShouldBe(2);
 
-            var typeTuples = TypeAdapterConfig.GlobalSettings.RuleMap.Keys.ToList();
+            var typeTuples = config.RuleMap.Keys.ToList();
 
             typeTuples.Any(x => x.Equals(new TypeTuple(typeof (Customer), typeof (CustomerDTO)))).ShouldBeTrue();
             typeTuples.Any(x => x.Equals(new TypeTuple(typeof (Product), typeof (ProductDTO)))).ShouldBeTrue();

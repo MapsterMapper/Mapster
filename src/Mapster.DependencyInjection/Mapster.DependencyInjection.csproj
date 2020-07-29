@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net45;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <Authors>Chaowlert Chaisrichalermpol</Authors>
+    <Company>Chaowlert Chaisrichalermpol</Company>
+    <Description>Dependency Injection supports for Mapster</Description>
+    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster.DependencyInjection</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MapsterMapper/Mapster.DependencyInjection</RepositoryUrl>
+    <PackageTags>Mapster;DependencyInjection</PackageTags>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Mapster.DependencyInjection.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>8.0</LangVersion>
+    <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="System.ComponentModel" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+</Project>

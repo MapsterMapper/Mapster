@@ -1,4 +1,4 @@
-﻿namespace Sample.AspNetCore.Models
+﻿namespace Mapster.EFCore.Tests.Models
 {
     public enum Grade
     {
@@ -14,5 +14,4 @@
 
         public Course Course { get; set; }
         public Student Student { get; set; }
-    }
-}
+    }}

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net45;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <Authors>Chaowlert Chaisrichalermpol</Authors>
+    <Company>Chaowlert Chaisrichalermpol</Company>
+    <Description>Json.net conversion supports for Mapster</Description>
+    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster.JsonNet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MapsterMapper/Mapster.JsonNet</RepositoryUrl>
+    <PackageTags>Mapster;Json.net</PackageTags>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Mapster.JsonNet.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="4.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

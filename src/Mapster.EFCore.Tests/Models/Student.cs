@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sample.AspNetCore.Models
+namespace Mapster.EFCore.Tests.Models
 {
     public class Student
     {

@@ -368,6 +368,7 @@ namespace Mapster
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "<Pending>")]
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TDestination>
     {
         internal TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
