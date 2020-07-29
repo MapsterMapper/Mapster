@@ -5,13 +5,13 @@
     <Authors>Chaowlert Chaisrichalermpol</Authors>
     <Company>Chaowlert Chaisrichalermpol</Company>
     <Description>Json.net conversion supports for Mapster</Description>
-    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster.JsonNet</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MapsterMapper/Mapster.JsonNet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
     <PackageTags>Mapster;Json.net</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.JsonNet.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
     <PackageIcon>icon.png</PackageIcon>

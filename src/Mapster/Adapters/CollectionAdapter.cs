@@ -144,14 +144,33 @@ namespace Mapster.Adapters
                           select m).First().MakeGenericMethod(sourceElementType, destinationElementType);
             exp = Expression.Call(method, exp, Expression.Lambda(adapt, p1));
             if (exp.Type != arg.DestinationType)
-            {
-                //src.Select(item => convert(item)).ToList()
-                var toList = (from m in typeof(Enumerable).GetMethods()
-                              where m.Name == nameof(Enumerable.ToList)
-                              select m).First().MakeGenericMethod(destinationElementType);
-                exp = Expression.Call(toList, exp);
-            }
+                exp = InlineChangeType(exp, arg);
             return exp;
+        }
+
+        private static Expression InlineChangeType(Expression exp, CompileArgument arg)
+        {
+            var destinationElementType = arg.DestinationType.ExtractCollectionType();
+
+            //src.Select(item => convert(item)).ToList()
+            if (arg.DestinationType.IsAssignableFromList())
+            {
+                var toList = (from m in typeof(Enumerable).GetMethods()
+                    where m.Name == nameof(Enumerable.ToList)
+                    select m).First().MakeGenericMethod(destinationElementType);
+                return Expression.Call(toList, exp);
+            }
+            else // if (arg.DestinationType.IsAssignableFromSet())
+            {
+                var set = typeof(HashSet<>).MakeGenericType(destinationElementType);
+                var ctor = (from c in set.GetConstructors()
+                    let a = c.GetParameters()
+                    where a.Length == 1 &&
+                          a[0].ParameterType.GetTypeInfo().IsGenericType &&
+                          a[0].ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                    select c).First();
+                return Expression.New(ctor, exp);
+            }
         }
 
         private Expression CreateListSet(Expression source, Expression destination, CompileArgument arg)

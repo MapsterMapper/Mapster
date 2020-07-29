@@ -5,8 +5,8 @@
     <Authors>Chaowlert Chaisrichalermpol</Authors>
     <Company>Chaowlert Chaisrichalermpol</Company>
     <Description>Dependency Injection supports for Mapster</Description>
-    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster.DependencyInjection</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MapsterMapper/Mapster.DependencyInjection</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
     <PackageTags>Mapster;DependencyInjection</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.DependencyInjection.snk</AssemblyOriginatorKeyFile>
