@@ -41,6 +41,27 @@ namespace Mapster.Tests
             another.ShouldBeSameAs(another2.Left);
         }
 
+        [TestMethod]
+        public void MapSameReferenceToDifferentTypes()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.PreserveReference(true);
+
+            var employee = new Employee { Id = 1, Name = "Name" };
+
+            var department = new Department
+            {
+                Manager = employee,
+                Supervisor = employee
+            };
+
+            var result = department.Adapt<DepartmentDto>(config);
+            result.Manager.Id.ShouldBe(employee.Id);
+            result.Manager.Name.ShouldBe(employee.Name);
+            result.Supervisor.Id.ShouldBe(employee.Id);
+            result.Supervisor.Name.ShouldBe(employee.Name);
+        }
+
         #region TestClasses
 
         public class SimplePoco
@@ -71,6 +92,36 @@ namespace Mapster.Tests
                 this.Left = another;
                 another.Right = this;
             }
+        }
+
+        public class DepartmentDto
+        {
+            public EmployeeDto Manager { get; set; }
+            public PersonDto Supervisor { get; set; }
+        }
+
+        public class Department
+        {
+            public Employee Manager { get; set; }
+            public Employee Supervisor { get; set; }
+        }
+
+        public class Employee
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class EmployeeDto
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        public class PersonDto
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
 
         #endregion

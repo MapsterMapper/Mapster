@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mapster.Immutable\Mapster.Immutable.csproj" />
+    <ProjectReference Include="..\Mapster\Mapster.csproj" />
   </ItemGroup>
 
 </Project>

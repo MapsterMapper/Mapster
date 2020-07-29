@@ -1,4 +1,5 @@
 ﻿using System;
+using Mapster.Utils;
 
 namespace Mapster
 {
@@ -23,9 +24,7 @@ namespace Mapster
                 MapContext.Current = null;
         }
 
-        public static TResult GetOrAddMapReference<TKey, TResult>(TKey key, Func<TKey, TResult> mapFn) 
-            where TKey : class 
-            where TResult : class
+        public static TResult GetOrAddMapReference<TResult>(ReferenceTuple key, Func<ReferenceTuple, TResult> mapFn) where TResult : notnull
         {
             using var context = new MapContextScope();
             var dict = context.Context.References;

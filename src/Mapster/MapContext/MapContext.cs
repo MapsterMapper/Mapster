@@ -17,8 +17,8 @@ namespace Mapster
         [field: ThreadStatic]
         public static MapContext? Current { get; set; }
 
-        private Dictionary<object, object>? _references;
-        public Dictionary<object, object> References => _references ??= new Dictionary<object, object>(ReferenceComparer.Default);
+        private Dictionary<ReferenceTuple, object>? _references;
+        public Dictionary<ReferenceTuple, object> References => _references ??= new Dictionary<ReferenceTuple, object>();
 
         private Dictionary<string, object>? _parameters;
         public Dictionary<string, object> Parameters => _parameters ??= new Dictionary<string, object>();
