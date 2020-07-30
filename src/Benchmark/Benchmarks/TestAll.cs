@@ -11,28 +11,28 @@ namespace Benchmark.Benchmarks
         [Params(100_000)]//, 1_000_000)]
         public int Iterations { get; set; }
 
-        [Benchmark(Description = "Mapster 5.0.0")]
+        [Benchmark(Description = "Mapster 6.0.0")]
         public void MapsterTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(_fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 5.0.0 (Roslyn)")]
+        [Benchmark(Description = "Mapster 6.0.0 (Roslyn)")]
         public void RoslynTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(_fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 5.0.0 (FEC)")]
+        [Benchmark(Description = "Mapster 6.0.0 (FEC)")]
         public void FecTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(_fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 5.0.0 (Codegen)")]
+        [Benchmark(Description = "Mapster 6.0.0 (Codegen)")]
         public void CodegenTest()
         {
             TestAdaptHelper.TestCodeGen(_fooInstance, Iterations);

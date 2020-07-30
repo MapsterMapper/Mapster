@@ -38,7 +38,9 @@ namespace Mapster.EFCore.Tests
                 .EntityFromContext(context)
                 .AdaptTo(poco);
 
-            poco.Enrollments.First().Grade.ShouldBe(Grade.F);
+            var first = poco.Enrollments.First();
+            first.CourseID.ShouldBe(3141);
+            first.Grade.ShouldBe(Grade.F);
         }
     }
     public class StudentDto

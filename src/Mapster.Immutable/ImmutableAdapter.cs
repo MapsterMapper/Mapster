@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -36,7 +37,12 @@ namespace Mapster.Immutable
             var args = arg.DestinationType.GetGenericArguments();
             if (args.Length == 2 && args[0] == typeof(string))
                 return true;
-            return arg.SourceType.IsCollection();
+            return IsCollection(arg.SourceType);
+        }
+
+        private static bool IsCollection(Type type)
+        {
+            return typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) && type != typeof(string);
         }
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
