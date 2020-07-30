@@ -45,32 +45,30 @@ using (MyDbContext context = new MyDbContext())
 }
 ```
 
-### What's new in Mapster 5.0
-- [Generate dynamic proxy for interface](https://github.com/MapsterMapper/Mapster/blob/master/src/Mapster.Tests/WhenMappingToInterface.cs)
-- [UseDestinationValue](https://github.com/MapsterMapper/Mapster/wiki/Mapping-readonly-prop)
-- [Null propagating for property path](https://github.com/MapsterMapper/Mapster/wiki/Custom-mapping#null-propagation)
-- [Support multiple sources](https://github.com/MapsterMapper/Mapster/wiki/Custom-mapping#multiple-sources)
+### What's new
+- [Define setting to nested mapping](https://github.com/MapsterMapper/Mapster/wiki/Config-for-nested-mapping)
+- [`ISet`, `IDictionary`, `IReadOnlyDictionary` support](https://github.com/MapsterMapper/Mapster/wiki/Data-types#collections)
+- [`EmptyCollectionIfNull`, `CreateNewIfNull` DestinationTransform](https://github.com/MapsterMapper/Mapster/wiki/Setting-values#transform-value)
+- [Several fixes](https://github.com/MapsterMapper/Mapster/releases/)
 - New plugins
-  - [Async support](https://github.com/MapsterMapper/Mapster/wiki/Async)
-  - [Inject service to mapping](https://github.com/MapsterMapper/Mapster/wiki/Dependency-Injection)
-  - [EF Core support](https://github.com/MapsterMapper/Mapster/wiki/EF-6-&-EF-Core)
+  - [Immutable collection support](https://github.com/MapsterMapper/Mapster/wiki/Immutable)
 
 ### Why Mapster?
 #### Performance & Memory efficient
-Mapster was designed to be efficient on both speed and memory. You could gain 5x faster while using only 1/3 of memory.
+Mapster was designed to be efficient on both speed and memory. You could gain 4x faster while using only 1/3 of memory.
 And you could gain to 12x faster with
 - [Roslyn Compiler](https://github.com/MapsterMapper/Mapster/wiki/Debugging)
 - [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)
 - [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)
 
-|                    Method |           Mean |       StdDev |        Error |       Gen 0 | Gen 1 | Gen 2 |  Allocated |
-|-------------------------- |---------------:|-------------:|-------------:|------------:|------:|------:|-----------:|
-|           'Mapster 5.0.0' | 141.84 ms | 0.931 ms | 1.408 ms | 31250.0000 |     - |     - | 125.12 MB |
-|  'Mapster 5.0.0 (Roslyn)' |  60.48 ms | 1.186 ms | 1.993 ms | 31222.2222 |     - |     - | 125.12 MB |
-|     'Mapster 5.0.0 (FEC)' |  58.17 ms | 0.231 ms | 0.442 ms | 29714.2857 |     - |     - | 119.02 MB |
-| 'Mapster 5.0.0 (Codegen)' |  51.56 ms | 0.312 ms | 0.524 ms | 31200.0000 |     - |     - | 125.12 MB |
-|     'ExpressMapper 1.9.1' | 299.05 ms | 2.081 ms | 3.146 ms | 60000.0000 |     - |     - | 241.85 MB |
-|        'AutoMapper 9.0.0' | 708.06 ms | 3.398 ms | 5.137 ms | 91000.0000 |     - |     - | 364.69 MB |
+|                    Method |      Mean |    StdDev |     Error |      Gen 0 | Gen 1 | Gen 2 | Allocated |
+|-------------------------- |----------:|----------:|----------:|-----------:|------:|------:|----------:|
+|           'Mapster 6.0.0' | 108.59 ms |  1.198 ms |  1.811 ms | 31000.0000 |     - |     - | 124.36 MB |
+|  'Mapster 6.0.0 (Roslyn)' |  38.45 ms |  0.494 ms |  0.830 ms | 31142.8571 |     - |     - | 124.36 MB |
+|     'Mapster 6.0.0 (FEC)' |  37.03 ms |  0.281 ms |  0.472 ms | 29642.8571 |     - |     - | 118.26 MB |
+| 'Mapster 6.0.0 (Codegen)' |  34.16 ms |  0.209 ms |  0.316 ms | 31133.3333 |     - |     - | 124.36 MB |
+|     'ExpressMapper 1.9.1' | 205.78 ms |  5.357 ms |  8.098 ms | 59000.0000 |     - |     - | 236.51 MB |
+|       'AutoMapper 10.0.0' | 420.97 ms | 23.266 ms | 35.174 ms | 87000.0000 |     - |     - | 350.95 MB |
 
 
 
