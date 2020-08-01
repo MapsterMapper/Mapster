@@ -169,17 +169,6 @@ namespace Mapster
                 return del.DynamicInvoke(source, destination);
             }
         }
-
-        /// <summary>
-        /// Returns an instance representation of the adapter, mainly for DI/IOC situations.
-        /// </summary>
-        /// <param name="config">Configuration</param>
-        /// <returns>Instance of the adapter.</returns>
-        [Obsolete("Use new Mapper instead")]
-        public static IAdapter GetInstance(TypeAdapterConfig? config = null)
-        {
-            return new Adapter(config ?? TypeAdapterConfig.GlobalSettings);
-        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1104:Fields should not have public accessibility", Justification = "<Pending>")]

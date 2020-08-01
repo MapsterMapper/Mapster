@@ -318,7 +318,7 @@ namespace Mapster
             return Expression.Call(invoker, "Invoke", null, p1);
         }
 
-        internal LambdaExpression CreateMapExpression(TypeTuple tuple, MapType mapType)
+        public LambdaExpression CreateMapExpression(TypeTuple tuple, MapType mapType)
         {
             var context = new CompileContext(this);
             context.Running.Add(tuple);

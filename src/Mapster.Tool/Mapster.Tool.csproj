@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <IsPackable>true</IsPackable>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>dotnet-mapster</ToolCommandName>
+        <Authors>Chaowlert Chaisrichalermpol</Authors>
+        <Company>Chaowlert Chaisrichalermpol</Company>
+        <Description>Tool to generate object mapping using Mapster</Description>
+        <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
+        <PackageTags>Mapster;Tool</PackageTags>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>1.0.1</Version>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mapster\Mapster.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.8.0" />
+      <PackageReference Include="ExpressionTranslator" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.0.3" />
+    </ItemGroup>
+
+</Project>
