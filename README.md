@@ -46,6 +46,7 @@ using (MyDbContext context = new MyDbContext())
 ```
 
 ### What's new
+- [Automatically generate mapping code on build](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool)
 - [Define setting to nested mapping](https://github.com/MapsterMapper/Mapster/wiki/Config-for-nested-mapping)
 - [`ISet`, `IDictionary`, `IReadOnlyDictionary` support](https://github.com/MapsterMapper/Mapster/wiki/Data-types#collections)
 - [`EmptyCollectionIfNull`, `CreateNewIfNull` DestinationTransform](https://github.com/MapsterMapper/Mapster/wiki/Setting-values#transform-value)
@@ -78,11 +79,15 @@ And you could gain to 12x faster with
 ![image](https://cloud.githubusercontent.com/assets/5763993/26521773/180427b6-431b-11e7-9188-10c01fa5ba5c.png)
 
 #### Code Generation
-[Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen) lets you do mapping with
+Code generation lets you do mapping with
 - Validate mapping at compile time
 - Getting raw performance
 - Seeing your mapping code & debugging
 - Finding usage of your models' properties
+
+There are 2 tools, you can choose based on your preference.
+* [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool)
+* [TextTemplate](https://github.com/MapsterMapper/Mapster/wiki/TextTemplate)
 
 ### Change logs
 https://github.com/MapsterMapper/Mapster/releases
