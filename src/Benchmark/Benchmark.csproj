@@ -26,8 +26,8 @@
         <PackageReference Include="Expressmapper" Version="1.9.1" />
         <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     </ItemGroup>
-    <Target Name="mapster">
-        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster -a $(TargetDir)/$(ProjectName).dll" />
+    <Target Name="mapster" AfterTargets="AfterBuild">
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster -a $(TargetDir)$(ProjectName).dll" />
     </Target>
     <ItemGroup>
         <ProjectReference Include="..\Mapster\Mapster.csproj" />
