@@ -15,6 +15,7 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
     <PackageLicenseUrl></PackageLicenseUrl>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
