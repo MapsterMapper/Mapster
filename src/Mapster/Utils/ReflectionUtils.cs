@@ -106,7 +106,7 @@ namespace Mapster
         // so we need to process every one of them separately.
         public static IEnumerable<Type> GetAllInterfaces(this Type interfaceType)
         {
-            var allInterfaces = new List<Type>();
+            var allInterfaces = new HashSet<Type>();
             var interfaceQueue = new Queue<Type>();
             allInterfaces.Add(interfaceType);
             interfaceQueue.Enqueue(interfaceType);

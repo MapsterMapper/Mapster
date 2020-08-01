@@ -42,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Immutable", "Mapste
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Immutable.Tests", "Mapster.Immutable.Tests\Mapster.Immutable.Tests.csproj", "{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Tool", "Mapster.Tool\Mapster.Tool.csproj", "{05CFF481-D4EC-411A-99C5-382709E05522}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +110,10 @@ Global
 		{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05CFF481-D4EC-411A-99C5-382709E05522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05CFF481-D4EC-411A-99C5-382709E05522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05CFF481-D4EC-411A-99C5-382709E05522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05CFF481-D4EC-411A-99C5-382709E05522}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
