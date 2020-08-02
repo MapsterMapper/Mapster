@@ -86,7 +86,7 @@ Code generation lets you do mapping with
 - Finding usage of your models' properties
 
 There are 2 tools, you can choose based on your preference.
-* [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool)
+* [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool) NEW!
 * [TextTemplate](https://github.com/MapsterMapper/Mapster/wiki/TextTemplate)
 
 ### Change logs
