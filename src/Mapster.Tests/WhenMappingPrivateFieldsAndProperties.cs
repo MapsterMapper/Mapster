@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace Mapster.Tests
@@ -130,7 +131,24 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(customerName);
         }
 
-        private void SetUpMappingNonPublicFields<TSource, TDestination>()
+        [TestMethod]
+        public void Test_Dictionary()
+        {
+            var config = new TypeAdapterConfig();
+            config.ForType<IDictionary<string, object>, Pet>()
+                .EnableNonPublicMembers(true);
+
+            var pet = new Dictionary<string, object>
+            {
+                { "Name", "Fluffy" }, 
+                { "Color", "White" }
+            }.Adapt<Pet>(config);
+
+            pet.Name.ShouldBe("Fluffy");
+            pet.GetPrivateColor().ShouldBe("White");
+        }
+
+        private static void SetUpMappingNonPublicFields<TSource, TDestination>()
         {
             TypeAdapterConfig<TSource, TDestination>
                 .NewConfig()
@@ -138,7 +156,7 @@ namespace Mapster.Tests
                 .NameMatchingStrategy(NameMatchingStrategy.Flexible);
         }
 
-        private void SetUpMappingNonPublicProperties<TSource, TDestination>()
+        private static void SetUpMappingNonPublicProperties<TSource, TDestination>()
         {
             TypeAdapterConfig<TSource, TDestination>
                   .NewConfig()
@@ -149,7 +167,7 @@ namespace Mapster.Tests
 
         public class CustomerWithPrivateField
         {
-            private int _id;
+            private readonly int _id;
             public string Name { get; private set; }
 
             private CustomerWithPrivateField() { }
@@ -210,6 +228,17 @@ namespace Mapster.Tests
             public string Name { get; set; }
         }
 
+        public class Pet
+        {
+            public string Name { get; set; }
+
+            private string Color { get; set; }
+
+            public string GetPrivateColor()
+            {
+                return this.Color;
+            }
+        }
         #endregion
     }
 }
