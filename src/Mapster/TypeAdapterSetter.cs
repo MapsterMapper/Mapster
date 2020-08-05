@@ -366,6 +366,17 @@ namespace Mapster
             this.Settings.MapToConstructor = ctor;
             return this;
         }
+        
+        public TypeAdapterSetter<TDestination> AfterMappingInline(Expression<Action<TDestination>> action)
+        {
+            this.CheckCompiled();
+
+            var lambda = Expression.Lambda(action.Body, 
+                Expression.Parameter(typeof(object), "src"),
+                action.Parameters[0]);
+            Settings.AfterMappingFactories.Add(arg => lambda);
+            return this;
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "<Pending>")]
@@ -414,6 +425,11 @@ namespace Mapster
         public new TypeAdapterSetter<TSource, TDestination> MapToConstructor(ConstructorInfo ctor)
         {
             return (TypeAdapterSetter<TSource, TDestination>) base.MapToConstructor(ctor);
+        }
+
+        public new TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TDestination>> action)
+        {
+            return (TypeAdapterSetter<TSource, TDestination>) base.AfterMappingInline(action);
         }
 
         #endregion
@@ -570,7 +586,7 @@ namespace Mapster
             Settings.BeforeMappingFactories.Add(arg => action);
             return this;
         }
-
+        
         public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TSource, TDestination>> action)
         {
             this.CheckCompiled();
@@ -578,7 +594,7 @@ namespace Mapster
             Settings.AfterMappingFactories.Add(arg => action);
             return this;
         }
-
+        
         public TypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>()
             where TDerivedSource: class, TSource
             where TDerivedDestination: class, TDestination

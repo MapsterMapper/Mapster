@@ -188,7 +188,11 @@ namespace Mapster.Adapters
                 set = Expression.Coalesce(destination, set);
             }
 
-            if (set.NodeType != ExpressionType.Throw)
+            if (set.NodeType == ExpressionType.Throw)
+            {
+                blocks.Add(set);
+            }
+            else
             {
                 //TDestination result;
                 //if (source == null)

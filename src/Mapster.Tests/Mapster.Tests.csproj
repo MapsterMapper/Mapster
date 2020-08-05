@@ -20,6 +20,10 @@
     <ItemGroup>
         <ProjectReference Include="..\Mapster\Mapster.csproj" />
     </ItemGroup>
+    <Target Name="mapster" AfterTargets="AfterBuild">
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster -a $(TargetDir)$(ProjectName).dll" />
+    </Target>
     <ItemGroup>
       <None Remove="packages.config" />
       <None Remove="mock.keys" />
