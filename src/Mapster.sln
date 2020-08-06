@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A5580F9D-0F5F-4224-980F-7824536A627D}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		..\.config\dotnet-tools.json = ..\.config\dotnet-tools.json
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
 	EndProjectSection
@@ -40,9 +41,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.EFCore.Tests", "Map
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Immutable", "Mapster.Immutable\Mapster.Immutable.csproj", "{DE045991-6268-46EE-B5D3-79DE75820976}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Immutable.Tests", "Mapster.Immutable.Tests\Mapster.Immutable.Tests.csproj", "{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Immutable.Tests", "Mapster.Immutable.Tests\Mapster.Immutable.Tests.csproj", "{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Tool", "Mapster.Tool\Mapster.Tool.csproj", "{05CFF481-D4EC-411A-99C5-382709E05522}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Tool", "Mapster.Tool\Mapster.Tool.csproj", "{05CFF481-D4EC-411A-99C5-382709E05522}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
