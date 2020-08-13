@@ -1,7 +1,7 @@
 ![Mapster Icon](https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png)
 
 ## Mapster - The Mapper of Your Domain
-Writing mapping method is machine job. Do not waste your time, let Mapster do it.
+Writing mapping methods is a machine job. Do not waste your time, let Mapster do it.
 
 [![NuGet](https://img.shields.io/nuget/v/Mapster.svg)](https://www.nuget.org/packages/Mapster)
 
@@ -19,7 +19,7 @@ var destObject = sourceObject.Adapt<Destination>();
 ```
 
 #### Mapping to an existing object
-You make the object, Mapster maps to the object.
+You create the object, Mapster maps to the object.
 
 ```csharp
 sourceObject.Adapt(destObject);
@@ -56,8 +56,8 @@ using (MyDbContext context = new MyDbContext())
 
 ### Why Mapster?
 #### Performance & Memory efficient
-Mapster was designed to be efficient on both speed and memory. You could gain 4x faster while using only 1/3 of memory.
-And you could gain to 12x faster with
+Mapster was designed to be efficient on both speed and memory. You could gain a 4x performance improvement whilst using only 1/3 of memory.
+And you could gain up to 12x faster performance with
 - [Roslyn Compiler](https://github.com/MapsterMapper/Mapster/wiki/Debugging)
 - [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)
 - [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)
@@ -75,17 +75,17 @@ And you could gain to 12x faster with
 
 #### Step into debugging
 
-[Step-into debugging](https://github.com/MapsterMapper/Mapster/wiki/Debugging) lets you debug your mapping and inspect values as same as its your code.
+[Step-into debugging](https://github.com/MapsterMapper/Mapster/wiki/Debugging) lets you debug your mapping and inspect values just like your code.
 ![image](https://cloud.githubusercontent.com/assets/5763993/26521773/180427b6-431b-11e7-9188-10c01fa5ba5c.png)
 
 #### Code Generation
-Code generation lets you do mapping with
+Code generation allows you to
 - Validate mapping at compile time
 - Getting raw performance
 - Seeing your mapping code & debugging
 - Finding usage of your models' properties
 
-There are 2 tools, you can choose based on your preference.
+There are currently two tools which you can choose based on your preferences.
 * [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool) NEW!
 * [TextTemplate](https://github.com/MapsterMapper/Mapster/wiki/TextTemplate)
 
