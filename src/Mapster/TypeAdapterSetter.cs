@@ -246,6 +246,24 @@ namespace Mapster
             setter.Settings.UseDestinationValues.Add(func);
             return setter;
         }
+
+        internal static TSetter Include<TSetter>(this TSetter setter, Type sourceType, Type destType) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Config.Rules.LockAdd(new TypeAdapterRule
+            {
+                Priority = arg =>
+                    arg.SourceType == sourceType &&
+                    arg.DestinationType == destType ? (int?)100 : null,
+                Settings = setter.Settings
+            });
+
+            setter.Settings.Includes.Add(new TypeTuple(sourceType, destType));
+
+            return setter;
+        }
+
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter
@@ -599,19 +617,7 @@ namespace Mapster
             where TDerivedSource: class, TSource
             where TDerivedDestination: class, TDestination
         {
-            this.CheckCompiled();
-
-            Config.Rules.LockAdd(new TypeAdapterRule
-            {
-                Priority = arg =>
-                    arg.SourceType == typeof(TDerivedSource) &&
-                    arg.DestinationType == typeof(TDerivedDestination) ? (int?)100 : null,
-                Settings = Settings
-            });
-
-            Settings.Includes.Add(new TypeTuple(typeof(TDerivedSource), typeof(TDerivedDestination)));
-
-            return this;
+            return this.Include(typeof(TDerivedSource), typeof(TDerivedDestination));
         }
 
         public TypeAdapterSetter<TSource, TDestination> Inherits<TBaseSource, TBaseDestination>()

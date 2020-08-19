@@ -1,9 +1,12 @@
-﻿namespace Mapster
+﻿using System;
+
+namespace Mapster
 {
+    [Flags]
     public enum MapType
     {
-        Map,
-        MapToTarget,
-        Projection,
+        Map = 1,
+        MapToTarget = 2,
+        Projection = 4,
     }
 }

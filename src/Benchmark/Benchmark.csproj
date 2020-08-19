@@ -4,7 +4,7 @@
       <OutputType>Exe</OutputType>
       <TargetFramework>netcoreapp3.1</TargetFramework>
       <CopyLocalLockFileAssemblies Condition=" '$(Configuration)'=='Debug' ">true</CopyLocalLockFileAssemblies>
-      <DefaultItemExcludes>**/*Mapper.g.cs</DefaultItemExcludes>
+      <DefaultItemExcludes>**/*.g.cs</DefaultItemExcludes>
     </PropertyGroup>
     <ItemGroup>
       <Compile Include="CustomerMapper.g.cs">
@@ -26,10 +26,6 @@
         <PackageReference Include="Expressmapper" Version="1.9.1" />
         <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     </ItemGroup>
-    <Target Name="mapster" AfterTargets="AfterBuild">
-      <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
-      <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster -a $(TargetDir)$(ProjectName).dll" />
-    </Target>
     <ItemGroup>
         <ProjectReference Include="..\Mapster\Mapster.csproj" />
     </ItemGroup>

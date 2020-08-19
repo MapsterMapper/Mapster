@@ -379,5 +379,14 @@ namespace Mapster
         {
             return !type.GetTypeInfo().IsValueType && type != typeof(string);
         }
+
+        public static IEnumerable<Type> GetAllTypes(this Type type)
+        {
+            do
+            {
+                yield return type;
+                type = type.GetTypeInfo().BaseType;
+            } while (type != null && type != typeof(object));
+        }
     }
 }

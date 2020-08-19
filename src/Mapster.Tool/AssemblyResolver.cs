@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
 
@@ -26,10 +27,10 @@ namespace Mapster.Tool
             {
                 new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(path)),
                 new ReferenceAssemblyPathResolver(),
-                new PackageCompilationAssemblyResolver()
+                new PackageCompilationAssemblyResolver(),
             });
 
-            _loadContext = AssemblyLoadContext.GetLoadContext(Assembly);
+            _loadContext = AssemblyLoadContext.GetLoadContext(Assembly)!;
             _loadContext.Resolving += OnResolving;
         }
 
@@ -40,34 +41,50 @@ namespace Mapster.Tool
             _loadContext.Resolving -= OnResolving;
         }
 
-        private Assembly OnResolving(AssemblyLoadContext context, AssemblyName name)
+        private Assembly? OnResolving(AssemblyLoadContext context, AssemblyName name)
         {
-            bool NamesMatch(RuntimeLibrary runtime)
-            {
-                return string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase);
-            }
+            //hack for loaded assemblies
+            if (name.Name == "Mapster")
+                return typeof(MapperAttribute).Assembly;
+            if (name.Name == "System.Text.Json")
+                return typeof(JsonIgnoreAttribute).Assembly;
 
-            var library = _dependencyContext.RuntimeLibraries.FirstOrDefault(NamesMatch);
+            var library = _dependencyContext.RuntimeLibraries
+                .FirstOrDefault(it => string.Equals(it.Name, name.Name, StringComparison.OrdinalIgnoreCase));
             if (library == null)
-                return null;
-
-            var wrapper = new CompilationLibrary(
-                library.Type,
-                library.Name,
-                library.Version,
-                library.Hash,
-                library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
-                library.Dependencies,
-                library.Serviceable);
-
-            var assemblies = new List<string>();
-            _assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblies);
-            if (assemblies.Count > 0)
             {
+                Console.WriteLine("Cannot find library: " + name.Name);
+                return null;
+            }
+                
+            try
+            {
+                var wrapped = new CompilationLibrary(
+                    library.Type,
+                    library.Name,
+                    library.Version,
+                    library.Hash,
+                    library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+                    library.Dependencies,
+                    library.Serviceable);
+
+                var assemblies = new List<string>();
+                _assemblyResolver.TryResolveAssemblyPaths(wrapped, assemblies);
+
+                if (assemblies.Count == 0)
+                {
+                    Console.WriteLine($"Cannot find assembly path: {name.Name} (type={library.Type}, version={library.Version})");
+                    return null;
+                }
+
                 return _loadContext.LoadFromAssemblyPath(assemblies[0]);
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cannot find assembly path: {name.Name} (type={library.Type}, version={library.Version})");
+                Console.WriteLine("exception: " + ex.Message);
+                return null;
+            }
         }
     }
 }

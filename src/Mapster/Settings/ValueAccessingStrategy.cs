@@ -85,8 +85,7 @@ namespace Mapster
                 return null;
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = "Get" + destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
-            var getMethod = source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
+            var getMethod = Array.Find(source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance), m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
             if (getMethod == null)
                 return null;
             if (getMethod.Name == "GetType" && destinationMember.Type != typeof(Type))

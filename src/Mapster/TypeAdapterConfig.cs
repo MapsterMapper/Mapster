@@ -467,6 +467,70 @@ namespace Mapster
             return Expression.Lambda(invoke, p1, p2);
         }
 
+        private IEnumerable<TypeAdapterRule> GetAttributeSettings(TypeTuple tuple, MapType mapType)
+        {
+            var rules1 = from type in tuple.Source.GetAllTypes()
+                from o in type.GetTypeInfo().GetCustomAttributes(false)
+                let attr = o as AdaptToAttribute
+                where attr != null && (attr.MapType & mapType) != 0
+                where attr.Type == null || attr.Type == tuple.Destination
+                where attr.Name == null || attr.Name.Replace("[name]", type.Name) == tuple.Destination.Name
+                let distance = GetSubclassDistance(tuple.Source, type, true)
+                select new TypeAdapterRule
+                {
+                    Priority = arg => distance + 50,
+                    Settings = CreateSettings(attr)
+                };
+            if (tuple.Source == tuple.Destination)
+                return rules1;
+            var rules2 = from type in tuple.Destination.GetAllTypes()
+                from o in type.GetTypeInfo().GetCustomAttributes(false)
+                let attr = o as BaseAdaptAttribute
+                where attr != null && (attr.MapType & mapType) != 0 && (attr is AdaptFromAttribute || attr is AdaptTwoWaysAttribute)
+                where attr.Type == null || attr.Type == tuple.Source
+                where attr.Name == null || attr.Name.Replace("[name]", type.Name) == tuple.Source.Name
+                let distance = GetSubclassDistance(tuple.Destination, type, true)
+                select new TypeAdapterRule
+                {
+                    Priority = arg => distance + 50,
+                    Settings = CreateSettings(attr)
+                };
+            return rules1.Concat(rules2);
+        }
+
+        private TypeAdapterSettings CreateSettings(BaseAdaptAttribute attr)
+        {
+            var settings = new TypeAdapterSettings();
+            var setter = new TypeAdapterSetter(settings, this);
+            if (attr.IgnoreAttributes != null)
+                setter.IgnoreAttribute(attr.IgnoreAttributes);
+            if (attr.IgnoreNoAttributes != null)
+            {
+                setter.IgnoreMember((member, _) => !member.GetCustomAttributes(true)
+                    .Select(it => it.GetType())
+                    .Intersect(attr.IgnoreNoAttributes)
+                    .Any());
+            }
+            if (attr.IgnoreNamespaces != null)
+            {
+                foreach (var ns in attr.IgnoreNamespaces)
+                {
+                    setter.IgnoreMember((member, _) => member.Type.Namespace?.StartsWith(ns) == true);
+                }
+            }
+            if (attr.IgnoreNullValues)
+                setter.IgnoreNullValues(attr.IgnoreNullValues);
+            if (attr.MapToConstructor)
+                setter.MapToConstructor(attr.MapToConstructor);
+            if (attr.MaxDepth > 0)
+                setter.MaxDepth(attr.MaxDepth);
+            if (attr.PreserveReference)
+                setter.PreserveReference(attr.PreserveReference);
+            if (attr.ShallowCopyForSameType)
+                setter.ShallowCopyForSameType(attr.ShallowCopyForSameType);
+            return settings;
+        }
+
         internal TypeAdapterSettings GetMergedSettings(TypeTuple tuple, MapType mapType)
         {
             var arg = new PreCompileArgument
@@ -479,7 +543,9 @@ namespace Mapster
             var result = new TypeAdapterSettings();
             lock (this.Rules)
             {
-                var settings = from rule in this.Rules.Reverse<TypeAdapterRule>()
+                var rules = this.Rules.Reverse<TypeAdapterRule>()
+                    .Concat(GetAttributeSettings(tuple, mapType));
+                var settings = from rule in rules
                     let priority = rule.Priority(arg)
                     where priority != null
                     orderby priority.Value descending
@@ -605,7 +671,7 @@ namespace Mapster
             _mapDict.TryRemove(key, out _);
             _mapToTargetDict.TryRemove(key, out _);
             _projectionDict.TryRemove(key, out _);
-            _dynamicMapDict?.TryRemove(key, out _);
+            _dynamicMapDict.TryRemove(key, out _);
         }
 
         private static readonly Lazy<TypeAdapterConfig> _cloneConfig = new Lazy<TypeAdapterConfig>(() =>

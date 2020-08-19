@@ -417,7 +417,7 @@ namespace Mapster.Adapters
             var exp = CreateAdaptExpressionCore(source, destinationType, arg, mapping, destination);
 
             //transform(adapt(source));
-            var transform = arg.Settings.DestinationTransforms.FirstOrDefault(it => it.Condition(exp.Type));
+            var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
             if (transform != null)
                 exp = transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
             return exp.To(destinationType);
