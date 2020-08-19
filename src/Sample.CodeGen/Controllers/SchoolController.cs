@@ -5,6 +5,7 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.CodeGen.Domains;
+using Sample.CodeGen.Mappers;
 using Sample.CodeGen.Models;
 
 namespace Sample.CodeGen.Controllers
@@ -14,9 +15,11 @@ namespace Sample.CodeGen.Controllers
     public class SchoolController : ControllerBase
     {
         private readonly SchoolContext _context;
-        public SchoolController(SchoolContext context)
+        private readonly IStudentMapper _studentMapper;
+        public SchoolController(SchoolContext context, IStudentMapper studentMapper)
         {
             _context = context;
+            _studentMapper = studentMapper;
         }
 
         // OData Sample
@@ -25,6 +28,15 @@ namespace Sample.CodeGen.Controllers
         public IQueryable<CourseDto> GetCourses()
         {
             return _context.Courses.Select(CourseMapper.ProjectToDto);
+        }
+
+
+        // OData Sample
+        [HttpGet("student")]
+        [EnableQuery]
+        public IQueryable<Person> GetStudents()
+        {
+            return _context.Students.Select(_studentMapper.StudentProjection);
         }
 
         // Add sample

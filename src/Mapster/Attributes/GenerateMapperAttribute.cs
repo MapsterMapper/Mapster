@@ -9,5 +9,7 @@ namespace Mapster
     {
         public string Name { get; set; } = "[name]Mapper";
         public Type[]? ForAttributes { get; set; }
+        public bool IsHelperClass { get; set; }
+        public bool IsInternal { get; set; }
     }
 }

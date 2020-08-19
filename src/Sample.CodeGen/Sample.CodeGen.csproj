@@ -6,10 +6,10 @@
 
   <ItemGroup>
     <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="5.1.1" />
-    <PackageReference Include="Mapster" Version="6.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.4.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.7" />
+    <PackageReference Include="Scrutor" Version="3.2.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,14 +19,14 @@
     <Delete Files="@(Generated)" />
   </Target>
   <Target Name="Mapster">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet build" />
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet build" />
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models" />
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet build" />
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models" />
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models -o Models" />
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models -o Models" />
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Mappers -o Mappers" />
   </Target>
   <ItemGroup>
-    <None Remove="Controllers\SchoolController.cs~RF1a9658ce.TMP" />
+    <ProjectReference Include="..\Mapster\Mapster.csproj" />
   </ItemGroup>
 
   <ItemGroup>

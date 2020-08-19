@@ -54,7 +54,8 @@ namespace Mapster.Tool
                 {
                     Implements = new[] {type},
                     Namespace = opt.Namespace ?? type.Namespace,
-                    TypeName = attr.Name ?? GetImplName(type.Name)
+                    TypeName = attr.Name ?? GetImplName(type.Name),
+                    IsInternal = attr.IsInternal
                 };
                 var translator = new ExpressionTranslator(definitions);
                 var interfaces = type.GetAllInterfaces();
@@ -268,7 +269,8 @@ namespace Mapster.Tool
                 {
                     IsStatic = true,
                     Namespace = opt.Namespace ?? type.Namespace,
-                    TypeName = mapperAttr.Name.Replace("[name]", type.Name)
+                    TypeName = mapperAttr.Name.Replace("[name]", type.Name),
+                    IsInternal = mapperAttr.IsInternal
                 };
                 var translator = new ExpressionTranslator(definitions);
 
@@ -287,7 +289,7 @@ namespace Mapster.Tool
                             continue;
 
                         var tuple = new TypeTuple(fromType, type);
-                        GenerateExtensionMethods(attr, config, tuple, translator, type);
+                        GenerateExtensionMethods(attr.MapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
 
                     if (attr is AdaptToAttribute)
@@ -306,7 +308,7 @@ namespace Mapster.Tool
                             continue;
 
                         var tuple = new TypeTuple(type, toType);
-                        GenerateExtensionMethods(attr, config, tuple, translator, type);
+                        GenerateExtensionMethods(attr.MapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
                 }
 
@@ -316,27 +318,27 @@ namespace Mapster.Tool
             }
         }
 
-        private static void GenerateExtensionMethods(BaseAdaptAttribute attr, TypeAdapterConfig config, TypeTuple tuple,
-            ExpressionTranslator translator, Type entityType)
+        private static void GenerateExtensionMethods(MapType mapType, TypeAdapterConfig config, TypeTuple tuple,
+            ExpressionTranslator translator, Type entityType, bool isHelperClass)
         {
             var name = tuple.Destination == entityType
                 ? "Entity"
                 : tuple.Destination.Name.Replace(entityType.Name, "");
-            if ((attr.MapType & MapType.Map) > 0)
+            if ((mapType & MapType.Map) > 0)
             {
                 var expr = config.CreateMapExpression(tuple, MapType.Map);
-                translator.VisitLambda(expr, ExpressionTranslator.LambdaType.ExtensionMethod,
+                translator.VisitLambda(expr, isHelperClass ? ExpressionTranslator.LambdaType.PublicMethod : ExpressionTranslator.LambdaType.ExtensionMethod,
                     "AdaptTo" + name);
             }
 
-            if ((attr.MapType & MapType.MapToTarget) > 0)
+            if ((mapType & MapType.MapToTarget) > 0)
             {
                 var expr2 = config.CreateMapExpression(tuple, MapType.MapToTarget);
-                translator.VisitLambda(expr2, ExpressionTranslator.LambdaType.ExtensionMethod,
+                translator.VisitLambda(expr2, isHelperClass ? ExpressionTranslator.LambdaType.PublicMethod : ExpressionTranslator.LambdaType.ExtensionMethod,
                     "AdaptTo");
             }
 
-            if ((attr.MapType & MapType.Projection) > 0)
+            if ((mapType & MapType.Projection) > 0)
             {
                 var proj = config.CreateMapExpression(tuple, MapType.Projection);
                 translator.VisitLambda(proj, ExpressionTranslator.LambdaType.PublicLambda,

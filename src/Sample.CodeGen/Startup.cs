@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.CodeGen.Domains;
-using Sample.CodeGen.Models;
 
 namespace Sample.CodeGen
 {
@@ -29,6 +28,8 @@ namespace Sample.CodeGen
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddProblemDetails();
             services.AddOData();
+            services.Scan(selector => selector.FromCallingAssembly()
+                .AddClasses().AsMatchingInterface().WithSingletonLifetime());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

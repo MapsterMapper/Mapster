@@ -6,5 +6,6 @@ namespace Mapster
     public class MapperAttribute : Attribute
     {
         public string? Name { get; set; }
+        public bool IsInternal { get; set; }
     }
 }
