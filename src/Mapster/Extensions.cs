@@ -15,6 +15,14 @@ namespace Mapster
             return source.Provider.CreateQuery<TDestination>(sourceCall);
         }
 
+        public static IQueryable ProjectToType(this IQueryable source, Type destinationType, TypeAdapterConfig? config = null)
+        {
+            config ??= TypeAdapterConfig.GlobalSettings;
+            var mockCall = config.GetProjectionCallExpression(source.ElementType, destinationType);
+            var sourceCall = Expression.Call(mockCall.Method, source.Expression, mockCall.Arguments[1]);
+            return source.Provider.CreateQuery(sourceCall);
+        }
+
         public static bool HasCustomAttribute(this IMemberModel member, Type type)
         {
             return member.GetCustomAttributes(true).Any(attr => attr.GetType() == type);
