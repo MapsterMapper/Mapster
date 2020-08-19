@@ -45,6 +45,28 @@ using (MyDbContext context = new MyDbContext())
 }
 ```
 
+#### Generating models & mappers
+No need to write your own DTO classes. Mapster provides [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool) to help you generating models. And if you would like explicit mapping, Mapster also generates mapper class for you.
+
+```csharp
+[AdaptTo("[name]Dto"), GenerateMapper]
+public class Student {
+    ...
+}
+```
+
+Then Mapster will generate:
+```csharp
+public class StudentDto {
+    ...
+}
+public static class StudentMapper {
+    public static StudentDto AdaptToDto(this Student poco) { ... }
+    public static StudentDto AdaptTo(this Student poco, StudentDto dto) { ... }
+    public static Expression<Func<Student, StudentDto>> ProjectToDto => ...
+}
+```
+
 ### What's new
 - [Automatically generate mapping code on build](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool)
 - [Define setting to nested mapping](https://github.com/MapsterMapper/Mapster/wiki/Config-for-nested-mapping)
