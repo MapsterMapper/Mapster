@@ -26,6 +26,16 @@ namespace Mapster.Utils
         private static Expression PropertyOrField(Expression expr, string prop)
         {
             var type = expr.Type;
+            var dictType = type.GetDictionaryType();
+            if (dictType?.GetGenericArguments()[0] == typeof(string))
+            {
+                var method = typeof(MapsterHelper).GetMethods()
+                    .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
+                    .MakeGenericMethod(dictType.GetGenericArguments());
+
+                return Expression.Call(method, expr.To(type), Expression.Constant(prop));
+            }
+
             if (type.GetTypeInfo().IsInterface)
             {
                 var allTypes = type.GetAllInterfaces();

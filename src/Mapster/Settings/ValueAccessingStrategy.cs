@@ -28,7 +28,7 @@ namespace Mapster
         {
             var config = arg.Settings;
             var resolvers = config.Resolvers;
-            if (resolvers == null || resolvers.Count == 0)
+            if (resolvers.Count == 0)
                 return null;
 
             var invokes = new List<Tuple<Expression, Expression>>();
@@ -205,7 +205,7 @@ namespace Mapster
         {
             var config = arg.Settings;
             var resolvers = config.Resolvers;
-            if (resolvers == null || resolvers.Count == 0)
+            if (resolvers.Count == 0)
                 return null;
             var dictType = source.Type.GetDictionaryType();
             if (dictType == null)

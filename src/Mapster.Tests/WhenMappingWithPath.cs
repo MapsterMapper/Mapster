@@ -178,6 +178,20 @@ namespace Mapster.Tests
             p1.Secret.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void TestMappingFromDictionary()
+        {
+            var config = new TypeAdapterConfig();
+            config.NewConfig<Post, Post>()
+                .Map(nameof(Post.Dic) + ".Name", nameof(Post.Dic) + ".Name");
+
+            var p1 = new Post{ Dic = new Dictionary<string, string> { { "Name", "test"}, {"Secret" , "password" }} };
+            var p2 = new Post();
+            p1.Adapt(p2, config);
+
+            p2.Dic["Name"].ShouldBe("test");
+        }
+
         public class Poco
         {
             public Guid Id { get; set; }
