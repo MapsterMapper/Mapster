@@ -82,7 +82,7 @@ Mapster was designed to be efficient on both speed and memory. You could gain a 
 And you could gain up to 12x faster performance with
 - [Roslyn Compiler](https://github.com/MapsterMapper/Mapster/wiki/Debugging)
 - [FEC](https://github.com/MapsterMapper/Mapster/wiki/FastExpressionCompiler)
-- [Mapster CodeGen](https://github.com/MapsterMapper/Mapster/wiki/CodeGen)
+- Code generation
 
 |                    Method |      Mean |    StdDev |     Error |      Gen 0 | Gen 1 | Gen 2 | Allocated |
 |-------------------------- |----------:|----------:|----------:|-----------:|------:|------:|----------:|
