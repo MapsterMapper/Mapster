@@ -111,7 +111,8 @@ namespace Mapster.Adapters
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
 
             var p1 = Expression.Parameter(sourceElementType);
-            var adapt = CreateAdaptExpression(p1, destinationElementType, arg);
+            var adapt = CreateAdaptExpression(p1, destinationElementType, arg)
+                .To(destinationElementType, true);
             if (adapt == p1)
             {
                 if (arg.MapType == MapType.Projection)
