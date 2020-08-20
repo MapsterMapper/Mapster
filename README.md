@@ -46,7 +46,7 @@ using (MyDbContext context = new MyDbContext())
 ```
 
 #### Generating models & mappers
-No need to write your own DTO classes. Mapster provides [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool) to help you generating models. And if you would like explicit mapping, Mapster also generates mapper class for you.
+No need to write your own DTO classes. Mapster provides [Mapster.Tool](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool) to help you generating models. And if you would like to have explicit mapping, Mapster also generates mapper class for you.
 
 ```csharp
 [AdaptTo("[name]Dto"), GenerateMapper]
