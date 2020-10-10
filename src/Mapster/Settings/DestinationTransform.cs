@@ -67,7 +67,7 @@ namespace Mapster
             {
                 var p = Expression.Parameter(type);
                 return Expression.Lambda(
-                    Expression.Coalesce(p, Expression.New(type)));
+                    Expression.Coalesce(p, Expression.New(type)), p);
             }
         };
 
