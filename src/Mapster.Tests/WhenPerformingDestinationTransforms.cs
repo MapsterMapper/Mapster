@@ -81,6 +81,20 @@ namespace Mapster.Tests
             destination.Set.Count.ShouldBe(0);
         }
 
+        [TestMethod]
+        public void Adapter_Destination_Transform_CreateNewIfNull()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.AddDestinationTransform(DestinationTransform.CreateNewIfNull);
+
+            var source = new CollectionPoco();
+            var destination = source.Adapt<CollectionPoco>(config);
+
+            destination.Children.Count.ShouldBe(0);
+            destination.ChildDict.Count.ShouldBe(0);
+            destination.Set.Count.ShouldBe(0);
+        }
+
         #region TestClasses
 
         public class SimplePoco
