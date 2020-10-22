@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Mapster.Tests
@@ -212,6 +213,54 @@ namespace Mapster.Tests
             Assert.IsFalse(src.FooArray[0] == dest.FooArray[0]);
             Assert.IsFalse(src.Ints == dest.Ints);
             Assert.IsFalse(src.IntArray == dest.IntArray);
+        }
+
+        [TestMethod]
+        public void MapToArrayEnumerateOnlyOnce()
+        {
+            var i = 0;
+
+            IEnumerable<int> GetInts()
+            {
+                i++;
+                yield return 1;
+                yield return 2;
+            }
+
+            GetInts().Adapt<int[]>();
+            i.ShouldBe(1);
+        }
+
+        [TestMethod]
+        public void MapToListEnumerateOnlyOnce()
+        {
+            var i = 0;
+
+            IEnumerable<int> GetInts()
+            {
+                i++;
+                yield return 1;
+                yield return 2;
+            }
+
+            GetInts().Adapt<List<int>>();
+            i.ShouldBe(1);
+        }
+
+        [TestMethod]
+        public void MapToMultiRanksArrayEnumerateOnlyOnce()
+        {
+            var i = 0;
+
+            IEnumerable<int> GetInts()
+            {
+                i++;
+                yield return 1;
+                yield return 2;
+            }
+
+            GetInts().Adapt<int[,]>();
+            i.ShouldBe(1);
         }
     }
 }

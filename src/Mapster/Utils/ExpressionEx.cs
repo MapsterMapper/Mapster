@@ -131,26 +131,20 @@ namespace Mapster.Utils
             }
         }
 
-        public static Expression? CreateCountExpression(Expression source, bool allowCountAll)
+        public static Expression? CreateCountExpression(Expression source)
         {
             if (source.Type.IsArray)
             {
-                if (source.Type.GetArrayRank() == 1)
-                    return Expression.ArrayLength(source);      //array.Length
-                else
-                    return Expression.Property(source, "Length");
+                return source.Type.GetArrayRank() == 1
+                    ? (Expression?) Expression.ArrayLength(source)
+                    : Expression.Property(source, "Length");
             }
             else
             {
                 var countProperty = GetCount(source.Type);
-                if (countProperty != null)
-                    return Expression.Property(source, countProperty);  //list.Count
-                if (!allowCountAll)
-                    return null;
-                var countMethod = typeof(Enumerable).GetMethods()
-                    .First(m => m.Name == nameof(Enumerable.Count) && m.GetParameters().Length == 1)
-                    .MakeGenericMethod(source.Type.ExtractCollectionType());
-                return Expression.Call(countMethod, source);            //list.Count()
+                return countProperty != null 
+                    ? Expression.Property(source, countProperty) 
+                    : null;
             }
         }
 

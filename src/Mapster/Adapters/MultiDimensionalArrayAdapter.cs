@@ -24,6 +24,25 @@ namespace Mapster.Adapters
             return false;
         }
 
+        protected override Expression TransformSource(Expression source)
+        {
+            if (ExpressionEx.CreateCountExpression(source) != null)
+                return source;
+            var transformed = source;
+            var elemType = source.Type.ExtractCollectionType();
+            var type = typeof(IEnumerable<>).MakeGenericType(elemType);
+            if (!type.IsAssignableFrom(source.Type))
+            {
+                var cast = typeof(Enumerable).GetMethod(nameof(Enumerable.Cast))!
+                    .MakeGenericMethod(elemType);
+                transformed = Expression.Call(cast, transformed);
+            }
+
+            var toList = typeof(Enumerable).GetMethod(nameof(Enumerable.ToList))!
+                .MakeGenericMethod(elemType);
+            return Expression.Call(toList, transformed);
+        }
+
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source, arg.DestinationType));
@@ -38,7 +57,7 @@ namespace Mapster.Adapters
                 {
                     yield return Expression.Constant(1);
                 }
-                yield return ExpressionEx.CreateCountExpression(source, true)!;
+                yield return ExpressionEx.CreateCountExpression(source)!;
             }
             else
             {
@@ -64,7 +83,7 @@ namespace Mapster.Adapters
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
-                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source, true));
+                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source));
             }
 
             return CreateArraySet(source, destination, arg);

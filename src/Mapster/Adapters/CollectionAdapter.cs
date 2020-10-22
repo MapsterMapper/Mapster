@@ -64,7 +64,7 @@ namespace Mapster.Adapters
                     listType = typeof(HashSet<>).MakeGenericType(destinationElementType);
                 }
             }
-            var count = ExpressionEx.CreateCountExpression(source, false);
+            var count = ExpressionEx.CreateCountExpression(source);
             if (count == null)
                 return Expression.New(listType);            //new List<T>()
             var ctor = (from c in listType.GetConstructors()

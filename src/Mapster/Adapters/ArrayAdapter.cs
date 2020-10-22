@@ -19,7 +19,7 @@ namespace Mapster.Adapters
 
         protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
-            return arg.MapType == MapType.Projection;
+            return arg.MapType == MapType.Projection || ExpressionEx.CreateCountExpression(source) == null;
         }
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
@@ -27,7 +27,7 @@ namespace Mapster.Adapters
             var destinationElementType = arg.DestinationType.ExtractCollectionType();
             return Expression.NewArrayBounds(
                 destinationElementType,
-                ExpressionEx.CreateCountExpression(source, true));   //new TDestinationElement[count]
+                ExpressionEx.CreateCountExpression(source));   //new TDestinationElement[count]
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
@@ -39,7 +39,7 @@ namespace Mapster.Adapters
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
-                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source, true));
+                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source));
             }
 
             return CreateArraySet(source, destination, arg);

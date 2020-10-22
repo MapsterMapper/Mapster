@@ -128,6 +128,11 @@ namespace Mapster.Adapters
             }
         }
 
+        protected virtual Expression TransformSource(Expression source)
+        {
+            return source;
+        }
+
         protected Expression CreateBlockExpressionBody(Expression source, Expression? destination, CompileArgument arg)
         {
             if (arg.MapType == MapType.Projection)
@@ -181,7 +186,15 @@ namespace Mapster.Adapters
             }
 
             //new TDest();
-            var set = CreateInstantiationExpression(source, destination, arg);
+            Expression transformedSource = source;
+            var transform = TransformSource(source);
+            if (transform != source)
+            {
+                var src = Expression.Variable(transform.Type);
+                vars.Add(src);
+                transformedSource = src;
+            }
+            var set = CreateInstantiationExpression(transformedSource, destination, arg);
             if (destination != null && this.UseTargetValue && arg.GetConstructUsing()?.Parameters.Count != 2 && destination.CanBeNull())
             {
                 //dest ?? new TDest();
@@ -209,14 +222,17 @@ namespace Mapster.Adapters
                 //var result = new TDest();
                 var result = Expression.Variable(arg.DestinationType, "result");
                 var assign = Expression.Assign(result, set);
-                var assignActions = new List<Expression> {assign};
+                var assignActions = new List<Expression>();
+                if (transform != source)
+                    assignActions.Add(Expression.Assign(transformedSource, transform));
+                assignActions.Add(assign);
 
                 //before(source, result);
                 var beforeMappings = arg.Settings.BeforeMappingFactories.Select(it => InvokeMapping(it, source, result, arg, true));
                 assignActions.AddRange(beforeMappings);
 
                 //result.prop = adapt(source.prop);
-                var mapping = CreateBlockExpression(source, result, arg);
+                var mapping = CreateBlockExpression(transformedSource, result, arg);
                 var settingActions = new List<Expression> {mapping};
 
                 //after(source, result);
