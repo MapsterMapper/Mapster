@@ -10,12 +10,13 @@ namespace Mapster
         private readonly bool _isRootScope;
         public MapContextScope()
         {
-            this.Context = MapContext.Current!;
-            if (this.Context == null)
+            var context = MapContext.Current;
+            if (context == null)
             {
                 _isRootScope = true;
-                this.Context = MapContext.Current = new MapContext();
+                MapContext.Current = context = new MapContext();
             }
+            this.Context = context;
         }
 
         public void Dispose()

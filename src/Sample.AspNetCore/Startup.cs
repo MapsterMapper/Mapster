@@ -32,6 +32,7 @@ namespace Sample.AspNetCore
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddSingleton(GetConfiguredMappingConfig());
             services.AddScoped<IMapper, ServiceMapper>();
+            services.AddSingleton<NameFormatter>();
             services.AddProblemDetails();
             services.AddOData();
         }
@@ -52,10 +53,10 @@ namespace Sample.AspNetCore
                         dto.CourseTitle = course.Title;
                     var student = await context.Students.FindAsync(dto.StudentID);
                     if (student != null)
-                        dto.StudentName = $"{student.FirstMidName} {student.LastName}";
+                        dto.StudentName = MapContext.Current.GetService<NameFormatter>().Format(student.FirstMidName, student.LastName);
                 });
             config.NewConfig<Student, StudentDto>()
-                .Map(dest => dest.Name, src => $"{src.FirstMidName} {src.LastName}");
+                .Map(dest => dest.Name, src => MapContext.Current.GetService<NameFormatter>().Format(src.FirstMidName, src.LastName));
             config.NewConfig<Course, CourseDto>()
                 .Map(dest => dest.CourseIDDto, src => src.CourseID)
                 .Map(dest => dest.CreditsDto, src => src.Credits)

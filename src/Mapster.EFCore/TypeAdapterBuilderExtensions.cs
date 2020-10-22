@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.EFCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mapster
@@ -76,6 +77,12 @@ namespace Mapster
                         };
                     }
                 }, context.GetType().FullName);
+        }
+
+        public static IQueryable<TDestination> ProjectToType<TDestination>(this IAdapterBuilder<IQueryable> source)
+        {
+            var queryable = source.Source.ProjectToType<TDestination>(source.Config);
+            return new MapsterQueryable<TDestination>(queryable, source);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Sample.AspNetCore.Controllers
         [EnableQuery]
         public IQueryable<CourseDto> GetCourses()
         {
-            return _context.Courses.ProjectToType<CourseDto>(_mapper.Config);
+            return _mapper.From(_context.Courses).ProjectToType<CourseDto>();
         }
 
         // Async Sample
@@ -44,8 +44,9 @@ namespace Sample.AspNetCore.Controllers
         [HttpGet("student/{id}")]
         public Task<StudentDto> GetStudent([FromRoute] int id)
         {
-            return _context.Students.Where(it => it.ID == id)
-                .ProjectToType<StudentDto>(_mapper.Config)
+            var query = _context.Students.Where(it => it.ID == id);
+            return _mapper.From(query)
+                .ProjectToType<StudentDto>()
                 .FirstOrDefaultAsync();
         }
 
