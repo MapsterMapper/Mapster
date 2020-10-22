@@ -434,6 +434,11 @@ namespace Mapster
 
         internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p)
         {
+            if (this.RequireExplicitMapping)
+            {
+                var key = new TypeTuple(sourceType, destinationType);
+                _mapDict[key] = Compiler(CreateMapExpression(key, MapType.Map));
+            }
             Expression invoker;
             if (this == GlobalSettings)
             {
@@ -452,6 +457,11 @@ namespace Mapster
 
         internal Expression CreateMapToTargetInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression p2)
         {
+            if (this.RequireExplicitMapping)
+            {
+                var key = new TypeTuple(sourceType, destinationType);
+                _mapToTargetDict[key] = Compiler(CreateMapExpression(key, MapType.MapToTarget));
+            }
             var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 where m.Name == nameof(GetMapToTargetFunction)
                 select m).First().MakeGenericMethod(sourceType, destinationType);

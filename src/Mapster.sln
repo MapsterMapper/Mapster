@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Tool", "Mapster.Too
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{916FA044-B9E5-44F2-991A-85AA43C08255}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.CodeGen", "Sample.CodeGen\Sample.CodeGen.csproj", "{3CB56440-5449-4DE5-A8D3-549C87C1B36A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CodeGen", "Sample.CodeGen\Sample.CodeGen.csproj", "{3CB56440-5449-4DE5-A8D3-549C87C1B36A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EF7E343F-592E-4EAC-A0A4-92EB4B95CB89}"
 EndProject

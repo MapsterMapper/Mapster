@@ -132,6 +132,14 @@ namespace Mapster.Tests
             results.Count.ShouldBe(2);
         }
 
+        [TestMethod, ExpectedException(typeof(CompileException))]
+        public void UnmappedChildPocoShouldFailed()
+        {
+            var config = new TypeAdapterConfig {RequireExplicitMapping = true};
+            var setter = config.NewConfig<CollectionPoco, CollectionDto>();
+            setter.Compile(); // Should fail here
+        }
+
         #region TestClasses
 
 
@@ -187,7 +195,6 @@ namespace Mapster.Tests
 
             public IReadOnlyList<ChildDto> Children { get; internal set; }
         }
-
         #endregion
 
     }
