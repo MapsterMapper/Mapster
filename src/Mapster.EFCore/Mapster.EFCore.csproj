@@ -11,7 +11,7 @@
     <SignAssembly>True</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>Mapster.EFCore.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
     <PackageIcon>icon.png</PackageIcon>
