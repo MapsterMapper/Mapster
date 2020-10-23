@@ -94,6 +94,13 @@ namespace Mapster.Adapters
                 actions.Add(ExpressionEx.Assign(list, destination)); //convert to list type
             }
 
+            //list.Clear();
+            if (arg.UseDestinationValue && arg.MapType == MapType.MapToTarget)
+            {
+                var clear = list.Type.GetMethod("Clear", Type.EmptyTypes);
+                actions.Add(Expression.Call(list, clear));
+            }
+
             actions.Add(CreateListSet(source, list, arg));
 
             if (shouldConvert)

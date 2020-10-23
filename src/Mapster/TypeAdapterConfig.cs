@@ -407,6 +407,7 @@ namespace Mapster
                 {
                     arg.Settings.Resolvers.AddRange(mapping.NextResolvers);
                     arg.Settings.Ignore.Apply(mapping.NextIgnore);
+                    arg.UseDestinationValue = mapping.UseDestinationValue;
                 }
 
                 return CreateMapExpression(arg);

@@ -14,6 +14,7 @@ namespace Mapster
         public bool ExplicitMapping { get; set; }
         public TypeAdapterSettings Settings { get; set; }
         public CompileContext Context { get; set; }
+        public bool UseDestinationValue { get; set; }
 
         private HashSet<string>? _srcNames;
         internal HashSet<string> GetSourceNames()

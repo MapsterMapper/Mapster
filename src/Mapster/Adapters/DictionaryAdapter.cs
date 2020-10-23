@@ -70,12 +70,10 @@ namespace Mapster.Adapters
                     : mapped;
             }
 
-            
             //if (object.ReferenceEquals(source, destination))
             //  return destination;
             LabelTarget? label = null;
-            if (destination != null && 
-                source.Type.IsObjectReference() &&
+            if (source.Type.IsObjectReference() &&
                 destination.Type.IsObjectReference() &&
                 (source.Type.IsAssignableFrom(destination.Type) || destination.Type.IsAssignableFrom(source.Type)))
             {
@@ -83,7 +81,6 @@ namespace Mapster.Adapters
                 var refEquals = Expression.Call(typeof(object), nameof(ReferenceEquals), null, source, destination);
                 actions.Add(Expression.IfThen(refEquals, Expression.Return(label, destination)));
             }
-
 
             var keyType = srcDictType.GetGenericArguments().First();
             var kvpType = source.Type.ExtractCollectionType();

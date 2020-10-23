@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -19,7 +20,26 @@ namespace Mapster.Adapters
 
         protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
-            return arg.MapType == MapType.Projection || ExpressionEx.CreateCountExpression(source) == null;
+            return arg.MapType == MapType.Projection;
+        }
+
+        protected override Expression TransformSource(Expression source)
+        {
+            if (ExpressionEx.CreateCountExpression(source) != null)
+                return source;
+            var transformed = source;
+            var elemType = source.Type.ExtractCollectionType();
+            var type = typeof(IEnumerable<>).MakeGenericType(elemType);
+            if (!type.IsAssignableFrom(source.Type))
+            {
+                var cast = typeof(Enumerable).GetMethod(nameof(Enumerable.Cast))!
+                    .MakeGenericMethod(elemType);
+                transformed = Expression.Call(cast, transformed);
+            }
+
+            var toList = typeof(Enumerable).GetMethod(nameof(Enumerable.ToList))!
+                .MakeGenericMethod(elemType);
+            return Expression.Call(toList, transformed);
         }
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
@@ -39,7 +59,12 @@ namespace Mapster.Adapters
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
-                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source));
+                var len = arg.UseDestinationValue
+                    ? Expression.Call(typeof(Math).GetMethod("Min", new[] {typeof(int), typeof(int)}),
+                        ExpressionEx.CreateCountExpression(source), 
+                        ExpressionEx.CreateCountExpression(destination))
+                    : ExpressionEx.CreateCountExpression(source);
+                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), len);
             }
 
             return CreateArraySet(source, destination, arg);

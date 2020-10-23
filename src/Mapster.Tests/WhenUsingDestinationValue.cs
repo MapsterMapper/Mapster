@@ -1,4 +1,6 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -10,6 +12,7 @@ namespace Mapster.Tests
         [TestMethod]
         public void MapUsingDestinationValue()
         {
+            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileWithDebugInfo();
             TypeAdapterConfig<Invoice, InvoiceDto>.NewConfig().TwoWays();
 
             var dto = new InvoiceDto
@@ -17,13 +20,15 @@ namespace Mapster.Tests
                 Id = 1,
                 DocumentNumber = "AA001",
                 SupplierCompany = "COM01",
-                SupplierName = "Apple"
+                SupplierName = "Apple",
+                Numbers = Enumerable.Range(1, 5).ToList(),
             };
             var poco = dto.Adapt<Invoice>();
             poco.Id.ShouldBe(dto.Id);
             poco.DocumentNumber.ShouldBe("FOO");
             poco.Supplier.Name.ShouldBe(dto.SupplierName);
             poco.Supplier.Company.ShouldBe(dto.SupplierCompany);
+            poco.Numbers.ShouldBe(Enumerable.Range(1, 5));
         }
 
         public class ContractingParty
@@ -41,6 +46,9 @@ namespace Mapster.Tests
 
             [UseDestinationValue]
             public ContractingParty Supplier { get; } = new ContractingParty();
+
+            [UseDestinationValue]
+            public ICollection<int> Numbers { get; } = new List<int>();
         }
 
         public class InvoiceDto
@@ -49,6 +57,7 @@ namespace Mapster.Tests
             public string DocumentNumber { get; set; }
             public string SupplierName { get; set; }
             public string SupplierCompany { get; set; }
+            public IEnumerable<int> Numbers { get; set; }
         }
     }
 }

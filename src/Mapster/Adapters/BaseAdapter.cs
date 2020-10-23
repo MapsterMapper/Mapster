@@ -111,6 +111,7 @@ namespace Mapster.Adapters
 
                 if (arg.Context.Running.Count > 1 && 
                     !arg.Context.Config.SelfContainedCodeGeneration &&
+                    !arg.UseDestinationValue &&
                     !arg.Context.IsSubFunction())
                 {
                     if (destination == null)
@@ -195,7 +196,7 @@ namespace Mapster.Adapters
                 transformedSource = src;
             }
             var set = CreateInstantiationExpression(transformedSource, destination, arg);
-            if (destination != null && this.UseTargetValue && arg.GetConstructUsing()?.Parameters.Count != 2 && destination.CanBeNull())
+            if (destination != null && (this.UseTargetValue || arg.UseDestinationValue) && arg.GetConstructUsing()?.Parameters.Count != 2 && destination.CanBeNull())
             {
                 //dest ?? new TDest();
                 set = Expression.Coalesce(destination, set);
