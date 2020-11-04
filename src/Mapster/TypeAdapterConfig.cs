@@ -481,8 +481,9 @@ namespace Mapster
         private IEnumerable<TypeAdapterRule> GetAttributeSettings(TypeTuple tuple, MapType mapType)
         {
             var rules1 = from type in tuple.Source.GetAllTypes()
-                from o in type.GetTypeInfo().GetCustomAttributes(false)
-                let attr = o as AdaptToAttribute
+                from o in type.GetTypeInfo().GetCustomAttributesData()
+                where typeof(AdaptToAttribute).IsAssignableFrom(o.GetAttributeType())
+                let attr = o.CreateCustomAttribute<AdaptToAttribute>()
                 where attr != null && (attr.MapType & mapType) != 0
                 where attr.Type == null || attr.Type == tuple.Destination
                 where attr.Name == null || attr.Name.Replace("[name]", type.Name) == tuple.Destination.Name
@@ -495,8 +496,9 @@ namespace Mapster
             if (tuple.Source == tuple.Destination)
                 return rules1;
             var rules2 = from type in tuple.Destination.GetAllTypes()
-                from o in type.GetTypeInfo().GetCustomAttributes(false)
-                let attr = o as BaseAdaptAttribute
+                from o in type.GetTypeInfo().GetCustomAttributesData()
+                where typeof(BaseAdaptAttribute).IsAssignableFrom(o.GetAttributeType())
+                let attr = o.CreateCustomAttribute<BaseAdaptAttribute>()
                 where attr != null && (attr.MapType & mapType) != 0 && (attr is AdaptFromAttribute || attr is AdaptTwoWaysAttribute)
                 where attr.Type == null || attr.Type == tuple.Source
                 where attr.Name == null || attr.Name.Replace("[name]", type.Name) == tuple.Source.Name
@@ -517,8 +519,8 @@ namespace Mapster
                 setter.IgnoreAttribute(attr.IgnoreAttributes);
             if (attr.IgnoreNoAttributes != null)
             {
-                setter.IgnoreMember((member, _) => !member.GetCustomAttributes(true)
-                    .Select(it => it.GetType())
+                setter.IgnoreMember((member, _) => !member.GetCustomAttributesData()
+                    .Select(it => it.GetAttributeType())
                     .Intersect(attr.IgnoreNoAttributes)
                     .Any());
             }
@@ -609,7 +611,7 @@ namespace Mapster
             if (this == GlobalSettings)
             {
                 var field = typeof(TypeAdapter<,>).MakeGenericType(sourceType, destinationType).GetField("Map");
-                field.SetValue(null, _mapDict[tuple]);
+                field!.SetValue(null, _mapDict[tuple]);
             }
         }
 

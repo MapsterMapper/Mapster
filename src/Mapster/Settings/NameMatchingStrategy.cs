@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using Mapster.Utils;
 
 namespace Mapster
 {
@@ -22,32 +21,32 @@ namespace Mapster
 
         public static readonly NameMatchingStrategy Exact = new NameMatchingStrategy
         {
-            SourceMemberNameConverter = Identity,
-            DestinationMemberNameConverter = Identity,
+            SourceMemberNameConverter = MapsterHelper.Identity,
+            DestinationMemberNameConverter = MapsterHelper.Identity,
         };
 
         public static readonly NameMatchingStrategy Flexible = new NameMatchingStrategy
         {
-            SourceMemberNameConverter = PascalCase,
-            DestinationMemberNameConverter = PascalCase,
+            SourceMemberNameConverter = MapsterHelper.PascalCase,
+            DestinationMemberNameConverter = MapsterHelper.PascalCase,
         };
 
         public static readonly NameMatchingStrategy IgnoreCase = new NameMatchingStrategy
         {
-            SourceMemberNameConverter = LowerCase,
-            DestinationMemberNameConverter = LowerCase,
+            SourceMemberNameConverter = MapsterHelper.LowerCase,
+            DestinationMemberNameConverter = MapsterHelper.LowerCase,
         };
 
         public static readonly NameMatchingStrategy ToCamelCase = new NameMatchingStrategy
         {
-            SourceMemberNameConverter = CamelCase,
-            DestinationMemberNameConverter = Identity,
+            SourceMemberNameConverter = MapsterHelper.CamelCase,
+            DestinationMemberNameConverter = MapsterHelper.Identity,
         };
 
         public static readonly NameMatchingStrategy FromCamelCase = new NameMatchingStrategy
         {
-            SourceMemberNameConverter = Identity,
-            DestinationMemberNameConverter = CamelCase,
+            SourceMemberNameConverter = MapsterHelper.Identity,
+            DestinationMemberNameConverter = MapsterHelper.CamelCase,
         };
 
         public static NameMatchingStrategy ConvertSourceMemberName(Func<string, string> nameConverter)
@@ -55,7 +54,7 @@ namespace Mapster
             return new NameMatchingStrategy
             {
                 SourceMemberNameConverter = nameConverter,
-                DestinationMemberNameConverter = Identity,
+                DestinationMemberNameConverter = MapsterHelper.Identity,
             };
         }
 
@@ -63,75 +62,15 @@ namespace Mapster
         {
             return new NameMatchingStrategy
             {
-                SourceMemberNameConverter = Identity,
+                SourceMemberNameConverter = MapsterHelper.Identity,
                 DestinationMemberNameConverter = nameConverter,
             };
         }
 
-        public static string Identity(string s) => s;
+        public static Func<string, string> Identity = MapsterHelper.Identity;
 
-        internal static string PascalCase(string s) => string.Concat(BreakWords(s).Select(ProperCase));
-        internal static string CamelCase(string s) => string.Concat(BreakWords(s).Select((w, i) => i == 0 ? w.ToLower() : ProperCase(w)));
-        internal static string LowerCase(string s) => s.ToLower();
-
-        private static string ProperCase(string s) => s.Length == 0 ? s : (char.ToUpper(s[0]) + s.Substring(1).ToLower());
-
-        enum WordType
-        {
-            Unknown,
-            UpperCase,
-            LowerCase,
-            ProperCase,
-        }
-        private static IEnumerable<string> BreakWords(string s)
-        {
-            var len = s.Length;
-            var pos = 0;
-            var last = 0;
-            var type = WordType.Unknown;
-
-            while (pos < len)
-            {
-                var c = s[pos];
-                if (c == '_')
-                {
-                    if (last < pos)
-                    {
-                        yield return s.Substring(last, pos - last);
-                        last = pos;
-                        type = WordType.Unknown;
-                    }
-                    last++;
-                }
-                else if (char.IsUpper(c))
-                {
-                    if (type == WordType.Unknown)
-                        type = WordType.UpperCase;
-                    else if (type != WordType.UpperCase && last < pos)
-                    {
-                        yield return s.Substring(last, pos - last);
-                        last = pos;
-                        type = WordType.UpperCase;
-                    }
-                }
-                else  //lower
-                {
-                    if (type == WordType.Unknown)
-                        type = WordType.LowerCase;
-                    else if (type == WordType.UpperCase)
-                    {
-                        if (last < pos - 1)
-                        {
-                            yield return s.Substring(last, pos - last - 1);
-                            last = pos - 1;
-                        }
-                        type = WordType.ProperCase;
-                    }
-                }
-                pos++;
-            }
-            if (last < pos)
-                yield return s.Substring(last, pos - last);
-        }
+        internal static Func<string, string> PascalCase = MapsterHelper.PascalCase;
+        internal static Func<string, string> CamelCase = MapsterHelper.CamelCase;
+        internal static Func<string, string> LowerCase = MapsterHelper.LowerCase;
     }
 }

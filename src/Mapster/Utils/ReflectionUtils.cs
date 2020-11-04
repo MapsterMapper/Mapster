@@ -34,27 +34,6 @@ namespace Mapster
         {
             return type;
         }
-
-        public static Type GetAttributeType(this CustomAttributeData data)
-        {
-            return data.Constructor.DeclaringType;
-        }
-#else
-        public static Type GetAttributeType(this CustomAttributeData data)
-        {
-            return data.AttributeType;
-        }
-#endif
-
-#if NETSTANDARD1_3
-        public static IEnumerable<CustomAttributeData> GetCustomAttributesData(this ParameterInfo parameter)
-        {
-            return parameter.CustomAttributes;
-        }
-        public static IEnumerable<CustomAttributeData> GetCustomAttributesData(this MemberInfo member)
-        {
-            return member.CustomAttributes;
-        }
 #endif
 
         public static bool IsNullable(this Type type)
@@ -185,13 +164,11 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            //no public setter
             var props = type.GetFieldsAndProperties().ToList();
-            if (props.Any(p => p.SetterModifier == AccessModifier.Public))
-                return false;
 
-            //interface, ctor will automatically created
-            if (type.GetTypeInfo().IsInterface)
+            //interface, all props must be readonly
+            if (type.GetTypeInfo().IsInterface && 
+                props.All(p => p.SetterModifier != AccessModifier.Public))
                 return true;
 
             //1 non-empty constructor

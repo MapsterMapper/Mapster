@@ -187,7 +187,7 @@ namespace Mapster.Adapters
                     && member.Getter.Type != member.DestinationMember.Type
                     && !member.Getter.Type.IsCollection()
                     && !member.DestinationMember.Type.IsCollection()
-                    && member.Getter.Type.GetTypeInfo().GetCustomAttributes(true).All(attr => attr.GetType().Name != "ComplexTypeAttribute"))
+                    && member.Getter.Type.GetTypeInfo().GetCustomAttributesData().All(attr => attr.GetAttributeType().Name != "ComplexTypeAttribute"))
                 {
                     value = member.Getter.NotNullReturn(value);
                 }

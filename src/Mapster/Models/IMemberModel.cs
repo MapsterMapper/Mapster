@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Mapster.Models
 {
@@ -12,5 +13,6 @@ namespace Mapster.Models
         AccessModifier AccessModifier { get; }
 
         IEnumerable<object> GetCustomAttributes(bool inherit);
+        IEnumerable<CustomAttributeData> GetCustomAttributesData();
     }
 }

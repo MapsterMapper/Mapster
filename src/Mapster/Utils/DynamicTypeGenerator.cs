@@ -51,7 +51,7 @@ namespace Mapster.Utils
                 foreach (PropertyInfo prop in currentInterface.GetProperties())
                 {
                     propCount++;
-                    FieldBuilder propField = builder.DefineField("_" + NameMatchingStrategy.CamelCase(prop.Name), prop.PropertyType, FieldAttributes.Private);
+                    FieldBuilder propField = builder.DefineField("_" + MapsterHelper.CamelCase(prop.Name), prop.PropertyType, FieldAttributes.Private);
                     CreateProperty(currentInterface, builder, prop, propField);
                     if (!prop.CanWrite)
                         args.Add(propField);

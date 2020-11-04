@@ -358,5 +358,19 @@ namespace Mapster.Utils
             var expr = lambda.Body.TrimConversion(true);
             return lambda.Parameters.Count == 1 && lambda.Parameters[0] == expr;
         }
+
+        internal static Expression GetNameConverterExpression(Func<string, string> converter)
+        {
+            if (converter == MapsterHelper.Identity)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(MapsterHelper.Identity));
+            if (converter == MapsterHelper.PascalCase)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(MapsterHelper.PascalCase));
+            if (converter == MapsterHelper.CamelCase)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(MapsterHelper.CamelCase));
+            if (converter == MapsterHelper.LowerCase)
+                return Expression.Field(null, typeof(MapsterHelper), nameof(MapsterHelper.LowerCase));
+            return Expression.Constant(converter);
+        }
+
     }
 }

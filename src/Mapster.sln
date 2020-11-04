@@ -51,6 +51,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.CodeGen", "Sample.Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EF7E343F-592E-4EAC-A0A4-92EB4B95CB89}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.SourceGenerator", "Mapster.SourceGenerator\Mapster.SourceGenerator.csproj", "{BFAFD4DF-7530-46EA-866E-C2A74DAEBDB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Core", "Mapster.Core\Mapster.Core.csproj", "{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +129,14 @@ Global
 		{3CB56440-5449-4DE5-A8D3-549C87C1B36A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CB56440-5449-4DE5-A8D3-549C87C1B36A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CB56440-5449-4DE5-A8D3-549C87C1B36A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFAFD4DF-7530-46EA-866E-C2A74DAEBDB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFAFD4DF-7530-46EA-866E-C2A74DAEBDB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFAFD4DF-7530-46EA-866E-C2A74DAEBDB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFAFD4DF-7530-46EA-866E-C2A74DAEBDB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,7 +6,7 @@ namespace Mapster.Utils
     {
         public static string ToPascalCase(this string name)
         {
-            return NameMatchingStrategy.PascalCase(name);
+            return MapsterHelper.PascalCase(name);
         }
 
         public static void LockAdd<T>(this List<T> list, T item)

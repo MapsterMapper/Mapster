@@ -90,7 +90,7 @@ namespace Mapster.Utils
             var arg = args[0];
             if (arg.Value is byte[] bytes)
                 return bytes.Length == 0 || bytes[0] != 1;
-            else if (arg.Value is ReadOnlyCollection<CustomAttributeTypedArgument> a)
+            else if (arg.Value is IList<CustomAttributeTypedArgument> a)
                 return IsNullable(a);
             else if (arg.Value is byte b)
                 return b != 1;

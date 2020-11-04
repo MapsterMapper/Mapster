@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mapster.Models
 {
@@ -30,6 +31,9 @@ namespace Mapster.Models
         public AccessModifier AccessModifier => AccessModifier.Public;
 
         public IEnumerable<object> GetCustomAttributes(bool inherit) => Enumerable.Empty<object>();
+
+        public IEnumerable<CustomAttributeData> GetCustomAttributesData() =>
+            Enumerable.Empty<CustomAttributeData>();
 
         public Expression GetExpression(Expression source)
         {

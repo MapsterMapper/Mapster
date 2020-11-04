@@ -25,12 +25,23 @@ namespace Mapster
 
         public static bool HasCustomAttribute(this IMemberModel member, Type type)
         {
-            return member.GetCustomAttributes(true).Any(attr => attr.GetType() == type);
+            return member.GetCustomAttributesData().Any(attr => attr.GetAttributeType() == type);
         }
 
-        public static T GetCustomAttribute<T>(this IMemberModel member)
+        public static bool HasCustomAttribute<T>(this IMemberModel member) where T : Attribute
         {
-            return (T) member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
+            return member.GetCustomAttributesData().Any(attr => attr.GetAttributeType() == typeof(T));
+        }
+
+        public static T? GetCustomAttribute<T>(this IMemberModel member) where T : Attribute
+        {
+            return (T?) member.GetCustomAttributes(true).FirstOrDefault(attr => attr is T);
+        }
+
+        internal static T? GetCustomAttributeFromData<T>(this IMemberModel member) where T : Attribute
+        {
+            var attr = member.GetCustomAttributesData().FirstOrDefault(it => it.GetAttributeType() == typeof(T));
+            return attr?.CreateCustomAttribute<T>();
         }
     }
 }

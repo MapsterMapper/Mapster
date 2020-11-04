@@ -185,12 +185,12 @@ namespace Mapster
             var destinationMemberName = destinationMember.GetMemberName(arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
             var key = Expression.Constant(destinationMemberName);
             var args = dictType.GetGenericArguments();
-            if (strategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
+            if (strategy.SourceMemberNameConverter != MapsterHelper.Identity)
             {
                 var method = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.FlexibleGet) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
                     .MakeGenericMethod(args[1]);
-                return Expression.Call(method, source.To(dictType), key, MapsterHelper.GetConverterExpression(strategy.SourceMemberNameConverter));
+                return Expression.Call(method, source.To(dictType), key, ExpressionEx.GetNameConverterExpression(strategy.SourceMemberNameConverter));
             }
             else
             {

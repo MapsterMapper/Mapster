@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 // ReSharper disable StaticMemberInGenericType
+#pragma warning disable 8618
 
 namespace Mapster.Utils
 {
@@ -21,7 +22,6 @@ namespace Mapster.Utils
         private static readonly ulong[] _flagList;
         private static readonly string _zeroString;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3963:\"static\" fields should be initialized inline", Justification = "<Pending>")]
         static Enum()
         {
             var p = Expression.Parameter(typeof (TEnum));

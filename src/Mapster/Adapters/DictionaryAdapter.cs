@@ -90,13 +90,13 @@ namespace Mapster.Adapters
 
             //dest[kvp.Key] = convert(kvp.Value);
             var set = CreateSetFromKvp(kvp, key, dict, arg);
-            if (arg.Settings.NameMatchingStrategy.SourceMemberNameConverter != NameMatchingStrategy.Identity)
+            if (arg.Settings.NameMatchingStrategy.SourceMemberNameConverter != MapsterHelper.Identity)
             {
                 set = Expression.Block(
                     Expression.Assign(
                         key,
                         Expression.Call(
-                              MapsterHelper.GetConverterExpression(arg.Settings.NameMatchingStrategy.SourceMemberNameConverter),
+                              ExpressionEx.GetNameConverterExpression(arg.Settings.NameMatchingStrategy.SourceMemberNameConverter),
                               "Invoke",
                               null,
                               key)),
@@ -254,12 +254,12 @@ namespace Mapster.Adapters
         {
             var strategy = arg.Settings.NameMatchingStrategy;
             var args = dictType.GetGenericArguments();
-            if (strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
+            if (strategy.DestinationMemberNameConverter != MapsterHelper.Identity)
             {
                 var getMethod = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.FlexibleGet) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
                     .MakeGenericMethod(args[1]);
-                var destNameConverter = MapsterHelper.GetConverterExpression(strategy.DestinationMemberNameConverter);
+                var destNameConverter = ExpressionEx.GetNameConverterExpression(strategy.DestinationMemberNameConverter);
                 return (dict, key) => Expression.Call(getMethod, dict, key, destNameConverter);
             }
             else
@@ -275,13 +275,13 @@ namespace Mapster.Adapters
         {
             var strategy = arg.Settings.NameMatchingStrategy;
             if (arg.MapType == MapType.MapToTarget &&
-                strategy.DestinationMemberNameConverter != NameMatchingStrategy.Identity)
+                strategy.DestinationMemberNameConverter != MapsterHelper.Identity)
             {
                 var args = dictType.GetGenericArguments();
                 var setMethod = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.FlexibleSet))
                     .MakeGenericMethod(args[1]);
-                var destNameConverter = MapsterHelper.GetConverterExpression(strategy.DestinationMemberNameConverter);
+                var destNameConverter = ExpressionEx.GetNameConverterExpression(strategy.DestinationMemberNameConverter);
                 return (dict, key, value) => Expression.Call(setMethod, dict, key, destNameConverter, value);
             }
             else

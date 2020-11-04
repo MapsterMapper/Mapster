@@ -46,6 +46,9 @@ namespace Mapster.Models
         {
             return _propertyInfo.GetCustomAttributes(inherit);
         }
-
+        public IEnumerable<CustomAttributeData> GetCustomAttributesData()
+        {
+            return _propertyInfo.GetCustomAttributesData();
+        }
     }
 }
