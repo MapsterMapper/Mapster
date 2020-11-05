@@ -15,7 +15,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>6.5.1</Version>
+    <Version>6.5.2</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
     <PackageIcon>icon.png</PackageIcon>
@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="ExpressionTranslator" Version="2.3.1" />
+    <PackageReference Include="ExpressionTranslator" Version="2.3.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
   </ItemGroup>
 

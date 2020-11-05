@@ -43,7 +43,7 @@ namespace Sample.CodeGen.Controllers
         [HttpPost("student")]
         public async Task AddStudent([FromBody] StudentAdd data)
         {
-            var student = data.AdaptToEntity();
+            var student = data.AdaptToStudent();
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
         }

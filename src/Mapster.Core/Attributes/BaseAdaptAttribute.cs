@@ -31,28 +31,14 @@ namespace Mapster
 
     public class AdaptFromAttribute : BaseAdaptAttribute
     {
-        public AdaptFromAttribute(Type type) : base(type)
-        {
-            this.MapType = MapType.Map | MapType.MapToTarget;
-        }
-
-        public AdaptFromAttribute(string name) : base(name)
-        {
-            this.MapType = MapType.Map | MapType.MapToTarget;
-        }
+        public AdaptFromAttribute(Type type) : base(type) { }
+        public AdaptFromAttribute(string name) : base(name) { }
     }
 
     public class AdaptToAttribute : BaseAdaptAttribute
     {
-        public AdaptToAttribute(Type type) : base(type)
-        {
-            this.MapType = MapType.Map | MapType.MapToTarget | MapType.Projection;
-        }
-
-        public AdaptToAttribute(string name) : base(name)
-        {
-            this.MapType = MapType.Map | MapType.MapToTarget | MapType.Projection;
-        }
+        public AdaptToAttribute(Type type) : base(type) { }
+        public AdaptToAttribute(string name) : base(name) { }
     }
 
     public class AdaptTwoWaysAttribute : AdaptToAttribute

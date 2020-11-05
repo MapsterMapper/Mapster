@@ -72,6 +72,11 @@ namespace Mapster
             get => Get(nameof(EnableNonPublicMembers));
             set => Set(nameof(EnableNonPublicMembers), value);
         }
+        public object? GenerateMapper
+        {
+            get => Get<object>(nameof(GenerateMapper));
+            set => Set(nameof(GenerateMapper), value);
+        }
 
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {

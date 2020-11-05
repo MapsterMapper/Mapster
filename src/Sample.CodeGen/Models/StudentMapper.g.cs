@@ -39,7 +39,7 @@ namespace Sample.CodeGen.Models
             FirstMidName = p4.FirstMidName,
             EnrollmentDate = p4.EnrollmentDate
         };
-        public static Student AdaptToEntity(this StudentAdd p5)
+        public static Student AdaptToStudent(this StudentAdd p5)
         {
             return p5 == null ? null : new Student()
             {

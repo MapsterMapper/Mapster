@@ -648,6 +648,14 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TSource, TDestination> GenerateMapper(MapType mapType)
+        {
+            this.CheckCompiled();
+
+            Settings.GenerateMapper = mapType;
+            return this;
+        }
+
         public TwoWaysTypeAdapterSetter<TSource, TDestination> TwoWays()
         {
             return new TwoWaysTypeAdapterSetter<TSource, TDestination>(this.Config);
@@ -877,6 +885,13 @@ namespace Mapster
         {
             SourceToDestinationSetter.Fork(action);
             DestinationToSourceSetter.Fork(action);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> GenerateMapper(MapType mapType)
+        {
+            SourceToDestinationSetter.GenerateMapper(mapType);
+            DestinationToSourceSetter.GenerateMapper(mapType);
             return this;
         }
     }

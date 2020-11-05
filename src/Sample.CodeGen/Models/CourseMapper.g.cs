@@ -54,7 +54,7 @@ namespace Sample.CodeGen.Models
                 }
             }).ToList<EnrollmentDto>()
         };
-        public static Course AdaptToEntity(this CourseAdd p9)
+        public static Course AdaptToCourse(this CourseAdd p9)
         {
             return p9 == null ? null : new Course()
             {

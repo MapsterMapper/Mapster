@@ -497,9 +497,10 @@ namespace Mapster
                 return rules1;
             var rules2 = from type in tuple.Destination.GetAllTypes()
                 from o in type.GetTypeInfo().GetCustomAttributesData()
-                where typeof(BaseAdaptAttribute).IsAssignableFrom(o.GetAttributeType())
+                where typeof(AdaptFromAttribute).IsAssignableFrom(o.GetAttributeType()) ||
+                      typeof(AdaptTwoWaysAttribute).IsAssignableFrom(o.GetAttributeType())
                 let attr = o.CreateCustomAttribute<BaseAdaptAttribute>()
-                where attr != null && (attr.MapType & mapType) != 0 && (attr is AdaptFromAttribute || attr is AdaptTwoWaysAttribute)
+                where attr != null && (attr.MapType & mapType) != 0
                 where attr.Type == null || attr.Type == tuple.Source
                 where attr.Name == null || attr.Name.Replace("[name]", type.Name) == tuple.Source.Name
                 let distance = GetSubclassDistance(tuple.Destination, type, true)
@@ -553,11 +554,19 @@ namespace Mapster
                 MapType = mapType,
                 ExplicitMapping = this.RuleMap.ContainsKey(tuple),
             };
+
+            //auto add setting if there is attr setting
+            var attrSettings = GetAttributeSettings(tuple, mapType).ToList();
+            if (!arg.ExplicitMapping && attrSettings.Any(rule => rule.Priority(arg) == 100))
+            {
+                GetSettings(tuple);
+                arg.ExplicitMapping = true;
+            }
+
             var result = new TypeAdapterSettings();
             lock (this.Rules)
             {
-                var rules = this.Rules.Reverse<TypeAdapterRule>()
-                    .Concat(GetAttributeSettings(tuple, mapType));
+                var rules = this.Rules.Reverse<TypeAdapterRule>().Concat(attrSettings);
                 var settings = from rule in rules
                     let priority = rule.Priority(arg)
                     where priority != null

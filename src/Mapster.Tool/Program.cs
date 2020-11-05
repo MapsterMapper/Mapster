@@ -252,15 +252,20 @@ namespace Mapster.Tool
                 var attrs = type.SafeGetCustomAttributes();
                 var mapperAttr = attrs.OfType<GenerateMapperAttribute>()
                     .FirstOrDefault();
-                if (mapperAttr == null)
+                var ruleMaps = config.RuleMap
+                    .Where(it => it.Key.Source == type &&
+                                 it.Value.Settings.GenerateMapper is MapType)
+                    .ToList();
+                if (mapperAttr == null && ruleMaps.Count == 0)
                     continue;
 
+                mapperAttr ??= new GenerateMapperAttribute();
                 var set = mapperAttr.ForAttributes?.ToHashSet();
                 var adaptAttrs = attrs
                     .OfType<BaseAdaptAttribute>()
                     .Where(it => set?.Contains(it.GetType()) != false)
                     .ToList();
-                if (adaptAttrs.Count == 0)
+                if (adaptAttrs.Count == 0 && ruleMaps.Count == 0)
                     continue;
 
                 Console.WriteLine($"Processing: {type.FullName}");
@@ -289,7 +294,8 @@ namespace Mapster.Tool
                             continue;
 
                         var tuple = new TypeTuple(fromType, type);
-                        GenerateExtensionMethods(attr.MapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
+                        var mapType = attr.MapType == 0 ? MapType.Map | MapType.MapToTarget : attr.MapType;
+                        GenerateExtensionMethods(mapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
 
                     if (attr is AdaptToAttribute)
@@ -308,8 +314,15 @@ namespace Mapster.Tool
                             continue;
 
                         var tuple = new TypeTuple(type, toType);
-                        GenerateExtensionMethods(attr.MapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
+                        var mapType = attr.MapType == 0 ? MapType.Map | MapType.MapToTarget | MapType.Projection : attr.MapType;
+                        GenerateExtensionMethods(mapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
+                }
+
+                foreach (var (tuple, rule) in ruleMaps)
+                {
+                    var mapType = (MapType) rule.Settings.GenerateMapper!;
+                    GenerateExtensionMethods(mapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
                 }
 
                 var code = translator.ToString();
@@ -321,9 +334,13 @@ namespace Mapster.Tool
         private static void GenerateExtensionMethods(MapType mapType, TypeAdapterConfig config, TypeTuple tuple,
             ExpressionTranslator translator, Type entityType, bool isHelperClass)
         {
-            var name = tuple.Destination == entityType
-                ? "Entity"
-                : tuple.Destination.Name.Replace(entityType.Name, "");
+            //add type name to prevent duplication
+            translator.Translate(entityType);
+            var destName = translator.Translate(tuple.Destination);
+
+            var name = tuple.Destination.Name == entityType.Name
+                ? destName
+                : destName.Replace(entityType.Name, "");
             if ((mapType & MapType.Map) > 0)
             {
                 var expr = config.CreateMapExpression(tuple, MapType.Map);
