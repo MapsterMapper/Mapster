@@ -23,6 +23,7 @@ namespace MapsterMapper
 
         public virtual TDestination Map<TDestination>(object source)
         {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (source == null)
                 return default!;
             var type = source.GetType();

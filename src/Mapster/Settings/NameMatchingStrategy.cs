@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Mapster.Utils;
 
 namespace Mapster
@@ -13,6 +14,8 @@ namespace Mapster
             if (other is NameMatchingStrategy strategy)
                 Apply(strategy);
         }
+
+        [SuppressMessage("ReSharper", "ConstantNullCoalescingCondition")]
         public void Apply(NameMatchingStrategy other)
         {
             this.SourceMemberNameConverter ??= other.SourceMemberNameConverter;

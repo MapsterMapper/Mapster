@@ -55,16 +55,16 @@ namespace Mapster.Adapters
             if (source.Type.IsArray &&
                 source.Type.GetArrayRank() == 1 &&
                 source.Type.GetElementType() == destination.Type.GetElementType() &&
-                source.Type.GetElementType().IsPrimitiveKind())
+                source.Type.GetElementType()!.IsPrimitiveKind())
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
                 var len = arg.UseDestinationValue
-                    ? Expression.Call(typeof(Math).GetMethod("Min", new[] {typeof(int), typeof(int)}),
-                        ExpressionEx.CreateCountExpression(source), 
-                        ExpressionEx.CreateCountExpression(destination))
+                    ? Expression.Call(typeof(Math).GetMethod("Min", new[] {typeof(int), typeof(int)})!,
+                        ExpressionEx.CreateCountExpression(source)!, 
+                        ExpressionEx.CreateCountExpression(destination)!)
                     : ExpressionEx.CreateCountExpression(source);
-                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), len);
+                return Expression.Call(method!, source, Expression.Constant(0), destination, Expression.Constant(0), len!);
             }
 
             return CreateArraySet(source, destination, arg);

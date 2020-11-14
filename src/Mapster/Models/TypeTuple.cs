@@ -18,10 +18,7 @@ namespace Mapster.Models
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return ((Source?.GetHashCode() ?? 0) << 16) ^ ((Destination?.GetHashCode() ?? 0) & 65535);
-            }
+            return (Source.GetHashCode() << 16) ^ (Destination.GetHashCode() & 65535);
         }
 
         public static bool operator ==(TypeTuple left, TypeTuple right)

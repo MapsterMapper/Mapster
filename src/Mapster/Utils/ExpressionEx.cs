@@ -83,7 +83,7 @@ namespace Mapster.Utils
             var replacer = new ParameterExpressionReplacer(lambda.Parameters, exps);
             var result = replacer.Visit(lambda.Body);
             if (!allowInvoke || !replacer.ReplaceCounts.Where((n, i) => n > 1 && exps[i].IsComplex()).Any())
-                return result;
+                return result!;
             return Expression.Invoke(lambda, exps);
         }
 
@@ -227,11 +227,11 @@ namespace Mapster.Utils
             }
 
             var enumeratorVar = Expression.Variable(enumeratorType, "enumerator");
-            var getEnumeratorCall = Expression.Call(collection, enumerableType.GetMethod("GetEnumerator"));
+            var getEnumeratorCall = Expression.Call(collection, enumerableType.GetMethod("GetEnumerator")!);
             var enumeratorAssign = Expression.Assign(enumeratorVar, getEnumeratorCall);
 
             // The MoveNext method's actually on IEnumerator, not IEnumerator<T>
-            var moveNextCall = Expression.Call(enumeratorVar, typeof(IEnumerator).GetMethod("MoveNext"));
+            var moveNextCall = Expression.Call(enumeratorVar, typeof(IEnumerator).GetMethod("MoveNext")!);
 
             var breakLabel = Expression.Label("LoopBreak");
 
@@ -330,7 +330,7 @@ namespace Mapster.Utils
         {
             var props = new List<string>();
             var expr = lambda.Body.TrimConversion(true);
-            while (expr?.NodeType == ExpressionType.MemberAccess)
+            while (expr.NodeType == ExpressionType.MemberAccess)
             {
                 if (firstLevelOnly && props.Count > 0)
                 {
@@ -343,7 +343,7 @@ namespace Mapster.Utils
                 props.Add(memEx.Member.Name);
                 expr = memEx.Expression;
             }
-            if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
+            if (props.Count == 0 || expr.NodeType != ExpressionType.Parameter)
             {
                 if (noError)
                     return null;

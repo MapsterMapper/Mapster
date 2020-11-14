@@ -98,7 +98,7 @@ namespace Mapster.Adapters
             if (arg.UseDestinationValue && arg.MapType == MapType.MapToTarget)
             {
                 var clear = list.Type.GetMethod("Clear", Type.EmptyTypes);
-                actions.Add(Expression.Call(list, clear));
+                actions.Add(Expression.Call(list, clear!));
             }
 
             actions.Add(CreateListSet(source, list, arg));
@@ -201,7 +201,7 @@ namespace Mapster.Adapters
             var addMethod = destination.Type.GetMethod("Add", new[] { destinationElementType });
             var set = Expression.Call(
                 destination,
-                addMethod,
+                addMethod!,
                 getter);
             return ExpressionEx.ForLoop(source, item, set);
         }

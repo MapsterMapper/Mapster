@@ -1,6 +1,8 @@
 ﻿using Mapster.Utils;
 using System;
 using System.Linq.Expressions;
+
+// ReSharper disable once RedundantUsingDirective
 using System.Reflection;
 
 namespace Mapster.Adapters
@@ -64,7 +66,7 @@ namespace Mapster.Adapters
                 return result;
 
             var changeTypeMethod = typeof(Convert).GetMethod("ChangeType", new[] { typeof(object), typeof(Type) });
-            return Expression.Convert(Expression.Call(changeTypeMethod, Expression.Convert(source, typeof(object)), Expression.Constant(destinationType)), destinationType);
+            return Expression.Convert(Expression.Call(changeTypeMethod!, Expression.Convert(source, typeof(object)), Expression.Constant(destinationType)), destinationType);
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)

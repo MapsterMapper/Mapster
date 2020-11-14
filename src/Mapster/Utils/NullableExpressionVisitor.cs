@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,10 +9,10 @@ namespace Mapster.Utils
     {
         public bool? CanBeNull { get; private set; }
 
-        public override Expression Visit(Expression node)
+        public override Expression? Visit(Expression? node)
         {
             if (CanBeNull.HasValue || node == null)
-                return node!;
+                return node;
             switch (node.NodeType)
             {
                 case ExpressionType.AndAlso:

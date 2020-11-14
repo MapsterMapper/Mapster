@@ -39,20 +39,19 @@ namespace Mapster.Adapters
             if (destinationType == typeof(string))
             {
                 var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
-                return Expression.Call(method, source);
+                return Expression.Call(method!, source);
             }
             else if (srcType == typeof(string))
             {
                 var method = typeof(Enum<>).MakeGenericType(destinationType).GetMethod("Parse", new[] { typeof(string) });
-                return Expression.Call(method, source);
+                return Expression.Call(method!, source);
             }
             else if (destinationType.GetTypeInfo().IsEnum && srcType.GetTypeInfo().IsEnum && arg.Settings.MapEnumByName == true)
             {
                 var method = typeof(Enum<>).MakeGenericType(srcType).GetMethod("ToString", new[] { srcType });
-                var tostring = Expression.Call(method, source);
+                var tostring = Expression.Call(method!, source);
                 var methodParse = typeof(Enum<>).MakeGenericType(destinationType).GetMethod("Parse", new[] { typeof(string) });
-
-                return Expression.Call(methodParse, tostring);
+                return Expression.Call(methodParse!, tostring);
             }
 
 

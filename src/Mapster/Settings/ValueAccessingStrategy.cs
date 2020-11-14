@@ -226,7 +226,7 @@ namespace Mapster
                     ? Expression.Call(method, source.To(dictType), Expression.Constant(resolver.SourceMemberName))
                     : resolver.GetInvokingExpression(source, arg.MapType);
                 getter = lastCondition != null
-                    ? Expression.Condition(lastCondition, getter, invoke)
+                    ? Expression.Condition(lastCondition, getter!, invoke)
                     : invoke;
                 lastCondition = resolver.GetConditionExpression(source, arg.MapType);
                 if (lastCondition == null)

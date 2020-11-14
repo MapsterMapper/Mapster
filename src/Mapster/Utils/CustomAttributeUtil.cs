@@ -116,7 +116,7 @@ namespace Mapster
         {
             if (typedValue.Value is IList<CustomAttributeTypedArgument> list)
             {
-                var array = Array.CreateInstance(typedValue.ArgumentType.GetElementType(), list.Count);
+                var array = Array.CreateInstance(typedValue.ArgumentType.GetElementType()!, list.Count);
                 for (var i = 0; i < list.Count; i++)
                 {
                     array.SetValue(list[i].Value, i);

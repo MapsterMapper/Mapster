@@ -5,10 +5,10 @@ namespace Mapster.Utils
     sealed class ComplexExpressionVisitor : ExpressionVisitor
     {
         public bool IsComplex { get; private set; }
-        public override Expression Visit(Expression node)
+        public override Expression? Visit(Expression? node)
         {
             if (node == null)
-                return null!;
+                return null;
             switch (node.NodeType)
             {
                 case ExpressionType.ArrayIndex:

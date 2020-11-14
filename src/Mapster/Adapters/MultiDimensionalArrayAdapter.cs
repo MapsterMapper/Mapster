@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using Mapster.Utils;
+
+// ReSharper disable once RedundantUsingDirective
+using System.Reflection;
 
 namespace Mapster.Adapters
 {
@@ -45,7 +47,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
-            return Expression.NewArrayBounds(arg.DestinationType.GetElementType(), GetArrayBounds(source, arg.DestinationType));
+            return Expression.NewArrayBounds(arg.DestinationType.GetElementType()!, GetArrayBounds(source, arg.DestinationType));
         }
 
         private static IEnumerable<Expression> GetArrayBounds(Expression source, Type destinationType)
@@ -69,7 +71,7 @@ namespace Mapster.Adapters
                 }
                 for (int i = 0; i < srcRank; i++)
                 {
-                    yield return Expression.Call(source, method, Expression.Constant(i));
+                    yield return Expression.Call(source, method!, Expression.Constant(i));
                 }
             }
         }
@@ -79,11 +81,11 @@ namespace Mapster.Adapters
             if (source.Type.IsArray &&
                 source.Type.GetArrayRank() == destination.Type.GetArrayRank() &&
                 source.Type.GetElementType() == destination.Type.GetElementType() &&
-                source.Type.GetElementType().IsPrimitiveKind())
+                source.Type.GetElementType()!.IsPrimitiveKind())
             {
                 //Array.Copy(src, 0, dest, 0, src.Length)
                 var method = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int) });
-                return Expression.Call(method, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source));
+                return Expression.Call(method!, source, Expression.Constant(0), destination, Expression.Constant(0), ExpressionEx.CreateCountExpression(source)!);
             }
 
             return CreateArraySet(source, destination, arg);
@@ -125,7 +127,7 @@ namespace Mapster.Adapters
                 vlenx.Select((vlen, i) =>
                     Expression.Assign(
                         vlen,
-                        Expression.Call(destination, method, Expression.Constant(i)))));
+                        Expression.Call(destination, method!, Expression.Constant(i)))));
             var getter = CreateAdaptExpression(item, destinationElementType, arg);
             var set = ExpressionEx.Assign(
                 Expression.ArrayAccess(destination, vx),

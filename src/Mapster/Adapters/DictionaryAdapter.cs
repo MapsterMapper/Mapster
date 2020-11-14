@@ -209,7 +209,7 @@ namespace Mapster.Adapters
                 var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
 
                 Expression key = Expression.Constant(member.DestinationMember.Name);
-                var itemInit = Expression.ElementInit(add, key, value);
+                var itemInit = Expression.ElementInit(add!, key, value);
                 lines.Add(itemInit);
             }
 

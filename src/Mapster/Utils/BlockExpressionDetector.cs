@@ -6,10 +6,10 @@ namespace Mapster.Utils
     {
         public bool IsBlockExpression { get; private set; }
 
-        public override Expression Visit(Expression node)
+        public override Expression? Visit(Expression? node)
         {
             if (this.IsBlockExpression || node == null)
-                return node!;
+                return node;
 
             switch (node.NodeType)
             {

@@ -303,7 +303,7 @@ namespace Mapster
         private Expression CreateSelfExpression()
         {
             if (this == GlobalSettings)
-                return Expression.Property(null, typeof(TypeAdapterConfig).GetProperty(nameof(GlobalSettings)));
+                return Expression.Property(null, typeof(TypeAdapterConfig).GetProperty(nameof(GlobalSettings))!);
             else
                 return Expression.Constant(this);
         }
@@ -314,7 +314,7 @@ namespace Mapster
                 where m.Name == nameof(GetDynamicMapFunction)
                 select m).First().MakeGenericMethod(destinationType);
             var getType = typeof(object).GetMethod(nameof(GetType));
-            var invoker = Expression.Call(CreateSelfExpression(), method, Expression.Call(p1, getType));
+            var invoker = Expression.Call(CreateSelfExpression(), method, Expression.Call(p1, getType!));
             return Expression.Call(invoker, "Invoke", null, p1);
         }
 

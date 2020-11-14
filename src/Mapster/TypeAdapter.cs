@@ -35,6 +35,7 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static TDestination Adapt<TDestination>(this object source, TypeAdapterConfig config)
         {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (source == null)
                 return default!;
             var type = source.GetType();

@@ -1,6 +1,7 @@
 using Mapster.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
@@ -24,6 +25,7 @@ namespace Mapster
             this.Config = config;
         }
 
+        [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
         public TypeAdapterBuilder<TSource> ForkConfig(Action<TypeAdapterConfig> action,
 #if !NET40
             [CallerFilePath]

@@ -86,7 +86,7 @@ namespace Mapster.Utils
                 ctorIl.Emit(OpCodes.Ret);
             }
 
-#if NETSTANDARD2_0 || NETCOREAPP3_0
+#if NETSTANDARD2_0
             return builder.CreateTypeInfo()!;
 #elif NETSTANDARD1_3
             return builder.CreateTypeInfo().AsType();
@@ -114,7 +114,7 @@ namespace Mapster.Utils
                 propGetIl.Emit(OpCodes.Ldfld, propField);
                 propGetIl.Emit(OpCodes.Ret);
 
-                MethodInfo interfaceGetMethod = interfaceType.GetMethod(getMethodName, interfacePropMethodFlags);
+                MethodInfo interfaceGetMethod = interfaceType.GetMethod(getMethodName, interfacePropMethodFlags)!;
                 builder.DefineMethodOverride(propGet, interfaceGetMethod);
                 propBuilder.SetGetMethod(propGet);
             }
@@ -130,7 +130,7 @@ namespace Mapster.Utils
                 propSetIl.Emit(OpCodes.Stfld, propField);
                 propSetIl.Emit(OpCodes.Ret);
 
-                MethodInfo interfaceSetMethod = interfaceType.GetMethod(setMethodName, interfacePropMethodFlags);
+                MethodInfo interfaceSetMethod = interfaceType.GetMethod(setMethodName, interfacePropMethodFlags)!;
                 builder.DefineMethodOverride(propSet, interfaceSetMethod);
                 propBuilder.SetSetMethod(propSet);
             }

@@ -111,7 +111,7 @@ namespace Mapster
         public static Type ExtractCollectionType(this Type collectionType)
         {
             if (collectionType.IsArray)
-                return collectionType.GetElementType();
+                return collectionType.GetElementType()!;
             var enumerableType = collectionType.GetGenericEnumerableType();
             return enumerableType != null
                 ? enumerableType.GetGenericArguments()[0]
@@ -146,7 +146,7 @@ namespace Mapster
                 return Expression.Call(method, source);
 
             method = typeof(Convert).GetMethod(name, new[] { typeof(object) });
-            return Expression.Convert(Expression.Call(method, Expression.Convert(source, typeof(object))), destType);
+            return Expression.Convert(Expression.Call(method!, Expression.Convert(source, typeof(object))), destType);
         }
 
         public static Type UnwrapNullable(this Type type)

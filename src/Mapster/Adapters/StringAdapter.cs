@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
+
+// ReSharper disable once RedundantUsingDirective
 using System.Reflection;
 
 namespace Mapster.Adapters
@@ -19,7 +21,7 @@ namespace Mapster.Adapters
             {
                 var method = source.Type.GetMethod("ToString", Type.EmptyTypes) 
                              ?? typeof(object).GetMethod("ToString", Type.EmptyTypes);
-                return Expression.Call(source, method);
+                return Expression.Call(source, method!);
             }
             else //if (sourceType == typeof(string))
             {

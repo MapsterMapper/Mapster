@@ -274,13 +274,13 @@ namespace Mapster.Adapters
                     var tupleType = typeof(ReferenceTuple);
                     var key = Expression.Variable(tupleType, "key");
                     var assignKey = Expression.Assign(key,
-                        Expression.New(tupleType.GetConstructor(new[] {typeof(object), typeof(Type)}),
+                        Expression.New(tupleType.GetConstructor(new[] {typeof(object), typeof(Type)})!,
                             source,
                             Expression.Constant(arg.DestinationType)));
 
                     var cache = Expression.Variable(typeof(object), "cache");
                     var tryGetMethod = dictType.GetMethod("TryGetValue", new[] { typeof(ReferenceTuple), typeof(object).MakeByRefType() });
-                    var checkHasRef = Expression.Call(references, tryGetMethod, key, cache);
+                    var checkHasRef = Expression.Call(references, tryGetMethod!, key, cache);
                     var setResult = Expression.IfThen(
                         checkHasRef,
                         Expression.Return(label, cache.To(arg.DestinationType)));
