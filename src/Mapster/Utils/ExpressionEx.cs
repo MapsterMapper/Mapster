@@ -332,7 +332,7 @@ namespace Mapster.Utils
         {
             var props = new List<string>();
             var expr = lambda.Body.TrimConversion(true);
-            while (expr.NodeType == ExpressionType.MemberAccess)
+            while (expr?.NodeType == ExpressionType.MemberAccess)
             {
                 if (firstLevelOnly && props.Count > 0)
                 {
@@ -343,9 +343,9 @@ namespace Mapster.Utils
 
                 var memEx = (MemberExpression)expr;
                 props.Add(memEx.Member.Name);
-                expr = memEx.Expression;
+                expr = (Expression?)memEx.Expression;
             }
-            if (props.Count == 0 || expr.NodeType != ExpressionType.Parameter)
+            if (props.Count == 0 || expr?.NodeType != ExpressionType.Parameter)
             {
                 if (noError)
                     return null;
