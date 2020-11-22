@@ -317,6 +317,8 @@ namespace Mapster.Utils
                 if (expr.CanBeNull())
                 {
                     var compareNull = Expression.Equal(expr, Expression.Constant(null, expr.Type));
+                    if (!result.Type.CanBeNull())
+                        result = Expression.Convert(result, typeof(Nullable<>).MakeGenericType(result.Type));
                     result = Expression.Condition(compareNull, result.Type.CreateDefault(), result);
                 }
 

@@ -37,6 +37,11 @@ namespace Mapster.Tests
         public decimal BClass_Total { get; set; }
     }
 
+    public class F
+    {
+        public decimal? BClass_Total { get; set; }
+    }
+
     public class ModelObject
     {
         public DateTime BaseDate { get; set; }
@@ -104,6 +109,20 @@ namespace Mapster.Tests
 
             Assert.IsNotNull(e);
             Assert.IsTrue(e.BClass_Total == 250);
+        }
+
+        [TestMethod]
+        public void PropertyTest_NullPropagation()
+        {
+            var f = TypeAdapter.Adapt<C, F>(new C { BClass = new B { Total = 250 } });
+
+            Assert.IsNotNull(f);
+            Assert.IsTrue(f.BClass_Total == 250);
+
+            var f2 = TypeAdapter.Adapt<C, F>(new C { BClass = null });
+
+            Assert.IsNotNull(f2);
+            Assert.IsNull(f2.BClass_Total);
         }
 
         [TestMethod]
