@@ -410,9 +410,9 @@ namespace Mapster.Adapters
                 if (destination != null)
                     paramList.Add(destination);
                 paramList.AddRange(lambda.Parameters.Skip(paramList.Count));
-                if (!lambda.IsMultiLine())
-                    return lambda.Apply(arg.MapType, paramList.ToArray());
-                return Expression.Invoke(lambda, paramList.ToArray());
+                return lambda.IsMultiLine() 
+                    ? Expression.Invoke(lambda, paramList.ToArray()) 
+                    : lambda.Apply(arg.MapType, paramList.ToArray());
             }
             finally
             {
