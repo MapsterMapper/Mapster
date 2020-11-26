@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -262,5 +263,73 @@ namespace Mapster.Tests
             GetInts().Adapt<int[,]>();
             i.ShouldBe(1);
         }
+
+        [TestMethod]
+        public void TestEnumList()
+        {
+            var testClass = new CloneTestEnumContainerListContainer
+            {
+                List1 = new List<CloneTestEnumContainer>
+                {
+                    new CloneTestEnumContainer
+                    {
+                        Type = CloneTestEnum.Value1,
+                        Value = 500
+                    }
+                },
+                List2 = new List<CloneTestEnumContainer>
+                {
+                    new CloneTestEnumContainer
+                    {
+                        Type = CloneTestEnum.Value5,
+                        Value = 500
+                    }
+                }
+            };
+
+            var cloneTest = testClass.Adapt<CloneTestEnumContainerListContainer>();
+            foreach (var paymentCompoent in testClass.CombinedLists)
+            {
+                cloneTest.CombinedLists.ShouldContain(x => x.Type == paymentCompoent.Type && x.Value == paymentCompoent.Value);
+            }
+        }
+
+        #region TestClass
+
+        [Flags]
+        public enum CloneTestEnum
+        {
+            Value1 = 1,
+            Value2 = 2,
+            Value3 = 100,
+            Value4 = 200,
+            Value5 = 300
+        }
+
+        public class CloneTestEnumContainer
+        {
+            public CloneTestEnumContainer()
+            {
+
+            }
+
+            public CloneTestEnumContainer(CloneTestEnum type, decimal value)
+            {
+                Type = type;
+                Value = value;
+            }
+
+            public CloneTestEnum Type { get; set; }
+            public decimal Value { get; set; }
+        }
+
+        public class CloneTestEnumContainerListContainer
+        {
+            public List<CloneTestEnumContainer> List1 { get; set; } = new List<CloneTestEnumContainer>(); //parts of the pricing calcs that need VAT added
+            public List<CloneTestEnumContainer> List2 { get; set; } = new List<CloneTestEnumContainer>(); //parts of the pricing calcs that must NOT have VAT
+            public ReadOnlyCollection<CloneTestEnumContainer> CombinedLists => List1.Concat(List2).ToList().AsReadOnly();
+        }
+
+        #endregion
     }
 }

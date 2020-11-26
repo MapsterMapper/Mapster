@@ -87,7 +87,10 @@ namespace Mapster
         {
             var allInterfaces = new HashSet<Type>();
             var interfaceQueue = new Queue<Type>();
+
             allInterfaces.Add(interfaceType);
+            yield return interfaceType;
+
             interfaceQueue.Enqueue(interfaceType);
             while (interfaceQueue.Count > 0)
             {
@@ -96,11 +99,12 @@ namespace Mapster
                 {
                     if (allInterfaces.Contains(subInterface))
                         continue;
+
                     allInterfaces.Add(subInterface);
+                    yield return subInterface;
                     interfaceQueue.Enqueue(subInterface);
                 }
             }
-            return allInterfaces;
         }
 
         public static bool IsCollection(this Type type)
@@ -171,16 +175,21 @@ namespace Mapster
                 props.All(p => p.SetterModifier != AccessModifier.Public))
                 return true;
 
-            //1 non-empty constructor
-            var ctors = type.GetConstructors().Where(ctor => ctor.GetParameters().Length > 0).ToList();
+            //1 constructor
+            var ctors = type.GetConstructors().ToList();
             if (ctors.Count != 1)
+                return false;
+
+            //ctor must not empty
+            var ctorParams = ctors[0].GetParameters();
+            if (ctorParams.Length == 0)
                 return false;
 
             //all parameters should match getter
             return props.All(prop =>
             {
                 var name = prop.Name.ToPascalCase();
-                return ctors[0].GetParameters().Any(p => p.ParameterType == prop.Type && p.Name?.ToPascalCase() == name);
+                return ctorParams.Any(p => p.ParameterType == prop.Type && p.Name?.ToPascalCase() == name);
             });
         }
 
