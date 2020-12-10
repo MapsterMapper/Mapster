@@ -45,6 +45,8 @@ namespace Mapster.Tool
         {
             //hack for loaded assemblies
             if (name.Name == "Mapster")
+                return typeof(TypeAdapterConfig).Assembly;
+            if (name.Name == "Mapster.Core")
                 return typeof(MapperAttribute).Assembly;
             if (name.Name == "System.Text.Json")
                 return typeof(JsonIgnoreAttribute).Assembly;

@@ -15,6 +15,9 @@ namespace Mapster.Tool
 
         [Option('n', "namespace", Required = false, HelpText = "Namespace for models")]
         public string? Namespace { get; set; }
+        
+        [Option('p', "printFullTypeName", Required = false, HelpText = "Set true to print full type name")]
+        public bool PrintFullTypeName { get; set; }
 
         [Usage(ApplicationAlias = "dotnet mapster model")]
         public static IEnumerable<Example> Examples =>

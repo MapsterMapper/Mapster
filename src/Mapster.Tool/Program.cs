@@ -55,7 +55,8 @@ namespace Mapster.Tool
                     Implements = new[] {type},
                     Namespace = opt.Namespace ?? type.Namespace,
                     TypeName = attr.Name ?? GetImplName(type.Name),
-                    IsInternal = attr.IsInternal
+                    IsInternal = attr.IsInternal,
+                    PrintFullTypeName = opt.PrintFullTypeName,
                 };
                 var translator = new ExpressionTranslator(definitions);
                 var interfaces = type.GetAllInterfaces();
@@ -139,7 +140,8 @@ namespace Mapster.Tool
             var definitions = new TypeDefinitions
             {
                 Namespace = opt.Namespace ?? type.Namespace,
-                TypeName = attr.Name!.Replace("[name]", type.Name)
+                TypeName = attr.Name!.Replace("[name]", type.Name),
+                PrintFullTypeName = opt.PrintFullTypeName,
             };
             var translator = new ExpressionTranslator(definitions);
             var isAdaptTo = attr is AdaptToAttribute;
@@ -275,7 +277,8 @@ namespace Mapster.Tool
                     IsStatic = true,
                     Namespace = opt.Namespace ?? type.Namespace,
                     TypeName = mapperAttr.Name.Replace("[name]", type.Name),
-                    IsInternal = mapperAttr.IsInternal
+                    IsInternal = mapperAttr.IsInternal,
+                    PrintFullTypeName = opt.PrintFullTypeName,
                 };
                 var translator = new ExpressionTranslator(definitions);
 
