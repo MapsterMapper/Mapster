@@ -56,11 +56,13 @@ namespace Mapster
                 if (getter == null)
                 {
                     var type = invokes[0].Item2.Type;
+                    if (destinationMember.Type.CanBeNull() && !type.CanBeNull())
+                        type = typeof(Nullable<>).MakeGenericType(type);
                     getter = type.CreateDefault();
                 }
                 foreach (var invoke in invokes)
                 {
-                    getter = Expression.Condition(invoke.Item1, invoke.Item2, getter);
+                    getter = Expression.Condition(invoke.Item1, invoke.Item2.To(getter.Type), getter);
                 }
             }
 

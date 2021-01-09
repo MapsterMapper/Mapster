@@ -75,6 +75,19 @@ namespace Mapster.Tests
             dto.Name.ShouldBe("TestName");
         }
 
+        [TestMethod]
+        public void Should_Support_Null_Propagation()
+        {
+            var config = new TypeAdapterConfig();
+            config.NewConfig<Src, Dest>()
+                .Map(dest => dest.Start, src => src.Start, src => src.HasStart);
+
+            var poco = new Src {HasStart = false};
+            var dto = poco.Adapt<Dest>(config);
+
+            dto.Start.ShouldBeNull();
+        }
+
         #region TestClasses
 
         public class SimplePoco
@@ -115,6 +128,17 @@ namespace Mapster.Tests
             public string Name { get; set; }
 
             public IReadOnlyList<ChildDto> Children { get; internal set; }
+        }
+
+        public class Dest
+        {
+            public DateTimeOffset? Start { get; set; }
+        }
+
+        public class Src
+        {
+            public DateTimeOffset Start { get; set; }
+            public bool HasStart { get; set; }
         }
 
         #endregion
