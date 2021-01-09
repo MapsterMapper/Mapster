@@ -106,9 +106,9 @@ namespace Mapster
         {
             get => Get(nameof(Includes), () => new List<TypeTuple>());
         }
-        public List<Func<IMemberModel, string?>> GetMemberNames
+        public List<Func<IMemberModel, MemberSide, string?>> GetMemberNames
         {
-            get => Get(nameof(GetMemberNames), () => new List<Func<IMemberModel, string?>>());
+            get => Get(nameof(GetMemberNames), () => new List<Func<IMemberModel, MemberSide, string?>>());
         }
         public List<Func<IMemberModel, bool>> UseDestinationValues
         {

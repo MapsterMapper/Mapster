@@ -315,9 +315,9 @@ namespace Mapster
             return predicates.Any(predicate => predicate(member));
         }
 
-        public static string GetMemberName(this IMemberModel member, List<Func<IMemberModel, string?>> getMemberNames, Func<string, string> nameConverter)
+        public static string GetMemberName(this IMemberModel member, MemberSide side, List<Func<IMemberModel, MemberSide, string?>> getMemberNames, Func<string, string> nameConverter)
         {
-            var memberName = getMemberNames.Select(predicate => predicate(member))
+            var memberName = getMemberNames.Select(func => func(member, side))
                 .FirstOrDefault(name => name != null)
                 ?? member.Name;
 

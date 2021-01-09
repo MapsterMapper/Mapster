@@ -21,6 +21,15 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void Specify_MemberSide()
+        {
+            var user = new User {UserIdentification = 123};
+            var dto = user.Adapt<UserDto>();
+            var info = dto.Adapt<UserInfo>();
+            info.UserId.ShouldBe(123);
+        }
+
         public class SimplePoco
         {
             public SimplePoco(Guid id) { this.id = id; }
@@ -38,5 +47,20 @@ namespace Mapster.Tests
             public string Name { get; set; }
         }
 
+        public class User
+        {
+            public int UserIdentification {get; set;}
+        }
+
+        public class UserDto
+        {
+            [AdaptMember("UserIdentification", MemberSide.Destination)]
+            public int UserId {get; set;}
+        }
+
+        public class UserInfo
+        {
+            public int UserId {get; set;}
+        }
     }
 }

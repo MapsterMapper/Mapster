@@ -19,6 +19,12 @@ namespace Mapster
                 return null;
             return ignoreAttr.Side == null || ignoreAttr.Side == side ? (bool?) false : null;
         };
-        public static readonly Func<IMemberModel, MemberSide, bool?> AllowAdaptMember = (model, _) => model.HasCustomAttribute<AdaptMemberAttribute>() ? (bool?)true : null;
+        public static readonly Func<IMemberModel, MemberSide, bool?> AllowAdaptMember = (model, side) =>
+        {
+            var memberAttr = model.GetCustomAttributeFromData<AdaptMemberAttribute>();
+            if (memberAttr == null)
+                return null;
+            return memberAttr.Side == null || memberAttr.Side == side ? (bool?) true : null;
+        };
     }
 }

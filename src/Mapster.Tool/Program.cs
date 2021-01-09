@@ -181,6 +181,8 @@ namespace Mapster.Tool
             foreach (var member in properties)
             {
                 var adaptMember = member.GetCustomAttribute<AdaptMemberAttribute>();
+                if (!isTwoWays && adaptMember?.Side != null && adaptMember.Side != side)
+                    adaptMember = null;
                 var propType = GetPropertyType(member, getPropType(member), attr.GetType(), opt.Namespace);
                 translator.Properties.Add(new PropertyDefinitions
                 {

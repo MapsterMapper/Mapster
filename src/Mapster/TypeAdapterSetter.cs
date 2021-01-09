@@ -207,7 +207,15 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string> func) where TSetter : TypeAdapterSetter
+        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string?> func) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.GetMemberNames.Add((member, _) => func(member));
+            return setter;
+        }
+
+        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, string?> func) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -816,10 +824,17 @@ namespace Mapster
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> GetMemberName(Func<IMemberModel, string> func)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> GetMemberName(Func<IMemberModel, string?> func)
         {
             SourceToDestinationSetter.GetMemberName(func);
             DestinationToSourceSetter.GetMemberName(func);
+            return this;
+        }
+
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> GetMemberName(Func<IMemberModel, MemberSide, string?> func)
+        {
+            SourceToDestinationSetter.GetMemberName(func);
+            DestinationToSourceSetter.GetMemberName((model, side) => func(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
             return this;
         }
 
