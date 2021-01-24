@@ -127,6 +127,36 @@ namespace Mapster.Tool
             }
         }
 
+        public static IEnumerable<AdaptAttributeBuilder> GetAdaptAttributeBuilders(this Type type, CodeGenerationConfig config)
+        {
+            foreach (var attribute in type.SafeGetCustomAttributes())
+            {
+                if (attribute is BaseAdaptAttribute adaptAttr)
+                    yield return new AdaptAttributeBuilder(adaptAttr);
+            }
+
+            foreach (var builder in config.AdaptAttributeBuilders)
+            {
+                if (builder.TypeSettings.ContainsKey(type))
+                    yield return builder;
+            }
+        }
+
+        public static IEnumerable<GenerateMapperAttribute> GetGenerateMapperAttributes(this Type type, CodeGenerationConfig config)
+        {
+            foreach (var attribute in type.SafeGetCustomAttributes())
+            {
+                if (attribute is GenerateMapperAttribute genMapperAttr)
+                    yield return genMapperAttr;
+            }
+
+            foreach (var builder in config.GenerateMapperAttributeBuilders)
+            {
+                if (builder.Types.Contains(type))
+                    yield return builder.Attribute;
+            }
+        }
+
         public static bool IsNullable(this Type type)
         {
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
@@ -140,6 +170,19 @@ namespace Mapster.Tool
         public static Type MakeNullable(this Type type)
         {
             return type.CanBeNull() ? type : typeof(Nullable<>).MakeGenericType(type);
+        }
+
+        public static void Scan(this CodeGenerationConfig config, Assembly assembly)
+        {
+            var registers = assembly.GetTypes()
+                .Where(x => typeof(ICodeGenerationRegister).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo()) &&
+                            x.GetTypeInfo().IsClass && !x.GetTypeInfo().IsAbstract)
+                .Select(type => (ICodeGenerationRegister) Activator.CreateInstance(type)!);
+
+            foreach (var register in registers)
+            {
+                register.Register(config);
+            }
         }
     }
 }

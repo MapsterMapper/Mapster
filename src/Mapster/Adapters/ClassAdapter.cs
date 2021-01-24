@@ -112,11 +112,22 @@ namespace Mapster.Adapters
                 var adapt = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
                 if (!member.UseDestinationValue)
                 {
-                    adapt = member.DestinationMember.SetExpression(destination, adapt);
                     if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull())
                     {
+                        if (adapt is ConditionalExpression condEx)
+                        {
+                            if (condEx.Test is BinaryExpression {NodeType: ExpressionType.Equal} binEx && 
+                                binEx.Left == member.Getter && 
+                                binEx.Right is ConstantExpression {Value: null})
+                                adapt = condEx.IfFalse;
+                        }
+                        adapt = member.DestinationMember.SetExpression(destination, adapt);
                         var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
                         adapt = Expression.IfThen(condition, adapt);
+                    }
+                    else
+                    {
+                        adapt = member.DestinationMember.SetExpression(destination, adapt);
                     }
                 }
                 else if (!adapt.IsComplex())

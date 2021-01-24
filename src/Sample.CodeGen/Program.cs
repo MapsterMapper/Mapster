@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sample.CodeGen.Domains;
-using Sample.CodeGen.Models;
 
 namespace Sample.CodeGen
 {

@@ -93,7 +93,7 @@ namespace Sample.CodeGen.Models
             
             if (p15.Credits != null)
             {
-                result.Credits = p15.Credits == null ? 0 : (int)p15.Credits;
+                result.Credits = (int)p15.Credits;
             }
             
             if (p15.Enrollments != null)
@@ -229,13 +229,38 @@ namespace Sample.CodeGen.Models
             while (enumerator.MoveNext())
             {
                 EnrollmentMerge item = enumerator.Current;
-                result.Add(item == null ? null : new Enrollment()
-                {
-                    EnrollmentID = item.EnrollmentID == null ? 0 : (int)item.EnrollmentID,
-                    CourseID = item.CourseID == null ? 0 : (int)item.CourseID,
-                    StudentID = item.StudentID == null ? 0 : (int)item.StudentID,
-                    Grade = item.Grade == null ? null : (Grade?)Enum<Grade>.Parse(item.Grade)
-                });
+                result.Add(funcMain6(item));
+            }
+            return result;
+            
+        }
+        
+        private static Enrollment funcMain6(EnrollmentMerge p19)
+        {
+            if (p19 == null)
+            {
+                return null;
+            }
+            Enrollment result = new Enrollment();
+            
+            if (p19.EnrollmentID != null)
+            {
+                result.EnrollmentID = (int)p19.EnrollmentID;
+            }
+            
+            if (p19.CourseID != null)
+            {
+                result.CourseID = (int)p19.CourseID;
+            }
+            
+            if (p19.StudentID != null)
+            {
+                result.StudentID = (int)p19.StudentID;
+            }
+            
+            if (p19.Grade != null)
+            {
+                result.Grade = (Grade?)Enum<Grade>.Parse(p19.Grade);
             }
             return result;
             

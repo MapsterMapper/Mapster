@@ -83,7 +83,7 @@ namespace Sample.CodeGen.Models
             
             if (p8.EnrollmentDate != null)
             {
-                result.EnrollmentDate = p8.EnrollmentDate == null ? default(DateTime) : (DateTime)p8.EnrollmentDate;
+                result.EnrollmentDate = (DateTime)p8.EnrollmentDate;
             }
             return result;
             

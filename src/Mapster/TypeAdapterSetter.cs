@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Adapters;
@@ -272,6 +273,36 @@ namespace Mapster
             return setter;
         }
 
+        public static TSetter ApplyAdaptAttribute<TSetter>(this TSetter setter, BaseAdaptAttribute attr) where TSetter : TypeAdapterSetter
+        {
+            if (attr.IgnoreAttributes != null)
+                setter.IgnoreAttribute(attr.IgnoreAttributes);
+            if (attr.IgnoreNoAttributes != null)
+            {
+                setter.IgnoreMember((member, _) => !member.GetCustomAttributesData()
+                    .Select(it => it.GetAttributeType())
+                    .Intersect(attr.IgnoreNoAttributes)
+                    .Any());
+            }
+            if (attr.IgnoreNamespaces != null)
+            {
+                foreach (var ns in attr.IgnoreNamespaces)
+                {
+                    setter.IgnoreMember((member, _) => member.Type.Namespace?.StartsWith(ns) == true);
+                }
+            }
+            if (attr.IgnoreNullValues)
+                setter.IgnoreNullValues(attr.IgnoreNullValues);
+            if (attr.MapToConstructor)
+                setter.MapToConstructor(attr.MapToConstructor);
+            if (attr.MaxDepth > 0)
+                setter.MaxDepth(attr.MaxDepth);
+            if (attr.PreserveReference)
+                setter.PreserveReference(attr.PreserveReference);
+            if (attr.ShallowCopyForSameType)
+                setter.ShallowCopyForSameType(attr.ShallowCopyForSameType);
+            return setter;
+        }
     }
 
     public class TypeAdapterSetter<TDestination> : TypeAdapterSetter

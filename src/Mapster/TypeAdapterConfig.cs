@@ -516,32 +516,7 @@ namespace Mapster
         {
             var settings = new TypeAdapterSettings();
             var setter = new TypeAdapterSetter(settings, this);
-            if (attr.IgnoreAttributes != null)
-                setter.IgnoreAttribute(attr.IgnoreAttributes);
-            if (attr.IgnoreNoAttributes != null)
-            {
-                setter.IgnoreMember((member, _) => !member.GetCustomAttributesData()
-                    .Select(it => it.GetAttributeType())
-                    .Intersect(attr.IgnoreNoAttributes)
-                    .Any());
-            }
-            if (attr.IgnoreNamespaces != null)
-            {
-                foreach (var ns in attr.IgnoreNamespaces)
-                {
-                    setter.IgnoreMember((member, _) => member.Type.Namespace?.StartsWith(ns) == true);
-                }
-            }
-            if (attr.IgnoreNullValues)
-                setter.IgnoreNullValues(attr.IgnoreNullValues);
-            if (attr.MapToConstructor)
-                setter.MapToConstructor(attr.MapToConstructor);
-            if (attr.MaxDepth > 0)
-                setter.MaxDepth(attr.MaxDepth);
-            if (attr.PreserveReference)
-                setter.PreserveReference(attr.PreserveReference);
-            if (attr.ShallowCopyForSameType)
-                setter.ShallowCopyForSameType(attr.ShallowCopyForSameType);
+            setter.ApplyAdaptAttribute(attr);
             return settings;
         }
 

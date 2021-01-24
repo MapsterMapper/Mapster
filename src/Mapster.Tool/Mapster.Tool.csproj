@@ -15,7 +15,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>7.0.4</Version>
+    <Version>7.1.3</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
     <PackageIcon>icon.png</PackageIcon>

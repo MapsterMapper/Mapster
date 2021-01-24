@@ -117,26 +117,28 @@ namespace Mapster.Tool
         {
             using var dynamicContext = new AssemblyResolver(Path.GetFullPath(opt.Assembly));
             var assembly = dynamicContext.Assembly;
+            var codeGenConfig = new CodeGenerationConfig();
+            codeGenConfig.Scan(assembly);
 
             foreach (var type in assembly.GetTypes())
             {
-                var attrs = type.SafeGetCustomAttributes()
-                    .OfType<BaseAdaptAttribute>()
-                    .Where(it => !string.IsNullOrEmpty(it.Name) && it.Name != "[name]")
+                var builders = type.GetAdaptAttributeBuilders(codeGenConfig)
+                    .Where(it => !string.IsNullOrEmpty(it.Attribute.Name) && it.Attribute.Name != "[name]")
                     .ToList();
-                if (attrs.Count == 0)
+                if (builders.Count == 0)
                     continue;
 
                 Console.WriteLine($"Processing: {type.FullName}");
-                foreach (var attr in attrs)
+                foreach (var builder in builders)
                 {
-                    CreateModel(opt, type, attr);
+                    CreateModel(opt, type, builder);
                 }
             }
         }
 
-        private static void CreateModel(ModelOptions opt, Type type, BaseAdaptAttribute attr)
+        private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder)
         {
+            var attr = builder.Attribute;
             var definitions = new TypeDefinitions
             {
                 Namespace = opt.Namespace ?? type.Namespace,
@@ -176,17 +178,25 @@ namespace Mapster.Tool
                     properties = properties.Where(it => getPropType(it).Namespace?.StartsWith(ns) != true);
                 }
             }
+
+            var propSettings = builder.TypeSettings.GetValueOrDefault(type);
             var isReadOnly = isAdaptTo && attr.MapToConstructor;
             var isNullable = !isAdaptTo && attr.IgnoreNullValues;
             foreach (var member in properties)
             {
+                var setting = propSettings?.GetValueOrDefault(member.Name);
+                if (setting?.Ignore == true)
+                    continue;
+                
                 var adaptMember = member.GetCustomAttribute<AdaptMemberAttribute>();
                 if (!isTwoWays && adaptMember?.Side != null && adaptMember.Side != side)
                     adaptMember = null;
-                var propType = GetPropertyType(member, getPropType(member), attr.GetType(), opt.Namespace);
+                var propType = setting?.MapFunc?.ReturnType ?? 
+                               setting?.TargetPropertyType ??
+                               GetPropertyType(member, getPropType(member), attr.GetType(), opt.Namespace, builder);
                 translator.Properties.Add(new PropertyDefinitions
                 {
-                    Name = adaptMember?.Name ?? member.Name,
+                    Name = setting?.TargetPropertyName ?? adaptMember?.Name ?? member.Name,
                     Type = isNullable ? propType.MakeNullable() : propType,
                     IsReadOnly = isReadOnly
                 });
@@ -203,7 +213,7 @@ namespace Mapster.Tool
         }
 
         private static readonly Dictionary<string, MockType> _mockTypes = new Dictionary<string, MockType>();
-        private static Type GetPropertyType(MemberInfo member, Type propType, Type attrType, string? ns)
+        private static Type GetPropertyType(MemberInfo member, Type propType, Type attrType, string? ns, AdaptAttributeBuilder builder)
         {
             var navAttr = member.SafeGetCustomAttributes()
                 .OfType<PropertyTypeAttribute>()
@@ -214,20 +224,29 @@ namespace Mapster.Tool
             if (propType.IsCollection() && propType.IsCollectionCompatible() && propType.IsGenericType && propType.GetGenericArguments().Length == 1)
             {
                 var elementType = propType.GetGenericArguments()[0];
-                var newType = GetPropertyType(member, elementType, attrType, ns);
+                var newType = GetPropertyType(member, elementType, attrType, ns, builder);
                 if (elementType == newType)
                     return propType;
                 var generic = propType.GetGenericTypeDefinition();
                 return generic.MakeGenericType(newType);
             }
 
+            var alterType = builder.AlterTypes
+                .Select(fn => fn(propType))
+                .FirstOrDefault(it => it != null);
+            if (alterType != null)
+                return alterType;
+
             var propTypeAttrs = propType.SafeGetCustomAttributes();
             navAttr = propTypeAttrs.OfType<PropertyTypeAttribute>()
                 .FirstOrDefault(it => it.ForAttributes?.Contains(attrType) != false);
             if (navAttr != null)
                 return navAttr.Type;
-            var adaptAttr = propTypeAttrs.OfType<BaseAdaptAttribute>()
-                .FirstOrDefault(it => it.GetType() == attrType);
+
+            var adaptAttr = builder.TypeSettings.ContainsKey(propType)
+                ? (BaseAdaptAttribute?) builder.Attribute
+                : propTypeAttrs.OfType<BaseAdaptAttribute>()
+                    .FirstOrDefault(it => it.GetType() == attrType);
             if (adaptAttr == null)
                 return propType;
             if (adaptAttr.Type != null)
@@ -242,6 +261,57 @@ namespace Mapster.Tool
             return mockType;
         }
 
+        private static Type? GetFromType(Type type, BaseAdaptAttribute attr, Type[] types)
+        {
+            if (!(attr is AdaptFromAttribute) && !(attr is AdaptTwoWaysAttribute)) 
+                return null;
+
+            var fromType = attr.Type;
+            if (fromType == null && attr.Name != null)
+            {
+                var name = attr.Name.Replace("[name]", type.Name);
+                fromType = Array.Find(types, it => it.Name == name);
+            }
+
+            return fromType;
+        }
+
+        private static Type? GetToType(Type type, BaseAdaptAttribute attr, Type[] types)
+        {
+            if (!(attr is AdaptToAttribute)) 
+                return null;
+
+            var toType = attr.Type;
+            if (toType == null && attr.Name != null)
+            {
+                var name = attr.Name.Replace("[name]", type.Name);
+                toType = Array.Find(types, it => it.Name == name);
+            }
+
+            return toType;
+        }
+
+        private static void ApplySettings(TypeAdapterSetter setter, BaseAdaptAttribute attr, Dictionary<string, PropertySetting> settings)
+        {
+            setter.ApplyAdaptAttribute(attr);
+            foreach (var (name, setting) in settings)
+            {
+                if (setting.MapFunc != null)
+                {
+                    setter.Settings.Resolvers.Add(new InvokerModel
+                    {
+                        DestinationMemberName = setting.TargetPropertyName ?? name,
+                        SourceMemberName = name,
+                        Invoker = setting.MapFunc,
+                    });
+                }
+                else if (setting.TargetPropertyName != null)
+                {
+                    setter.Map(setting.TargetPropertyName, name);
+                }
+            }
+        }
+
         private static void GenerateExtensions(ExtensionOptions opt)
         {
             using var dynamicContext = new AssemblyResolver(Path.GetFullPath(opt.Assembly));
@@ -249,13 +319,32 @@ namespace Mapster.Tool
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
+            var codeGenConfig = new CodeGenerationConfig();
+            codeGenConfig.Scan(assembly);
 
             var types = assembly.GetTypes();
+            var configDict = new Dictionary<BaseAdaptAttribute, TypeAdapterConfig>();
+            foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
+            {
+                var attr = builder.Attribute;
+                var cloned = config.Clone();
+                foreach (var (type, settings) in builder.TypeSettings)
+                {
+                    var fromType = GetFromType(type, attr, types);
+                    if (fromType != null)
+                        ApplySettings(cloned.ForType(fromType, type), attr, settings);
+
+                    var toType = GetToType(type, attr, types);
+                    if (toType != null)
+                        ApplySettings(cloned.ForType(type, toType), attr, settings);
+                }
+
+                configDict[attr] = cloned;
+            }
+
             foreach (var type in types)
             {
-                var attrs = type.SafeGetCustomAttributes();
-                var mapperAttr = attrs.OfType<GenerateMapperAttribute>()
-                    .FirstOrDefault();
+                var mapperAttr = type.GetGenerateMapperAttributes(codeGenConfig).FirstOrDefault();
                 var ruleMaps = config.RuleMap
                     .Where(it => it.Key.Source == type &&
                                  it.Value.Settings.GenerateMapper is MapType)
@@ -265,11 +354,10 @@ namespace Mapster.Tool
 
                 mapperAttr ??= new GenerateMapperAttribute();
                 var set = mapperAttr.ForAttributes?.ToHashSet();
-                var adaptAttrs = attrs
-                    .OfType<BaseAdaptAttribute>()
+                var builders = type.GetAdaptAttributeBuilders(codeGenConfig)
                     .Where(it => set?.Contains(it.GetType()) != false)
                     .ToList();
-                if (adaptAttrs.Count == 0 && ruleMaps.Count == 0)
+                if (builders.Count == 0 && ruleMaps.Count == 0)
                     continue;
 
                 Console.WriteLine($"Processing: {type.FullName}");
@@ -284,43 +372,26 @@ namespace Mapster.Tool
                 };
                 var translator = new ExpressionTranslator(definitions);
 
-                foreach (var attr in adaptAttrs)
+                foreach (var builder in builders)
                 {
-                    if (attr is AdaptFromAttribute || attr is AdaptTwoWaysAttribute)
+                    var attr = builder.Attribute;
+                    var cloned = configDict.GetValueOrDefault(attr) ?? config;
+                    var fromType = GetFromType(type, attr, types);
+                    if (fromType != null)
                     {
-                        var fromType = attr.Type;
-                        if (fromType == null && attr.Name != null)
-                        {
-                            var name = attr.Name.Replace("[name]", type.Name);
-                            fromType = Array.Find(types, it => it.Name == name);
-                        }
-
-                        if (fromType == null)
-                            continue;
-
                         var tuple = new TypeTuple(fromType, type);
                         var mapType = attr.MapType == 0 ? MapType.Map | MapType.MapToTarget : attr.MapType;
-                        GenerateExtensionMethods(mapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
+                        GenerateExtensionMethods(mapType, cloned, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
 
-                    if (attr is AdaptToAttribute)
+                    var toType = GetToType(type, attr, types);
+                    if (toType != null && (!(attr is AdaptTwoWaysAttribute) || type != toType))
                     {
-                        var toType = attr.Type;
-                        if (toType == null && attr.Name != null)
-                        {
-                            var name = attr.Name.Replace("[name]", type.Name);
-                            toType = Array.Find(types, it => it.Name == name);
-                        }
-
-                        if (toType == null)
-                            continue;
-
-                        if (attr is AdaptTwoWaysAttribute && type == toType)
-                            continue;
-
                         var tuple = new TypeTuple(type, toType);
-                        var mapType = attr.MapType == 0 ? MapType.Map | MapType.MapToTarget | MapType.Projection : attr.MapType;
-                        GenerateExtensionMethods(mapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
+                        var mapType = attr.MapType == 0
+                            ? MapType.Map | MapType.MapToTarget | MapType.Projection
+                            : attr.MapType;
+                        GenerateExtensionMethods(mapType, cloned, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
                 }
 
