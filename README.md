@@ -68,6 +68,7 @@ public static class StudentMapper {
 ```
 
 ### What's new
+- [Fluent API for code generation](https://github.com/MapsterMapper/Mapster/wiki/Fluent-API-Code-generation)
 - [Automatically generate mapping code on build](https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool)
 - [Define setting to nested mapping](https://github.com/MapsterMapper/Mapster/wiki/Config-for-nested-mapping)
 - [`ISet`, `IDictionary`, `IReadOnlyDictionary` support](https://github.com/MapsterMapper/Mapster/wiki/Data-types#collections)
