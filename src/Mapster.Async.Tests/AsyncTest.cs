@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -55,6 +56,37 @@ namespace Mapster.Async.Tests
             dto.Name.ShouldBe("bar");
         }
 
+        [TestMethod]
+        public async Task NestedAsync()
+        {
+            TypeAdapterConfig<DoCar, DtoCar>.NewConfig();
+            TypeAdapterConfig<DoOwner, DtoOwner>.NewConfig();
+            TypeAdapterConfig<DoCarOwnership, DtoCarOwnership>.NewConfig()
+                .Ignore(dest => dest.Car)
+                .Ignore(dest => dest.Owner)
+                .AfterMappingAsync(async (src, dest) =>
+                {
+                    dest.Owner = await GetOwner(src.Owner);
+                })
+                .AfterMappingAsync(async (src, dest) =>
+                {
+                    dest.Car = await GetCar(src.Car);
+                });
+
+            var dtoOwnership = await new DoCarOwnership()
+            {
+                Id = "1",
+                Car = "1",
+                Owner = "1"
+            }
+            .BuildAdapter()
+            .AdaptToTypeAsync<DtoCarOwnership>();
+
+            dtoOwnership.Car.ShouldNotBeNull();
+            dtoOwnership.Car.Make.ShouldBe("Car Maker Inc");
+            dtoOwnership.Owner.ShouldNotBeNull();
+            dtoOwnership.Owner.Name.ShouldBe("John Doe");
+        }
 
         private static async Task<string> GetName()
         {
@@ -67,6 +99,26 @@ namespace Mapster.Async.Tests
             await Task.Delay(1);
             throw new Exception("bar");
         }
+
+        private static async Task<DtoCar> GetCar(string id)
+        {
+            await Task.Delay(1000);
+            return await new DoCar()
+            {
+                Id = id,
+                Make = "Car Maker Inc",
+                Model = "Generic",
+            }.BuildAdapter().AdaptToTypeAsync<DtoCar>();
+        }
+
+        private static async Task<DtoOwner> GetOwner(string id)
+        {
+            return await new DoOwner()
+            {
+                Id = id,
+                Name = "John Doe"
+            }.BuildAdapter().AdaptToTypeAsync<DtoOwner>();
+        }
     }
 
     public class Poco
@@ -77,5 +129,45 @@ namespace Mapster.Async.Tests
     {
         public string Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class DtoCarOwnership
+    {
+        public string Id { get; set; }
+        public DtoOwner Owner { get; set; }
+        public DtoCar Car { get; set; }
+    }
+
+    public class DoCarOwnership
+    {
+        public string Id { get; set; }
+        public string Owner { get; set; }
+        public string Car { get; set; }
+    }
+
+    public class DtoOwner
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DoOwner
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DtoCar
+    {
+        public string Id { get; set; }
+        public string Make { get; set; }
+        public string Model { get; set; }
+    }
+
+    public class DoCar
+    {
+        public string Id { get; set; }
+        public string Make { get; set; }
+        public string Model { get; set; }
     }
 }
