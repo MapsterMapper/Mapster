@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.EFCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Mapster
 {
@@ -42,7 +43,7 @@ namespace Mapster
                                 Expression.Convert(
                                     Expression.Property(
                                         Expression.Property(
-                                            Expression.Property(null, current),
+                                            Expression.Property(null, current!),
                                             nameof(MapContext.Parameters)),
                                         indexer,
                                         Expression.Constant(dbKey)),
@@ -55,7 +56,7 @@ namespace Mapster
                             var setAssign = Expression.Assign(set, Expression.Call(db, setMethod));
 
                             var getters = keys.Select(key => arg.DestinationType.GetProperty(key))
-                                .Select(prop => new PropertyModel(prop))
+                                .Select(prop => new PropertyModel(prop!))
                                 .Select(model => arg.Settings.ValueAccessingStrategies
                                     .Select(s => s(src, model, arg))
                                     .FirstOrDefault(exp => exp != null))
@@ -67,7 +68,7 @@ namespace Mapster
                             Expression find = Expression.Call(set, nameof(DbContext.Find), null,
                                 Expression.NewArrayInit(typeof(object), getters));
                             if (arg.MapType == MapType.MapToTarget)
-                                find = Expression.Coalesce(find, dest);
+                                find = Expression.Coalesce(find, dest!);
                             var ret = Expression.Coalesce(
                                 find,
                                 Expression.New(arg.DestinationType));
@@ -82,7 +83,60 @@ namespace Mapster
         public static IQueryable<TDestination> ProjectToType<TDestination>(this IAdapterBuilder<IQueryable> source)
         {
             var queryable = source.Source.ProjectToType<TDestination>(source.Config);
-            return new MapsterQueryable<TDestination>(queryable, source);
+            if (!source.HasParameter || source.Parameters.All(it => it.Key.StartsWith("Mapster.")))
+                return new MapsterQueryable<TDestination>(queryable, source);
+
+            var call = (MethodCallExpression) queryable.Expression;
+            var project = call.Arguments[1];
+            var mapContext = typeof(MapContext);
+            var current = mapContext.GetProperty(nameof(MapContext.Current), BindingFlags.Public | BindingFlags.Static);
+            var properties = mapContext.GetProperty(nameof(MapContext.Parameters), BindingFlags.Public | BindingFlags.Instance);
+            var item = typeof(Dictionary<string, object>)
+                .GetProperty("Item", BindingFlags.Public | BindingFlags.Instance)!
+                .GetMethod;
+
+            var map = new Dictionary<Expression, Expression>();
+            foreach (var (key, value) in source.Parameters)
+            {
+                if (key.StartsWith("Mapster."))
+                    continue;
+                var currentEx = Expression.Property(null, current!);
+                var propertiesEx = Expression.Property(currentEx, properties!);
+                var itemEx = Expression.Call(propertiesEx, item!, Expression.Constant(key));
+                
+                map.Add(itemEx, Parameterize(value).Body);
+            }
+
+            var replaced = new ExpressionReplacer(map).Visit(project);
+            var methodCallExpression = Expression.Call(call.Method, call.Arguments[0], replaced!);
+            var replacedQueryable = queryable.Provider.CreateQuery<TDestination>(methodCallExpression);
+            return new MapsterQueryable<TDestination>(replacedQueryable, source);
+        }
+
+        private static Expression<Func<object>> Parameterize(object value)
+        {
+            return () => value;
+        }
+    }
+
+    internal class ExpressionReplacer : ExpressionVisitor
+    {
+        private readonly Dictionary<Expression, Expression> _map;
+
+        public ExpressionReplacer(Dictionary<Expression, Expression> map)
+        {
+            _map = map;
+        }
+
+        public override Expression Visit(Expression node)
+        {
+            foreach (var (key, value) in _map)
+            {
+                if (ExpressionEqualityComparer.Instance.Equals(node, key))
+                    return value;
+            }
+
+            return base.Visit(node);
         }
     }
 }
