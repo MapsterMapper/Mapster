@@ -1,6 +1,8 @@
 using System;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ExpressionDebugger;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -102,7 +104,7 @@ namespace Mapster.Async.Tests
 
         private static async Task<DtoCar> GetCar(string id)
         {
-            await Task.Delay(1000);
+            await Task.Delay(1);
             return await new DoCar()
             {
                 Id = id,
@@ -113,6 +115,7 @@ namespace Mapster.Async.Tests
 
         private static async Task<DtoOwner> GetOwner(string id)
         {
+            await Task.Delay(1);
             return await new DoOwner()
             {
                 Id = id,

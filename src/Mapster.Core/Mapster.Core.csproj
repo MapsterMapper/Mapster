@@ -15,7 +15,7 @@
     <AssemblyOriginatorKeyFile>Mapster.Core.snk</AssemblyOriginatorKeyFile>
     <PackageIcon>icon.png</PackageIcon>
     <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>Mapster</RootNamespace>

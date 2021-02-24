@@ -45,18 +45,26 @@ namespace Mapster
         {
             var tasks = new List<Task>();
             builder.Parameters[ASYNC_KEY] = tasks;
-            var result = builder.AdaptToType<TDestination>();
-            await Task.WhenAll(tasks);
-            return result;
+
+            using (MapContextScope.RequiresNew())
+            {
+                var result = builder.AdaptToType<TDestination>();
+                await Task.WhenAll(tasks);
+                return result;
+            }
         }
 
         public static async Task<TDestination> AdaptToAsync<TDestination>(this IAdapterBuilder builder, TDestination destination)
         {
             var tasks = new List<Task>();
             builder.Parameters[ASYNC_KEY] = tasks;
-            var result = builder.AdaptTo(destination);
-            await Task.WhenAll(tasks);
-            return result;
+
+            using (MapContextScope.RequiresNew())
+            {
+                var result = builder.AdaptTo(destination);
+                await Task.WhenAll(tasks);
+                return result;
+            }
         }
 
     }

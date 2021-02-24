@@ -5,33 +5,35 @@ namespace Mapster
 {
     public class MapContextScope : IDisposable
     {
+        public static MapContextScope Required()
+        {
+            return new MapContextScope();
+        }
+
+        public static MapContextScope RequiresNew()
+        {
+            return new MapContextScope(true);
+        }
+
         public MapContext Context { get; }
 
-        private readonly MapContext? _oldContext;
+        private readonly MapContext? _previousContext;
 
-        public MapContextScope()
+        public MapContextScope() : this(false) { }
+        public MapContextScope(bool ignorePreviousContext)
         {
-            _oldContext = MapContext.Current;
+            _previousContext = MapContext.Current;
 
-            this.Context = new MapContext();
-            if (_oldContext != null)
-            {
-                foreach (var parameter in _oldContext.Parameters)
-                {
-                    this.Context.Parameters[parameter.Key] = parameter.Value;
-                }
-                foreach (var reference in _oldContext.References)
-                {
-                    this.Context.References[reference.Key] = reference.Value;
-                }
-            }
+            this.Context = ignorePreviousContext
+                ? new MapContext()
+                : _previousContext ?? new MapContext();
 
             MapContext.Current = this.Context;
         }
 
         public void Dispose()
         {
-            MapContext.Current = _oldContext;
+            MapContext.Current = _previousContext;
         }
 
         public static TResult GetOrAddMapReference<TResult>(ReferenceTuple key, Func<ReferenceTuple, TResult> mapFn) where TResult : notnull
