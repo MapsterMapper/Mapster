@@ -46,4 +46,17 @@ namespace Mapster
         public AdaptTwoWaysAttribute(Type type) : base(type) { }
         public AdaptTwoWaysAttribute(string name) : base(name) { }
     }
+
+    public class ProjectToAttribute : AdaptToAttribute
+    {
+        public ProjectToAttribute(Type type) : base(type)
+        {
+            MapType = MapType.Projection;
+        }
+
+        public ProjectToAttribute(string name) : base(name)
+        {
+            MapType = MapType.Projection;
+        }
+    }
 }

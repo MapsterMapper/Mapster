@@ -389,7 +389,7 @@ namespace Mapster.Tool
                     {
                         var tuple = new TypeTuple(type, toType);
                         var mapType = attr.MapType == 0
-                            ? MapType.Map | MapType.MapToTarget | MapType.Projection
+                            ? MapType.Map | MapType.MapToTarget
                             : attr.MapType;
                         GenerateExtensionMethods(mapType, cloned, tuple, translator, type, mapperAttr.IsHelperClass);
                     }
