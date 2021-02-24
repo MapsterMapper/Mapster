@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Mapster.EFCore
@@ -29,7 +30,15 @@ namespace Mapster.EFCore
         public MapsterQueryable(IQueryable<T> queryable, IAdapterBuilder builder) : 
             base(queryable, builder) { }
         public IEnumerator<T> GetEnumerator() => this.Provider.Execute<IEnumerable<T>>(this.Expression).GetEnumerator();
-        IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator() => ((IAsyncQueryProvider) this.Provider).ExecuteAsync<T>(this.Expression).GetEnumerator();
+
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            var enumerable = this.Provider is MapsterQueryableProvider mp
+                ? mp.ExecuteEnumerableAsync<T>(this.Expression, cancellationToken)
+                : ((IAsyncQueryProvider) this.Provider)
+                    .ExecuteAsync<IAsyncEnumerable<T>>(this.Expression, cancellationToken);
+            return enumerable.GetAsyncEnumerator(cancellationToken);
+        }
     }
 
     class MapsterQueryableProvider : IAsyncQueryProvider
@@ -69,19 +78,34 @@ namespace Mapster.EFCore
             }
         }
 
-        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression expression)
+        public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
         {
-            var enumerable = ((IAsyncQueryProvider) _provider).ExecuteAsync<TResult>(expression);
+            var enumerable = ((IAsyncQueryProvider)_provider).ExecuteAsync<TResult>(expression, cancellationToken);
+            var enumerableType = typeof(TResult);
+            var elementType = enumerableType.GetGenericArguments()[0];
+            var wrapType = typeof(MapsterAsyncEnumerable<>).MakeGenericType(elementType);
+            return (TResult) Activator.CreateInstance(wrapType, enumerable, _builder);
+        }
+
+        public IAsyncEnumerable<TResult> ExecuteEnumerableAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
+        {
+            var enumerable = ((IAsyncQueryProvider)_provider).ExecuteAsync<IAsyncEnumerable<TResult>>(expression, cancellationToken);
             return new MapsterAsyncEnumerable<TResult>(enumerable, _builder);
         }
 
-        public async Task<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
-        {
-            using (_builder.CreateMapContextScope())
-            {
-                return await ((IAsyncQueryProvider) _provider).ExecuteAsync<TResult>(expression, cancellationToken);
-            }
-        }
+        //public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression expression)
+        //{
+        //    var enumerable = ((IAsyncQueryProvider) _provider).ExecuteAsync<IAsyncEnumerable<TResult>>(expression);
+        //    return new MapsterAsyncEnumerable<TResult>(enumerable, _builder);
+        //}
+
+        //public async Task<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken)
+        //{
+        //    using (_builder.CreateMapContextScope())
+        //    {
+        //        return await ((IAsyncQueryProvider) _provider).ExecuteAsync<TResult>(expression, cancellationToken);
+        //    }
+        //}
     }
 
     class MapsterAsyncEnumerable<T> : IAsyncEnumerable<T>
@@ -94,9 +118,9 @@ namespace Mapster.EFCore
             _builder = builder;
         }
 
-        public IAsyncEnumerator<T> GetEnumerator()
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
-            return new MapsterAsyncEnumerator<T>(_enumerable.GetEnumerator(), _builder);
+            return new MapsterAsyncEnumerator<T>(_enumerable.GetAsyncEnumerator(cancellationToken), _builder);
         }
     }
 
@@ -110,16 +134,16 @@ namespace Mapster.EFCore
             _scope = builder.CreateMapContextScope();
         }
 
-        public void Dispose()
+        public ValueTask<bool> MoveNextAsync()
         {
-            _scope.Dispose();
-        }
-
-        public Task<bool> MoveNext(CancellationToken cancellationToken)
-        {
-            return _enumerator.MoveNext(cancellationToken);
+            return _enumerator.MoveNextAsync();
         }
 
         public T Current => _enumerator.Current;
+        public ValueTask DisposeAsync()
+        {
+            _scope.Dispose();
+            return _enumerator.DisposeAsync();
+        }
     }
 }

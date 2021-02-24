@@ -394,7 +394,7 @@ namespace Mapster
                 if (context.Running.Contains(tuple))
                 {
                     if (mapType == MapType.Projection)
-                        throw new InvalidOperationException("Projection does not support circular reference");
+                        throw new InvalidOperationException("Projection does not support circular reference, please use MaxDepth setting");
                     return CreateMapInvokeExpression(sourceType, destinationType, mapType);
                 }
                 context.Running.Add(tuple);
