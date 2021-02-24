@@ -31,7 +31,7 @@ namespace Mapster
         {
             foreach (var type in assembly.GetTypes())
             {
-                if (type.Namespace == @namespace && !this.TypeSettings.ContainsKey(type))
+                if ((type.Namespace == @namespace || type.Namespace?.StartsWith(@namespace + '.') == true) && !this.TypeSettings.ContainsKey(type))
                     this.TypeSettings.Add(type, new Dictionary<string, PropertySetting>());
             }
 

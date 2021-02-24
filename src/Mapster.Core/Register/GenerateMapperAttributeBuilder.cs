@@ -23,7 +23,7 @@ namespace Mapster
 
         public GenerateMapperAttributeBuilder ForAllTypesInNamespace(Assembly assembly, string @namespace)
         {
-            this.Types.UnionWith(assembly.GetTypes().Where(it => it.Namespace == @namespace));
+            this.Types.UnionWith(assembly.GetTypes().Where(it => it.Namespace == @namespace || it.Namespace?.StartsWith(@namespace + '.') == true));
             return this;
         }
 
