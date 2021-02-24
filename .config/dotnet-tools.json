@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "mapster.tool": {
-      "version": "7.1.3",
+      "version": "8.0.0",
       "commands": [
         "dotnet-mapster"
       ]

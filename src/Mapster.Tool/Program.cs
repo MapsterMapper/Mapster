@@ -22,7 +22,9 @@ namespace Mapster.Tool
 
         private static void WriteFile(string code, string path)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var dir = Path.GetDirectoryName(path);
+            if (dir != null)
+                Directory.CreateDirectory(dir);
             if (File.Exists(path))
             {
                 var old = File.ReadAllText(path);
@@ -120,7 +122,15 @@ namespace Mapster.Tool
             var codeGenConfig = new CodeGenerationConfig();
             codeGenConfig.Scan(assembly);
 
-            foreach (var type in assembly.GetTypes())
+            var types = assembly.GetTypes().ToHashSet();
+            foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
+            {
+                foreach (var setting in builder.TypeSettings)
+                {
+                    types.Add(setting.Key);
+                }
+            }
+            foreach (var type in types)
             {
                 var builders = type.GetAdaptAttributeBuilders(codeGenConfig)
                     .Where(it => !string.IsNullOrEmpty(it.Attribute.Name) && it.Attribute.Name != "[name]")
@@ -261,7 +271,7 @@ namespace Mapster.Tool
             return mockType;
         }
 
-        private static Type? GetFromType(Type type, BaseAdaptAttribute attr, Type[] types)
+        private static Type? GetFromType(Type type, BaseAdaptAttribute attr, HashSet<Type> types)
         {
             if (!(attr is AdaptFromAttribute) && !(attr is AdaptTwoWaysAttribute)) 
                 return null;
@@ -270,13 +280,13 @@ namespace Mapster.Tool
             if (fromType == null && attr.Name != null)
             {
                 var name = attr.Name.Replace("[name]", type.Name);
-                fromType = Array.Find(types, it => it.Name == name);
+                fromType = types.FirstOrDefault(it => it.Name == name);
             }
 
             return fromType;
         }
 
-        private static Type? GetToType(Type type, BaseAdaptAttribute attr, Type[] types)
+        private static Type? GetToType(Type type, BaseAdaptAttribute attr, HashSet<Type> types)
         {
             if (!(attr is AdaptToAttribute)) 
                 return null;
@@ -285,7 +295,7 @@ namespace Mapster.Tool
             if (toType == null && attr.Name != null)
             {
                 var name = attr.Name.Replace("[name]", type.Name);
-                toType = Array.Find(types, it => it.Name == name);
+                toType = types.FirstOrDefault(it => it.Name == name);
             }
 
             return toType;
@@ -322,7 +332,15 @@ namespace Mapster.Tool
             var codeGenConfig = new CodeGenerationConfig();
             codeGenConfig.Scan(assembly);
 
-            var types = assembly.GetTypes();
+            var assemblies = new HashSet<Assembly> {assembly};
+            foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
+            {
+                foreach (var setting in builder.TypeSettings)
+                {
+                    assemblies.Add(setting.Key.Assembly);
+                }
+            }
+            var types = assemblies.SelectMany(it => it.GetTypes()).ToHashSet();
             var configDict = new Dictionary<BaseAdaptAttribute, TypeAdapterConfig>();
             foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
             {
