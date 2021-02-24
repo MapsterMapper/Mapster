@@ -7,22 +7,31 @@ namespace Mapster
     {
         public MapContext Context { get; }
 
-        private readonly bool _isRootScope;
+        private readonly MapContext? _oldContext;
+
         public MapContextScope()
         {
-            var context = MapContext.Current;
-            if (context == null)
+            _oldContext = MapContext.Current;
+
+            this.Context = new MapContext();
+            if (_oldContext != null)
             {
-                _isRootScope = true;
-                MapContext.Current = context = new MapContext();
+                foreach (var parameter in _oldContext.Parameters)
+                {
+                    this.Context.Parameters[parameter.Key] = parameter.Value;
+                }
+                foreach (var reference in _oldContext.References)
+                {
+                    this.Context.References[reference.Key] = reference.Value;
+                }
             }
-            this.Context = context;
+
+            MapContext.Current = this.Context;
         }
 
         public void Dispose()
         {
-            if (_isRootScope && ReferenceEquals(MapContext.Current, this.Context))
-                MapContext.Current = null;
+            MapContext.Current = _oldContext;
         }
 
         public static TResult GetOrAddMapReference<TResult>(ReferenceTuple key, Func<ReferenceTuple, TResult> mapFn) where TResult : notnull
