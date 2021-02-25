@@ -431,6 +431,7 @@ namespace Mapster.Tool
             //add type name to prevent duplication
             translator.Translate(entityType);
             var destName = translator.Translate(tuple.Destination);
+            destName = destName.Split('.').Last();
 
             var name = tuple.Destination.Name == entityType.Name
                 ? destName
