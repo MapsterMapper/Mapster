@@ -3,7 +3,7 @@ using Sample.CodeGen.Models;
 
 namespace Sample.CodeGen.Models
 {
-    public partial class CourseMerge
+    public partial record CourseMerge
     {
         public string Title { get; set; }
         public int? Credits { get; set; }

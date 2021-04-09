@@ -154,6 +154,7 @@ namespace Mapster.Tool
                 Namespace = opt.Namespace ?? type.Namespace,
                 TypeName = attr.Name!.Replace("[name]", type.Name),
                 PrintFullTypeName = opt.PrintFullTypeName,
+                IsRecordType = opt.IsRecordType,
             };
             var translator = new ExpressionTranslator(definitions);
             var isAdaptTo = attr is AdaptToAttribute;

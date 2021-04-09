@@ -2,7 +2,7 @@ using Sample.CodeGen.Models;
 
 namespace Sample.CodeGen.Models
 {
-    public partial class EnrollmentDto
+    public partial record EnrollmentDto
     {
         public int EnrollmentID { get; set; }
         public int CourseID { get; set; }

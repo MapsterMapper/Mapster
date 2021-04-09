@@ -19,6 +19,9 @@ namespace Mapster.Tool
         [Option('p', "printFullTypeName", Required = false, HelpText = "Set true to print full type name")]
         public bool PrintFullTypeName { get; set; }
 
+        [Option('r', "isRecordType", Required = false, HelpText = "Generate record type")]
+        public bool IsRecordType { get; set; }
+
         [Usage(ApplicationAlias = "dotnet mapster model")]
         public static IEnumerable<Example> Examples =>
             new List<Example>

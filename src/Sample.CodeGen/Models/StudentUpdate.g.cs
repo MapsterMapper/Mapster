@@ -2,7 +2,7 @@ using System;
 
 namespace Sample.CodeGen.Models
 {
-    public partial class StudentUpdate
+    public partial record StudentUpdate
     {
         public string LastName { get; set; }
         public string FirstMidName { get; set; }

@@ -1,6 +1,6 @@
 namespace Sample.CodeGen.Models
 {
-    public partial class EnrollmentAdd
+    public partial record EnrollmentAdd
     {
         public int EnrollmentID { get; set; }
         public int CourseID { get; set; }

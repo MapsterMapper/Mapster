@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +23,7 @@
   <Target Name="Mapster">
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet build" />
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore" />
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models -o Models" />
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models -o Models -r" />
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Models -o Models" />
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper -a $(TargetDir)$(ProjectName).dll -n Sample.CodeGen.Mappers -o Mappers" />
   </Target>
