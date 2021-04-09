@@ -123,5 +123,34 @@ namespace Mapster.Tests
             Should.Throw<NotImplementedException>(() => instance.SimpleMethod(), "Call SimpleMethod.");
             Should.Throw<NotImplementedException>(() => instance.ComplexMethod(123, ref i, out s), "Call ComplexMethod.");
         }
+
+        [TestMethod]
+        public void WhenMappingDerivedFromInterfaceWithoutMembers()
+        {
+            //Arrange
+            var config = TypeAdapterConfig<ISource, IDestination>.NewConfig()
+                .Include<Source, Destination>(); // and possibly many more
+
+            //Act && Assert
+            Should.NotThrow(() => config.Compile());
+        }
+
+        public interface ISource
+        {
+        }
+
+        public class Source : ISource
+        {
+            public string Tag { get; set; }
+        }
+
+        public interface IDestination
+        {
+        }
+
+        public class Destination : IDestination
+        {
+            public string Tag { get; set; }
+        }
     }
 }

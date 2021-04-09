@@ -22,8 +22,10 @@ namespace Mapster.Adapters
                 return base.CreateInstantiationExpression(source, destination, arg);
 
             var destType = arg.DestinationType.GetTypeInfo().IsInterface
-                ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType)
+                ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0)
                 : arg.DestinationType;
+            if (destType == null)
+                return base.CreateInstantiationExpression(source, destination, arg);
             var ctor = destType.GetConstructors()[0];
             var classModel = GetConstructorModel(ctor, false);
             var classConverter = CreateClassConverter(source, classModel, arg);

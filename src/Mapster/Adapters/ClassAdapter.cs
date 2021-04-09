@@ -62,8 +62,10 @@ namespace Mapster.Adapters
             if (ctor == null)
             {
                 var destType = arg.DestinationType.GetTypeInfo().IsInterface
-                    ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType)
+                    ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0)
                     : arg.DestinationType;
+                if (destType == null)
+                    return base.CreateInstantiationExpression(source, destination, arg);
                 classConverter = destType.GetConstructors()
                     .OrderByDescending(it => it.GetParameters().Length)
                     .Select(it => GetConstructorModel(it, true))

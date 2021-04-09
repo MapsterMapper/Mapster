@@ -22,6 +22,19 @@ namespace Mapster.Utils
         private static readonly ConcurrentDictionary<Type, Type> _generated = new ConcurrentDictionary<Type, Type>();
         private static int _generatedCounter;
 
+        public static Type? GetTypeForInterface(Type interfaceType, bool ignoreError)
+        {
+            try
+            {
+                return GetTypeForInterface(interfaceType);
+            }
+            catch (Exception)
+            {
+                if (ignoreError)
+                    return null;
+                throw;
+            }
+        }
         public static Type GetTypeForInterface(Type interfaceType)
         {
             if (!interfaceType.GetTypeInfo().IsInterface)
