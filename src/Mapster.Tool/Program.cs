@@ -146,6 +146,14 @@ namespace Mapster.Tool
             }
         }
 
+        private static byte? GetTypeNullableContext(Type type)
+        {
+            var nilCtxAttr = type.GetCustomAttributesData()
+                .FirstOrDefault(it => it.AttributeType.Name == "NullableContextAttribute");
+            return nilCtxAttr?.ConstructorArguments.Count == 1 && nilCtxAttr.ConstructorArguments[0].Value is byte b
+                ? (byte?) b
+                : null;
+        }
         private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder)
         {
             var attr = builder.Attribute;
@@ -155,6 +163,7 @@ namespace Mapster.Tool
                 TypeName = attr.Name!.Replace("[name]", type.Name),
                 PrintFullTypeName = opt.PrintFullTypeName,
                 IsRecordType = opt.IsRecordType,
+                NullableContext = GetTypeNullableContext(type),
             };
             var translator = new ExpressionTranslator(definitions);
             var isAdaptTo = attr is AdaptToAttribute;
@@ -205,11 +214,16 @@ namespace Mapster.Tool
                 var propType = setting?.MapFunc?.ReturnType ?? 
                                setting?.TargetPropertyType ??
                                GetPropertyType(member, getPropType(member), attr.GetType(), opt.Namespace, builder);
+                var nilAttr = member.GetCustomAttributesData()
+                    .FirstOrDefault(it => it.AttributeType.Name == "NullableAttribute");
+                var nilAttrArg = nilAttr?.ConstructorArguments.Count == 1 ? nilAttr.ConstructorArguments[0].Value : null;
                 translator.Properties.Add(new PropertyDefinitions
                 {
                     Name = setting?.TargetPropertyName ?? adaptMember?.Name ?? member.Name,
                     Type = isNullable ? propType.MakeNullable() : propType,
-                    IsReadOnly = isReadOnly
+                    IsReadOnly = isReadOnly,
+                    NullableContext = nilAttrArg is byte b ? (byte?)b : null,
+                    Nullable = nilAttrArg is byte[] bytes ? bytes : null,
                 });
             }
 
