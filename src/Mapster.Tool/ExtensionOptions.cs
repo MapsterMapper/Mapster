@@ -19,6 +19,9 @@ namespace Mapster.Tool
         [Option('p', "printFullTypeName", Required = false, HelpText = "Set true to print full type name")]
         public bool PrintFullTypeName { get; set; }
 
+        [Option('b', "baseNamespace", Required = false, HelpText = "Provide base namespace to generate nested output & namespace")]
+        public string? BaseNamespace { get; set; }
+
         [Usage(ApplicationAlias = "dotnet mapster extension")]
         public static IEnumerable<Example> Examples =>
             new List<Example>

@@ -21,6 +21,9 @@ namespace Mapster.Tool
 
         [Option('r', "isRecordType", Required = false, HelpText = "Generate record type")]
         public bool IsRecordType { get; set; }
+        
+        [Option('b', "baseNamespace", Required = false, HelpText = "Provide base namespace to generate nested output & namespace")]
+        public string? BaseNamespace { get; set; }
 
         [Usage(ApplicationAlias = "dotnet mapster model")]
         public static IEnumerable<Example> Examples =>

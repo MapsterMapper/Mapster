@@ -20,6 +20,28 @@ namespace Mapster.Tool
                 .WithParsed<ExtensionOptions>(GenerateExtensions);
         }
 
+        private static string? GetSegments(string? ns, string? baseNs)
+        {
+            if (ns == null || string.IsNullOrEmpty(baseNs) || baseNs == ns)
+                return null;
+            return ns.StartsWith(baseNs + ".") ? ns.Substring(baseNs.Length + 1) : ns;
+        }
+
+        private static string? CreateNamespace(string? ns, string? segment, string? typeNs)
+        {
+            if (ns == null)
+                return typeNs;
+            return segment == null ? ns : $"{ns}.{segment}";
+        }
+
+        private static string GetOutput(string baseOutput, string? segment, string typeName)
+        {
+            var fullBasePath = Path.GetFullPath(baseOutput);
+            return segment == null 
+                ? Path.Combine(fullBasePath, typeName + ".g.cs") 
+                : Path.Combine(fullBasePath, segment.Replace('.', '/'), typeName + ".g.cs");
+        }
+
         private static void WriteFile(string code, string path)
         {
             var dir = Path.GetDirectoryName(path);
@@ -52,10 +74,11 @@ namespace Mapster.Tool
 
                 Console.WriteLine($"Processing: {type.FullName}");
 
+                var segments = GetSegments(type.Namespace, opt.BaseNamespace);
                 var definitions = new TypeDefinitions
                 {
                     Implements = new[] {type},
-                    Namespace = opt.Namespace ?? type.Namespace,
+                    Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
                     TypeName = attr.Name ?? GetImplName(type.Name),
                     IsInternal = attr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
@@ -103,7 +126,7 @@ namespace Mapster.Tool
                 }
 
                 var code = translator.ToString();
-                var path = Path.Combine(Path.GetFullPath(opt.Output), definitions.TypeName + ".g.cs");
+                var path = GetOutput(opt.Output, segments, definitions.TypeName);
                 WriteFile(code, path);
             }
         }
@@ -156,10 +179,11 @@ namespace Mapster.Tool
         }
         private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder)
         {
+            var segments = GetSegments(type.Namespace, opt.BaseNamespace);
             var attr = builder.Attribute;
             var definitions = new TypeDefinitions
             {
-                Namespace = opt.Namespace ?? type.Namespace,
+                Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
                 TypeName = attr.Name!.Replace("[name]", type.Name),
                 PrintFullTypeName = opt.PrintFullTypeName,
                 IsRecordType = opt.IsRecordType,
@@ -228,7 +252,7 @@ namespace Mapster.Tool
             }
 
             var code = translator.ToString();
-            var path = Path.Combine(Path.GetFullPath(opt.Output), definitions.TypeName + ".g.cs");
+            var path = GetOutput(opt.Output, segments, definitions.TypeName);
             WriteFile(code, path);
 
             static Type getPropType(MemberInfo mem)
@@ -395,10 +419,11 @@ namespace Mapster.Tool
 
                 Console.WriteLine($"Processing: {type.FullName}");
 
+                var segments = GetSegments(type.Namespace, opt.BaseNamespace);
                 var definitions = new TypeDefinitions
                 {
                     IsStatic = true,
-                    Namespace = opt.Namespace ?? type.Namespace,
+                    Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
                     TypeName = mapperAttr.Name.Replace("[name]", type.Name),
                     IsInternal = mapperAttr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
@@ -435,7 +460,7 @@ namespace Mapster.Tool
                 }
 
                 var code = translator.ToString();
-                var path = Path.Combine(Path.GetFullPath(opt.Output), definitions.TypeName + ".g.cs");
+                var path = GetOutput(opt.Output, segments, definitions.TypeName);
                 WriteFile(code, path);
             }
         }
