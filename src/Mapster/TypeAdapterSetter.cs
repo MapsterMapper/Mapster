@@ -208,6 +208,14 @@ namespace Mapster
             return setter;
         }
 
+        public static TSetter RequireDestinationMemberSource<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        {
+            setter.CheckCompiled();
+
+            setter.Settings.RequireDestinationMemberSource = value;
+            return setter;
+        }
+
         public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string?> func) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
@@ -291,16 +299,18 @@ namespace Mapster
                     setter.IgnoreMember((member, _) => member.Type.Namespace?.StartsWith(ns) == true);
                 }
             }
-            if (attr.IgnoreNullValues)
-                setter.IgnoreNullValues(attr.IgnoreNullValues);
-            if (attr.MapToConstructor)
-                setter.MapToConstructor(attr.MapToConstructor);
             if (attr.MaxDepth > 0)
                 setter.MaxDepth(attr.MaxDepth);
-            if (attr.PreserveReference)
+            if (attr.GetBooleanSettingValues(nameof(attr.IgnoreNullValues)) != null)
+                setter.IgnoreNullValues(attr.IgnoreNullValues);
+            if (attr.GetBooleanSettingValues(nameof(attr.MapToConstructor)) != null)
+                setter.MapToConstructor(attr.MapToConstructor);
+            if (attr.GetBooleanSettingValues(nameof(attr.PreserveReference)) != null)
                 setter.PreserveReference(attr.PreserveReference);
-            if (attr.ShallowCopyForSameType)
+            if (attr.GetBooleanSettingValues(nameof(attr.ShallowCopyForSameType)) != null)
                 setter.ShallowCopyForSameType(attr.ShallowCopyForSameType);
+            if (attr.GetBooleanSettingValues(nameof(attr.RequireDestinationMemberSource)) != null)
+                setter.RequireDestinationMemberSource(attr.RequireDestinationMemberSource);
             return setter;
         }
     }

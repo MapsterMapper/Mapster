@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Mapster
 {
@@ -10,10 +11,12 @@ namespace Mapster
         protected BaseAdaptAttribute(Type type)
         {
             this.Type = type;
+            this.MapType = MapType.Map | MapType.MapToTarget;
         }
         protected BaseAdaptAttribute(string name)
         {
             this.Name = name;
+            this.MapType = MapType.Map | MapType.MapToTarget;
         }
 
         public Type? Type { get; }
@@ -21,12 +24,40 @@ namespace Mapster
         public Type[]? IgnoreAttributes { get; set; }
         public Type[]? IgnoreNoAttributes { get; set; }
         public string[]? IgnoreNamespaces { get; set; }
-        public bool IgnoreNullValues { get; set; }
-        public bool MapToConstructor { get; set; }
         public int MaxDepth { get; set; }
-        public bool PreserveReference { get; set; }
-        public bool ShallowCopyForSameType { get; set; }
         public MapType MapType { get; set; }
+
+        private readonly Dictionary<string, bool> _boolValues = new Dictionary<string, bool>();
+        public bool IgnoreNullValues
+        {
+            get => _boolValues.TryGetValue(nameof(IgnoreNullValues), out var value) && value;
+            set => _boolValues[nameof(IgnoreNullValues)] = value;
+        }
+        public bool MapToConstructor
+        {
+            get => _boolValues.TryGetValue(nameof(MapToConstructor), out var value) && value;
+            set => _boolValues[nameof(MapToConstructor)] = value;
+        }
+        public bool PreserveReference
+        {
+            get => _boolValues.TryGetValue(nameof(PreserveReference), out var value) && value;
+            set => _boolValues[nameof(PreserveReference)] = value;
+        }
+        public bool ShallowCopyForSameType
+        {
+            get => _boolValues.TryGetValue(nameof(ShallowCopyForSameType), out var value) && value;
+            set => _boolValues[nameof(ShallowCopyForSameType)] = value;
+        }
+        public bool RequireDestinationMemberSource
+        {
+            get => _boolValues.TryGetValue(nameof(RequireDestinationMemberSource), out var value) && value;
+            set => _boolValues[nameof(RequireDestinationMemberSource)] = value;
+        }
+
+        public bool? GetBooleanSettingValues(string name)
+        {
+            return _boolValues.TryGetValue(name, out var value) ? (bool?)value : null;
+        }
     }
 
     public class AdaptFromAttribute : BaseAdaptAttribute

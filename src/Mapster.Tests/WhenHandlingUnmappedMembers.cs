@@ -36,11 +36,32 @@ namespace Mapster.Tests
             try
             {
                 TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
-                TypeAdapterConfig<ParentPoco, ParentDto>.NewConfig().Compile();
+                TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig().Compile();
 
                 var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
 
                 TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
+                Assert.Fail();
+            }
+            catch (InvalidOperationException ex)
+            {
+                ex.ToString().ShouldContain("UnmappedMember");
+            }
+        }
+
+        [TestMethod]
+        public void Error_Thrown_With_Explicit_Setting_On_Unmapped_Primitive()
+        {
+            try
+            {
+                TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                    .RequireDestinationMemberSource(true)
+                    .Compile();
+
+                var source = new SimplePoco {Id = Guid.NewGuid(), Name = "TestName"};
+
+                TypeAdapter.Adapt<SimplePoco, SimpleDto>(source);
+                Assert.Fail();
             }
             catch (InvalidOperationException ex)
             {

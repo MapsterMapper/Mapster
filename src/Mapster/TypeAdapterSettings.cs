@@ -52,6 +52,11 @@ namespace Mapster
             get => Get(nameof(AvoidInlineMapping));
             set => Set(nameof(AvoidInlineMapping), value);
         }
+        public bool? RequireDestinationMemberSource
+        {
+            get => Get(nameof(RequireDestinationMemberSource));
+            set => Set(nameof(RequireDestinationMemberSource), value);
+        }
         public int? MaxDepth
         {
             get => (int?) Get<object>(nameof(MaxDepth));

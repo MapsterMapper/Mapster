@@ -97,6 +97,12 @@ namespace Mapster
             return this;
         }
 
+        public AdaptAttributeBuilder RequireDestinationMemberSource(bool value)
+        {
+            this.Attribute.RequireDestinationMemberSource = value;
+            return this;
+        }
+
         public AdaptAttributeBuilder MapToConstructor(bool value)
         {
             this.Attribute.MapToConstructor = value;

@@ -99,7 +99,9 @@ namespace Mapster.Adapters
                 }
             }
 
-            if (arg.Context.Config.RequireDestinationMemberSource &&
+            var requireDestMemberSource = arg.Settings.RequireDestinationMemberSource ??
+                                          arg.Context.Config.RequireDestinationMemberSource;
+            if (requireDestMemberSource &&
                 unmappedDestinationMembers.Count > 0 &&
                 arg.Settings.SkipDestinationMemberCheck != true)
             {
