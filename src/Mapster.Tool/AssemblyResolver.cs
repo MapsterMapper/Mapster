@@ -51,14 +51,19 @@ namespace Mapster.Tool
             if (name.Name == "System.Text.Json")
                 return typeof(JsonIgnoreAttribute).Assembly;
 
-            var library = _dependencyContext.RuntimeLibraries
-                .FirstOrDefault(it => string.Equals(it.Name, name.Name, StringComparison.OrdinalIgnoreCase));
+            var (library, assetPath) = (from lib in _dependencyContext.RuntimeLibraries
+                from grp in lib.RuntimeAssemblyGroups
+                where grp.Runtime == string.Empty
+                from path in grp.AssetPaths
+                where string.Equals(GetAssemblyName(path), name.Name, StringComparison.OrdinalIgnoreCase)
+                select (lib, path)).FirstOrDefault();
+
             if (library == null)
             {
                 Console.WriteLine("Cannot find library: " + name.Name);
                 return null;
             }
-                
+            
             try
             {
                 var wrapped = new CompilationLibrary(
@@ -66,7 +71,7 @@ namespace Mapster.Tool
                     library.Name,
                     library.Version,
                     library.Hash,
-                    library.RuntimeAssemblyGroups.SelectMany(g => g.AssetPaths),
+                    new[] {assetPath},
                     library.Dependencies,
                     library.Serviceable);
 
@@ -87,6 +92,23 @@ namespace Mapster.Tool
                 Console.WriteLine("exception: " + ex.Message);
                 return null;
             }
+        }
+
+        private const string NativeImageSufix = ".ni";
+        private static string GetAssemblyName(string assetPath)
+        {
+            var name = Path.GetFileNameWithoutExtension(assetPath);
+            if (name == null)
+            {
+                throw new ArgumentException($"Provided path has empty file name '{assetPath}'", nameof(assetPath));
+            }
+
+            if (name.EndsWith(NativeImageSufix))
+            {
+                name = name.Substring(0, name.Length - NativeImageSufix.Length);
+            }
+
+            return name;
         }
     }
 }
