@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using FastExpressionCompiler;
 using Mapster.Adapters;
 using Mapster.Models;
 using Mapster.Utils;
@@ -85,7 +86,7 @@ namespace Mapster
         public bool AllowImplicitSourceInheritance { get; set; } = true;
         public bool SelfContainedCodeGeneration { get; set; }
 
-        public Func<LambdaExpression, Delegate> Compiler { get; set; } = lambda => lambda.Compile();
+        public Func<LambdaExpression, Delegate> Compiler { get; set; } = lambda => lambda.CompileFast();
 
         public List<TypeAdapterRule> Rules { get; internal set; }
         public TypeAdapterSetter Default { get; internal set; }

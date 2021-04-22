@@ -4,7 +4,7 @@
     <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
     <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
     <Authors>chaowlert;eric_swann</Authors>
-    <TargetFrameworks>netstandard2.0;netstandard1.3;net45;net40</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <AssemblyName>Mapster</AssemblyName>
     <AssemblyOriginatorKeyFile>Mapster.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -29,6 +29,9 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="FastExpressionCompiler">
+      <Version>3.0.5</Version>
+    </PackageReference>
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
@@ -38,6 +41,9 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="FastExpressionCompiler">
+      <Version>3.0.5</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
