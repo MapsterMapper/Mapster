@@ -33,7 +33,7 @@ namespace Mapster.JsonNet.Tests
         }
 
         [TestMethod]
-        public void ToString()
+        public void ToStringTest()
         {
             var json = new JObject {["foo"] = "bar"};
             var result = json.Adapt<string>(_config);

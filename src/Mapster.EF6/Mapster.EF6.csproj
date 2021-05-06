@@ -27,11 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.3.0" />
-    <PackageReference Include="Mapster" Version="4.1.1" />
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="Mapster" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="icon.png" Pack="true" PackagePath="\"/>
+    <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
