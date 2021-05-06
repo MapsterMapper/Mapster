@@ -72,20 +72,13 @@ namespace Benchmark
 
         private static void SetupCompiler(MapsterCompilerType type)
         {
-            switch (type)
+            TypeAdapterConfig.GlobalSettings.Compiler = type switch
             {
-                case MapsterCompilerType.Default:
-                    TypeAdapterConfig.GlobalSettings.Compiler = _defaultCompiler;
-                    break;
-                case MapsterCompilerType.Roslyn:
-                    TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileWithDebugInfo();
-                    break;
-                case MapsterCompilerType.FEC:
-                    TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type));
-            }
+                MapsterCompilerType.Default => _defaultCompiler,
+                MapsterCompilerType.Roslyn => exp => exp.CompileWithDebugInfo(),
+                MapsterCompilerType.FEC => exp => exp.CompileFast(),
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            };
         }
         public static void ConfigureMapster(Foo fooInstance, MapsterCompilerType type)
         {
