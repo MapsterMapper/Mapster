@@ -11,28 +11,28 @@ namespace Benchmark.Benchmarks
         [Params(100_000)]//, 1_000_000)]
         public int Iterations { get; set; }
 
-        [Benchmark(Description = "Mapster 6.0.0")]
+        [Benchmark(Description = "Mapster 7.2.0")]
         public void MapsterTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(_fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 6.0.0 (Roslyn)")]
+        [Benchmark(Description = "Mapster 7.2.0 (Roslyn)")]
         public void RoslynTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(_fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 6.0.0 (FEC)")]
+        [Benchmark(Description = "Mapster 7.2.0 (FEC)")]
         public void FecTest()
         {
             TestAdaptHelper.TestMapsterAdapter<Foo, Foo>(_fooInstance, Iterations);
             TestAdaptHelper.TestMapsterAdapter<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "Mapster 6.0.0 (Codegen)")]
+        [Benchmark(Description = "Mapster 7.2.0 (Codegen)")]
         public void CodegenTest()
         {
             TestAdaptHelper.TestCodeGen(_fooInstance, Iterations);
@@ -46,7 +46,7 @@ namespace Benchmark.Benchmarks
             TestAdaptHelper.TestExpressMapper<Customer, CustomerDTO>(_customerInstance, Iterations);
         }
 
-        [Benchmark(Description = "AutoMapper 10.0.0")]
+        [Benchmark(Description = "AutoMapper 10.1.1")]
         public void AutoMapperTest()
         {
             TestAdaptHelper.TestAutoMapper<Foo, Foo>(_fooInstance, Iterations);
