@@ -117,7 +117,7 @@ https://github.com/MapsterMapper/Mapster/releases
 
 ### Usages
 * [English](https://github.com/MapsterMapper/Mapster/wiki)
-* [中文文档](https://github.com/rivenfx/Mapster-docs)
+* [中文文档](https://github.com/rivenfx/Mapster-docs) (sp thx to [@staneee](https://github.com/staneee))
 
 ### Acknowledgements
 
