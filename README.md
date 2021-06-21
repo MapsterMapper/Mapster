@@ -116,7 +116,8 @@ There are currently two tools which you can choose based on your preferences.
 https://github.com/MapsterMapper/Mapster/releases
 
 ### Usages
-https://github.com/MapsterMapper/Mapster/wiki
+* [English](https://github.com/MapsterMapper/Mapster/wiki)
+* [中文文档](https://github.com/rivenfx/Mapster-docs)
 
 ### Acknowledgements
 
