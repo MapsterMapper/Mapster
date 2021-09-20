@@ -235,6 +235,32 @@ namespace Mapster.Tests
             idto.UnmappedSource.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void MappingToInterfaceWithWritableProps()
+        {
+            var source = new PropertyInitializationTestSource { Property1 = 42, Property2 = 43 };
+            var target = source.Adapt<IInterfaceWithWritableProperties>();
+
+            target.ShouldNotBeNull();
+            target.ShouldSatisfyAllConditions(
+                () => target.Property1.ShouldBe(source.Property1),
+                () => target.Property2.ShouldBe(source.Property2)
+            );
+        }
+
+        [TestMethod]
+        public void MappingToInteraceWithReadonlyProps_AllPropsInitialized()
+        {
+            var source = new PropertyInitializationTestSource { Property1 = 42, Property2 = 43 };
+            var target = source.Adapt<IReadonlyInterface>();
+
+            target.ShouldNotBeNull();
+            target.ShouldSatisfyAllConditions(
+                () => target.Property1.ShouldBe(source.Property1),
+                () => target.Property2.ShouldBe(source.Property2)
+            );
+        }
+
         public interface IInheritedDtoWithoutProperties : IInheritedDto
         {
         }
@@ -325,5 +351,24 @@ namespace Mapster.Tests
             public IEnumerable<int> Ints { get; set; }
             public int[] IntArr { get; set; }
         }
+
+        public interface IReadonlyInterface
+        {
+            int Property1 { get; }
+            int Property2 { get; }
+        }
+
+        public interface IInterfaceWithWritableProperties
+        {
+            int Property1 { get; set; }
+            int Property2 { get; }
+        }
+
+        public class PropertyInitializationTestSource
+        {
+            public int Property1 { get; set; }
+            public int Property2 { get; set; }
+        }
+
     }
 }

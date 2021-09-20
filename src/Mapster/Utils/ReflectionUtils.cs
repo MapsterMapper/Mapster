@@ -170,9 +170,9 @@ namespace Mapster
 
             var props = type.GetFieldsAndProperties().ToList();
 
-            //interface, all props must be readonly
+            //interface with readonly props
             if (type.GetTypeInfo().IsInterface && 
-                props.All(p => p.SetterModifier != AccessModifier.Public))
+                props.Any(p => p.SetterModifier != AccessModifier.Public))
                 return true;
 
             //1 constructor
