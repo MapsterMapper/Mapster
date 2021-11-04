@@ -24,8 +24,7 @@ namespace MapsterMapper
         public virtual TDestination Map<TDestination>(object source)
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (source == null)
-                return default!;
+            if (source == null) return default!;
             var type = source.GetType();
             var fn = Config.GetDynamicMapFunction<TDestination>(type);
             return fn(source);
@@ -51,12 +50,10 @@ namespace MapsterMapper
                 dynamic fn = del;
                 return fn((dynamic)source);
             }
-            else
-            {
-                //NOTE: if type is non-public, we cannot use dynamic
-                //DynamicInvoke is slow, but works with non-public
-                return del.DynamicInvoke(source);
-            }
+
+            //NOTE: if type is non-public, we cannot use dynamic
+            //DynamicInvoke is slow, but works with non-public
+            return del.DynamicInvoke(source);
         }
 
         public virtual object Map(object source, object destination, Type sourceType, Type destinationType)
@@ -67,13 +64,10 @@ namespace MapsterMapper
                 dynamic fn = del;
                 return fn((dynamic)source, (dynamic)destination);
             }
-            else
-            {
-                //NOTE: if type is non-public, we cannot use dynamic
-                //DynamicInvoke is slow, but works with non-public
-                return del.DynamicInvoke(source, destination);
-            }
+
+            //NOTE: if type is non-public, we cannot use dynamic
+            //DynamicInvoke is slow, but works with non-public
+            return del.DynamicInvoke(source, destination);
         }
     }
-
 }

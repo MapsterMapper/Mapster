@@ -125,12 +125,10 @@ namespace Mapster
                 dynamic fn = del;
                 return fn((dynamic)source);
             }
-            else
-            {
-                //NOTE: if type is non-public, we cannot use dynamic
-                //DynamicInvoke is slow, but works with non-public
-                return del.DynamicInvoke(source);
-            }
+
+            //NOTE: if type is non-public, we cannot use dynamic
+            //DynamicInvoke is slow, but works with non-public
+            return del.DynamicInvoke(source);
         }
 
         /// <summary>
@@ -163,12 +161,10 @@ namespace Mapster
                 dynamic fn = del;
                 return fn((dynamic)source, (dynamic)destination);
             }
-            else
-            {
-                //NOTE: if type is non-public, we cannot use dynamic
-                //DynamicInvoke is slow, but works with non-public
-                return del.DynamicInvoke(source, destination);
-            }
+
+            //NOTE: if type is non-public, we cannot use dynamic
+            //DynamicInvoke is slow, but works with non-public
+            return del.DynamicInvoke(source, destination);
         }
     }
 

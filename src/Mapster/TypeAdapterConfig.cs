@@ -304,15 +304,15 @@ namespace Mapster
         {
             if (this == GlobalSettings)
                 return Expression.Property(null, typeof(TypeAdapterConfig).GetProperty(nameof(GlobalSettings))!);
-            else
-                return Expression.Constant(this);
+            return Expression.Constant(this);
         }
 
         internal Expression CreateDynamicMapInvokeExpressionBody(Type destinationType, Expression p1)
         {
-            var method = (from m in typeof(TypeAdapterConfig).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                where m.Name == nameof(GetDynamicMapFunction)
-                select m).First().MakeGenericMethod(destinationType);
+            var method = typeof(TypeAdapterConfig)
+                .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                .First(m => m.Name == nameof(GetDynamicMapFunction))
+                .MakeGenericMethod(destinationType);
             var getType = typeof(object).GetMethod(nameof(GetType));
             var invoker = Expression.Call(CreateSelfExpression(), method, Expression.Call(p1, getType!));
             return Expression.Call(invoker, "Invoke", null, p1);
@@ -580,8 +580,7 @@ namespace Mapster
             var keys = RuleMap.Keys.ToList();
             foreach (var key in keys)
             {
-                if (key.Source == typeof(void))
-                    continue;
+                if (key.Source == typeof(void)) continue;
                 _mapDict[key] = Compiler(CreateMapExpression(key, MapType.Map));
                 _mapToTargetDict[key] = Compiler(CreateMapExpression(key, MapType.MapToTarget));
             }

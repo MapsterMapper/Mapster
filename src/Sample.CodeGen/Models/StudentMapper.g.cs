@@ -61,7 +61,6 @@ namespace Sample.CodeGen.Models
             result.FirstMidName = p6.FirstMidName;
             result.EnrollmentDate = p6.EnrollmentDate;
             return result;
-            
         }
         public static Student AdaptTo(this StudentMerge p8, Student p9)
         {
@@ -71,17 +70,17 @@ namespace Sample.CodeGen.Models
             }
             Student result = p9 ?? new Student();
             
-            if (p8.LastName != null)
+            if (!string.IsNullOrEmpty(p8.LastName))
             {
                 result.LastName = p8.LastName;
             }
             
-            if (p8.FirstMidName != null)
+            if (!string.IsNullOrEmpty(p8.FirstMidName))
             {
                 result.FirstMidName = p8.FirstMidName;
             }
             
-            if (p8.EnrollmentDate != null)
+            if (p8.EnrollmentDate.HasValue)
             {
                 result.EnrollmentDate = (DateTime)p8.EnrollmentDate;
             }
