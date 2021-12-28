@@ -15,12 +15,18 @@ namespace ExpressionDebugger.Tests
         {
             Expression<Func<int, int, int>> fn = (a, b) => a + b;
             var str = fn.ToScript();
-            Assert.AreEqual(@"
+
+            var expected = @"
 public int Main(int a, int b)
 {
     return a + b;
-}".Trim()
-                , str);
+}".Trim();
+
+            // Well, in Visual Studio (at bottom of the code editor, you should be sure to have "CRLF" for the DebugInfoInjectorTest.cs file)
+            // if not, you may have problem comparing \r\n with \n.
+            var r = str.Equals(expected);
+
+            Assert.AreEqual(expected, str);
         }
 
         [TestMethod]
