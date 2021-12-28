@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>preview</LangVersion>
 		<Authors>Chaowlert Chaisrichalermpol</Authors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -27,8 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-3.final" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>

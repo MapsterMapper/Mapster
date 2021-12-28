@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net40;net45;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>Chaowlert Chaisrichalermpol</Authors>
     <Description>EF6 plugin for Mapster</Description>
@@ -27,11 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.3.0" />
-    <PackageReference Include="Mapster" Version="4.1.1" />
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mapster\Mapster.csproj" />
   </ItemGroup>
 </Project>

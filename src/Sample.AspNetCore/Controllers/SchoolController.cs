@@ -6,9 +6,9 @@ using Hellang.Middleware.ProblemDetails;
 using Mapster;
 using Sample.AspNetCore.Models;
 using MapsterMapper;
-using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Sample.AspNetCore.Controllers
 {

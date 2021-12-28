@@ -25,9 +25,11 @@ namespace Mapster.Utils
             }
         }
 
+#if !NET6_0_OR_GREATER
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
         {
             return new HashSet<T>(source);
         }
+#endif
     }
 }

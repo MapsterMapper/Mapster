@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>Chaowlert Chaisrichalermpol</Authors>
     <Description>EFCore plugin for Mapster</Description>
@@ -27,11 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mapster" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mapster\Mapster.csproj" />
   </ItemGroup>
 </Project>

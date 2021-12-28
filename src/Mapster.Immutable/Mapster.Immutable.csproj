@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Authors>Chaowlert Chaisrichalermpol</Authors>
     <Company>Chaowlert Chaisrichalermpol</Company>
     <Description>Immutable collection supports for Mapster</Description>
@@ -23,8 +23,10 @@
     <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Mapster" Version="4.1.1" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mapster\Mapster.csproj" />
   </ItemGroup>
 
 </Project>

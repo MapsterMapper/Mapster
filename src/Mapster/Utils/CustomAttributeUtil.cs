@@ -42,7 +42,7 @@ namespace Mapster
 
 #endif
 
-#if NETSTANDARD1_3
+#if NETSTANDARD1_3 || NET6_0_OR_GREATER
         public static IEnumerable<CustomAttributeData> GetCustomAttributesData(this ParameterInfo parameter)
         {
             return parameter.CustomAttributes;
