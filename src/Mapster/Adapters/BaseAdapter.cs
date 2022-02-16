@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
+using System.Runtime.CompilerServices;
 
 namespace Mapster.Adapters
 {
@@ -360,9 +361,9 @@ namespace Mapster.Adapters
 
             //if there is default constructor, use default constructor
             else if (arg.DestinationType.HasDefaultConstructor())
-            {
+            {                
                 return Expression.New(arg.DestinationType);
-            }
+            }                       
 
             //if mapToTarget or include derived types, allow mapping & throw exception on runtime
             //instantiation is not needed
@@ -382,6 +383,12 @@ namespace Mapster.Adapters
                 return Expression.New(DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType));
             }
 
+            //if the assembly has an otherwise accessible constructor use it
+            else if (HasInternalAccessibleDefaultConstructor(arg.DestinationType, arg.SourceType))
+            {
+                return Expression.New(arg.DestinationType);
+            }
+
             //otherwise throw
             else
             {
@@ -389,6 +396,35 @@ namespace Mapster.Adapters
             }
         }
 
+        
+
+#if !NETSTANDARD1_3
+        private bool HasInternalAccessibleDefaultConstructor(Type fromType, Type toType)
+        {                                    
+            
+            bool internalsVisibleTo() => 
+                fromType.Assembly.GetCustomAttributes(typeof(InternalsVisibleToAttribute), false)
+                .Cast<InternalsVisibleToAttribute>()
+                .Any(x => x.AssemblyName == toType.Assembly.GetName().Name);
+
+            bool hasAccessibleConstructor() => 
+                fromType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Any(c => c.GetParameters().Length == 0 && c.IsAssembly);
+
+            return (internalsVisibleTo() && hasAccessibleConstructor());
+        }
+#else
+        private bool HasInternalAccessibleDefaultConstructor(Type fromType, Type toType)
+        {
+            var fromTypeInfo = fromType.GetTypeInfo();
+            var fromAssembly = fromTypeInfo.Assembly;
+            var toAssembly = toType.GetTypeInfo().Assembly;                                    
+            bool internalsVisibleTo() => fromAssembly.GetCustomAttributes<InternalsVisibleToAttribute>().Any(x => x.AssemblyName == toAssembly.GetName().Name);
+            bool hasAccessibleConstructor() => fromTypeInfo.DeclaredConstructors.Any(x => x.GetParameters().Length == 0 && x.IsAssembly);
+
+            return (internalsVisibleTo() && hasAccessibleConstructor());
+        }
+#endif
         private static Expression CreateAdaptExpressionCore(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping = null, Expression? destination = null)
         {
             var mapType = arg.MapType == MapType.MapToTarget && destination == null ? MapType.Map :

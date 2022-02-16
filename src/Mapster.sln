@@ -55,6 +55,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.SourceGenerator", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapster.Core", "Mapster.Core\Mapster.Core.csproj", "{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Tests.InternalsVisibleAssembly", "Mapster.Tests.InternalsVisibleAssembly\Mapster.Tests.InternalsVisibleAssembly.csproj", "{927CC36B-F45C-4B6E-A55D-D162D06570BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +139,10 @@ Global
 		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A7D2FD4-DDEC-4E11-93FF-1310F34F67CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{927CC36B-F45C-4B6E-A55D-D162D06570BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{927CC36B-F45C-4B6E-A55D-D162D06570BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{927CC36B-F45C-4B6E-A55D-D162D06570BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{927CC36B-F45C-4B6E-A55D-D162D06570BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +162,7 @@ Global
 		{DE045991-6268-46EE-B5D3-79DE75820976} = {916FA044-B9E5-44F2-991A-85AA43C08255}
 		{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F} = {D33E5A90-ABCA-4B2D-8758-2873CC5AB847}
 		{3CB56440-5449-4DE5-A8D3-549C87C1B36A} = {EF7E343F-592E-4EAC-A0A4-92EB4B95CB89}
+		{927CC36B-F45C-4B6E-A55D-D162D06570BD} = {D33E5A90-ABCA-4B2D-8758-2873CC5AB847}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83B87DBA-277C-49F1-B597-E3B78C2C8275}
