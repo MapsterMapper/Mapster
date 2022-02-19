@@ -16,7 +16,6 @@
 	<IsPackable>true</IsPackable>
     <RootNamespace>Mapster</RootNamespace>
     <Version>7.2.0</Version>
-    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <NoWarn>1701;1702;8618</NoWarn>
   </PropertyGroup>

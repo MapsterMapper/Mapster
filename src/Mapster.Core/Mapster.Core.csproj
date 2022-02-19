@@ -5,7 +5,6 @@
     <AssemblyName>Mapster.Core</AssemblyName>
     <PackageTags>mapster</PackageTags>
     <Version>1.2.0</Version>
-    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
 	<IsPackable>true</IsPackable>
 	<SignAssembly>true</SignAssembly>
