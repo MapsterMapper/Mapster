@@ -575,15 +575,35 @@ namespace Mapster
             };
         }
 
-        public void Compile()
+        public void Compile(bool failFast = true)
         {
+            var exceptions = new List<Exception>();
             var keys = RuleMap.Keys.ToList();
+
             foreach (var key in keys)
             {
-                if (key.Source == typeof(void))
-                    continue;
-                _mapDict[key] = Compiler(CreateMapExpression(key, MapType.Map));
-                _mapToTargetDict[key] = Compiler(CreateMapExpression(key, MapType.MapToTarget));
+                try
+                {
+                    if (key.Source == typeof(void))
+                        continue;
+
+                    _mapDict[key] = Compiler(CreateMapExpression(key, MapType.Map));
+                    _mapToTargetDict[key] = Compiler(CreateMapExpression(key, MapType.MapToTarget));
+                }
+                catch (Exception ex)
+                {
+                    if (failFast)
+                    {
+                        throw;
+                    }
+
+                    exceptions.Add(ex);
+                }
+            }
+
+            if (exceptions.Count > 0)
+            {
+                throw new AggregateException(exceptions);
             }
         }
 
