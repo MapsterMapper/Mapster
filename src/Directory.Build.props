@@ -1,0 +1,25 @@
+<Project>
+	<PropertyGroup>
+		<!-- Properties related to build/pack -->
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <PropertyGroup>
+		<!-- Metadata -->
+		<Authors>chaowlert;eric_swann;andrerav</Authors>
+		<Copyright>Copyright (c) $([System.DateTime]::Now.ToString(`yyyy`)) Chaowlert Chaisrichalermpol, Eric Swann, Andreas Ravnestad</Copyright>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
+		<PackageReleaseNotes></PackageReleaseNotes>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>$(SolutionDir)/Mapster/Mapster.snk</AssemblyOriginatorKeyFile>
+		<PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+		<PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
+		<PackageIcon>icon.png</PackageIcon>
+		<IsPackable>false</IsPackable>
+        <LangVersion>10</LangVersion>	
+    </PropertyGroup>
+</Project>

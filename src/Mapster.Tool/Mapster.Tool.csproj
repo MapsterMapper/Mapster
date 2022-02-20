@@ -6,21 +6,11 @@
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-mapster</ToolCommandName>
-    <Authors>Chaowlert Chaisrichalermpol</Authors>
-    <Company>Chaowlert Chaisrichalermpol</Company>
     <Description>Tool to generate object mapping using Mapster</Description>
-    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
     <PackageTags>Mapster;Tool</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>8.2.0</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
-    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
