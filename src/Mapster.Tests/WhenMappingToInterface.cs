@@ -206,7 +206,7 @@ namespace Mapster.Tests
 
             var ex = Should.Throw<CompileException>(() => dto.Adapt<INotVisibleInterface>());
             ex.InnerException.ShouldBeOfType<InvalidOperationException>();
-            ex.InnerException.Message.ShouldContain("not accessible", "Correct InvalidOperationException must be thrown.");
+            ex.InnerException.Message.ShouldContain("not accessible",customMessage: "Correct InvalidOperationException must be thrown.");
         }
         
         [TestMethod]
