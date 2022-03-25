@@ -90,7 +90,7 @@ namespace Mapster.Adapters
                         propertyModel.Getter = Expression.New(typeof(Never));
                         properties.Add(propertyModel);
                     }
-                    else if (destinationMember.SetterModifier != AccessModifier.None)
+                    else if (destinationMember.UseDestinationValue(arg) || destinationMember.SetterModifier != AccessModifier.None)
                     {
                         if (classModel.BreakOnUnmatched)
                             return null!;
