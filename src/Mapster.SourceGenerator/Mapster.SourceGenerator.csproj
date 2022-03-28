@@ -5,23 +5,22 @@
 		<Description>Source generator to generate mapping using Mapster</Description>
 		<PackageTags>source-generator;mapster</PackageTags>
 		<SignAssembly>true</SignAssembly>
+		<LangVersion>10</LangVersion>
 		<AssemblyOriginatorKeyFile>Mapster.SourceGenerator.snk</AssemblyOriginatorKeyFile>
 		<Version>6.5.1</Version>
 		<Nullable>enable</Nullable>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="icon.png" Pack="true" PackagePath="\" />
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
+		<PackageReference Include="System.CodeDom" Version="7.0.0-preview.2.22152.2" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Mapster\Mapster.csproj" />
-	</ItemGroup>
-
 </Project>
