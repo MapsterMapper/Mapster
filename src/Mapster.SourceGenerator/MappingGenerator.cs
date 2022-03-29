@@ -1,24 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
+﻿using System.Collections.Immutable;
+
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Mapster.SourceGenerator;
 
 [Generator]
 internal partial class MappingGenerator : IIncrementalGenerator
 {
-    private const string attributeText = @"
+    private const string AttributeText = @"
 using System;
 namespace Mapster.SourceGenerator
 {
@@ -77,34 +66,54 @@ namespace Mapster.SourceGenerator
         public Type? Type { get; }
         public string? Name { get; }
     }
+
+    public enum MemberSide
+    {
+        Source,
+        Destination,
+    }
+
+    [AttributeUsage(AttributeTargets.Field
+                    | AttributeTargets.Property)]
+    public class AdaptIgnoreAttribute : Attribute
+    {
+        public MemberSide? Side { get; set; }
+
+        public AdaptIgnoreAttribute() { }
+
+        public AdaptIgnoreAttribute(MemberSide side)
+        {
+            this.Side = side;
+        }
+    }
 }
 ";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterPostInitializationOutput(i => i.AddSource("AdaptAttribute", attributeText));
+        context.RegisterPostInitializationOutput(i => i.AddSource("AdaptAttribute", AttributeText));
 
-        IncrementalValuesProvider<GeneratedTypeInfo> attributeDeclarations = context
+        IncrementalValuesProvider<PromisedTypeGenerating> attributeDeclarations = context
             .SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
                 transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx))
             .Where(static m => m is not null)!;
 
-        IncrementalValueProvider<(Compilation, ImmutableArray<GeneratedTypeInfo>)> compilationAndClasses
+        IncrementalValueProvider<(Compilation, ImmutableArray<PromisedTypeGenerating>)> compilationAndClasses
             = context.CompilationProvider.Combine(attributeDeclarations.Collect());
         context.RegisterSourceOutput(compilationAndClasses,
             static (spc, source) => Execute(source.Item1, source.Item2, spc));
 
     }
 
-    private static void Execute(Compilation compilation, ImmutableArray<GeneratedTypeInfo> generatedModels, SourceProductionContext context)
+    private static void Execute(Compilation compilation, ImmutableArray<PromisedTypeGenerating> generatedModels, SourceProductionContext context)
     {
         var emitter = new Emitter();
-        var sources =emitter.Emit(generatedModels);
+        var sources = emitter.Emit(generatedModels);
         foreach (var source in sources)
         {
-            context.AddSource(source.Key,source.Value);
+            context.AddSource(source.Key, source.Value);
         }
     }
 }

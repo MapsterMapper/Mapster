@@ -1,14 +1,9 @@
-﻿using System;
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
+
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mapster.SourceGenerator;
 
@@ -25,84 +20,114 @@ internal partial class MappingGenerator
             "global::System.ComponentModel.EditorBrowsableAttribute(" +
             "global::System.ComponentModel.EditorBrowsableState.Never)";
 
-        public Dictionary<string, string> Emit(IEnumerable<GeneratedTypeInfo> generatedTypeInfos)
+        // Generate the Emit Dictionary.
+        public Dictionary<string, string> Emit(IEnumerable<PromisedTypeGenerating> generatedTypeInfos)
         {
             var dict = new Dictionary<string, string>();
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var toBeGeneratedTypeInfo in generatedTypeInfos)
             {
                 var generatedTypeInfo = GenerateType(toBeGeneratedTypeInfo);
                 var generatedMapperInfo = GenerateMapper(generatedTypeInfo);
                 dict.Add($"{generatedTypeInfo.GeneratedTypeName}.g.cs", generatedTypeInfo.SourceText);
-                dict.Add($"{generatedMapperInfo.ParentTypeInfo.GeneratedTypeName}.Mapper.g.cs", generatedMapperInfo.SourceText);
+                dict.Add($"{generatedMapperInfo.ParentTypeGenerating.GeneratedTypeName}.Mapper.g.cs", generatedMapperInfo.SourceText);
             }
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var group in generatedTypeInfos.GroupBy(_ => _.SourceTypeSymbol, SymbolEqualityComparer.Default))
             {
                 var typeSymbol = group.Key as INamedTypeSymbol;
-                var generatedExtensionInfo =  GenerateExtensions(typeSymbol,group.Select(_=>_.GeneratedTypeName).ToList());
-                dict.Add($"{generatedExtensionInfo.ThisTypeSymbol.Name}.Extensions.g.cs",generatedExtensionInfo.SourceText);
+                var generatedExtensionInfo = GenerateExtensions(typeSymbol!, group.Select(_ => _.GeneratedTypeName).ToList());
+                dict.Add($"{generatedExtensionInfo.ThisTypeSymbol.Name}.Extensions.g.cs", generatedExtensionInfo.SourceText);
             }
             return dict;
         }
 
-        private GeneratedTypeInfo GenerateType(GeneratedTypeInfo generatedTypeInfo)
+        private PromisedTypeGenerating GenerateType(PromisedTypeGenerating promisedTypeGenerating)
         {
             var sw = new StringWriter();
             var writer = new IndentedTextWriter(sw);
-            string namespaceName = generatedTypeInfo.SourceTypeSymbol.ContainingNamespace.ToDisplayString();
+            string namespaceName = promisedTypeGenerating.SourceTypeSymbol.ContainingNamespace.ToDisplayString();
+
+            #region HEADER
             writer.WriteLine("using System;");
             writer.WriteLine($"namespace {namespaceName}");
             writer.WriteLine("{");
             writer.Indent += 1;
-            writer.WriteLine($"public partial class {generatedTypeInfo.GeneratedTypeName}");
+            writer.WriteLine($"public partial class {promisedTypeGenerating.GeneratedTypeName}");
             writer.WriteLine("{");
             writer.Indent += 1;
-            foreach (var property in generatedTypeInfo.GeneratedProperties)
+            #endregion
+            foreach (var property in promisedTypeGenerating.GeneratedProperties)
             {
+                // Pre process the attribute on the property
+                var propertyType = string.Empty;
+                foreach (var attributeData in property.PropertySymbol.GetAttributes())
+                {
+                    // If ignore, pass
+                    if (attributeData.AttributeClass!.ToDisplayString() == AdaptIgnoreAttribute)
+                    {
+                        goto propEnd;
+                    }
+
+                    // Get type from attribute
+                    if (attributeData.AttributeClass!.ToDisplayString() == PropertyTypeAttribute)
+                    {
+                        propertyType = attributeData.NamedArguments.FirstOrDefault(kvp => kvp.Key == "Type").Value.ToString();
+                    }
+                }
                 var propertySymbol = property.PropertySymbol;
-                string propertySymbolName = propertySymbol.Name;
-                ITypeSymbol propertySymbolType = propertySymbol.Type;
+                var propertySymbolName = propertySymbol.Name;
+                var propertySymbolType = string.IsNullOrEmpty(propertyType) ? propertySymbol.Type.ToString() : propertyType;
                 writer.WriteLine($"public {propertySymbolType} {propertySymbolName} {{ get; set; }}");
+
+            propEnd:
                 writer.WriteLine();
             }
-            writer.WriteLine($"public {generatedTypeInfo.SourceTypeSymbol} MapTo{generatedTypeInfo.SourceTypeSymbol.Name}() => {generatedTypeInfo.GeneratedTypeName}.Mapper.Map{generatedTypeInfo.GeneratedTypeName}To{generatedTypeInfo.SourceTypeSymbol.Name}(this);");
+            writer.WriteLine($"public {promisedTypeGenerating.SourceTypeSymbol} MapTo{promisedTypeGenerating.SourceTypeSymbol.Name}() => {promisedTypeGenerating.GeneratedTypeName}.Mapper.Map{promisedTypeGenerating.GeneratedTypeName}To{promisedTypeGenerating.SourceTypeSymbol.Name}(this);");
             writer.WriteLine();
             writer.Indent -= 1;
             writer.WriteLine("}");
             writer.Indent -= 1;
             writer.WriteLine("}");
-            generatedTypeInfo.SourceText = sw.ToString();
-            return generatedTypeInfo;
+            promisedTypeGenerating.SourceText = sw.ToString();
+            return promisedTypeGenerating;
 
         }
 
-        private GeneratedMapperInfo GenerateMapper(GeneratedTypeInfo generatedTypeInfo)
+        // Generate Mapper
+        private GeneratedMapperInfo GenerateMapper(PromisedTypeGenerating promisedTypeGenerating)
         {
             var sw = new StringWriter();
             var writer = new IndentedTextWriter(sw);
-            string namespaceName = generatedTypeInfo.SourceTypeSymbol.ContainingNamespace.ToDisplayString();
+            string namespaceName = promisedTypeGenerating.SourceTypeSymbol.ContainingNamespace.ToDisplayString();
+            # region HEADER
             writer.WriteLine("using System;");
             writer.WriteLine($"namespace {namespaceName}");
             writer.WriteLine("{");
             writer.Indent += 1;
-            writer.WriteLine($"public partial class {generatedTypeInfo.GeneratedTypeName}");
+            writer.WriteLine($"public partial class {promisedTypeGenerating.GeneratedTypeName}");
             writer.WriteLine("{");
             writer.Indent += 1;
             writer.WriteLine("public class Mapper");
             writer.WriteLine("{");
             writer.Indent += 1;
-            string forwardMethodName =
-                $"Map{generatedTypeInfo.SourceTypeSymbol.Name}To{generatedTypeInfo.GeneratedTypeName}";
-            string backwardMethodName =
-                $"Map{generatedTypeInfo.GeneratedTypeName}To{generatedTypeInfo.SourceTypeSymbol.Name}";
+            #endregion
 
+            // Generate method name
+            string forwardMethodName =
+                $"Map{promisedTypeGenerating.SourceTypeSymbol.Name}To{promisedTypeGenerating.GeneratedTypeName}";
+            string backwardMethodName =
+                $"Map{promisedTypeGenerating.GeneratedTypeName}To{promisedTypeGenerating.SourceTypeSymbol.Name}";
+
+            #region METHOD_BODY
             writer.WriteLine(
                 "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
             writer.WriteLine(
-                $"public static {generatedTypeInfo.GeneratedTypeName} {forwardMethodName}({generatedTypeInfo.SourceTypeSymbol.ToDisplayString()} obj)");
+                $"public static {promisedTypeGenerating.GeneratedTypeName} {forwardMethodName}({promisedTypeGenerating.SourceTypeSymbol.ToDisplayString()} obj)");
             writer.WriteLine("{");
             writer.Indent += 1;
-            writer.WriteLine($"var target = new {generatedTypeInfo.GeneratedTypeName}();");
-            foreach (var property in generatedTypeInfo.GeneratedProperties)
+            writer.WriteLine($"var target = new {promisedTypeGenerating.GeneratedTypeName}();");
+            foreach (var property in promisedTypeGenerating.GeneratedProperties)
             {
                 var propertySymbol = property.PropertySymbol;
                 writer.WriteLine($"target.{propertySymbol.Name} = obj.{propertySymbol.Name};");
@@ -116,11 +141,11 @@ internal partial class MappingGenerator
             writer.WriteLine(
                 "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
             writer.WriteLine(
-                $"public static {generatedTypeInfo.SourceTypeSymbol.ToDisplayString()} {backwardMethodName}({generatedTypeInfo.GeneratedTypeName} obj)");
+                $"public static {promisedTypeGenerating.SourceTypeSymbol.ToDisplayString()} {backwardMethodName}({promisedTypeGenerating.GeneratedTypeName} obj)");
             writer.WriteLine("{");
             writer.Indent += 1;
-            writer.WriteLine($"var target = new {generatedTypeInfo.SourceTypeSymbol.ToDisplayString()}();");
-            foreach (var property in generatedTypeInfo.GeneratedProperties)
+            writer.WriteLine($"var target = new {promisedTypeGenerating.SourceTypeSymbol.ToDisplayString()}();");
+            foreach (var property in promisedTypeGenerating.GeneratedProperties)
             {
                 var propertySymbol = property.PropertySymbol;
                 writer.WriteLine($"target.{propertySymbol.Name} = obj.{propertySymbol.Name};");
@@ -128,18 +153,21 @@ internal partial class MappingGenerator
             writer.WriteLine("return target;");
             writer.Indent -= 1;
             writer.WriteLine("}");
+            #endregion
 
+            #region FOOTER
             writer.Indent -= 1;
             writer.WriteLine("}");
             writer.Indent -= 1;
             writer.WriteLine("}");
             writer.Indent -= 1;
             writer.WriteLine("}");
+            #endregion
             return new GeneratedMapperInfo()
-            { ParentTypeInfo = generatedTypeInfo, SourceText = sw.ToString(), ForwardMappingMethodName = forwardMethodName, BackwardMappingMethodName = backwardMethodName };
+            { ParentTypeGenerating = promisedTypeGenerating, SourceText = sw.ToString(), ForwardMappingMethodName = forwardMethodName, BackwardMappingMethodName = backwardMethodName };
         }
 
-        private GeneratedExtensionInfo GenerateExtensions(INamedTypeSymbol thisType,IEnumerable<string> targetTypes)
+        private GeneratedExtensionInfo GenerateExtensions(INamedTypeSymbol thisType, IEnumerable<string> targetTypes)
         {
             var sw = new StringWriter();
             var writer = new IndentedTextWriter(sw);
