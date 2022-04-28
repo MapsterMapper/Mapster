@@ -25,7 +25,7 @@ namespace Mapster.EFCore
         public Expression Expression => _queryable.Expression;
         public IQueryProvider Provider { get; }
     }
-    class MapsterQueryable<T> : MapsterQueryable, IQueryable<T>, IAsyncEnumerable<T>
+    class MapsterQueryable<T> : MapsterQueryable, IQueryable<T>, IAsyncEnumerable<T>, IOrderedQueryable<T>
     {
         public MapsterQueryable(IQueryable<T> queryable, IAdapterBuilder builder) : 
             base(queryable, builder) { }
