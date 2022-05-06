@@ -44,6 +44,13 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
+            //if there is constructUsing, use constructUsing
+            var constructUsing = arg.GetConstructUsing();
+            if (constructUsing != null)
+            {
+                return base.CreateInstantiationExpression(source, destination, arg);
+            }
+
             var listType = arg.DestinationType;
             if (arg.DestinationType.GetTypeInfo().IsInterface)
             {
