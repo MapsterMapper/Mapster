@@ -228,16 +228,16 @@ namespace Mapster.Adapters
                     assignActions.Add(Expression.Assign(transformedSource, transform));
                 assignActions.Add(assign);
 
-                //before(source, result);
-                var beforeMappings = arg.Settings.BeforeMappingFactories.Select(it => InvokeMapping(it, source, result, arg, true));
+                //before(source, result, destination);
+                var beforeMappings = arg.Settings.BeforeMappingFactories.Select(it => InvokeMapping(it, source, result, destination, arg, true));
                 assignActions.AddRange(beforeMappings);
 
                 //result.prop = adapt(source.prop);
                 var mapping = CreateBlockExpression(transformedSource, result, arg);
                 var settingActions = new List<Expression> {mapping};
 
-                //after(source, result);
-                var afterMappings = arg.Settings.AfterMappingFactories.Select(it => InvokeMapping(it, source, result, arg, false));
+                //after(source, result, destination);
+                var afterMappings = arg.Settings.AfterMappingFactories.Select(it => InvokeMapping(it, source, result, destination, arg, false));
                 settingActions.AddRange(afterMappings);
 
                 //return result;
@@ -312,11 +312,26 @@ namespace Mapster.Adapters
             return Expression.Block(vars, blocks);
         }
 
-        private static Expression InvokeMapping(Func<CompileArgument, LambdaExpression> mappingFactory, Expression source, Expression result, CompileArgument arg, bool setResult)
+        private static Expression InvokeMapping(
+            Func<CompileArgument, LambdaExpression> mappingFactory,
+            Expression source,
+            Expression result,
+            Expression? destination,
+            CompileArgument arg,
+            bool setResult)
         {
             var afterMapping = mappingFactory(arg);
             var args = afterMapping.Parameters;
-            var invoke = afterMapping.Apply(arg.MapType, source.To(args[0].Type), result.To(args[1].Type));
+
+            var mappingParameters = new Expression[args.Count];
+            mappingParameters[0] = source.To(args[0].Type);
+            mappingParameters[1] = result.To(args[1].Type);
+            if (args.Count >= 3)
+            {
+                mappingParameters[2] = destination?.To(args[2].Type) ?? Expression.Constant(null, args[2].Type);
+            }
+
+            var invoke = afterMapping.Apply(arg.MapType, mappingParameters);
             if (invoke.Type != typeof(void) && setResult)
                 invoke = ExpressionEx.Assign(result, invoke);
             return invoke;
