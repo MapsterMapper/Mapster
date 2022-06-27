@@ -39,7 +39,7 @@ namespace Mapster.Tool
             var fullBasePath = Path.GetFullPath(baseOutput);
             return segment == null 
                 ? Path.Combine(fullBasePath, typeName + ".g.cs") 
-                : Path.Combine(fullBasePath, segment.Replace('.', '/'), typeName + ".g.cs");
+                : Path.Combine(fullBasePath, segment.Replace('.', Path.DirectorySeparatorChar), typeName + ".g.cs");
         }
 
         private static void WriteFile(string code, string path)
