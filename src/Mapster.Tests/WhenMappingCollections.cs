@@ -294,6 +294,19 @@ namespace Mapster.Tests
             }
         }
 
+        [TestMethod]
+        public void RespectConstructUsing()
+        {
+            var source = new List<int> { 1, 1, 3, };
+
+            var result = source
+                .BuildAdapter()
+                .ForkConfig(x => x.ForDestinationType<ICollection<string>>().ConstructUsing(() => new HashSet<string>()))
+                .AdaptToType<ICollection<string>>();
+
+            result.ShouldBe(new List<string> { "1", "3", });
+        }
+
         #region TestClass
 
         [Flags]
