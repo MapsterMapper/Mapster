@@ -10,7 +10,7 @@
     <PackageTags>Mapster;Tool</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
-    <Version>8.3.0</Version>
+    <Version>8.4.0-pre03</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="ExpressionTranslator" Version="2.4.2" />
+    <PackageReference Include="ExpressionTranslator" Version="2.5.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
   </ItemGroup>
 

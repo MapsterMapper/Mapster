@@ -9,7 +9,7 @@
         <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="ExpressionDebugger" Version="2.2.0" />
+        <PackageReference Include="ExpressionDebugger" Version="2.2.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
         <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
         <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />

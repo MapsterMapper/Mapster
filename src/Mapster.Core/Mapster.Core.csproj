@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;netstandard1.3</TargetFrameworks>
     <AssemblyName>Mapster.Core</AssemblyName>
     <PackageTags>mapster</PackageTags>
-    <Version>1.2.0</Version>
+    <Version>1.2.1-pre02</Version>
     <Nullable>enable</Nullable>
 	<IsPackable>true</IsPackable>
 	<SignAssembly>true</SignAssembly>

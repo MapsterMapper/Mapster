@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ExpressionDebugger" Version="2.1.2" />
+    <PackageReference Include="ExpressionDebugger" Version="2.2.1" />
     <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.3.0" />

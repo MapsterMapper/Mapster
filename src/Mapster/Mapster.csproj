@@ -15,7 +15,7 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
 	<IsPackable>true</IsPackable>
     <RootNamespace>Mapster</RootNamespace>
-    <Version>7.3.0</Version>
+    <Version>7.4.0-pre03</Version>
     <Nullable>enable</Nullable>
     <NoWarn>1701;1702;8618</NoWarn>
   </PropertyGroup>
