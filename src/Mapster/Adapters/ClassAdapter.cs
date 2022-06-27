@@ -176,7 +176,7 @@ namespace Mapster.Adapters
             var exp = CreateInstantiationExpression(source, arg);
             var memberInit = exp as MemberInitExpression;
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
-
+            var contructorMembers = newInstance.Arguments.OfType<MemberExpression>().Select(me => me.Member).ToArray();
             var classModel = GetSetterModel(arg);
             var classConverter = CreateClassConverter(source, classModel, arg);
             var members = classConverter.Members;
@@ -188,6 +188,11 @@ namespace Mapster.Adapters
             {
                 if (member.UseDestinationValue)
                     return null;
+
+                if (!arg.Settings.Resolvers.Any(r => r.DestinationMemberName == member.DestinationMember.Name) 
+                    && member.Getter is MemberExpression memberExp && contructorMembers.Contains(memberExp.Member))
+                    continue;
+
                 if (member.DestinationMember.SetterModifier == AccessModifier.None)
                     continue;
 
