@@ -5,12 +5,12 @@ namespace Mapster
 {
     public static class TypeAdapter
     {
-        public static TypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source)
+        public static ITypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source)
         {
             return new TypeAdapterBuilder<TSource>(source, TypeAdapterConfig.GlobalSettings);
         }
 
-        public static TypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source, TypeAdapterConfig config)
+        public static ITypeAdapterBuilder<TSource> BuildAdapter<TSource>(this TSource source, TypeAdapterConfig config)
         {
             return new TypeAdapterBuilder<TSource>(source, config);
         }
