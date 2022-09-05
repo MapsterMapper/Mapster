@@ -71,8 +71,8 @@ namespace Benchmark.Benchmarks
         [GlobalSetup(Target = nameof(CodegenTest))]
         public void SetupCodegen()
         {
-            _fooInstance = TestAdaptHelper.SetupFooInstance();
-            FooMapper.Map(_fooInstance);
+            //_fooInstance = TestAdaptHelper.SetupFooInstance();
+            //FooMapper.Map(_fooInstance);
         }
 
         [GlobalSetup(Target = nameof(ExpressMapperTest))]

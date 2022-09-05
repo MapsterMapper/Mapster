@@ -88,7 +88,7 @@ namespace Benchmark
         }
         public static void ConfigureExpressMapper(Foo fooInstance)
         {
-            ExpressMapper.Mapper.Map<Foo, Foo>(fooInstance); //exercise
+            //ExpressMapper.Mapper.Map<Foo, Foo>(fooInstance); //exercise
         }
         public static void ConfigureAutoMapper(Foo fooInstance)
         {
@@ -103,7 +103,7 @@ namespace Benchmark
         }
         public static void ConfigureExpressMapper(Customer customerInstance)
         {
-            ExpressMapper.Mapper.Map<Customer, CustomerDTO>(customerInstance);  //exercise
+            //ExpressMapper.Mapper.Map<Customer, CustomerDTO>(customerInstance);  //exercise
         }
         public static void ConfigureAutoMapper(Customer customerInstance)
         {
@@ -121,7 +121,7 @@ namespace Benchmark
             where TSrc : class
             where TDest : class, new()
         {
-            Loop(item, get => ExpressMapper.Mapper.Map<TSrc, TDest>(get), iterations);
+            //Loop(item, get => ExpressMapper.Mapper.Map<TSrc, TDest>(get), iterations);
         }
 
         public static void TestAutoMapper<TSrc, TDest>(TSrc item, int iterations)
@@ -133,12 +133,12 @@ namespace Benchmark
 
         public static void TestCodeGen(Foo item, int iterations)
         {
-            Loop(item, get => FooMapper.Map(get), iterations);
+            //Loop(item, get => FooMapper.Map(get), iterations);
         }
 
         public static void TestCodeGen(Customer item, int iterations)
         {
-            Loop(item, get => CustomerMapper.Map(get), iterations);
+            //Loop(item, get => CustomerMapper.Map(get), iterations);
         }
 
         private static void Loop<T>(T item, Action<T> action, int iterations)

@@ -83,10 +83,10 @@ namespace Benchmark.Benchmarks
         [GlobalSetup(Target = nameof(CodegenTest))]
         public void SetupCodegen()
         {
-            _fooInstance = TestAdaptHelper.SetupFooInstance();
-            _customerInstance = TestAdaptHelper.SetupCustomerInstance();
-            FooMapper.Map(_fooInstance);
-            CustomerMapper.Map(_customerInstance);
+            //_fooInstance = TestAdaptHelper.SetupFooInstance();
+            //_customerInstance = TestAdaptHelper.SetupCustomerInstance();
+            //FooMapper.Map(_fooInstance);
+            //CustomerMapper.Map(_customerInstance);
         }
 
         [GlobalSetup(Target = nameof(ExpressMapperTest))]

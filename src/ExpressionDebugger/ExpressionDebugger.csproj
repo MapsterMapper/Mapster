@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>Chaowlert Chaisrichalermpol</Authors>
+    <Description>Step into debugging from linq expressions</Description>
+    <PackageProjectUrl>https://github.com/chaowlert/ExpressionDebugger</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/chaowlert/ExpressionDebugger</RepositoryUrl>
+    <PackageTags>expression;linq;debug</PackageTags>
+    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522656/41e28a6e-432f-11e7-9cae-7856f927d1a1.png</PackageIconUrl>
+    <SignAssembly>True</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <AssemblyOriginatorKeyFile>ExpressionDebugger.snk</AssemblyOriginatorKeyFile>
+    <Version>2.2.0</Version>
+    <PackageLicenseUrl>https://github.com/chaowlert/ExpressionDebugger/blob/master/LICENSE</PackageLicenseUrl>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExpressionTranslator\ExpressionTranslator.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+	<UseNETCoreGenerator>true</UseNETCoreGenerator>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExpressionDebugger\ExpressionDebugger.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="untitled.cs" />
+  </ItemGroup>
+</Project>
