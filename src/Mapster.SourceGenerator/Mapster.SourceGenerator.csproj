@@ -2,19 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<LangVersion>preview</LangVersion>
-		<Authors>Chaowlert Chaisrichalermpol</Authors>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Description>Source generator to generate mapping using Mapster</Description>
-		<Copyright>Copyright (c) Chaowlert Chaisrichalermpol</Copyright>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
 		<PackageTags>source-generator;mapster</PackageTags>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>Mapster.SourceGenerator.snk</AssemblyOriginatorKeyFile>
-		<PackageIcon>icon.png</PackageIcon>
-		<PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
 		<RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json ;$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
 		<Version>6.5.1</Version>
 		<Nullable>enable</Nullable>

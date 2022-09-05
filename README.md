@@ -36,9 +36,9 @@ using (MyDbContext context = new MyDbContext())
 
     // Versus creating by hand:
     var destinations = context.Sources.Select(c => new Destination {
-        Id = p.Id,
-        Name = p.Name,
-        Surname = p.Surname,
+        Id = c.Id,
+        Name = c.Name,
+        Surname = c.Surname,
         ....
     })
     .ToList();

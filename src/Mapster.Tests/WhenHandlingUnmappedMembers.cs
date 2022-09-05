@@ -103,6 +103,27 @@ namespace Mapster.Tests
             }
         }
 
+        [TestMethod]
+        public void Error_Thrown_With_Explicit_Configuration_And_UseDestinationValue_On_Unmapped_Child_Collection()
+        {
+            try
+            {
+                TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+                TypeAdapterConfig<ListPoco, ListDto>.NewConfig()
+                    .UseDestinationValue(model => model.Type.IsConstructedGenericType
+                                                  && model.Type.GetGenericTypeDefinition() == typeof(List<>))
+                    .Compile();
+
+                var source = new ListPoco();
+
+                TypeAdapter.Adapt<ListPoco, ListDto>(source);
+                Assert.Fail();
+            }
+            catch (InvalidOperationException ex)
+            {
+                ex.ToString().ShouldContain("UnmappedReadOnlyList");
+            }
+        }
 
         [TestMethod]
         public void NoErrorWhenMapped()
@@ -171,6 +192,26 @@ namespace Mapster.Tests
             public List<ChildDto> Children { get; set; }
 
             public List<ChildDto> UnmappedChildren { get; set; } 
+        }
+
+        public class ListPoco
+        {
+            public ListPoco()
+            {
+                List = new List<int>();
+            }
+
+            public List<int> List { get; }
+        }
+
+        public class ListDto
+        {
+            public ListDto()
+            {
+                UnmappedReadOnlyList = new List<int>();
+            }
+
+            public List<int> UnmappedReadOnlyList { get; } 
         }
 
         #endregion

@@ -2,29 +2,14 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Authors>Chaowlert Chaisrichalermpol</Authors>
     <Description>EFCore plugin for Mapster</Description>
-    <PackageProjectUrl>https://github.com/chaowlert/Mapster.EFCore</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/chaowlert/Mapster.EFCore</RepositoryUrl>
+	<IsPackable>true</IsPackable>
     <PackageTags>Mapster;EFCore</PackageTags>
     <SignAssembly>True</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>Mapster.EFCore.snk</AssemblyOriginatorKeyFile>
     <Version>5.1.0</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
   </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
-    <Reference Include="System" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />

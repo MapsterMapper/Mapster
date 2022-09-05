@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapster.EFCore.Tests.Models;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -14,7 +16,7 @@ namespace Mapster.EFCore.Tests
         public void TestFindObject()
         {
             var options = new DbContextOptionsBuilder<SchoolContext>()
-                .UseInMemoryDatabase("School")
+                .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
                 .Options;
             var context = new SchoolContext(options);
             DbInitializer.Initialize(context);
@@ -42,10 +44,35 @@ namespace Mapster.EFCore.Tests
             first.CourseID.ShouldBe(3141);
             first.Grade.ShouldBe(Grade.F);
         }
+
+        [TestMethod]
+        public void MapperInstance_From_OrderBy()
+        {
+            var options = new DbContextOptionsBuilder<SchoolContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
+                .Options;
+            var context = new SchoolContext(options);
+            DbInitializer.Initialize(context);
+
+            var mapsterInstance = new Mapper();
+
+            var query = context.Students.Include(it => it.Enrollments);
+            var orderedQuery = mapsterInstance.From(query)
+                .ProjectToType<StudentDto>()
+                .OrderBy(s => s.LastName);
+
+            var first = orderedQuery.First();
+            first.LastName.ShouldBe("Alexander");
+
+            var last = orderedQuery.Last();
+            last.LastName.ShouldBe("Olivetto");
+        }
     }
+
     public class StudentDto
     {
         public int ID { get; set; }
+        public string LastName { get; set; }
         public ICollection<EnrollmentItemDto> Enrollments { get; set; }
     }
 

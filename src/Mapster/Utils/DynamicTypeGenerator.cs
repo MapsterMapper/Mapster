@@ -58,6 +58,8 @@ namespace Mapster.Utils
 
             var args = new List<FieldBuilder>();
             int propCount = 0;
+            var hasReadonlyProps = false;
+
             foreach (Type currentInterface in interfaceType.GetAllInterfaces())
             {
                 builder.AddInterfaceImplementation(currentInterface);
@@ -66,8 +68,8 @@ namespace Mapster.Utils
                     propCount++;
                     FieldBuilder propField = builder.DefineField("_" + MapsterHelper.CamelCase(prop.Name), prop.PropertyType, FieldAttributes.Private);
                     CreateProperty(currentInterface, builder, prop, propField);
-                    if (!prop.CanWrite)
-                        args.Add(propField);
+                    if (!prop.CanWrite) hasReadonlyProps = true;
+                    args.Add(propField);
                 }
                 foreach (MethodInfo method in currentInterface.GetMethods())
                 {
@@ -82,7 +84,7 @@ namespace Mapster.Utils
             if (propCount == 0)
                 throw new InvalidOperationException($"No default constructor for type '{interfaceType.Name}', please use 'ConstructUsing' or 'MapWith'");
 
-            if (args.Count == propCount)
+            if (hasReadonlyProps)
             {
                 var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public, 
                     CallingConventions.Standard,

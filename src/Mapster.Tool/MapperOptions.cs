@@ -22,6 +22,9 @@ namespace Mapster.Tool
         [Option('b', "baseNamespace", Required = false, HelpText = "Provide base namespace to generate nested output & namespace")]
         public string? BaseNamespace { get; set; }
 
+        [Option('s', "skipExisting", Required = false, HelpText = "Set true to skip generating already existing files")]
+        public bool SkipExistingFiles { get; set; }
+
         [Usage(ApplicationAlias = "dotnet mapster mapper")]
         public static IEnumerable<Example> Examples =>
             new List<Example>

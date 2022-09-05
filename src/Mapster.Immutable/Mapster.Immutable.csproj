@@ -2,21 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <Authors>Chaowlert Chaisrichalermpol</Authors>
-    <Company>Chaowlert Chaisrichalermpol</Company>
     <Description>Immutable collection supports for Mapster</Description>
-    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
+    <IsPackable>true</IsPackable>
     <PackageTags>Mapster;Immutable</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Immutable.snk</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>1.0.0</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright (c) 2020 Chaowlert Chaisrichalermpol</Copyright>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
-    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>

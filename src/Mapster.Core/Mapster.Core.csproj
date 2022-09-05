@@ -1,32 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Lightweight library for Mapster and Mapster CodeGen</Description>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>Mapster.Core</AssemblyName>
-    <Authors>Chaowlert Chaisrichalermpol</Authors>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Copyright>Copyright (c) Chaowlert Chaisrichalermpol</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/MapsterMapper/Mapster</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MapsterMapper/Mapster</RepositoryUrl>
     <PackageTags>mapster</PackageTags>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Mapster.Core.snk</AssemblyOriginatorKeyFile>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
-    <Version>1.2.0</Version>
-    <LangVersion>8.0</LangVersion>
+    <Version>1.2.1-pre02</Version>
     <Nullable>enable</Nullable>
-    <RootNamespace>Mapster</RootNamespace>
+	<IsPackable>true</IsPackable>
+	<SignAssembly>true</SignAssembly>
+	<AssemblyOriginatorKeyFile>Mapster.Core.snk</AssemblyOriginatorKeyFile>
+	<RootNamespace>Mapster</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-
 </Project>

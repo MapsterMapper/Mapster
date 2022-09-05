@@ -39,7 +39,7 @@ namespace Mapster.Tool
             var fullBasePath = Path.GetFullPath(baseOutput);
             return segment == null 
                 ? Path.Combine(fullBasePath, typeName + ".g.cs") 
-                : Path.Combine(fullBasePath, segment.Replace('.', '/'), typeName + ".g.cs");
+                : Path.Combine(fullBasePath, segment.Replace('.', Path.DirectorySeparatorChar), typeName + ".g.cs");
         }
 
         private static void WriteFile(string code, string path)
@@ -83,6 +83,14 @@ namespace Mapster.Tool
                     IsInternal = attr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
                 };
+
+                var path = GetOutput(opt.Output, segments, definitions.TypeName);
+                if (opt.SkipExistingFiles && File.Exists(path))
+                {
+                    Console.WriteLine($"Skipped: {type.FullName}. Mapper {definitions.TypeName} already exists.");
+                    continue;
+                }
+
                 var translator = new ExpressionTranslator(definitions);
                 var interfaces = type.GetAllInterfaces();
                 foreach (var @interface in interfaces)
@@ -126,7 +134,6 @@ namespace Mapster.Tool
                 }
 
                 var code = translator.ToString();
-                var path = GetOutput(opt.Output, segments, definitions.TypeName);
                 WriteFile(code, path);
             }
         }
@@ -189,6 +196,14 @@ namespace Mapster.Tool
                 IsRecordType = opt.IsRecordType,
                 NullableContext = GetTypeNullableContext(type),
             };
+
+            var path = GetOutput(opt.Output, segments, definitions.TypeName);
+            if (opt.SkipExistingFiles && File.Exists(path))
+            {
+                Console.WriteLine($"Skipped: {type.FullName}. Model {definitions.TypeName} already exists.");
+                return;
+            }
+
             var translator = new ExpressionTranslator(definitions);
             var isAdaptTo = attr is AdaptToAttribute;
             var isTwoWays = attr is AdaptTwoWaysAttribute;
@@ -252,7 +267,6 @@ namespace Mapster.Tool
             }
 
             var code = translator.ToString();
-            var path = GetOutput(opt.Output, segments, definitions.TypeName);
             WriteFile(code, path);
 
             static Type getPropType(MemberInfo mem)
@@ -428,6 +442,14 @@ namespace Mapster.Tool
                     IsInternal = mapperAttr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
                 };
+
+                var path = GetOutput(opt.Output, segments, definitions.TypeName);
+                if (opt.SkipExistingFiles && File.Exists(path))
+                {
+                    Console.WriteLine($"Skipped: {type.FullName}. Extension class {definitions.TypeName} already exists.");
+                    continue;
+                }
+
                 var translator = new ExpressionTranslator(definitions);
 
                 foreach (var builder in builders)
@@ -460,7 +482,6 @@ namespace Mapster.Tool
                 }
 
                 var code = translator.ToString();
-                var path = GetOutput(opt.Output, segments, definitions.TypeName);
                 WriteFile(code, path);
             }
         }
