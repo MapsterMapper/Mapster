@@ -158,6 +158,13 @@ namespace Mapster
             return new TypeAdapterSetter<TDestination>(settings, this);
         }
 
+        public TypeAdapterSetter ForDestinationType(Type destinationType)
+        {
+            var key = new TypeTuple(typeof(void), destinationType);
+            var settings = GetSettings(key);
+            return new TypeAdapterSetter(settings, this);
+        }
+
         private TypeAdapterSettings GetSettings(TypeTuple key)
         {
             var rule = this.RuleMap.GetOrAdd(key, types =>
@@ -212,7 +219,7 @@ namespace Mapster
                     score--;
                     type1 = type1.GetTypeInfo().BaseType;
                 }
-                return type1 != null && type1.GetTypeInfo().IsGenericType && type1.GetGenericTypeDefinition() == type2 
+                return type1 != null && type1.GetTypeInfo().IsGenericType && type1.GetGenericTypeDefinition() == type2
                     ? (int?)score
                     : null;
             }
@@ -271,7 +278,7 @@ namespace Mapster
         internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
-            if (!_mapToTargetDict.TryGetValue(key, out var del)) 
+            if (!_mapToTargetDict.TryGetValue(key, out var del))
                 del = AddToHash(_mapToTargetDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.MapToTarget)));
             return del;
         }
@@ -295,7 +302,7 @@ namespace Mapster
         public Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
             var key = new TypeTuple(sourceType, typeof(TDestination));
-            if (!_dynamicMapDict.TryGetValue(key, out var del)) 
+            if (!_dynamicMapDict.TryGetValue(key, out var del))
                 del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
             return (Func<object, TDestination>)del;
         }
@@ -700,7 +707,7 @@ namespace Mapster
             return config;
         });
         public TypeAdapterConfig Clone()
-        { 
+        {
             var fn = _cloneConfig.Value.GetMapFunction<TypeAdapterConfig, TypeAdapterConfig>();
             return fn(this);
         }
