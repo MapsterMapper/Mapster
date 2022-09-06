@@ -15,7 +15,7 @@ namespace Mapster
     /// </remarks>
     public class MapContext
     {
-#if NETSTANDARD
+#if NETSTANDARD || NET6_0_OR_GREATER
         private static readonly AsyncLocal<MapContext?> _localContext = new AsyncLocal<MapContext?>();
         public static MapContext? Current
         {

@@ -101,7 +101,7 @@ namespace Mapster.Utils
                 ctorIl.Emit(OpCodes.Ret);
             }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
             return builder.CreateTypeInfo()!;
 #elif NETSTANDARD1_3
             return builder.CreateTypeInfo().AsType();

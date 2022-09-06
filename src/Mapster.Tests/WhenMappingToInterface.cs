@@ -206,9 +206,14 @@ namespace Mapster.Tests
 
             var ex = Should.Throw<CompileException>(() => dto.Adapt<INotVisibleInterface>());
             ex.InnerException.ShouldBeOfType<InvalidOperationException>();
-            ex.InnerException.Message.ShouldContain("not accessible", "Correct InvalidOperationException must be thrown.");
+            // Not an expert in ShouldBe, so I had to change the code below
+            //ex.InnerException.Message.ShouldContain("", "Correct InvalidOperationException must be thrown.");
+            if (!ex.InnerException.Message.Contains("not accessible"))
+            {
+                throw new InvalidOperationException("Correct InvalidOperationException must be thrown.");
+            }
         }
-        
+
         [TestMethod]
         public void MapToInheritedInterfaceWithoutProperties()
         {            

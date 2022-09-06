@@ -41,6 +41,8 @@ namespace Mapster.DependencyInjection.Tests
             IServiceCollection sc = new ServiceCollection();
             sc.AddScoped<IMockService, MockService>();
             sc.AddSingleton(config);
+            // We should use ServiceMapper in normal code
+            // but for this test we want to be sure the code will generate the InvalidOperationException
             sc.AddScoped<IMapper, Mapper>();
 
             var sp = sc.BuildServiceProvider();

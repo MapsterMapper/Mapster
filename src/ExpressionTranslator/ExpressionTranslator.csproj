@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>Chaowlert Chaisrichalermpol</Authors>
+    <Description>Translate from linq expressions to C# code</Description>
+    <PackageProjectUrl>https://github.com/chaowlert/ExpressionDebugger</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/chaowlert/ExpressionDebugger</RepositoryUrl>
+    <PackageTags>expression;linq;debug</PackageTags>
+    <PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522656/41e28a6e-432f-11e7-9cae-7856f927d1a1.png</PackageIconUrl>
+    <SignAssembly>True</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <AssemblyOriginatorKeyFile>ExpressionTranslator.snk</AssemblyOriginatorKeyFile>
+    <Version>2.4.3</Version>
+    <RootNamespace>ExpressionDebugger</RootNamespace>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">	
+    <Reference Include="System" />	
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">	
+    <Reference Include="System" />	
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">	
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />	
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.Experimental" Version="6.0.0" />
+  </ItemGroup>
+</Project>
