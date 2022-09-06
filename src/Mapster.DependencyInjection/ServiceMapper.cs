@@ -13,7 +13,7 @@ namespace MapsterMapper
             _serviceProvider = serviceProvider;
         }
 
-        public override TypeAdapterBuilder<TSource> From<TSource>(TSource source)
+        public override ITypeAdapterBuilder<TSource> From<TSource>(TSource source)
         {
             return base.From(source)
                 .AddParameters(DI_KEY, _serviceProvider);
