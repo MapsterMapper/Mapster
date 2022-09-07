@@ -12,7 +12,7 @@ namespace Mapster
 {
     public static class TypeAdapterBuilderExtensions
     {
-        public static TypeAdapterBuilder<TSource> EntityFromContext<TSource>(this TypeAdapterBuilder<TSource> builder, DbContext context)
+        public static ITypeAdapterBuilder<TSource> EntityFromContext<TSource>(this ITypeAdapterBuilder<TSource> builder, DbContext context)
         {
             const string dbKey = "Mapster.EFCore.db";
             return builder

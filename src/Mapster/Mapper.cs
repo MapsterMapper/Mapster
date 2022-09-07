@@ -16,9 +16,9 @@ namespace MapsterMapper
             Config = config;
         }
 
-        public virtual TypeAdapterBuilder<TSource> From<TSource>(TSource source)
+        public virtual ITypeAdapterBuilder<TSource> From<TSource>(TSource source)
         {
-            return new TypeAdapterBuilder<TSource>(source, Config);
+            return TypeAdapter.BuildAdapter(source, Config);
         }
 
         public virtual TDestination Map<TDestination>(object source)

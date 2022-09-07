@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Mapster
 {
-    public class TypeAdapterBuilder<TSource> : IAdapterBuilder<TSource>
+    public class TypeAdapterBuilder<TSource> : ITypeAdapterBuilder<TSource>
     {
         TSource Source { get; }
         TSource IAdapterBuilder<TSource>.Source => this.Source;
@@ -26,7 +26,7 @@ namespace Mapster
         }
 
         [SuppressMessage("ReSharper", "ExplicitCallerInfoArgument")]
-        public TypeAdapterBuilder<TSource> ForkConfig(Action<TypeAdapterConfig> action,
+        public ITypeAdapterBuilder<TSource> ForkConfig(Action<TypeAdapterConfig> action,
 #if !NET40
             [CallerFilePath]
 #endif
@@ -40,7 +40,7 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterBuilder<TSource> AddParameters(string name, object value)
+        public ITypeAdapterBuilder<TSource> AddParameters(string name, object value)
         {
             this.Parameters.Add(name, value);
             return this;
