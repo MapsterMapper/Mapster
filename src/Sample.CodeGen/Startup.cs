@@ -1,4 +1,6 @@
+#if NET6_0
 using Hellang.Middleware.ProblemDetails;
+#endif
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
@@ -27,6 +29,7 @@ namespace Sample.CodeGen
                 .AddNewtonsoftJson();
             services.AddDbContext<SchoolContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            
             services.AddProblemDetails();
             services.Scan(selector => selector.FromCallingAssembly()
                 .AddClasses().AsMatchingInterface().WithSingletonLifetime());
@@ -35,7 +38,9 @@ namespace Sample.CodeGen
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            #if NET6_0
             app.UseProblemDetails();
+            #endif
             app.UseRouting();
             app.UseAuthorization();
             app.UseMvc();
