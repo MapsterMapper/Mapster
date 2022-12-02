@@ -5,9 +5,15 @@ Writing mapping methods is a machine job. Do not waste your time, let Mapster do
 
 [![NuGet](https://img.shields.io/nuget/v/Mapster.svg)](https://www.nuget.org/packages/Mapster)
 
-### Get it
+### Installation
+Install Mapster with the NuGet CLI:
 ```
-PM> Install-Package Mapster
+Install-Package Mapster
+```
+
+Or use the .NET core CLI to install Mapster:
+```
+dotnet add package Mapster
 ```
 
 ### Basic usage
