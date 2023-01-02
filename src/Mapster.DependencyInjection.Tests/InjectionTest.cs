@@ -25,7 +25,7 @@ namespace Mapster.DependencyInjection.Tests
             using (var scope = sp.CreateScope())
             {
                 var mapper = scope.ServiceProvider.GetService<IMapper>();
-                var poco = new Poco {Id = "bar"};
+                var poco = new Poco { Id = "bar" };
                 var dto = mapper.Map<Poco, Dto>(poco);
                 dto.Name.ShouldBe("foo");
             }
@@ -34,9 +34,8 @@ namespace Mapster.DependencyInjection.Tests
         [TestMethod, ExpectedException(typeof(InvalidOperationException))]
         public void NoServiceAdapter_InjectionError()
         {
-            var config = new TypeAdapterConfig();
-            config.NewConfig<Poco, Dto>()
-                .Map(dto => dto.Name, _ => MapContext.Current.GetService<IMockService>().GetName());
+            var expectedValue = MapContext.Current.GetService<IMockService>().GetName();
+            var config = ConfigureMapping(expectedValue);
 
             IServiceCollection sc = new ServiceCollection();
             sc.AddScoped<IMockService, MockService>();
@@ -46,15 +45,39 @@ namespace Mapster.DependencyInjection.Tests
             sc.AddScoped<IMapper, Mapper>();
 
             var sp = sc.BuildServiceProvider();
-            using (var scope = sp.CreateScope())
-            {
-                var mapper = scope.ServiceProvider.GetService<IMapper>();
-                var poco = new Poco {Id = "bar"};
-                var dto = mapper.Map<Poco, Dto>(poco);
-                dto.Name.ShouldBe("foo");
-            }
+            using var scope = sp.CreateScope();
+            var mapper = scope.ServiceProvider.GetService<IMapper>();
+            MapToDto(mapper, expectedValue);
         }
 
+        private static TypeAdapterConfig ConfigureMapping(string expectedValue)
+        {
+            var config = new TypeAdapterConfig();
+            config.NewConfig<Poco, Dto>()
+                .Map(dto => dto.Name, _ => expectedValue);
+            return config;
+        }
+
+        private static void MapToDto(IMapper mapper, string expectedValue)
+        {
+            var poco = new Poco { Id = "bar" };
+            var dto = mapper.Map<Poco, Dto>(poco);
+            dto.Name.ShouldBe(expectedValue);
+        }
+
+        [TestMethod]
+        public void GetMapperInstanceFromServiceCollection_ShouldNotFaceException()
+        {
+            const string expectedValue = "foobar";
+            var config = ConfigureMapping(expectedValue);
+            ServiceCollection serviceCollection = new();
+            serviceCollection.AddSingleton(config);
+            serviceCollection.AddMapster();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            using var scope = serviceProvider.CreateScope();
+            var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+            MapToDto(mapper, expectedValue);
+        }
     }
 
     public interface IMockService
@@ -74,6 +97,7 @@ namespace Mapster.DependencyInjection.Tests
     {
         public string Id { get; set; }
     }
+
     public class Dto
     {
         public string Id { get; set; }
