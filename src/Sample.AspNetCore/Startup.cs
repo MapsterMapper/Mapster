@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
 using ExpressionDebugger;
+#if NET6_0
 using Hellang.Middleware.ProblemDetails;
+#endif
 using Mapster;
 using Sample.AspNetCore.Controllers;
 using Sample.AspNetCore.Models;
@@ -69,7 +71,9 @@ namespace Sample.AspNetCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            #if NET6_0
             app.UseProblemDetails();
+            #endif
             app.UseRouting();
             app.UseAuthorization();
             app.UseMvc();
