@@ -196,10 +196,19 @@ namespace Mapster.Adapters
                 transformedSource = src;
             }
             var set = CreateInstantiationExpression(transformedSource, destination, arg);
-            if (destination != null && (this.UseTargetValue || arg.UseDestinationValue) && arg.GetConstructUsing()?.Parameters.Count != 2 && destination.CanBeNull())
+            if (destination != null && (this.UseTargetValue || arg.UseDestinationValue) && arg.GetConstructUsing()?.Parameters.Count != 2)
             {
-                //dest ?? new TDest();
-                set = Expression.Coalesce(destination, set);
+                if (destination.CanBeNull())
+                {
+                    //dest ?? new TDest();
+                    set = Expression.Coalesce(destination, set);
+                }
+                else if (destination.Type.IsValueType && !destination.CanBeNull())
+                {
+                    // Destination already exists, and this is a struct, so simply use the destination object
+                    set = destination;
+                }
+               
             }
 
             if (set.NodeType == ExpressionType.Throw)
