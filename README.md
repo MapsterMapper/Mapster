@@ -31,6 +31,22 @@ You create the object, Mapster maps to the object.
 sourceObject.Adapt(destObject);
 ```
 
+#### You can get IMapper instance via dependency injection so you do not have to change code when migrating to mapster from automapper
+Add Mapster to service collection
+```csharp
+services.AddMapster();
+```
+And use it with DI
+```csharp
+public class Test
+{
+    public Test(IMapper mapper)
+    {
+        var sourceObject = mapper.Adapt<Destination>();
+    }
+}
+```
+
 #### Queryable Extensions
 Mapster also provides extensions to map queryables.
 
