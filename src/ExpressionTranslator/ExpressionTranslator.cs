@@ -1896,7 +1896,7 @@ namespace ExpressionDebugger
                     }
 
                     // NOTE: type alias cannot solve all name conflicted case, user should use PrintFullTypeName
-                    // keep logic here for compatability
+                    // keep logic here for compatibility
                     if (_typeNames != null)
                     {
                         var names = _typeNames
