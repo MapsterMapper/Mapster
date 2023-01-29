@@ -28,7 +28,7 @@ namespace Mapster.Tool
         [Option('s', "skipExisting", Required = false, HelpText = "Set true to skip generating already existing files")]
         public bool SkipExistingFiles { get; set; }
 
-        [Option("nullableDirective", Required = false, HelpText = "Set true to add \"#nullable enable\" to the top of generated model files")]
+        [Option('N', "nullableDirective", Required = false, HelpText = "Set true to add \"#nullable enable\" to the top of generated model files")]
         public bool GenerateNullableDirective { get; set; }
 
         [Usage(ApplicationAlias = "dotnet mapster model")]
