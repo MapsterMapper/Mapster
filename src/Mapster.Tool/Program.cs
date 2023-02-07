@@ -133,7 +133,9 @@ namespace Mapster.Tool
                     }
                 }
 
-                var code = translator.ToString();
+                var code = opt.GenerateNullableDirective ?
+                    $"#nullable enable{Environment.NewLine}{translator}" :
+                    translator.ToString();
                 WriteFile(code, path);
             }
         }
@@ -266,7 +268,9 @@ namespace Mapster.Tool
                 });
             }
 
-            var code = translator.ToString();
+            var code = opt.GenerateNullableDirective ?
+                $"#nullable enable{Environment.NewLine}{translator}" :
+                translator.ToString();
             WriteFile(code, path);
 
             static Type getPropType(MemberInfo mem)
@@ -481,7 +485,9 @@ namespace Mapster.Tool
                     GenerateExtensionMethods(mapType, config, tuple, translator, type, mapperAttr.IsHelperClass);
                 }
 
-                var code = translator.ToString();
+                var code = opt.GenerateNullableDirective ?
+                    $"#nullable enable{Environment.NewLine}{translator}" :
+                    translator.ToString();
                 WriteFile(code, path);
             }
         }
