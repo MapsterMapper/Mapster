@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
 namespace Mapster
 {
     /// <summary>
@@ -15,7 +14,7 @@ namespace Mapster
     /// </remarks>
     public class MapContext
     {
-#if NETSTANDARD || NET6_0_OR_GREATER
+#if (NETSTANDARD || NET6_0_OR_GREATER) && !MAPSTER_FORCE_LEGACY_MAPCONTEXT
         private static readonly AsyncLocal<MapContext?> _localContext = new AsyncLocal<MapContext?>();
         public static MapContext? Current
         {
