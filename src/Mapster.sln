@@ -61,6 +61,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpressionTranslator", "Exp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateTest", "TemplateTest\TemplateTest.csproj", "{ED390145-FA22-46BA-86A6-9FA6AC869BA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapster.Tool.Tests", "Mapster.Tool.Tests\Mapster.Tool.Tests.csproj", "{E64E9CEB-8FB2-4012-BBA8-4C2B99FD54C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,10 @@ Global
 		{ED390145-FA22-46BA-86A6-9FA6AC869BA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED390145-FA22-46BA-86A6-9FA6AC869BA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED390145-FA22-46BA-86A6-9FA6AC869BA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E64E9CEB-8FB2-4012-BBA8-4C2B99FD54C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E64E9CEB-8FB2-4012-BBA8-4C2B99FD54C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E64E9CEB-8FB2-4012-BBA8-4C2B99FD54C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E64E9CEB-8FB2-4012-BBA8-4C2B99FD54C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +181,7 @@ Global
 		{D5DF0FB7-44A5-4326-9EC4-5B8F7FCCE00F} = {D33E5A90-ABCA-4B2D-8758-2873CC5AB847}
 		{3CB56440-5449-4DE5-A8D3-549C87C1B36A} = {EF7E343F-592E-4EAC-A0A4-92EB4B95CB89}
 		{ED390145-FA22-46BA-86A6-9FA6AC869BA4} = {D33E5A90-ABCA-4B2D-8758-2873CC5AB847}
+		{E64E9CEB-8FB2-4012-BBA8-4C2B99FD54C1} = {D33E5A90-ABCA-4B2D-8758-2873CC5AB847}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83B87DBA-277C-49F1-B597-E3B78C2C8275}
