@@ -16,21 +16,25 @@ namespace Mapster
 
         public readonly TypeAdapterSettings Settings;
         public readonly TypeAdapterConfig Config;
+
         public TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig config)
         {
             this.Settings = settings;
             this.Config = config;
         }
     }
+
     public static class TypeAdapterSetterExtensions
     {
         internal static void CheckCompiled<TSetter>(this TSetter setter) where TSetter : TypeAdapterSetter
         {
             if (setter.Settings.Compiled)
-                throw new InvalidOperationException("TypeAdapter.Adapt was already called, please clone or create new TypeAdapterConfig.");
+                throw new InvalidOperationException(
+                    "TypeAdapter.Adapt was already called, please clone or create new TypeAdapterConfig.");
         }
 
-        public static TSetter AddDestinationTransform<TSetter, TDestinationMember>(this TSetter setter, Expression<Func<TDestinationMember, TDestinationMember>> transform) where TSetter : TypeAdapterSetter
+        public static TSetter AddDestinationTransform<TSetter, TDestinationMember>(this TSetter setter,
+            Expression<Func<TDestinationMember, TDestinationMember>> transform) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -42,7 +46,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter AddDestinationTransform<TSetter>(this TSetter setter, DestinationTransform transform) where TSetter : TypeAdapterSetter
+        public static TSetter AddDestinationTransform<TSetter>(this TSetter setter, DestinationTransform transform)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -50,7 +55,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter Ignore<TSetter>(this TSetter setter, params string[] names) where TSetter : TypeAdapterSetter
+        public static TSetter Ignore<TSetter>(this TSetter setter, params string[] names)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -58,32 +64,40 @@ namespace Mapster
             {
                 setter.Settings.Ignore[name] = new IgnoreDictionary.IgnoreItem();
             }
+
             return setter;
         }
 
-        public static TSetter IgnoreAttribute<TSetter>(this TSetter setter, params Type[] types) where TSetter : TypeAdapterSetter
+        public static TSetter IgnoreAttribute<TSetter>(this TSetter setter, params Type[] types)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
             foreach (var type in types)
             {
-                setter.Settings.ShouldMapMember.Add((member, _) => member.HasCustomAttribute(type) ? (bool?)false : null);
+                setter.Settings.ShouldMapMember.Add(
+                    (member, _) => member.HasCustomAttribute(type) ? (bool?)false : null);
             }
+
             return setter;
         }
 
-        public static TSetter IncludeAttribute<TSetter>(this TSetter setter, params Type[] types) where TSetter : TypeAdapterSetter
+        public static TSetter IncludeAttribute<TSetter>(this TSetter setter, params Type[] types)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
             foreach (var type in types)
             {
-                setter.Settings.ShouldMapMember.Add((member, _) => member.HasCustomAttribute(type) ? (bool?)true : null);
+                setter.Settings.ShouldMapMember.Add((member, _) =>
+                    member.HasCustomAttribute(type) ? (bool?)true : null);
             }
+
             return setter;
         }
 
-        public static TSetter IgnoreMember<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, bool> predicate) where TSetter : TypeAdapterSetter
+        public static TSetter IgnoreMember<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, bool> predicate)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -91,7 +105,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter IncludeMember<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, bool> predicate) where TSetter : TypeAdapterSetter
+        public static TSetter IncludeMember<TSetter>(this TSetter setter,
+            Func<IMemberModel, MemberSide, bool> predicate) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -99,7 +114,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter ShallowCopyForSameType<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter ShallowCopyForSameType<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -107,7 +123,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter EnumMappingStrategy<TSetter>(this TSetter setter, EnumMappingStrategy strategy) where TSetter : TypeAdapterSetter
+        public static TSetter EnumMappingStrategy<TSetter>(this TSetter setter, EnumMappingStrategy strategy)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -115,7 +132,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter IgnoreNullValues<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter IgnoreNullValues<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -123,7 +141,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter PreserveReference<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter PreserveReference<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -131,7 +150,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter NameMatchingStrategy<TSetter>(this TSetter setter, NameMatchingStrategy value) where TSetter : TypeAdapterSetter
+        public static TSetter NameMatchingStrategy<TSetter>(this TSetter setter, NameMatchingStrategy value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -174,7 +194,8 @@ namespace Mapster
         }
 
         public static TSetter Map<TSetter>(
-            this TSetter setter, string destinationMemberName, string sourceMemberName) where TSetter : TypeAdapterSetter
+            this TSetter setter, string destinationMemberName, string sourceMemberName)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -188,7 +209,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter EnableNonPublicMembers<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter EnableNonPublicMembers<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -196,7 +218,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter IgnoreNonMapped<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter IgnoreNonMapped<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -204,7 +227,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter AvoidInlineMapping<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter AvoidInlineMapping<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -212,7 +236,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter RequireDestinationMemberSource<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter RequireDestinationMemberSource<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -220,7 +245,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string?> func) where TSetter : TypeAdapterSetter
+        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, string?> func)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -228,7 +254,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, string?> func) where TSetter : TypeAdapterSetter
+        public static TSetter GetMemberName<TSetter>(this TSetter setter, Func<IMemberModel, MemberSide, string?> func)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -236,7 +263,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter MapToConstructor<TSetter>(this TSetter setter, bool value) where TSetter : TypeAdapterSetter
+        public static TSetter MapToConstructor<TSetter>(this TSetter setter, bool value)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -260,7 +288,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter UseDestinationValue<TSetter>(this TSetter setter, Func<IMemberModel, bool> func) where TSetter : TypeAdapterSetter
+        public static TSetter UseDestinationValue<TSetter>(this TSetter setter, Func<IMemberModel, bool> func)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -268,7 +297,8 @@ namespace Mapster
             return setter;
         }
 
-        internal static TSetter Include<TSetter>(this TSetter setter, Type sourceType, Type destType) where TSetter : TypeAdapterSetter
+        internal static TSetter Include<TSetter>(this TSetter setter, Type sourceType, Type destType)
+            where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
 
@@ -276,7 +306,9 @@ namespace Mapster
             {
                 Priority = arg =>
                     arg.SourceType == sourceType &&
-                    arg.DestinationType == destType ? (int?)100 : null,
+                    arg.DestinationType == destType
+                        ? (int?)100
+                        : null,
                 Settings = setter.Settings
             });
 
@@ -285,7 +317,8 @@ namespace Mapster
             return setter;
         }
 
-        public static TSetter ApplyAdaptAttribute<TSetter>(this TSetter setter, BaseAdaptAttribute attr) where TSetter : TypeAdapterSetter
+        public static TSetter ApplyAdaptAttribute<TSetter>(this TSetter setter, BaseAdaptAttribute attr)
+            where TSetter : TypeAdapterSetter
         {
             if (attr.IgnoreAttributes != null)
                 setter.IgnoreAttribute(attr.IgnoreAttributes);
@@ -296,6 +329,7 @@ namespace Mapster
                     .Intersect(attr.IgnoreNoAttributes)
                     .Any());
             }
+
             if (attr.IgnoreNamespaces != null)
             {
                 foreach (var ns in attr.IgnoreNamespaces)
@@ -303,6 +337,7 @@ namespace Mapster
                     setter.IgnoreMember((member, _) => member.Type.Namespace?.StartsWith(ns) == true);
                 }
             }
+
             if (attr.MaxDepth > 0)
                 setter.MaxDepth(attr.MaxDepth);
             if (attr.GetBooleanSettingValues(nameof(attr.IgnoreNullValues)) != null)
@@ -323,7 +358,8 @@ namespace Mapster
     {
         internal TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
             : base(settings, parentConfig)
-        { }
+        {
+        }
 
         public TypeAdapterSetter<TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
         {
@@ -333,6 +369,7 @@ namespace Mapster
             {
                 Settings.Ignore[member.GetMemberPath()!] = new IgnoreDictionary.IgnoreItem();
             }
+
             return this;
         }
 
@@ -342,7 +379,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)));
             if (member.IsIdentity())
             {
                 Settings.ExtraSources.Add(invoker);
@@ -421,20 +458,21 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TDestination> MapToConstructor(ConstructorInfo ctor)
+        public TypeAdapterSetter<TDestination> MapToConstructor(ConstructorInfo? ctor)
         {
             this.CheckCompiled();
-
-            if (ctor != null)
+            Settings.MapToConstructor = ctor;
+            if (ctor == null)
             {
-                if (!typeof(TDestination).GetTypeInfo().IsAssignableFrom(ctor.DeclaringType!.GetTypeInfo()))
-                    throw new ArgumentException("Constructor cannot be assigned to type TDestination", nameof(ctor));
-
-                if (ctor.DeclaringType!.GetTypeInfo().IsAbstract)
-                    throw new ArgumentException("Constructor of abstract type cannot be created", nameof(ctor));
+                return this;
             }
 
-            this.Settings.MapToConstructor = ctor;
+            if (!typeof(TDestination).GetTypeInfo().IsAssignableFrom(ctor.DeclaringType!.GetTypeInfo()))
+                throw new ArgumentException("Constructor cannot be assigned to type TDestination", nameof(ctor));
+
+            if (ctor.DeclaringType!.GetTypeInfo().IsAbstract)
+                throw new ArgumentException("Constructor of abstract type cannot be created", nameof(ctor));
+
             return this;
         }
 
@@ -454,7 +492,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            var lambda = Expression.Lambda(action.Body, 
+            var lambda = Expression.Lambda(action.Body,
                 Expression.Parameter(typeof(object), SourceParameterName),
                 action.Parameters[0]);
             Settings.AfterMappingFactories.Add(arg => lambda);
@@ -462,16 +500,19 @@ namespace Mapster
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell",
+        "S4136:Method overloads should be grouped together", Justification = "<Pending>")]
     public class TypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TDestination>
     {
         internal TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
             : base(settings, parentConfig)
-        { }
+        {
+        }
 
         #region replace for chaining
 
-        public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public new TypeAdapterSetter<TSource, TDestination> Ignore(
+            params Expression<Func<TDestination, object>>[] members)
         {
             return (TypeAdapterSetter<TSource, TDestination>)base.Ignore(members);
         }
@@ -490,7 +531,8 @@ namespace Mapster
             return (TypeAdapterSetter<TSource, TDestination>)base.Map(destinationMember, sourceMemberName);
         }
 
-        public new TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
+        public new TypeAdapterSetter<TSource, TDestination> ConstructUsing(
+            Expression<Func<TDestination>> constructUsing)
         {
             return (TypeAdapterSetter<TSource, TDestination>)base.ConstructUsing(constructUsing);
         }
@@ -507,7 +549,7 @@ namespace Mapster
 
         public new TypeAdapterSetter<TSource, TDestination> MapToConstructor(ConstructorInfo ctor)
         {
-            return (TypeAdapterSetter<TSource, TDestination>) base.MapToConstructor(ctor);
+            return (TypeAdapterSetter<TSource, TDestination>)base.MapToConstructor(ctor);
         }
 
         public new TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(Expression<Action<TDestination>> action)
@@ -517,7 +559,7 @@ namespace Mapster
 
         public new TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TDestination>> action)
         {
-            return (TypeAdapterSetter<TSource, TDestination>) base.AfterMappingInline(action);
+            return (TypeAdapterSetter<TSource, TDestination>)base.AfterMappingInline(action);
         }
 
         #endregion
@@ -533,6 +575,7 @@ namespace Mapster
                 var name = member.GetMemberPath()!;
                 Settings.Ignore.Merge(name, new IgnoreDictionary.IgnoreItem(condition, false));
             }
+
             return this;
         }
 
@@ -546,6 +589,7 @@ namespace Mapster
             {
                 Settings.Ignore.Merge(member, new IgnoreDictionary.IgnoreItem(condition, false));
             }
+
             return this;
         }
 
@@ -589,7 +633,8 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TSource, TDestination>> constructUsing)
+        public TypeAdapterSetter<TSource, TDestination> ConstructUsing(
+            Expression<Func<TSource, TDestination>> constructUsing)
         {
             this.CheckCompiled();
 
@@ -598,7 +643,8 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TSource, TDestination?, TDestination>> constructUsing)
+        public TypeAdapterSetter<TSource, TDestination> ConstructUsing(
+            Expression<Func<TSource, TDestination?, TDestination>> constructUsing)
         {
             this.CheckCompiled();
 
@@ -607,7 +653,8 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> MapWith(Expression<Func<TSource, TDestination>> converterFactory, bool applySettings = false)
+        public TypeAdapterSetter<TSource, TDestination> MapWith(
+            Expression<Func<TSource, TDestination>> converterFactory, bool applySettings = false)
         {
             this.CheckCompiled();
 
@@ -623,14 +670,16 @@ namespace Mapster
                 if (Settings.ConverterToTargetFactory == null)
                 {
                     var dest = Expression.Parameter(typeof(TDestination));
-                    Settings.ConverterToTargetFactory = arg => Expression.Lambda(converterFactory.Body, converterFactory.Parameters[0], dest);
+                    Settings.ConverterToTargetFactory = arg =>
+                        Expression.Lambda(converterFactory.Body, converterFactory.Parameters[0], dest);
                 }
             }
 
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(Expression<Func<TSource, TDestination, TDestination>> converterFactory, bool applySettings = false)
+        public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(
+            Expression<Func<TSource, TDestination, TDestination>> converterFactory, bool applySettings = false)
         {
             this.CheckCompiled();
 
@@ -641,6 +690,7 @@ namespace Mapster
             }
             else
                 Settings.ConverterToTargetFactory = arg => converterFactory;
+
             return this;
         }
 
@@ -671,7 +721,8 @@ namespace Mapster
         /// <returns>
         /// The current <see cref="TypeAdapterSetter{TSource, TDestination}"/> instance.
         /// </returns>
-        public TypeAdapterSetter<TSource, TDestination> BeforeMapping(Action<TSource, TDestination, TDestination?> action)
+        public TypeAdapterSetter<TSource, TDestination> BeforeMapping(
+            Action<TSource, TDestination, TDestination?> action)
         {
             this.CheckCompiled();
 
@@ -717,7 +768,8 @@ namespace Mapster
         /// <returns>
         /// The current <see cref="TypeAdapterSetter{TSource, TDestination}"/> instance.
         /// </returns>
-        public TypeAdapterSetter<TSource, TDestination> AfterMapping(Action<TSource, TDestination, TDestination?> action)
+        public TypeAdapterSetter<TSource, TDestination> AfterMapping(
+            Action<TSource, TDestination, TDestination?> action)
         {
             this.CheckCompiled();
 
@@ -736,7 +788,8 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(Expression<Action<TSource, TDestination>> action)
+        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(
+            Expression<Action<TSource, TDestination>> action)
         {
             this.CheckCompiled();
 
@@ -755,7 +808,8 @@ namespace Mapster
         /// <returns>
         /// The current <see cref="TypeAdapterSetter{TSource, TDestination}"/> instance.
         /// </returns>
-        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(Expression<Action<TSource, TDestination, TDestination?>> action)
+        public TypeAdapterSetter<TSource, TDestination> BeforeMappingInline(
+            Expression<Action<TSource, TDestination, TDestination?>> action)
         {
             this.CheckCompiled();
 
@@ -763,7 +817,8 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TSource, TDestination>> action)
+        public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(
+            Expression<Action<TSource, TDestination>> action)
         {
             this.CheckCompiled();
 
@@ -782,7 +837,8 @@ namespace Mapster
         /// <returns>
         /// The current <see cref="TypeAdapterSetter{TSource, TDestination}"/> instance.
         /// </returns>
-        public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(Expression<Action<TSource, TDestination, TDestination?>> action)
+        public TypeAdapterSetter<TSource, TDestination> AfterMappingInline(
+            Expression<Action<TSource, TDestination, TDestination?>> action)
         {
             this.CheckCompiled();
 
@@ -791,8 +847,8 @@ namespace Mapster
         }
 
         public TypeAdapterSetter<TSource, TDestination> Include<TDerivedSource, TDerivedDestination>()
-            where TDerivedSource: class, TSource
-            where TDerivedDestination: class, TDestination
+            where TDerivedSource : class, TSource
+            where TDerivedDestination : class, TDestination
         {
             return this.Include(typeof(TDerivedSource), typeof(TDerivedDestination));
         }
@@ -808,12 +864,14 @@ namespace Mapster
                 throw new InvalidCastException("In order to use inherits, TSource must be inherited from TBaseSource.");
 
             if (!baseDestinationType.GetTypeInfo().IsAssignableFrom(typeof(TDestination).GetTypeInfo()))
-                throw new InvalidCastException("In order to use inherits, TDestination must be inherited from TBaseDestination.");
+                throw new InvalidCastException(
+                    "In order to use inherits, TDestination must be inherited from TBaseDestination.");
 
             if (Config.RuleMap.TryGetValue(new TypeTuple(baseSourceType, baseDestinationType), out var rule))
             {
                 Settings.Apply(rule.Settings);
             }
+
             return this;
         }
 
@@ -863,7 +921,8 @@ namespace Mapster
             DestinationToSourceSetter.Settings.SkipDestinationMemberCheck = true;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> AddDestinationTransform<TDestinationMember>(Expression<Func<TDestinationMember, TDestinationMember>> transform)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> AddDestinationTransform<TDestinationMember>(
+            Expression<Func<TDestinationMember, TDestinationMember>> transform)
         {
             SourceToDestinationSetter.AddDestinationTransform(transform);
             if (typeof(TSource) != typeof(TDestination))
@@ -886,6 +945,7 @@ namespace Mapster
             {
                 DestinationToSourceSetter.IgnoreMember((model, _) => model.Name == name);
             }
+
             return this;
         }
 
@@ -903,17 +963,21 @@ namespace Mapster
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> IgnoreMember(Func<IMemberModel, MemberSide, bool> predicate)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IgnoreMember(
+            Func<IMemberModel, MemberSide, bool> predicate)
         {
             SourceToDestinationSetter.IgnoreMember(predicate);
-            DestinationToSourceSetter.IgnoreMember((model, side) => predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
+            DestinationToSourceSetter.IgnoreMember((model, side) =>
+                predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> IncludeMember(Func<IMemberModel, MemberSide, bool> predicate)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> IncludeMember(
+            Func<IMemberModel, MemberSide, bool> predicate)
         {
             SourceToDestinationSetter.IncludeMember(predicate);
-            DestinationToSourceSetter.IncludeMember((model, side) => predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
+            DestinationToSourceSetter.IncludeMember((model, side) =>
+                predicate(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
             return this;
         }
 
@@ -965,7 +1029,8 @@ namespace Mapster
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map(string destinationMemberName, string sourceMemberName)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Map(string destinationMemberName,
+            string sourceMemberName)
         {
             SourceToDestinationSetter.Map(destinationMemberName, sourceMemberName);
             DestinationToSourceSetter.Map(sourceMemberName, destinationMemberName);
@@ -1000,10 +1065,12 @@ namespace Mapster
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> GetMemberName(Func<IMemberModel, MemberSide, string?> func)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> GetMemberName(
+            Func<IMemberModel, MemberSide, string?> func)
         {
             SourceToDestinationSetter.GetMemberName(func);
-            DestinationToSourceSetter.GetMemberName((model, side) => func(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
+            DestinationToSourceSetter.GetMemberName((model, side) =>
+                func(model, side == MemberSide.Source ? MemberSide.Destination : MemberSide.Source));
             return this;
         }
 
@@ -1014,13 +1081,15 @@ namespace Mapster
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Ignore(
+            params Expression<Func<TDestination, object>>[] members)
         {
             foreach (var member in members)
             {
                 var path = member.GetMemberPath()!;
                 this.Ignore(path);
             }
+
             return this;
         }
 
