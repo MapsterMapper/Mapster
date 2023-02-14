@@ -643,7 +643,7 @@ namespace Mapster
 
         public IList<IRegister> Scan(params Assembly[] assemblies)
         {
-            List<IRegister> registers = assemblies.Select(assembly => assembly.GetTypes()
+            List<IRegister> registers = assemblies.Select(assembly => assembly.GetLoadableTypes()
                 .Where(x => typeof(IRegister).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo()) && x.GetTypeInfo().IsClass && !x.GetTypeInfo().IsAbstract))
                 .SelectMany(registerTypes =>
                     registerTypes.Select(registerType => (IRegister)Activator.CreateInstance(registerType))).ToList();
