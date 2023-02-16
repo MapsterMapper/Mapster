@@ -129,7 +129,18 @@ namespace Mapster.Adapters
                     }
                     else
                     {
-                        adapt = member.DestinationMember.SetExpression(destination, adapt);
+                        //Todo Try catch block should be removed after pull request approved
+                        try
+                        {
+                            var destinationPropertyInfo = (PropertyInfo)member.DestinationMember.Info!;
+                            adapt = destinationPropertyInfo.IsInitOnly()
+                                ? SetValueByReflection(destination, (MemberExpression)adapt, arg.DestinationType)
+                                : member.DestinationMember.SetExpression(destination, adapt);
+                        }
+                        catch (Exception e)
+                        {
+                            adapt = member.DestinationMember.SetExpression(destination, adapt);
+                        }
                     }
                 }
                 else if (!adapt.IsComplex())
@@ -146,6 +157,7 @@ namespace Mapster.Adapters
                         tuple = Tuple.Create(new List<Expression>(), body);
                         conditions[member.Ignore.Condition] = tuple;
                     }
+
                     tuple.Item1.Add(adapt);
                 }
                 else
@@ -164,6 +176,21 @@ namespace Mapster.Adapters
             }
 
             return lines.Count > 0 ? (Expression)Expression.Block(lines) : Expression.Empty();
+        }
+
+        private static Expression SetValueByReflection(Expression destination, MemberExpression adapt,
+            Type destinationType)
+        {
+            var memberName = adapt.Member.Name;
+            var typeofExpression = Expression.Constant(destinationType);
+            var getPropertyMethod = typeof(Type).GetMethod("GetProperty", new[] { typeof(string) })!;
+            var getPropertyExpression = Expression.Call(typeofExpression, getPropertyMethod,
+                Expression.Constant(memberName));
+            var setValueMethod =
+                typeof(PropertyInfo).GetMethod("SetValue", new[] { typeof(object), typeof(object) })!;
+            var memberAsObject = adapt.To(typeof(object));
+            return Expression.Call(getPropertyExpression, setValueMethod,
+                new[] { destination, memberAsObject });
         }
 
         protected override Expression? CreateInlineExpression(Expression source, CompileArgument arg)
