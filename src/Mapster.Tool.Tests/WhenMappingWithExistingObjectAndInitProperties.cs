@@ -10,16 +10,17 @@ namespace Mapster.Tool.Tests;
 public class WhenMappingWithExistingObjectAndInitProperties : TestBase
 {
     [Fact]
-    public void Map()
+    public void MapWithReflection()
     {
         TypeAdapterConfig.GlobalSettings
             .Scan(Assembly.GetExecutingAssembly());
         
         var userMapper = GetMappingInterface<IUserMapper>();
-        var user = new _User { Name = "Aref", Id = 1 };
+        var expected = "Aref";
+        var user = new _User { Name = expected, Id = 1 };
         var dto = new _UserDto();
         userMapper.MapTo(user, dto);
-        dto.Name.Should().Be("Aref");
+        dto.Name.Should().Be(expected);
     }
 }
 
