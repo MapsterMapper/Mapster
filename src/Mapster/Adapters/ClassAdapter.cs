@@ -236,14 +236,6 @@ namespace Mapster.Adapters
                 {
                     value = member.Getter.NotNullReturn(value);
                 }
-
-                var destinationPropertyInfo = (PropertyInfo)member.DestinationMember.Info!;
-                if (destinationPropertyInfo.IsInitOnly())
-                {
-                    //Todo build expression here instead of binding value
-                    // arg.DestinationType.GetProperty(destinationPropertyInfo.Name).SetValue();
-                }
-                
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, value);
                 lines.Add(bind);
             }
