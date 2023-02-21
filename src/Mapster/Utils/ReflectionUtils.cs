@@ -374,5 +374,15 @@ namespace Mapster
                 type = type.GetTypeInfo().BaseType;
             } while (type != null && type != typeof(object));
         }
+        
+        public static bool IsInitOnly(this PropertyInfo propertyInfo)
+        {
+            var setMethod = propertyInfo.SetMethod;
+            if (setMethod == null)
+                return false;
+
+            var isExternalInitType = typeof(System.Runtime.CompilerServices.IsExternalInit);
+            return setMethod.ReturnParameter.GetRequiredCustomModifiers().Contains(isExternalInitType);
+        }
     }
 }
