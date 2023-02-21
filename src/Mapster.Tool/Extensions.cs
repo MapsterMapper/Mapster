@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mapster.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -174,7 +175,7 @@ namespace Mapster.Tool
 
         public static void Scan(this CodeGenerationConfig config, Assembly assembly)
         {
-            var registers = assembly.GetTypes()
+            var registers = assembly.GetLoadableTypes()
                 .Where(x => typeof(ICodeGenerationRegister).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo()) &&
                             x.GetTypeInfo().IsClass && !x.GetTypeInfo().IsAbstract)
                 .Select(type => (ICodeGenerationRegister) Activator.CreateInstance(type)!);
