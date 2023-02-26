@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -7,22 +8,17 @@ namespace Mapster.Utils;
 public class InterfaceDynamicMapper
 {
     private readonly TypeAdapterConfig _config;
-    private readonly Assembly _assembly;
+    private readonly List<Type> _types;
 
-    public InterfaceDynamicMapper(TypeAdapterConfig config, Assembly assembly)
+    public InterfaceDynamicMapper(TypeAdapterConfig config, List<Type> types)
     {
         _config = config;
-        _assembly = assembly;
+        _types = types;
     }
 
     internal void ApplyMappingFromAssembly()
     {
-        var types = _assembly.GetTypes()
-            .Where(t =>
-                t.GetInterfaces()
-                    .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapFrom<>)));
-
-        foreach (var type in types)
+        foreach (var type in _types)
         {
             var instance = Activator.CreateInstance(type);
             var method = GetMethod(type);
