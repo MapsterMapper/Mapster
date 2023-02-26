@@ -7,7 +7,7 @@
     <PackageTags>Mapster;DependencyInjection</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.DependencyInjection.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.1-pre01</Version>
+    <Version>1.0.1-pre02</Version>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />

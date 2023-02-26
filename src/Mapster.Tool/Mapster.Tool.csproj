@@ -10,7 +10,7 @@
     <PackageTags>Mapster;Tool</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
-    <Version>8.4.0-pre05</Version>
+    <Version>8.4.0-pre06</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
