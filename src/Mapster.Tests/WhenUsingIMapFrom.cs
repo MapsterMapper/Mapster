@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Mapster.Utils;
 using MapsterMapper;
@@ -14,7 +16,13 @@ public class WhenUsingIMapFrom
     public WhenUsingIMapFrom()
     {
         _mapper = new Mapper();
-        TypeAdapterConfig.GlobalSettings.ScanInheritedTypes(Assembly.GetExecutingAssembly());
+        var types = new List<Type>
+        {
+            typeof(SourceModel),
+            typeof(InheritedDestinationModel),
+            typeof(DestinationModel)
+        };
+        TypeAdapterConfig.GlobalSettings.ScanInheritedTypes(types);
     }
 
     [TestMethod]
