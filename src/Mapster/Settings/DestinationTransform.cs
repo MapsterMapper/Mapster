@@ -79,7 +79,7 @@ namespace Mapster
             return new DestinationTransform
             {
                 Condition = condition,
-                TransformFunc = this.TransformFunc
+                TransformFunc = TransformFunc
             };
         }
     }

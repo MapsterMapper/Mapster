@@ -8,7 +8,7 @@ namespace Mapster.Utils
 
         public override Expression? Visit(Expression? node)
         {
-            if (this.IsBlockExpression || node == null)
+            if (IsBlockExpression || node == null)
                 return node;
 
             switch (node.NodeType)
@@ -40,7 +40,7 @@ namespace Mapster.Utils
                 case ExpressionType.PreDecrementAssign:
                 case ExpressionType.PostIncrementAssign:
                 case ExpressionType.PostDecrementAssign:
-                    this.IsBlockExpression = true;
+                    IsBlockExpression = true;
                     return node;
             }
 

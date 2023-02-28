@@ -37,11 +37,11 @@ namespace Mapster.Models
 
         public Expression GetExpression(Expression source)
         {
-            return _getFn(source, Expression.Constant(this.Name));
+            return _getFn(source, Expression.Constant(Name));
         }
         public Expression SetExpression(Expression source, Expression value)
         {
-            return _setFn(source, Expression.Constant(this.Name), value);
+            return _setFn(source, Expression.Constant(Name), value);
         }
     }
 }
