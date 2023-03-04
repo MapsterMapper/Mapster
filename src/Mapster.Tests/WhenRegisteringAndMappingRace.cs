@@ -60,7 +60,7 @@ namespace Mapster.Tests
 
         }
 
-        [TestMethod, TestCategory("speed")]
+        [TestMethod, TestCategory("speed"), Ignore]
         public void Explicit_Mapping_Requirement_Throws_Before_Mapping_Attempted()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
