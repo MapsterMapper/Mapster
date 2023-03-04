@@ -22,8 +22,8 @@ jobs:
         dotnet --list-sdks
         dotnet --list-runtimes        
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/Mapster.sln
     - name: Build with dotnet
-      run: dotnet build --no-restore src/Mapster.sln
+      run: dotnet build --no-restore ./src/Mapster.sln
     - name: Run tests on .NET 7.0
-      run: dotnet test --framework=net7.0 --no-build --verbosity normal src/Mapster.sln
+      run: dotnet test --framework=net7.0 --no-build --verbosity normal ./src/Mapster.sln
