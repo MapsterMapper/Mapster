@@ -1,0 +1,27 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Build and Test
+
+on:
+  push:
+    branches: [ "master", "main", "development", "**" ]
+  pull_request:
+    branches: [ "master", "main", "development" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Show dotnet version
+      run: |
+        dotnet --list-sdks
+        dotnet --list-runtimes
+    - name: Build with dotnet
+      run: dotnet build ./src/Mapster.sln
+    - name: Run tests on .NET 7.0
+      run: dotnet test --verbosity normal ./src/Mapster.sln

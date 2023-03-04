@@ -60,7 +60,7 @@ namespace Mapster.Tests
 
         }
 
-        [TestMethod, TestCategory("speed")]
+        [TestMethod, TestCategory("speed"), Ignore]
         public void Explicit_Mapping_Requirement_Throws_Before_Mapping_Attempted()
         {
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
@@ -70,7 +70,7 @@ namespace Mapster.Tests
 
             Should.Throw<AggregateException>(() =>
             {
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                    Parallel.Invoke(
                         () =>

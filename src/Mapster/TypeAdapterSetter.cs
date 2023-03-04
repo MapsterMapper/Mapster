@@ -18,8 +18,8 @@ namespace Mapster
         public readonly TypeAdapterConfig Config;
         public TypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig config)
         {
-            this.Settings = settings;
-            this.Config = config;
+            Settings = settings;
+            Config = config;
         }
     }
     public static class TypeAdapterSetterExtensions
@@ -434,7 +434,7 @@ namespace Mapster
                     throw new ArgumentException("Constructor of abstract type cannot be created", nameof(ctor));
             }
 
-            this.Settings.MapToConstructor = ctor;
+            Settings.MapToConstructor = ctor;
             return this;
         }
 
@@ -835,17 +835,17 @@ namespace Mapster
 
         public TwoWaysTypeAdapterSetter<TSource, TDestination> TwoWays()
         {
-            return new TwoWaysTypeAdapterSetter<TSource, TDestination>(this.Config);
+            return new TwoWaysTypeAdapterSetter<TSource, TDestination>(Config);
         }
 
         public void Compile()
         {
-            this.Config.Compile(typeof(TSource), typeof(TDestination));
+            Config.Compile(typeof(TSource), typeof(TDestination));
         }
 
         public void CompileProjection()
         {
-            this.Config.CompileProjection(typeof(TSource), typeof(TDestination));
+            Config.CompileProjection(typeof(TSource), typeof(TDestination));
         }
     }
 
@@ -1019,7 +1019,7 @@ namespace Mapster
             foreach (var member in members)
             {
                 var path = member.GetMemberPath()!;
-                this.Ignore(path);
+                Ignore(path);
             }
             return this;
         }

@@ -12,12 +12,12 @@ namespace Mapster.Adapters
     {
         protected virtual int Score => 0;
         protected virtual ObjectType ObjectType => ObjectType.Primitive;
-        protected virtual bool CheckExplicitMapping => this.ObjectType == ObjectType.Class;
+        protected virtual bool CheckExplicitMapping => ObjectType == ObjectType.Class;
         protected virtual bool UseTargetValue => false;
 
         public virtual int? Priority(PreCompileArgument arg)
         {
-            return CanMap(arg) ? this.Score : (int?)null;
+            return CanMap(arg) ? Score : (int?)null;
         }
 
         protected abstract bool CanMap(PreCompileArgument arg);
@@ -45,11 +45,11 @@ namespace Mapster.Adapters
         {
             var rule = new TypeAdapterRule
             {
-                Priority = this.Priority,
+                Priority = Priority,
                 Settings = new TypeAdapterSettings
                 {
-                    ConverterFactory = this.CreateAdaptFunc,
-                    ConverterToTargetFactory = this.CreateAdaptToTargetFunc,
+                    ConverterFactory = CreateAdaptFunc,
+                    ConverterToTargetFactory = CreateAdaptToTargetFunc,
                 }
             };
             DecorateRule(rule);
@@ -82,7 +82,7 @@ namespace Mapster.Adapters
 
         protected virtual Expression CreateExpressionBody(Expression source, Expression? destination, CompileArgument arg)
         {
-            if (this.CheckExplicitMapping && arg.Context.Config.RequireExplicitMapping && !arg.ExplicitMapping)
+            if (CheckExplicitMapping && arg.Context.Config.RequireExplicitMapping && !arg.ExplicitMapping)
                 throw new InvalidOperationException("Implicit mapping is not allowed (check GlobalSettings.RequireExplicitMapping) and no configuration exists");
 
             var oldMaxDepth = arg.Context.MaxDepth;
@@ -96,9 +96,9 @@ namespace Mapster.Adapters
                 }
                 if (arg.Context.MaxDepth.HasValue)
                 {
-                    if (this.ObjectType != ObjectType.Primitive && arg.Context.Depth >= arg.Context.MaxDepth.Value)
+                    if (ObjectType != ObjectType.Primitive && arg.Context.Depth >= arg.Context.MaxDepth.Value)
                         return arg.DestinationType.CreateDefault();
-                    if (this.ObjectType == ObjectType.Class)
+                    if (ObjectType == ObjectType.Class)
                         arg.Context.Depth++;
                 }
 
@@ -196,7 +196,7 @@ namespace Mapster.Adapters
                 transformedSource = src;
             }
             var set = CreateInstantiationExpression(transformedSource, destination, arg);
-            if (destination != null && (this.UseTargetValue || arg.UseDestinationValue) && arg.GetConstructUsing()?.Parameters.Count != 2)
+            if (destination != null && (UseTargetValue || arg.UseDestinationValue) && arg.GetConstructUsing()?.Parameters.Count != 2)
             {
                 if (destination.CanBeNull())
                 {

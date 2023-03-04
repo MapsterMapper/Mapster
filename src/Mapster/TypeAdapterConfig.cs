@@ -93,10 +93,10 @@ namespace Mapster
 
         public TypeAdapterConfig()
         {
-            this.Rules = RulesTemplate.ToList();
+            Rules = RulesTemplate.ToList();
             var settings = new TypeAdapterSettings();
-            this.Default = new TypeAdapterSetter(settings, this);
-            this.Rules.Add(new TypeAdapterRule
+            Default = new TypeAdapterSetter(settings, this);
+            Rules.Add(new TypeAdapterRule
             {
                 Priority = arg => -100,
                 Settings = settings,
@@ -110,7 +110,7 @@ namespace Mapster
                 Priority = arg => canMap(arg.SourceType, arg.DestinationType, arg.MapType) ? (int?)25 : null,
                 Settings = new TypeAdapterSettings(),
             };
-            this.Rules.LockAdd(rule);
+            Rules.LockAdd(rule);
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
@@ -121,7 +121,7 @@ namespace Mapster
                 Priority = arg => canMap(arg) ? (int?)25 : null,
                 Settings = new TypeAdapterSettings(),
             };
-            this.Rules.LockAdd(rule);
+            Rules.LockAdd(rule);
             return new TypeAdapterSetter(rule.Settings, this);
         }
 
@@ -167,12 +167,12 @@ namespace Mapster
 
         private TypeAdapterSettings GetSettings(TypeTuple key)
         {
-            var rule = this.RuleMap.GetOrAdd(key, types =>
+            var rule = RuleMap.GetOrAdd(key, types =>
             {
                 var r = types.Source == typeof(void)
                     ? CreateDestinationTypeRule(types)
                     : CreateTypeTupleRule(types);
-                this.Rules.LockAdd(r);
+                Rules.LockAdd(r);
                 return r;
             });
             return rule.Settings;
@@ -184,10 +184,10 @@ namespace Mapster
             {
                 Priority = arg =>
                 {
-                    var score1 = GetSubclassDistance(arg.DestinationType, key.Destination, this.AllowImplicitDestinationInheritance);
+                    var score1 = GetSubclassDistance(arg.DestinationType, key.Destination, AllowImplicitDestinationInheritance);
                     if (score1 == null)
                         return null;
-                    var score2 = GetSubclassDistance(arg.SourceType, key.Source, this.AllowImplicitSourceInheritance);
+                    var score2 = GetSubclassDistance(arg.SourceType, key.Source, AllowImplicitSourceInheritance);
                     if (score2 == null)
                         return null;
                     return score1.Value + score2.Value;
@@ -250,7 +250,7 @@ namespace Mapster
                 var del = func(types);
                 hash[types] = del;
 
-                if (this.RuleMap.TryGetValue(types, out var rule))
+                if (RuleMap.TryGetValue(types, out var rule))
                     rule.Settings.Compiled = true;
                 return del;
 
@@ -336,7 +336,7 @@ namespace Mapster
                 fork = arg.Settings.Fork;
                 if (fork != null)
                 {
-                    var cloned = this.Clone();
+                    var cloned = Clone();
                     fork(cloned);
                     context.Configs.Push(cloned);
                     arg.Settings = cloned.GetMergedSettings(tuple, mapType);
@@ -442,7 +442,7 @@ namespace Mapster
 
         internal Expression CreateMapInvokeExpressionBody(Type sourceType, Type destinationType, Expression p)
         {
-            if (this.RequireExplicitMapping)
+            if (RequireExplicitMapping)
             {
                 var key = new TypeTuple(sourceType, destinationType);
                 _mapDict[key] = Compiler(CreateMapExpression(key, MapType.Map));
@@ -465,7 +465,7 @@ namespace Mapster
 
         internal Expression CreateMapToTargetInvokeExpressionBody(Type sourceType, Type destinationType, Expression p1, Expression p2)
         {
-            if (this.RequireExplicitMapping)
+            if (RequireExplicitMapping)
             {
                 var key = new TypeTuple(sourceType, destinationType);
                 _mapToTargetDict[key] = Compiler(CreateMapExpression(key, MapType.MapToTarget));
@@ -534,7 +534,7 @@ namespace Mapster
                 SourceType = tuple.Source,
                 DestinationType = tuple.Destination,
                 MapType = mapType,
-                ExplicitMapping = this.RuleMap.ContainsKey(tuple),
+                ExplicitMapping = RuleMap.ContainsKey(tuple),
             };
 
             //auto add setting if there is attr setting
@@ -546,9 +546,9 @@ namespace Mapster
             }
 
             var result = new TypeAdapterSettings();
-            lock (this.Rules)
+            lock (Rules)
             {
-                var rules = this.Rules.Reverse<TypeAdapterRule>().Concat(attrSettings);
+                var rules = Rules.Reverse<TypeAdapterRule>().Concat(attrSettings);
                 var settings = from rule in rules
                     let priority = rule.Priority(arg)
                     where priority != null
@@ -575,7 +575,7 @@ namespace Mapster
             {
                 SourceType = tuple.Source,
                 DestinationType = tuple.Destination,
-                ExplicitMapping = this.RuleMap.ContainsKey(tuple),
+                ExplicitMapping = RuleMap.ContainsKey(tuple),
                 MapType = mapType,
                 Context = context,
                 Settings = setting,
@@ -648,13 +648,13 @@ namespace Mapster
                 .SelectMany(registerTypes =>
                     registerTypes.Select(registerType => (IRegister)Activator.CreateInstance(registerType))).ToList();
 
-            this.Apply(registers);
+            Apply(registers);
             return registers;
         }
 
         public void Apply(IEnumerable<Lazy<IRegister>> registers)
         {
-            this.Apply(registers.Select(register => register.Value));
+            Apply(registers.Select(register => register.Value));
         }
 
         public void Apply(IEnumerable<IRegister> registers)
@@ -690,8 +690,8 @@ namespace Mapster
 
         private void Remove(TypeTuple key)
         {
-            if (this.RuleMap.TryRemove(key, out var rule))
-                this.Rules.LockRemove(rule);
+            if (RuleMap.TryRemove(key, out var rule))
+                Rules.LockRemove(rule);
             _mapDict.TryRemove(key, out _);
             _mapToTargetDict.TryRemove(key, out _);
             _projectionDict.TryRemove(key, out _);
@@ -728,7 +728,7 @@ namespace Mapster
             var key = $"{key1}|{key2}";
             return InlineConfigs.GetOrAdd(key, _ =>
             {
-                var cloned = this.Clone();
+                var cloned = Clone();
                 action(cloned);
                 return cloned;
             });

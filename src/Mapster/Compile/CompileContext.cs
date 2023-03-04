@@ -6,16 +6,16 @@ namespace Mapster
 {
     public class CompileContext
     {
-        public HashSet<TypeTuple> Running { get; } = new HashSet<TypeTuple>();
-        public Stack<TypeAdapterConfig> Configs { get; } = new Stack<TypeAdapterConfig>();
+        public HashSet<TypeTuple> Running { get; } = new();
+        public Stack<TypeAdapterConfig> Configs { get; } = new();
         public TypeAdapterConfig Config => Configs.Peek();
         public int? MaxDepth { get; set; }
         public int Depth { get; set; }
-        public HashSet<ParameterExpression> ExtraParameters { get; } = new HashSet<ParameterExpression>();
+        public HashSet<ParameterExpression> ExtraParameters { get; } = new();
 
         internal bool IsSubFunction()
         {
-            return this.MaxDepth.HasValue || this.ExtraParameters.Count > 0;
+            return MaxDepth.HasValue || ExtraParameters.Count > 0;
         }
 
         public CompileContext(TypeAdapterConfig config)

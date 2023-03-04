@@ -8,7 +8,7 @@ namespace Mapster.Adapters
 
         public virtual int? Priority(PreCompileArgument arg)
         {
-            return CanMap(arg) ? this.Score : (int?)null;
+            return CanMap(arg) ? Score : (int?)null;
         }
 
         protected abstract bool CanMap(PreCompileArgument arg);
@@ -26,10 +26,10 @@ namespace Mapster.Adapters
         public TypeAdapterRule CreateRule()
         {
             var settings = new TypeAdapterSettings();
-            settings.AfterMappingFactories.Add(this.CreateAfterMapFunc);
+            settings.AfterMappingFactories.Add(CreateAfterMapFunc);
             var rule = new TypeAdapterRule
             {
-                Priority = this.Priority,
+                Priority = Priority,
                 Settings = settings,
             };
             DecorateRule(rule);

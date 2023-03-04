@@ -28,13 +28,13 @@ namespace Mapster
         {
             foreach (var member in other)
             {
-                this.Merge(member.Key, member.Value);
+                Merge(member.Key, member.Value);
             }
         }
 
         internal void Merge(string name, in IgnoreItem src)
         {
-            if (src.Condition != null && this.TryGetValue(name, out var item))
+            if (src.Condition != null && TryGetValue(name, out var item))
             {
                 if (item.Condition == null)
                     return;

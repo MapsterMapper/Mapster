@@ -13,37 +13,37 @@ namespace Mapster.Models
 
         public InvokerModel? Next(ParameterExpression source, string destMemberName)
         {
-            if (!this.DestinationMemberName.StartsWith(destMemberName + "."))
+            if (!DestinationMemberName.StartsWith(destMemberName + "."))
                 return null;
 
             return new InvokerModel
             {
-                DestinationMemberName = this.DestinationMemberName.Substring(destMemberName.Length + 1),
-                Condition = this.IsChildPath || this.Condition == null
-                    ? this.Condition
-                    : Expression.Lambda(this.Condition.Apply(source), source),
-                Invoker = this.IsChildPath
-                    ? this.Invoker
-                    : Expression.Lambda(this.GetInvokingExpression(source), source),
-                SourceMemberName = this.SourceMemberName,
+                DestinationMemberName = DestinationMemberName.Substring(destMemberName.Length + 1),
+                Condition = IsChildPath || Condition == null
+                    ? Condition
+                    : Expression.Lambda(Condition.Apply(source), source),
+                Invoker = IsChildPath
+                    ? Invoker
+                    : Expression.Lambda(GetInvokingExpression(source), source),
+                SourceMemberName = SourceMemberName,
                 IsChildPath = true,
             };
         }
 
         public Expression GetInvokingExpression(Expression exp, MapType mapType = MapType.Map)
         {
-            if (this.IsChildPath)
-                return this.Invoker!.Body;
-            return this.SourceMemberName != null
-                ? ExpressionEx.PropertyOrFieldPath(exp, this.SourceMemberName)
-                : this.Invoker!.Apply(mapType, exp);
+            if (IsChildPath)
+                return Invoker!.Body;
+            return SourceMemberName != null
+                ? ExpressionEx.PropertyOrFieldPath(exp, SourceMemberName)
+                : Invoker!.Apply(mapType, exp);
         }
 
         public Expression? GetConditionExpression(Expression exp, MapType mapType = MapType.Map)
         {
-            return this.IsChildPath
-                ? this.Condition?.Body
-                : this.Condition?.Apply(mapType, exp);
+            return IsChildPath
+                ? Condition?.Body
+                : Condition?.Apply(mapType, exp);
         }
     }
 }

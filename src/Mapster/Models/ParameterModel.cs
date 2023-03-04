@@ -22,7 +22,7 @@ namespace Mapster.Models
 
         public Expression GetExpression(Expression source)
         {
-            return Expression.Variable(this.Type, _parameterInfo.Name);
+            return Expression.Variable(Type, _parameterInfo.Name);
         }
         public Expression SetExpression(Expression source, Expression value)
         {
