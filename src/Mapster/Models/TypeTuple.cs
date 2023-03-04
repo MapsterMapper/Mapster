@@ -36,8 +36,8 @@ namespace Mapster.Models
 
         public TypeTuple(Type source, Type destination)
         {
-            this.Source = source;
-            this.Destination = destination;
+            Source = source;
+            Destination = destination;
         }
     }
 }

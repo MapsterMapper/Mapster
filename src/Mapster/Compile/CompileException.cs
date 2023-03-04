@@ -7,14 +7,14 @@ namespace Mapster
     {
         public CompileException(CompileArgument argument, Exception innerException) : base(null, innerException)
         {
-            this.Argument = argument;
+            Argument = argument;
         }
 
         public override string Message => 
             "Error while compiling\n" +
-            $"source={this.Argument.SourceType}\n" +
-            $"destination={this.Argument.DestinationType}\n" +
-            $"type={this.Argument.MapType}";
+            $"source={Argument.SourceType}\n" +
+            $"destination={Argument.DestinationType}\n" +
+            $"type={Argument.MapType}";
 
         public CompileArgument Argument { get; }
         public LambdaExpression? Expression { get; internal set; }

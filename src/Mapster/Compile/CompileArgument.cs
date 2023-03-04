@@ -36,11 +36,9 @@ namespace Mapster
         private LambdaExpression? _constructUsing;
         internal LambdaExpression? GetConstructUsing()
         {
-            if (!_fetchConstructUsing)
-            {
-                _constructUsing = Settings.ConstructUsingFactory?.Invoke(this);
-                _fetchConstructUsing = true;
-            }
+            if (_fetchConstructUsing) return _constructUsing;
+            _constructUsing = Settings.ConstructUsingFactory?.Invoke(this);
+            _fetchConstructUsing = true;
             return _constructUsing;
         }
     }

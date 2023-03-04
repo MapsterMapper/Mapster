@@ -16,7 +16,7 @@ namespace ExpressionDebugger
 {
     public class ExpressionTranslator : ExpressionVisitor
     {
-        private const int Tabsize = 4;
+        private const int TabSize = 4;
         private StringWriter _writer;
         private int _indentLevel;
         private List<StringWriter>? _appendWriters;
@@ -49,19 +49,18 @@ namespace ExpressionDebugger
         private void ResetIndentLevel()
         {
             _indentLevel = 0;
-            if (Definitions?.TypeName != null)
-            {
+            if (Definitions?.TypeName == null) return;
+
+            _indentLevel++;
+            if (Definitions.Namespace != null)
                 _indentLevel++;
-                if (Definitions.Namespace != null)
-                    _indentLevel++;
-            }
         }
 
         public static ExpressionTranslator Create(Expression node, ExpressionDefinitions? definitions = null)
         {
             var translator = new ExpressionTranslator(definitions);
             if (node.NodeType == ExpressionType.Lambda)
-                translator.VisitLambda((LambdaExpression)node, 
+                translator.VisitLambda((LambdaExpression)node,
                     definitions?.IsExpression == true ? LambdaType.PublicLambda : LambdaType.PublicMethod,
                     definitions?.MethodName,
                     definitions?.IsInternal ?? false);
@@ -239,7 +238,7 @@ namespace ExpressionDebugger
         {
             _writer.WriteLine();
 
-            var spaceCount = _indentLevel * Tabsize;
+            var spaceCount = _indentLevel * TabSize;
             _writer.Write(new string(' ', spaceCount));
         }
 
@@ -385,6 +384,7 @@ namespace ExpressionDebugger
                     VisitGroup(node.Left, node.NodeType);
                     Write(" = ");
                 }
+
                 Write(Translate(typeof(Math)), ".Pow(");
                 left = Visit(node.Left)!;
                 Write(", ");
@@ -404,6 +404,7 @@ namespace ExpressionDebugger
         private byte? _nilCtx;
         private byte[]? _nil;
         private int _nilIndex;
+
         private string TranslateNullable(Type type, byte? nullableContext, byte[]? nullable)
         {
             try
@@ -419,6 +420,7 @@ namespace ExpressionDebugger
                 _nil = null;
             }
         }
+
         public string Translate(Type type)
         {
             var refNullable = !type.GetTypeInfo().IsValueType &&
@@ -426,6 +428,7 @@ namespace ExpressionDebugger
             var typeName = TranslateInner(type);
             return refNullable ? $"{typeName}?" : typeName;
         }
+
         private string TranslateInner(Type type)
         {
             if (type == typeof(bool))
@@ -487,13 +490,13 @@ namespace ExpressionDebugger
                 if (Definitions?.PrintFullTypeName != true && !string.IsNullOrEmpty(type.Namespace))
                     _usings.Add(type.Namespace);
             }
-            else if (!this.TypeNames.TryGetValue(type, out name))
+            else if (!TypeNames.TryGetValue(type, out name))
             {
                 name = GetTypeName(type);
 
                 if (Definitions?.PrintFullTypeName != true)
                 {
-                    var count = this.TypeNames.Count(kvp => GetTypeName(kvp.Key) == name);
+                    var count = TypeNames.Count(kvp => GetTypeName(kvp.Key) == name);
                     if (count > 0)
                     {
                         // NOTE: type alias cannot solve all name conflicted case, user should use PrintFullTypeName
@@ -506,7 +509,8 @@ namespace ExpressionDebugger
                     else if (!string.IsNullOrEmpty(type.Namespace))
                         _usings.Add(type.Namespace);
                 }
-                this.TypeNames.Add(type, name);
+
+                TypeNames.Add(type, name);
             }
 
             return name;
@@ -531,8 +535,8 @@ namespace ExpressionDebugger
 
         private string GetSingleTypeName(Type type)
         {
-            var name = type.DeclaringType == null && Definitions?.PrintFullTypeName == true 
-                ? type.FullName! 
+            var name = type.DeclaringType == null && Definitions?.PrintFullTypeName == true
+                ? type.FullName!
                 : type.Name;
             if (!type.GetTypeInfo().IsGenericType)
             {
@@ -542,13 +546,12 @@ namespace ExpressionDebugger
             var index = name.IndexOf('`');
             if (index >= 0)
                 name = name.Substring(0, index);
-            if (type.GetTypeInfo().IsGenericTypeDefinition)
-            {
-                var typeArgs = type.GetGenericArguments();
-                return name + "<" + new string(',', typeArgs.Length - 1) + ">";
-            }
 
-            return name + "<" + string.Join(", ", type.GetGenericArguments().Select(Translate)) + ">";
+            if (!type.GetTypeInfo().IsGenericTypeDefinition)
+                return $"{name}<{string.Join(", ", type.GetGenericArguments().Select(Translate))}>";
+
+            var typeArgs = type.GetGenericArguments();
+            return name + "<" + new string(',', typeArgs.Length - 1) + ">";
         }
 
         private static bool IsInline(Expression node)
@@ -599,14 +602,18 @@ namespace ExpressionDebugger
 
         private Expression VisitBody(Expression node, bool shouldReturn = false)
         {
-            if (node.NodeType == ExpressionType.Block)
-                return VisitBlock((BlockExpression)node, shouldReturn);
-
-            if (node.NodeType == ExpressionType.Default && node.Type == typeof(void))
-                return node;
-
-            var lines = VisitBlockBody(new List<Expression> { node }, shouldReturn);
-            return Expression.Block(lines);
+            switch (node.NodeType)
+            {
+                case ExpressionType.Block:
+                    return VisitBlock((BlockExpression)node, shouldReturn);
+                case ExpressionType.Default when node.Type == typeof(void):
+                    return node;
+                default:
+                {
+                    var lines = VisitBlockBody(new List<Expression> { node }, shouldReturn);
+                    return Expression.Block(lines);
+                }
+            }
         }
 
         private IEnumerable<Expression> VisitBlockBody(IList<Expression> exprs, bool shouldReturn)
@@ -635,8 +642,10 @@ namespace ExpressionDebugger
                 {
                     next = VisitMultiline(expr, shouldReturn && i == last);
                 }
+
                 lines.Add(next);
             }
+
             return lines;
         }
 
@@ -663,8 +672,10 @@ namespace ExpressionDebugger
                     arg = VisitNextLine(Translate(variable.Type) + " ", variable, ";");
                     hasDeclaration = true;
                 }
+
                 list.Add((ParameterExpression)arg);
             }
+
             if (hasDeclaration)
                 WriteLine();
 
@@ -684,6 +695,7 @@ namespace ExpressionDebugger
             {
                 Visit(" ", node.Variable);
             }
+
             Write(")");
 
             var filter = node.Filter;
@@ -691,6 +703,7 @@ namespace ExpressionDebugger
             {
                 filter = Visit(" when (", filter, ")");
             }
+
             Indent();
             var body = VisitBody(node.Body, shouldReturn);
             Outdent();
@@ -706,19 +719,14 @@ namespace ExpressionDebugger
 
         private Expression VisitConditional(ConditionalExpression node, bool shouldReturn)
         {
-            if (IsInline(node))
-            {
-                Expression test = VisitGroup(node.Test, node.NodeType);
-                Write(" ? ");
-                Expression ifTrue = VisitGroup(node.IfTrue, node.NodeType);
-                Write(" : ");
-                Expression ifFalse = VisitGroup(node.IfFalse, node.NodeType);
-                return node.Update(test, ifTrue, ifFalse);
-            }
-            else
-            {
-                return VisitConditionalBlock(node, shouldReturn);
-            }
+            if (!IsInline(node)) return VisitConditionalBlock(node, shouldReturn);
+
+            var test = VisitGroup(node.Test, node.NodeType);
+            Write(" ? ");
+            var ifTrue = VisitGroup(node.IfTrue, node.NodeType);
+            Write(" : ");
+            var ifFalse = VisitGroup(node.IfFalse, node.NodeType);
+            return node.Update(test, ifTrue, ifFalse);
         }
 
         private Expression VisitConditionalBlock(ConditionalExpression node, bool shouldReturn, bool chain = false)
@@ -727,8 +735,8 @@ namespace ExpressionDebugger
             var test = Visit(node.Test)!;
             Write(")");
             Indent();
-            Expression ifTrue = VisitBody(node.IfTrue, shouldReturn);
-            Expression ifFalse = node.IfFalse;
+            var ifTrue = VisitBody(node.IfTrue, shouldReturn);
+            var ifFalse = node.IfFalse;
             if (node.IfFalse.NodeType != ExpressionType.Default)
             {
                 Outdent();
@@ -760,99 +768,106 @@ namespace ExpressionDebugger
 
         private void WriteValue(object? value)
         {
-            if (value == null)
+            switch (value)
             {
-                Write("null");
-            }
-            else if (value is string str)
-            {
-                if (str.IndexOf('\\') >= 0 || str.IndexOf('\n') >= 0 || str.IndexOf('"') >= 0)
-                {
+                case null:
+                    Write("null");
+                    break;
+                case string str when str.IndexOf('\\') >= 0 || str.IndexOf('\n') >= 0 || str.IndexOf('"') >= 0:
                     str = str.Replace(@"""", @"""""");
                     Write($"@\"{str}\"");
-                }
-                else
-                {
+                    break;
+                case string str:
                     Write($"\"{str}\"");
-                }
-            }
-            else if (value is char c)
-            {
-                if (c == '\\')
+                    break;
+                case char c when c == '\\':
                     Write(@"'\\'");
-                else if (c == '\'')
+                    break;
+                case char c when c == '\'':
                     Write(@"'\''");
-                else
+                    break;
+                case char c:
                     Write($"'{c}'");
-            }
-            else if (value is bool)
-            {
-                Write(value.ToString().ToLower());
-            }
-            else if (value is Type t)
-            {
-                Write($"typeof({Translate(t)})");
-            }
-            else if (value is int)
-            {
-                Write(value.ToString());
-            }
-            else if (value is double d)
-            {
-                if (double.IsNaN(d))
+                    break;
+                case bool _:
+                    Write(value.ToString().ToLower());
+                    break;
+                case Type t:
+                    Write($"typeof({Translate(t)})");
+                    break;
+                case int _:
+                    Write(value.ToString());
+                    break;
+                case double d when double.IsNaN(d):
                     Write("double.NaN");
-                else if (double.IsPositiveInfinity(d))
+                    break;
+                case double d when double.IsPositiveInfinity(d):
                     Write("double.PositiveInfinity");
-                else if (double.IsNegativeInfinity(d))
+                    break;
+                case double d when double.IsNegativeInfinity(d):
                     Write("double.NegativeInfinity");
-                else
+                    break;
+                case double d:
                     Write(d.ToString(CultureInfo.InvariantCulture), "d");
-            }
-            else if (value is float f)
-            {
-                if (float.IsNaN(f))
+                    break;
+                case float f when float.IsNaN(f):
                     Write("float.NaN");
-                else if (float.IsPositiveInfinity(f))
+                    break;
+                case float f when float.IsPositiveInfinity(f):
                     Write("float.PositiveInfinity");
-                else if (float.IsNegativeInfinity(f))
+                    break;
+                case float f when float.IsNegativeInfinity(f):
                     Write("float.NegativeInfinity");
-                else
+                    break;
+                case float f:
                     Write(f.ToString(CultureInfo.InvariantCulture), "f");
-            }
-            else if (value is decimal || value is long || value is uint || value is ulong)
-            {
-                Write(value.ToString(), GetLiteral(value.GetType()));
-            }
-            else if (value is byte || value is sbyte || value is short || value is ushort)
-            {
-                Write("((", Translate(value.GetType()), ")", value.ToString(), ")");
-            }
-            else if (value.GetType().GetTypeInfo().IsEnum)
-            {
-                var name = Enum.GetName(value.GetType(), value);
-                if (name != null)
-                    Write(Translate(value.GetType()), ".", name);
-                else
-                    Write("(", Translate(value.GetType()), ")", value.ToString());
-            }
-            else
-            {
-                var type = value.GetType();
-                if (type.GetTypeInfo().IsValueType)
+                    break;
+                case decimal _:
+                case long _:
+                case uint _:
+                case ulong _:
+                    Write(value.ToString(), GetLiteral(value.GetType()));
+                    break;
+                case byte _:
+                case sbyte _:
+                case short _:
+                case ushort _:
+                    Write("((", Translate(value.GetType()), ")", value.ToString(), ")");
+                    break;
+                default:
                 {
-                    _defaults ??= new Dictionary<Type, object>();
-                    if (!_defaults.TryGetValue(type, out var def))
+                    if (value.GetType().GetTypeInfo().IsEnum)
                     {
-                        def = Activator.CreateInstance(type);
-                        _defaults[type] = def;
+                        var name = Enum.GetName(value.GetType(), value);
+                        if (name != null)
+                            Write(Translate(value.GetType()), ".", name);
+                        else
+                            Write("(", Translate(value.GetType()), ")", value.ToString());
                     }
-                    if (value.Equals(def))
+                    else
                     {
-                        Write($"default({Translate(type)})");
-                        return;
+                        var type = value.GetType();
+                        if (type.GetTypeInfo().IsValueType)
+                        {
+                            _defaults ??= new Dictionary<Type, object>();
+                            if (!_defaults.TryGetValue(type, out var def))
+                            {
+                                def = Activator.CreateInstance(type);
+                                _defaults[type] = def;
+                            }
+
+                            if (value.Equals(def))
+                            {
+                                Write($"default({Translate(type)})");
+                                return;
+                            }
+                        }
+
+                        Write(GetConstant(value));
                     }
+
+                    break;
                 }
-                Write(GetConstant(value));
             }
         }
 
@@ -866,18 +881,17 @@ namespace ExpressionDebugger
         {
             if (type == typeof(decimal))
                 return "m";
-            else if (type == typeof(long))
+            if (type == typeof(long))
                 return "l";
-            else if (type == typeof(uint))
+            if (type == typeof(uint))
                 return "u";
-            else if (type == typeof(ulong))
+            if (type == typeof(ulong))
                 return "ul";
-            else if (type == typeof(double))
+            if (type == typeof(double))
                 return "d";
-            else if (type == typeof(float))
+            if (type == typeof(float))
                 return "f";
-            else
-                return "";
+            return "";
         }
 
         protected override Expression VisitDefault(DefaultExpression node)
@@ -896,91 +910,98 @@ namespace ExpressionDebugger
 
         protected override Expression VisitDynamic(DynamicExpression node)
         {
-            if (node.Binder is ConvertBinder convert)
+            switch (node.Binder)
             {
-                Write("(", Translate(convert.Type), ")");
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.Convert);
-                return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
+                case ConvertBinder convert:
+                {
+                    Write("(", Translate(convert.Type), ")");
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.Convert);
+                    return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
+                }
+                case GetMemberBinder getMember:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
+                    Write(".", getMember.Name);
+                    return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
+                }
+                case SetMemberBinder setMember:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
+                    Write(".", setMember.Name, " = ");
+                    var value = VisitGroup(node.Arguments[1], ExpressionType.Assign);
+                    return Update(node, new[] { expr, value }.Concat(node.Arguments.Skip(2)));
+                }
+                case DeleteMemberBinder deleteMember:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
+                    Write(".", deleteMember.Name, " = null");
+                    return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
+                }
+                case GetIndexBinder _:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.Index);
+                    var args = VisitArguments("[", node.Arguments.Skip(1).ToList(), Visit, "]");
+                    return Update(node, new[] { expr }.Concat(args));
+                }
+                case SetIndexBinder _:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.Index);
+                    var args = VisitArguments("[", node.Arguments.Skip(1).Take(node.Arguments.Count - 2).ToList(),
+                        Visit,
+                        "]");
+                    Write(" = ");
+                    var value = VisitGroup(node.Arguments[node.Arguments.Count - 1], ExpressionType.Assign);
+                    return Update(node, new[] { expr }.Concat(args).Concat(new[] { value }));
+                }
+                case DeleteIndexBinder _:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.Index);
+                    var args = VisitArguments("[", node.Arguments.Skip(1).ToList(), Visit, "]");
+                    Write(" = null");
+                    return Update(node, new[] { expr }.Concat(args));
+                }
+                case InvokeMemberBinder invokeMember:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
+                    Write(".", invokeMember.Name);
+                    var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")");
+                    return Update(node, new[] { expr }.Concat(args));
+                }
+                case InvokeBinder _:
+                {
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.Invoke);
+                    var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")");
+                    return Update(node, new[] { expr }.Concat(args));
+                }
+                case CreateInstanceBinder _:
+                {
+                    Write("new ");
+                    var expr = VisitGroup(node.Arguments[0], ExpressionType.Invoke);
+                    var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")");
+                    return Update(node, new[] { expr }.Concat(args));
+                }
+                case UnaryOperationBinder unary:
+                {
+                    var expr = VisitUnary(node.Arguments[0], unary.Operation);
+                    return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
+                }
+                case BinaryOperationBinder binary:
+                {
+                    var left = VisitGroup(node.Arguments[0], node.NodeType);
+                    Write(" ", Translate(binary.Operation), " ");
+                    var right = VisitGroup(node.Arguments[1], node.NodeType, true);
+                    return Update(node, new[] { left, right }.Concat(node.Arguments.Skip(2)));
+                }
             }
-            if (node.Binder is GetMemberBinder getMember)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
-                Write(".", getMember.Name);
-                return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
-            }
-            if (node.Binder is SetMemberBinder setMember)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
-                Write(".", setMember.Name, " = ");
-                var value = VisitGroup(node.Arguments[1], ExpressionType.Assign);
-                return Update(node, new[] { expr, value }.Concat(node.Arguments.Skip(2)));
-            }
-            if (node.Binder is DeleteMemberBinder deleteMember)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
-                Write(".", deleteMember.Name, " = null");
-                return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
-            }
-            if (node.Binder is GetIndexBinder)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.Index);
-                var args = VisitArguments("[", node.Arguments.Skip(1).ToList(), Visit, "]");
-                return Update(node, new[] { expr }.Concat(args));
-            }
-            if (node.Binder is SetIndexBinder)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.Index);
-                var args = VisitArguments("[", node.Arguments.Skip(1).Take(node.Arguments.Count - 2).ToList(), Visit, "]");
-                Write(" = ");
-                var value = VisitGroup(node.Arguments[node.Arguments.Count - 1], ExpressionType.Assign);
-                return Update(node, new[] { expr }.Concat(args).Concat(new[] { value }));
-            }
-            if (node.Binder is DeleteIndexBinder)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.Index);
-                var args = VisitArguments("[", node.Arguments.Skip(1).ToList(), Visit, "]");
-                Write(" = null");
-                return Update(node, new[] { expr }.Concat(args));
-            }
-            if (node.Binder is InvokeMemberBinder invokeMember)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.MemberAccess);
-                Write(".", invokeMember.Name);
-                var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")");
-                return Update(node, new[] { expr }.Concat(args));
-            }
-            if (node.Binder is InvokeBinder)
-            {
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.Invoke);
-                var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")");
-                return Update(node, new[] { expr }.Concat(args));
-            }
-            if (node.Binder is CreateInstanceBinder)
-            {
-                Write("new ");
-                var expr = VisitGroup(node.Arguments[0], ExpressionType.Invoke);
-                var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")");
-                return Update(node, new[] { expr }.Concat(args));
-            }
-            if (node.Binder is UnaryOperationBinder unary)
-            {
-                var expr = VisitUnary(node.Arguments[0], unary.Operation);
-                return Update(node, new[] { expr }.Concat(node.Arguments.Skip(1)));
-            }
-            if (node.Binder is BinaryOperationBinder binary)
-            {
-                var left = VisitGroup(node.Arguments[0], node.NodeType);
-                Write(" ", Translate(binary.Operation), " ");
-                var right = VisitGroup(node.Arguments[1], node.NodeType, true);
-                return Update(node, new[] { left, right }.Concat(node.Arguments.Skip(2)));
-            }
+
             Write("dynamic");
             var dynArgs = VisitArguments("(" + Translate(node.Binder.GetType()) + ", ", node.Arguments, Visit, ")");
             return node.Update(dynArgs);
         }
 #endif
 
-        private IList<T> VisitArguments<T>(string open, IList<T> args, Func<T, T> func, string end, bool wrap = false, IList<string>? prefix = null) where T : class
+        private IList<T> VisitArguments<T>(string open, IList<T> args, Func<T, T> func, string end, bool wrap = false,
+            IList<string>? prefix = null) where T : class
         {
             Write(open);
             if (wrap)
@@ -1001,11 +1022,13 @@ namespace ExpressionDebugger
                 if (i != last)
                     Write(wrap ? "," : ", ");
             }
+
             if (wrap)
             {
                 _indentLevel--;
                 WriteLine();
             }
+
             Write(end);
             return changed ? list : args;
         }
@@ -1018,11 +1041,9 @@ namespace ExpressionDebugger
                 var args = arg != node.Arguments[0] ? new[] { arg }.AsEnumerable() : node.Arguments;
                 return node.Update(args);
             }
-            else
-            {
-                var list = VisitArguments("{", node.Arguments, Visit, "}");
-                return node.Update(list);
-            }
+
+            var list = VisitArguments("{", node.Arguments, Visit, "}");
+            return node.Update(list);
         }
 
         private Dictionary<string, int>? _counter;
@@ -1030,7 +1051,7 @@ namespace ExpressionDebugger
 
         private string GetConstant(object obj, string? typeName = null)
         {
-            if (this.Constants.TryGetValue(obj, out var name))
+            if (Constants.TryGetValue(obj, out var name))
                 return name;
 
             _counter ??= new Dictionary<string, int>();
@@ -1041,7 +1062,7 @@ namespace ExpressionDebugger
             id++;
             _counter[typeName] = id;
             name = typeName + id;
-            this.Constants[obj] = name;
+            Constants[obj] = name;
             return name;
         }
 
@@ -1069,10 +1090,9 @@ namespace ExpressionDebugger
         {
             if (string.IsNullOrEmpty(param.Name))
                 return GetName("p", param);
-            else if (ReservedWords.Contains(param.Name))
+            if (_reservedWords.Contains(param.Name))
                 return "@" + param.Name;
-            else
-                return param.Name;
+            return param.Name;
         }
 
         private string GetName(LambdaExpression lambda, string defaultMethodName = "Main")
@@ -1084,6 +1104,7 @@ namespace ExpressionDebugger
         }
 
         private HashSet<LabelTarget>? _returnTargets;
+
         protected override Expression VisitGoto(GotoExpression node)
         {
             switch (node.Kind)
@@ -1105,6 +1126,7 @@ namespace ExpressionDebugger
                 default:
                     throw new ArgumentOutOfRangeException(nameof(node));
             }
+
             return node;
         }
 
@@ -1116,16 +1138,16 @@ namespace ExpressionDebugger
                 Write(".", member.Name);
                 return result;
             }
-            else
-            {
-                Write(Translate(member.DeclaringType!), ".", member.Name);
-                return null;
-            }
+
+            Write(Translate(member.DeclaringType!), ".", member.Name);
+            return null;
         }
 
         protected override Expression VisitIndex(IndexExpression node)
         {
-            var obj = node.Indexer != null && node.Indexer.DeclaringType!.GetCustomAttribute<DefaultMemberAttribute>()?.MemberName != node.Indexer.Name
+            var obj = node.Indexer != null &&
+                      node.Indexer.DeclaringType!.GetCustomAttribute<DefaultMemberAttribute>()?.MemberName !=
+                      node.Indexer.Name
                 ? VisitMember(node.Object, node, node.Indexer)
                 : VisitGroup(node.Object, node.NodeType);
 
@@ -1161,6 +1183,7 @@ namespace ExpressionDebugger
             if (Definitions?.IsStatic == true)
                 Write("static ");
         }
+
         private void WriteModifierNextLine(string modifier)
         {
             WriteLine();
@@ -1168,7 +1191,9 @@ namespace ExpressionDebugger
         }
 
         private int _inlineCount;
-        public Expression VisitLambda(LambdaExpression node, LambdaType type, string? methodName = null, bool isInternal = false)
+
+        public Expression VisitLambda(LambdaExpression node, LambdaType type, string? methodName = null,
+            bool isInternal = false)
         {
             if (type == LambdaType.PrivateLambda || type == LambdaType.PublicLambda)
             {
@@ -1177,22 +1202,25 @@ namespace ExpressionDebugger
                 {
                     var name = methodName ?? "Main";
                     if (!isInternal)
-                        isInternal = node.ReturnType.GetTypeInfo().IsNotPublic || node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                        isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
+                                     node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     var funcType = MakeDelegateType(node.ReturnType, node.Parameters.Select(it => it.Type).ToArray());
                     var exprType = typeof(Expression<>).MakeGenericType(funcType);
                     Write(Translate(exprType), " ", name, " => ");
                 }
+
                 IList<ParameterExpression> args;
                 if (node.Parameters.Count == 1)
                 {
                     args = new List<ParameterExpression>();
                     var arg = VisitParameter(node.Parameters[0]);
-                    args.Add((ParameterExpression) arg);
+                    args.Add((ParameterExpression)arg);
                 }
                 else
                 {
-                    args = VisitArguments("(", node.Parameters.ToList(), p => (ParameterExpression) VisitParameter(p),")");
+                    args = VisitArguments("(", node.Parameters.ToList(), p => (ParameterExpression)VisitParameter(p),
+                        ")");
                 }
 
                 Write(" => ");
@@ -1208,25 +1236,28 @@ namespace ExpressionDebugger
                 if (type == LambdaType.PublicMethod || type == LambdaType.ExtensionMethod)
                 {
                     if (!isInternal)
-                        isInternal = node.ReturnType.GetTypeInfo().IsNotPublic || node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                        isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
+                                     node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
                     WriteModifierNextLine(isInternal ? "internal" : "public");
-                    this.Methods[name] = node.Type;
+                    Methods[name] = node.Type;
                 }
                 else
                 {
                     name = GetName(node, name);
                     WriteModifierNextLine("private");
                 }
+
                 Write(Translate(node.ReturnType), " ", name);
                 var open = "(";
                 if (type == LambdaType.ExtensionMethod)
                 {
-                    if (this.Definitions?.IsStatic != true)
+                    if (Definitions?.IsStatic != true)
                         throw new InvalidOperationException("Extension method requires static class");
                     if (node.Parameters.Count == 0)
                         throw new InvalidOperationException("Extension method requires at least 1 parameter");
                     open = "(this ";
                 }
+
                 var args = VisitArguments(open, node.Parameters, VisitParameterDeclaration, ")");
                 Indent();
                 var body = VisitBody(node.Body, true);
@@ -1239,6 +1270,7 @@ namespace ExpressionDebugger
 
         private HashSet<LambdaExpression>? _visitedLambda;
         private int _writerLevel;
+
         protected override Expression VisitLambda<T>(Expression<T> node)
         {
             if (_inlineCount > 0)
@@ -1287,6 +1319,7 @@ namespace ExpressionDebugger
             {
                 wrap = list[0] is MemberBinding && list.Count > 1;
             }
+
             if (wrap)
                 WriteLine();
             else
@@ -1371,67 +1404,68 @@ namespace ExpressionDebugger
         private static Type MakeDelegateType(Type returnType, params Type[] parameters)
         {
             var del = GetDelegateType(returnType != typeof(void), parameters.Length);
-            if (del.GetTypeInfo().IsGenericTypeDefinition)
-            {
-                var types = parameters.AsEnumerable();
-                if (returnType != typeof(void))
-                    types = types.Concat(new[] { returnType });
-                del = del.MakeGenericType(types.ToArray());
-            }
+            if (!del.GetTypeInfo().IsGenericTypeDefinition) return del;
 
+            var types = parameters.AsEnumerable();
+            if (returnType != typeof(void))
+                types = types.Concat(new[] { returnType });
+            del = del.MakeGenericType(types.ToArray());
             return del;
         }
 
         private static Type GetDelegateType(bool isFunc, int argCount)
         {
-            if (!isFunc)
+            return isFunc ? GetDelegateTypeWhenIsFunc(argCount) : GetDelegateTypeWhenIsNotFunc(argCount);
+        }
+
+        private static Type GetDelegateTypeWhenIsFunc(int argCount)
+        {
+            return argCount switch
             {
-                switch (argCount)
-                {
-                    case 0: return typeof(Action);
-                    case 1: return typeof(Action<>);
-                    case 2: return typeof(Action<,>);
-                    case 3: return typeof(Action<,,>);
-                    case 4: return typeof(Action<,,,>);
-                    case 5: return typeof(Action<,,,,>);
-                    case 6: return typeof(Action<,,,,,>);
-                    case 7: return typeof(Action<,,,,,,>);
-                    case 8: return typeof(Action<,,,,,,,>);
-                    case 9: return typeof(Action<,,,,,,,,>);
-                    case 10: return typeof(Action<,,,,,,,,,>);
-                    case 11: return typeof(Action<,,,,,,,,,,>);
-                    case 12: return typeof(Action<,,,,,,,,,,,>);
-                    case 13: return typeof(Action<,,,,,,,,,,,,>);
-                    case 14: return typeof(Action<,,,,,,,,,,,,,>);
-                    case 15: return typeof(Action<,,,,,,,,,,,,,,>);
-                    case 16: return typeof(Action<,,,,,,,,,,,,,,,>);
-                    default: throw new InvalidOperationException("Cannot handle non-public method");
-                }
-            }
-            else
+                0 => typeof(Func<>),
+                1 => typeof(Func<,>),
+                2 => typeof(Func<,,>),
+                3 => typeof(Func<,,,>),
+                4 => typeof(Func<,,,,>),
+                5 => typeof(Func<,,,,,>),
+                6 => typeof(Func<,,,,,,>),
+                7 => typeof(Func<,,,,,,,>),
+                8 => typeof(Func<,,,,,,,,>),
+                9 => typeof(Func<,,,,,,,,,>),
+                10 => typeof(Func<,,,,,,,,,,>),
+                11 => typeof(Func<,,,,,,,,,,,>),
+                12 => typeof(Func<,,,,,,,,,,,,>),
+                13 => typeof(Func<,,,,,,,,,,,,,>),
+                14 => typeof(Func<,,,,,,,,,,,,,,>),
+                15 => typeof(Func<,,,,,,,,,,,,,,,>),
+                16 => typeof(Func<,,,,,,,,,,,,,,,,>),
+                _ => throw new InvalidOperationException("Cannot handle non-public method")
+            };
+        }
+
+        private static Type GetDelegateTypeWhenIsNotFunc(int argCount)
+        {
+            return argCount switch
             {
-                switch (argCount)
-                {
-                    case 0: return typeof(Func<>);
-                    case 1: return typeof(Func<,>);
-                    case 2: return typeof(Func<,,>);
-                    case 3: return typeof(Func<,,,>);
-                    case 4: return typeof(Func<,,,,>);
-                    case 5: return typeof(Func<,,,,,>);
-                    case 6: return typeof(Func<,,,,,,>);
-                    case 7: return typeof(Func<,,,,,,,>);
-                    case 8: return typeof(Func<,,,,,,,,>);
-                    case 9: return typeof(Func<,,,,,,,,,>);
-                    case 10: return typeof(Func<,,,,,,,,,,>);
-                    case 11: return typeof(Func<,,,,,,,,,,,>);
-                    case 12: return typeof(Func<,,,,,,,,,,,,>);
-                    case 13: return typeof(Func<,,,,,,,,,,,,,>);
-                    case 14: return typeof(Func<,,,,,,,,,,,,,,>);
-                    case 15: return typeof(Func<,,,,,,,,,,,,,,,>);
-                    case 16: return typeof(Func<,,,,,,,,,,,,,,,,>);
-                    default: throw new InvalidOperationException("Cannot handle non-public method");
-                }
-            }
+                0 => typeof(Action),
+                1 => typeof(Action<>),
+                2 => typeof(Action<,>),
+                3 => typeof(Action<,,>),
+                4 => typeof(Action<,,,>),
+                5 => typeof(Action<,,,,>),
+                6 => typeof(Action<,,,,,>),
+                7 => typeof(Action<,,,,,,>),
+                8 => typeof(Action<,,,,,,,>),
+                9 => typeof(Action<,,,,,,,,>),
+                10 => typeof(Action<,,,,,,,,,>),
+                11 => typeof(Action<,,,,,,,,,,>),
+                12 => typeof(Action<,,,,,,,,,,,>),
+                13 => typeof(Action<,,,,,,,,,,,,>),
+                14 => typeof(Action<,,,,,,,,,,,,,>),
+                15 => typeof(Action<,,,,,,,,,,,,,,>),
+                16 => typeof(Action<,,,,,,,,,,,,,,,>),
+                _ => throw new InvalidOperationException("Cannot handle non-public method")
+            };
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -1452,7 +1486,8 @@ namespace ExpressionDebugger
                 if (node.Method.GetParameters().Any(it => it.IsOut || it.ParameterType.IsByRef))
                     throw new InvalidOperationException("Cannot handle non-public method");
 
-                var del = MakeDelegateType(node.Method.ReturnType, node.Method.GetParameters().Select(it => it.ParameterType).ToArray());
+                var del = MakeDelegateType(node.Method.ReturnType,
+                    node.Method.GetParameters().Select(it => it.ParameterType).ToArray());
                 var func = node.Method.CreateDelegate(del);
                 Write(GetConstant(func, GetVarName(node.Method.Name)), ".Invoke");
             }
@@ -1493,12 +1528,14 @@ namespace ExpressionDebugger
                     Write("<", args, ">");
                 }
             }
+
             var prefix = node.Method.GetParameters()
                 .Select(p => p.IsOut ? "out " : p.ParameterType.IsByRef ? "ref " : "");
 
             if (isExtension)
             {
-                var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")", prefix: prefix.Skip(1).ToList());
+                var args = VisitArguments("(", node.Arguments.Skip(1).ToList(), Visit, ")",
+                    prefix: prefix.Skip(1).ToList());
                 var newArgs = new[] { arg0 }.Concat(args).ToList();
                 return newArgs.SequenceEqual(node.Arguments) ? node : node.Update(obj, newArgs);
             }
@@ -1518,121 +1555,44 @@ namespace ExpressionDebugger
 
         protected override Expression VisitNewArray(NewArrayExpression node)
         {
-            if (node.NodeType == ExpressionType.NewArrayBounds)
-            {
-                var elemType = node.Type.GetElementType();
-                var arrayCount = 1;
-                // ReSharper disable once PossibleNullReferenceException
-                while (elemType.IsArray)
-                {
-                    elemType = elemType.GetElementType();
-                    arrayCount++;
-                }
-                Write("new ", Translate(elemType));
-                var args = VisitArguments("[", node.Expressions, Visit, "]");
-                for (int i = 1; i < arrayCount; i++)
-                    Write("[]");
-                return node.Update(args);
-            }
-            else
+            if (node.NodeType != ExpressionType.NewArrayBounds)
             {
                 Write("new ", Translate(node.Type));
                 var args = VisitElements(node.Expressions, Visit);
                 return node.Update(args);
             }
+
+            var elemType = node.Type.GetElementType();
+            var arrayCount = 1;
+            // ReSharper disable once PossibleNullReferenceException
+            while (elemType.IsArray)
+            {
+                elemType = elemType.GetElementType();
+                arrayCount++;
+            }
+
+            Write("new ", Translate(elemType));
+            var arrayArgs = VisitArguments("[", node.Expressions, Visit, "]");
+            for (int i = 1; i < arrayCount; i++)
+                Write("[]");
+            return node.Update(arrayArgs);
         }
 
         #region _reservedWords
-        private static readonly HashSet<string> ReservedWords = new HashSet<string>
+
+        private static readonly HashSet<string> _reservedWords = new HashSet<string>
         {
-            "abstract",
-            "as",
-            "base",
-            "bool",
-            "break",
-            "by",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "checked",
-            "class",
-            "const",
-            "continue",
-            "decimal",
-            "default",
-            "delegate",
-            "descending",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "event",
-            "explicit",
-            "extern",
-            "finally",
-            "fixed",
-            "float",
-            "for",
-            "foreach",
-            "from",
-            "goto",
-            "group",
-            "if",
-            "implicit",
-            "in",
-            "int",
-            "interface",
-            "internal",
-            "into",
-            "is",
-            "lock",
-            "long",
-            "namespace",
-            "new",
-            "null",
-            "object",
-            "operator",
-            "orderby",
-            "out",
-            "override",
-            "params",
-            "private",
-            "protected",
-            "public",
-            "readonly",
-            "ref",
-            "return",
-            "sbyte",
-            "sealed",
-            "select",
-            "short",
-            "sizeof",
-            "stackalloc",
-            "static",
-            "string",
-            "struct",
-            "switch",
-            "this",
-            "throw",
-            "try",
-            "typeof",
-            "ulong",
-            "unchecked",
-            "unit",
-            "unsafe",
-            "ushort",
-            "using",
-            "var",
-            "virtual",
-            "void",
-            "volatile",
-            "where",
-            "while",
-            "yield",
-            "false",
-            "true",
+            "abstract", "as", "base", "bool", "break", "by", "byte", "case", "catch", "char", "checked",
+            "class", "const", "continue", "decimal", "default", "delegate", "descending", "do", "double",
+            "else", "enum", "event", "explicit", "extern", "finally", "fixed", "float", "for", "foreach",
+            "from", "goto", "group", "if", "implicit", "in", "int", "interface", "internal", "into", "is",
+            "lock", "long", "namespace", "new", "null", "object", "operator", "orderby", "out", "override",
+            "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
+            "select", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this",
+            "throw", "try", "typeof", "ulong", "unchecked", "unit", "unsafe", "ushort", "using", "var",
+            "virtual", "void", "volatile", "where", "while", "yield", "false", "true"
         };
+
         #endregion
 
         protected override Expression VisitParameter(ParameterExpression node)
@@ -1642,6 +1602,7 @@ namespace ExpressionDebugger
 
         private HashSet<ParameterExpression>? _pendingVariables;
         private Dictionary<ParameterExpression, ParameterExpression>? _params;
+
         private Expression VisitParameter(ParameterExpression node, bool write)
         {
             _pendingVariables ??= new HashSet<ParameterExpression>();
@@ -1673,6 +1634,7 @@ namespace ExpressionDebugger
                 result = Expression.Parameter(node.Type, name);
                 _params[node] = result;
             }
+
             return result;
         }
 
@@ -1701,6 +1663,7 @@ namespace ExpressionDebugger
                     WriteLine();
                     Write("break;");
                 }
+
                 _indentLevel--;
                 Outdent();
                 @default = CreateBlock(@default);
@@ -1735,6 +1698,7 @@ namespace ExpressionDebugger
                 Write("break;");
                 body = CreateBlock(body);
             }
+
             _indentLevel--;
             return node.Update(values, body);
         }
@@ -1752,6 +1716,7 @@ namespace ExpressionDebugger
                 faultParam = GetName("fault", node);
                 WriteNextLine("bool ", faultParam, " = true;");
             }
+
             WriteNextLine("try");
             Indent();
             var body = VisitBody(node.Body, shouldReturn);
@@ -1761,21 +1726,24 @@ namespace ExpressionDebugger
             var handlers = node.Handlers.Select(c => VisitCatchBlock(c, shouldReturn)).ToList();
             var @finally = node.Finally;
             var fault = node.Fault;
-            if (node.Finally != null || node.Fault != null)
+            
+            if (node.Finally == null && node.Fault == null) 
+                return node.Update(body, handlers, @finally, fault);
+            
+            WriteNextLine("finally");
+            Indent();
+            if (node.Finally != null)
+                @finally = VisitBody(node.Finally);
+            if (node.Fault != null)
             {
-                WriteNextLine("finally");
+                WriteNextLine("if (", faultParam!, ")");
                 Indent();
-                if (node.Finally != null)
-                    @finally = VisitBody(node.Finally);
-                if (node.Fault != null)
-                {
-                    WriteNextLine("if (", faultParam!, ")");
-                    Indent();
-                    fault = VisitBody(node.Fault);
-                    Outdent();
-                }
+                fault = VisitBody(node.Fault);
                 Outdent();
             }
+
+            Outdent();
+
             return node.Update(body, handlers, @finally, fault);
         }
 
@@ -1819,6 +1787,7 @@ namespace ExpressionDebugger
                     Write(Translate(nodeType));
                     break;
             }
+
             return result;
         }
 
@@ -1841,6 +1810,7 @@ namespace ExpressionDebugger
                         return node;
                     }
                     // ReSharper restore HeuristicUnreachableCode
+
                     Write("throw ");
                     break;
             }
@@ -1855,6 +1825,7 @@ namespace ExpressionDebugger
                     Write(" as ", Translate(node.Type));
                     break;
             }
+
             return node.Update(operand);
         }
 
@@ -1878,7 +1849,8 @@ namespace ExpressionDebugger
                     .ToList();
                 var properties = _properties?
                     .ToDictionary(it => it.Name,
-                        it => $"{TranslateNullable(it.Type, it.NullableContext ?? Definitions?.NullableContext, it.Nullable)} {it.Name} {{ get; {(it.IsReadOnly ? "" : it.IsInitOnly ? "init; " : "set; ")}}}");
+                        it =>
+                            $"{TranslateNullable(it.Type, it.NullableContext ?? Definitions?.NullableContext, it.Nullable)} {it.Name} {{ get; {(it.IsReadOnly ? "" : it.IsInitOnly ? "init; " : "set; ")}}}");
                 var ctorParams = _properties?.Where(it => it.IsReadOnly).ToList();
                 if (Definitions?.TypeName != null)
                 {
@@ -1892,6 +1864,7 @@ namespace ExpressionDebugger
                         {
                             WriteNextLine("using ", ns, ";");
                         }
+
                         WriteLine();
                     }
 
@@ -1907,6 +1880,7 @@ namespace ExpressionDebugger
                         {
                             WriteNextLine("using ", name.Value, " = ", name.Key.FullName!, ";");
                         }
+
                         if (names.Count > 0)
                             WriteLine();
                     }
@@ -1920,19 +1894,22 @@ namespace ExpressionDebugger
                     var isInternal = Definitions.IsInternal;
                     if (!isInternal)
                         isInternal = Definitions.Implements?.Any(it =>
-                                !it.GetTypeInfo().IsInterface && !it.GetTypeInfo().IsPublic) ?? false;
+                            !it.GetTypeInfo().IsInterface && !it.GetTypeInfo().IsPublic) ?? false;
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     Write("partial ", Definitions.IsRecordType ? "record " : "class ", Definitions.TypeName);
                     if (Definitions.IsRecordType && ctorParams?.Count > 0)
                     {
                         WriteCtorParams(ctorParams);
                     }
+
                     if (implements?.Any() == true)
                     {
                         Write(" : ", string.Join(", ", implements));
                     }
+
                     Indent();
                 }
+
                 if (constants != null)
                 {
                     foreach (var constant in constants)
@@ -1940,8 +1917,10 @@ namespace ExpressionDebugger
                         WriteModifierNextLine("private");
                         Write(constant);
                     }
+
                     WriteLine();
                 }
+
                 if (_properties != null && Definitions?.TypeName != null)
                 {
                     foreach (var property in _properties)
@@ -1952,6 +1931,7 @@ namespace ExpressionDebugger
                         WriteModifierNextLine(isInternal ? "internal" : "public");
                         Write(properties![property.Name]);
                     }
+
                     WriteLine();
 
                     if (ctorParams?.Count > 0 && !Definitions.IsRecordType)
@@ -1963,8 +1943,10 @@ namespace ExpressionDebugger
                         Indent();
                         foreach (var parameter in ctorParams)
                         {
-                            WriteNextLine("this.", parameter.Name, " = ", char.ToLower(parameter.Name[0]).ToString(), parameter.Name.Substring(1), ";");
+                            WriteNextLine("this.", parameter.Name, " = ", char.ToLower(parameter.Name[0]).ToString(),
+                                parameter.Name.Substring(1), ";");
                         }
+
                         Outdent();
                         WriteLine();
                     }
@@ -2012,8 +1994,10 @@ namespace ExpressionDebugger
                 var parameter = ctorParams[i];
                 if (i > 0)
                     Write(", ");
-                Write($"{TranslateNullable(parameter.Type, parameter.NullableContext ?? Definitions?.NullableContext, parameter.Nullable)} {char.ToLower(parameter.Name[0]) + parameter.Name.Substring(1)}");
+                Write(
+                    $"{TranslateNullable(parameter.Type, parameter.NullableContext ?? Definitions?.NullableContext, parameter.Nullable)} {char.ToLower(parameter.Name[0]) + parameter.Name.Substring(1)}");
             }
+
             Write(")");
         }
 

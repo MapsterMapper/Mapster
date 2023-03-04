@@ -18,8 +18,8 @@ namespace Mapster
         [SuppressMessage("ReSharper", "ConstantNullCoalescingCondition")]
         public void Apply(NameMatchingStrategy other)
         {
-            this.SourceMemberNameConverter ??= other.SourceMemberNameConverter;
-            this.DestinationMemberNameConverter ??= other.DestinationMemberNameConverter;
+            SourceMemberNameConverter ??= other.SourceMemberNameConverter;
+            DestinationMemberNameConverter ??= other.DestinationMemberNameConverter;
         }
 
         public static readonly NameMatchingStrategy Exact = new NameMatchingStrategy
