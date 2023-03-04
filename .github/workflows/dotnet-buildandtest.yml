@@ -20,10 +20,8 @@ jobs:
     - name: Show dotnet version
       run: |
         dotnet --list-sdks
-        dotnet --list-runtimes        
-    - name: Restore dependencies
-      run: dotnet restore ./src/Mapster.sln
+        dotnet --list-runtimes
     - name: Build with dotnet
-      run: dotnet build --no-restore ./src/Mapster.sln
+      run: dotnet build ./src/Mapster.sln
     - name: Run tests on .NET 7.0
-      run: dotnet test --framework=net7.0 --verbosity normal ./src/Mapster.sln
+      run: dotnet test --verbosity normal ./src/Mapster.sln
