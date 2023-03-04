@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
-    - name: Show dotnet Version
+    - name: Show dotnet version
       run: |
         dotnet --list-sdks
         dotnet --list-runtimes        
@@ -26,4 +26,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --no-restore ./src/Mapster.sln
     - name: Run tests on .NET 7.0
-      run: dotnet test --framework=net7.0 --no-build --verbosity normal ./src/Mapster.sln
+      run: dotnet test --framework=net7.0 --verbosity normal ./src/Mapster.sln
