@@ -37,6 +37,19 @@ namespace Mapster.Tests
             dest.Age.ShouldBe(10);
         }
 
+        [TestMethod]
+        public void Map_RecordType_CapitalizationChanged()
+        {
+            TypeAdapterConfig<RecordType, RecordTypeDto>.NewConfig()
+                .Map(dest => dest.SpecialID, src => src.Id)
+                .Compile();
+
+            var source = new RecordType(Guid.NewGuid(), DayOfWeek.Monday);
+            var dest = source.Adapt<RecordTypeDto>();
+
+            dest.SpecialID.ShouldBe(source.Id);
+        }
+
         public class SimplePoco
         {
             public Guid Id { get; set; }
@@ -49,7 +62,7 @@ namespace Mapster.Tests
             public string Name { get; set; }
         }
 
-        public class RecordType
+        public record RecordType
         {
             public RecordType(Guid id, DayOfWeek day, string name = "foo", int age = 10)
             {
@@ -64,5 +77,7 @@ namespace Mapster.Tests
             public int Age { get; }
             public DayOfWeek Day { get; }
         }
+
+        public record RecordTypeDto(Guid SpecialID);
     }
 }

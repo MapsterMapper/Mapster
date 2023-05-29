@@ -36,7 +36,7 @@ namespace Mapster
             Expression? getter = null;
             foreach (var resolver in resolvers)
             {
-                if (!destinationMember.Name.Equals(resolver.DestinationMemberName))
+                if (!destinationMember.Name.Equals(resolver.DestinationMemberName, StringComparison.InvariantCultureIgnoreCase))
                     continue;
 
                 var invoke = resolver.GetInvokingExpression(source, arg.MapType);

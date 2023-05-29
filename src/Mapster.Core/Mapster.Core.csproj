@@ -11,9 +11,6 @@
 	<AssemblyOriginatorKeyFile>Mapster.Core.snk</AssemblyOriginatorKeyFile>
 	<RootNamespace>Mapster</RootNamespace>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>

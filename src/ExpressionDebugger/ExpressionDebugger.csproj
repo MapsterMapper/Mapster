@@ -21,9 +21,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ExpressionTranslator\ExpressionTranslator.csproj" />
