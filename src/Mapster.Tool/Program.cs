@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using CommandLine;
 using ExpressionDebugger;
 using Mapster.Models;
@@ -497,8 +498,7 @@ namespace Mapster.Tool
         {
             //add type name to prevent duplication
             translator.Translate(entityType);
-            var destName = translator.Translate(tuple.Destination);
-            destName = destName.Split('.').Last();
+            var destName = GetMethodNameFromType(tuple.Destination);
 
             var name = tuple.Destination.Name == entityType.Name
                 ? destName
@@ -523,6 +523,44 @@ namespace Mapster.Tool
                 translator.VisitLambda(proj, ExpressionTranslator.LambdaType.PublicLambda,
                     "ProjectTo" + name);
             }
+        }
+
+        private static string GetMethodNameFromType(Type type) => GetMethodNameFromType(new StringBuilder(), type).ToString();
+
+        private static StringBuilder GetMethodNameFromType(StringBuilder sb, Type type)
+        {
+            foreach (var subType in type.GenericTypeArguments)
+            {
+                GetMethodNameFromType(sb, subType);
+            }
+
+            if (type.IsArray)
+            {
+                GetMethodNameFromType(sb, type.GetElementType()!);
+                sb.Append("Array");
+                return sb;
+            }
+
+            var name = type.Name;
+            var i = name.IndexOf('`');
+            if (i>0) name = name.Remove(i);
+            name = name switch
+            {
+                "Nullable" => "",
+                "SByte" => "Sbyte",
+                "Int16" => "Short",
+                "UInt16" => "Ushort",
+                "Int32" => "Int",
+                "UInt32" => "Uint",
+                "Int64" => "Long",
+                "UInt64" => "Ulong",
+                "Single" => "Float",
+                "Boolean" => "Bool",
+                _ => name,
+            };
+
+            if (!string.IsNullOrEmpty(name)) sb.Append(name);
+            return sb;
         }
     }
 }
