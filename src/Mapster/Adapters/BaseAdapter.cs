@@ -450,17 +450,23 @@ namespace Mapster.Adapters
         }
         internal Expression CreateAdaptExpression(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping, Expression? destination = null)
         {
-            if (source.Type == destinationType &&
-                (arg.Settings.ShallowCopyForSameType == true || arg.MapType == MapType.Projection))
+            if (source.Type == destinationType && arg.MapType == MapType.Projection)
                 return source;
 
             //adapt(source);
-            var exp = CreateAdaptExpressionCore(source, destinationType, arg, mapping, destination);
+            var notUsingDestinationValue = mapping is not { UseDestinationValue: true };
+            var exp = source.Type == destinationType && arg.Settings.ShallowCopyForSameType == true && notUsingDestinationValue
+                ? source
+                : CreateAdaptExpressionCore(source, destinationType, arg, mapping, destination);
 
             //transform(adapt(source));
-            var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
-            if (transform != null)
-                exp = transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
+            if (notUsingDestinationValue)
+            {
+                var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
+                if (transform != null)
+                    exp = transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
+            }
+
             return exp.To(destinationType);
         }
     }
