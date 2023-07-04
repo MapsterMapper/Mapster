@@ -15,6 +15,25 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void MapToType_Support_CorrectInheritanceOrder()
+        {
+            TypeAdapterConfig<SimplePocoBase, SimpleDto>.NewConfig()
+                .BeforeMapping((src, result) => result.Type = $"{src.Name}!!!");
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .BeforeMapping((src, result) => result.Type += "xxx");
+
+            var poco = new SimplePoco
+            {
+                Id = Guid.NewGuid(),
+                Name = "test",
+            };
+            var result = TypeAdapter.Adapt<SimpleDto>(poco);
+            result.Id.ShouldBe(poco.Id);
+            result.Name.ShouldBe(poco.Name);
+            result.Type.ShouldBe($"{poco.Name}!!!xxx");
+        }
+
+        [TestMethod]
         public void MapToType_Support_Destination_Parameter()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
@@ -25,7 +44,7 @@ namespace Mapster.Tests
                 Id = Guid.NewGuid(),
                 Name = "test",
             };
-            
+
             // check expression is successfully compiled
             Assert.ThrowsException<NullReferenceException>(() => poco.Adapt<SimpleDto>());
         }
@@ -55,16 +74,21 @@ namespace Mapster.Tests
             result.ShouldBe(new List<int> { 0, 1, 2, 3, });
         }
 
-        public class SimplePoco
+        public class SimplePocoBase
+        {
+            public string Name { get; set; }
+        }
+
+        public class SimplePoco : SimplePocoBase
         {
             public Guid Id { get; set; }
-            public string Name { get; set; }
         }
 
         public class SimpleDto
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
+            public string Type { get; set; }
         }
     }
 }

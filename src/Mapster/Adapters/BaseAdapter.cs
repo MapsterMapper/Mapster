@@ -238,7 +238,7 @@ namespace Mapster.Adapters
                 assignActions.Add(assign);
 
                 //before(source, result, destination);
-                var beforeMappings = arg.Settings.BeforeMappingFactories.Select(it => InvokeMapping(it, source, result, destination, arg, true));
+                var beforeMappings = arg.Settings.BeforeMappingFactories.Select(it => InvokeMapping(it, source, result, destination, arg, true)).Reverse();
                 assignActions.AddRange(beforeMappings);
 
                 //result.prop = adapt(source.prop);
@@ -246,7 +246,7 @@ namespace Mapster.Adapters
                 var settingActions = new List<Expression> {mapping};
 
                 //after(source, result, destination);
-                var afterMappings = arg.Settings.AfterMappingFactories.Select(it => InvokeMapping(it, source, result, destination, arg, false));
+                var afterMappings = arg.Settings.AfterMappingFactories.Select(it => InvokeMapping(it, source, result, destination, arg, false)).Reverse();
                 settingActions.AddRange(afterMappings);
 
                 //return result;
