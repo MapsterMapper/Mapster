@@ -13,41 +13,88 @@ namespace MapsterMapper
             _serviceProvider = serviceProvider;
         }
 
-        public override ITypeAdapterBuilder<TSource> From<TSource>(TSource source)
+		/// <summary>
+		/// Create mapping builder.
+		/// </summary>
+		/// <typeparam name="TSource">Source type to create mapping builder.</typeparam>
+		/// <param name="source">Source object to create mapping builder.</param>
+		/// <returns></returns>
+		public override ITypeAdapterBuilder<TSource> From<TSource>(TSource source)
         {
             return base.From(source)
                 .AddParameters(DI_KEY, _serviceProvider);
         }
 
-        public override TDestination Map<TDestination>(object source)
+
+		/// <summary>
+		/// Perform mapping from source object to type of destination.
+		/// </summary>
+		/// <typeparam name="TDestination">Destination type to create mapping builder.</typeparam>
+		/// <param name="source">Source object to create mapping builder.</param>
+		/// <returns>Type of destination object that mapped.</returns>
+		public override TDestination Map<TDestination>(object source)
         {
             using var scope = new MapContextScope();
             scope.Context.Parameters[DI_KEY] = _serviceProvider;
             return base.Map<TDestination>(source);
         }
 
-        public override TDestination Map<TSource, TDestination>(TSource source)
+
+		/// <summary>
+		/// Perform mapping from type of source to type of destination.
+		/// </summary>
+		/// <typeparam name="TSource">Source type to map.</typeparam>
+		/// <typeparam name="TDestination">Destination type to map.</typeparam>
+		/// <param name="source">Source object to map.</param>
+		/// <returns>Type of destination object that mapped.</returns>
+		public override TDestination Map<TSource, TDestination>(TSource source)
         {
             using var scope = new MapContextScope();
             scope.Context.Parameters[DI_KEY] = _serviceProvider;
             return base.Map<TSource, TDestination>(source);
         }
 
-        public override TDestination Map<TSource, TDestination>(TSource source, TDestination destination)
+
+		/// <summary>
+		/// Perform mapping from type of source to type of destination.
+		/// </summary>
+		/// <typeparam name="TSource">Source type to map.</typeparam>
+		/// <typeparam name="TDestination">Destination type to map.</typeparam>
+		/// <param name="source">Source object to map.</param>
+		/// <param name="destination">Destination object to map.</param>
+		/// <returns>Type of destination object that mapped.</returns>
+		public override TDestination Map<TSource, TDestination>(TSource source, TDestination destination)
         {
             using var scope = new MapContextScope();
             scope.Context.Parameters[DI_KEY] = _serviceProvider;
             return base.Map(source, destination);
         }
 
-        public override object Map(object source, Type sourceType, Type destinationType)
+
+		/// <summary>
+		/// Perform mapping source object from source type to destination type.
+		/// </summary>
+		/// <param name="source">Source object to map.</param>
+		/// <param name="sourceType">Source type to map.</param>
+		/// <param name="destinationType">Destination type to map.</param>
+		/// <returns>Mapped object.</returns>
+		public override object Map(object source, Type sourceType, Type destinationType)
         {
             using var scope = new MapContextScope();
             scope.Context.Parameters[DI_KEY] = _serviceProvider;
             return base.Map(source, sourceType, destinationType);
         }
 
-        public override object Map(object source, object destination, Type sourceType, Type destinationType)
+
+		/// <summary>
+		/// Perform mapping source object from source type to destination type.
+		/// </summary>
+		/// <param name="source">Source object to map.</param>
+		/// <param name="destination">Destination object to map.</param>
+		/// <param name="sourceType">Source type to map.</param>
+		/// <param name="destinationType">Destination type to map.</param>
+		/// <returns></returns>
+		public override object Map(object source, object destination, Type sourceType, Type destinationType)
         {
             using var scope = new MapContextScope();
             scope.Context.Parameters[DI_KEY] = _serviceProvider;
