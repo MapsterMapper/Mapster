@@ -80,7 +80,7 @@ namespace Mapster.Tool
                 {
                     Implements = new[] {type},
                     Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
-                    TypeName = attr.Name ?? GetImplName(type.Name),
+                    TypeName = attr.Name ?? GetImplName(GetCodeFriendlyTypeName(type)),
                     IsInternal = attr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
                 };
@@ -397,6 +397,9 @@ namespace Mapster.Tool
                 }
             }
             var types = assemblies.SelectMany(it => it.GetLoadableTypes()).ToHashSet();
+
+            // assemblies defines open generic only, so we have to add specialised types used in mappings
+            foreach (var (key, _) in config.RuleMap) types.Add(key.Source);
             var configDict = new Dictionary<BaseAdaptAttribute, TypeAdapterConfig>();
             foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
             {
@@ -441,7 +444,7 @@ namespace Mapster.Tool
                 {
                     IsStatic = true,
                     Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
-                    TypeName = mapperAttr.Name.Replace("[name]", type.Name),
+                    TypeName = mapperAttr.Name.Replace("[name]", GetCodeFriendlyTypeName(type)),
                     IsInternal = mapperAttr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
                 };
@@ -496,7 +499,7 @@ namespace Mapster.Tool
         {
             //add type name to prevent duplication
             translator.Translate(entityType);
-            var destName = GetMethodNameFromType(tuple.Destination);
+            var destName = GetCodeFriendlyTypeName(tuple.Destination);
 
             var name = tuple.Destination.Name == entityType.Name
                 ? destName
@@ -523,18 +526,18 @@ namespace Mapster.Tool
             }
         }
 
-        private static string GetMethodNameFromType(Type type) => GetMethodNameFromType(new StringBuilder(), type).ToString();
+        private static string GetCodeFriendlyTypeName(Type type) => GetCodeFriendlyTypeName(new StringBuilder(), type).ToString();
 
-        private static StringBuilder GetMethodNameFromType(StringBuilder sb, Type type)
+        private static StringBuilder GetCodeFriendlyTypeName(StringBuilder sb, Type type)
         {
             foreach (var subType in type.GenericTypeArguments)
             {
-                GetMethodNameFromType(sb, subType);
+                GetCodeFriendlyTypeName(sb, subType);
             }
 
             if (type.IsArray)
             {
-                GetMethodNameFromType(sb, type.GetElementType()!);
+                GetCodeFriendlyTypeName(sb, type.GetElementType()!);
                 sb.Append("Array");
                 return sb;
             }
@@ -544,7 +547,6 @@ namespace Mapster.Tool
             if (i>0) name = name.Remove(i);
             name = name switch
             {
-                "Nullable" => "",
                 "SByte" => "Sbyte",
                 "Int16" => "Short",
                 "UInt16" => "Ushort",

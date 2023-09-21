@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Mapster.Models;
 
 namespace Mapster.Utils;
 
@@ -27,4 +28,7 @@ public static class TypeAdapterConfigExtensions
         InterfaceDynamicMapper dynamicMapper = new(config, types);
         dynamicMapper.ApplyMappingFromAssembly();
     }
+
+    public static bool HasRuleFor(this TypeAdapterConfig config, Type srcType, Type dstType) =>
+        config.RuleMap.ContainsKey(new TypeTuple(srcType, dstType));
 }

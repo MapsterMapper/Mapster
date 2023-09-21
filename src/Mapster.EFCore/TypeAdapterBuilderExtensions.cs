@@ -22,7 +22,15 @@ namespace Mapster
                     foreach (var entityType in context.Model.GetEntityTypes())
                     {
                         var type = entityType.ClrType;
-                        var keys = entityType.FindPrimaryKey().Properties.Select(p => p.Name).ToArray();
+
+                        var primaryKeys = entityType.FindPrimaryKey();
+
+                        if (primaryKeys == null)
+                        {
+                            continue;
+                        }
+
+                        var keys = primaryKeys.Properties.Select(p => p.Name).ToArray();
                         var settings = config.When((srcType, destType, mapType) => destType == type);
                         settings.Settings.ConstructUsingFactory = arg =>
                         {

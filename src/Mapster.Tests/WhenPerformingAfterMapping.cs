@@ -16,6 +16,10 @@ namespace Mapster.Tests
         [TestMethod]
         public void After_Mapping()
         {
+            TypeAdapterConfig<SimplePocoBaseBase, SimpleDto>.NewConfig()
+                .AfterMapping((src, dest) => dest.Name += "!!!");
+            TypeAdapterConfig<SimplePocoBase, SimpleDto>.NewConfig()
+                .AfterMapping((src, dest) => dest.Name += "***");
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .AfterMapping((src, dest) => dest.Name += "xxx");
 
@@ -27,7 +31,7 @@ namespace Mapster.Tests
             var result = TypeAdapter.Adapt<SimpleDto>(poco);
 
             result.Id.ShouldBe(poco.Id);
-            result.Name.ShouldBe(poco.Name + "xxx");
+            result.Name.ShouldBe(poco.Name + "!!!***xxx");
         }
 
         [TestMethod]
@@ -95,10 +99,17 @@ namespace Mapster.Tests
             void Validate();
         }
 
-        public class SimplePoco
+        public class SimplePocoBaseBase
+        {
+            public string Name { get; set; }
+        }
+        public class SimplePocoBase : SimplePocoBaseBase
+        {
+        }
+
+        public class SimplePoco : SimplePocoBase
         {
             public Guid Id { get; set; }
-            public string Name { get; set; }
         }
 
         public class SimpleDto : IValidatable
