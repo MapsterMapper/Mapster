@@ -80,7 +80,14 @@ namespace Mapster
                 }, context.GetType().FullName);
         }
 
-        public static IQueryable<TDestination> ProjectToType<TDestination>(this IAdapterBuilder<IQueryable> source)
+
+		/// <summary>
+		/// Mapping from queryable.
+		/// </summary>
+		/// <typeparam name="TDestination">Type of destination.</typeparam>
+		/// <param name="source">Source object to adopt.</param>
+		/// <returns></returns>
+		public static IQueryable<TDestination> ProjectToType<TDestination>(this IAdapterBuilder<IQueryable> source)
         {
             var queryable = source.Source.ProjectToType<TDestination>(source.Config);
             if (!source.HasParameter || source.Parameters.All(it => it.Key.StartsWith("Mapster.")))
