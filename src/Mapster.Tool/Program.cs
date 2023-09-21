@@ -8,6 +8,7 @@ using System.Text;
 using CommandLine;
 using ExpressionDebugger;
 using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster.Tool
 {
@@ -59,13 +60,12 @@ namespace Mapster.Tool
 
         private static void GenerateMappers(MapperOptions opt)
         {
-            using var dynamicContext = new AssemblyResolver(Path.GetFullPath(opt.Assembly));
-            var assembly = dynamicContext.Assembly;
+            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
 
-            foreach (var type in assembly.GetTypes())
+            foreach (var type in assembly.GetLoadableTypes())
             {
                 if (!type.IsInterface)
                     continue;
@@ -150,12 +150,11 @@ namespace Mapster.Tool
 
         private static void GenerateModels(ModelOptions opt)
         {
-            using var dynamicContext = new AssemblyResolver(Path.GetFullPath(opt.Assembly));
-            var assembly = dynamicContext.Assembly;
+            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
             var codeGenConfig = new CodeGenerationConfig();
             codeGenConfig.Scan(assembly);
 
-            var types = assembly.GetTypes().ToHashSet();
+            var types = assembly.GetLoadableTypes().ToHashSet();
             foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
             {
                 foreach (var setting in builder.TypeSettings)
@@ -382,8 +381,7 @@ namespace Mapster.Tool
 
         private static void GenerateExtensions(ExtensionOptions opt)
         {
-            using var dynamicContext = new AssemblyResolver(Path.GetFullPath(opt.Assembly));
-            var assembly = dynamicContext.Assembly;
+            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
@@ -398,11 +396,10 @@ namespace Mapster.Tool
                     assemblies.Add(setting.Key.Assembly);
                 }
             }
-            var types = assemblies.SelectMany(it => it.GetTypes()).ToHashSet();
+            var types = assemblies.SelectMany(it => it.GetLoadableTypes()).ToHashSet();
 
             // assemblies defines open generic only, so we have to add specialised types used in mappings
             foreach (var (key, _) in config.RuleMap) types.Add(key.Source);
-
             var configDict = new Dictionary<BaseAdaptAttribute, TypeAdapterConfig>();
             foreach (var builder in codeGenConfig.AdaptAttributeBuilders)
             {

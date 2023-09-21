@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mapster.Utils
 {
-    static class Extensions
+    public static class Extensions
     {
 #if NET40
         public static Type GetTypeInfo(this Type type)
@@ -27,5 +30,16 @@ namespace Mapster.Utils
             return prop;
         }
 
+        public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null).Cast<Type>();
+            }
+        }
     }
 }

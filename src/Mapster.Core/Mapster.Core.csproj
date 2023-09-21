@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Lightweight library for Mapster and Mapster CodeGen</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
     <AssemblyName>Mapster.Core</AssemblyName>
     <PackageTags>mapster</PackageTags>
-    <Version>1.2.1-pre02</Version>
+    <Version>1.2.1-pre04</Version>
     <Nullable>enable</Nullable>
 	<IsPackable>true</IsPackable>
 	<SignAssembly>true</SignAssembly>

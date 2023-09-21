@@ -16,7 +16,12 @@ namespace Mapster
             this.Attribute = attribute;
         }
 
-        public AdaptAttributeBuilder ForTypes(params Type[] types)
+		/// <summary>
+		/// Configures the builder for specific types.	
+		/// </summary>
+		/// <param name="types">Types to configure.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder ForTypes(params Type[] types)
         {
             foreach (var type in types)
             {
@@ -27,7 +32,14 @@ namespace Mapster
             return this;
         }
 
-        public AdaptAttributeBuilder ForAllTypesInNamespace(Assembly assembly, string @namespace)
+
+		/// <summary>
+		/// Configures the builder for all types in a given namespace within an assembly.
+		/// </summary>
+		/// <param name="assembly">The assembly containing the types.</param>
+		/// <param name="namespace">The namespace of the types to include.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder ForAllTypesInNamespace(Assembly assembly, string @namespace)
         {
             foreach (var type in assembly.GetTypes())
             {
@@ -40,7 +52,14 @@ namespace Mapster
             return this;
         }
 
-        public AdaptAttributeBuilder ForType<T>(Action<PropertySettingBuilder<T>>? propertyConfig = null)
+
+		/// <summary>
+		/// Configures the builder for a specific type and allows for property-specific configuration.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="propertyConfig">An optional action for configuring properties of the specified type.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder ForType<T>(Action<PropertySettingBuilder<T>>? propertyConfig = null)
         {
             if (!this.TypeSettings.TryGetValue(typeof(T), out var settings))
             {
@@ -52,7 +71,13 @@ namespace Mapster
             return this;
         }
 
-        public AdaptAttributeBuilder ExcludeTypes(params Type[] types)
+
+		/// <summary>
+		/// Excludes specific types from the configuration.
+		/// </summary>
+		/// <param name="types">An array of types to exclude.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder ExcludeTypes(params Type[] types)
         {
             foreach (var type in types)
             {
@@ -62,7 +87,13 @@ namespace Mapster
             return this;
         }
 
-        public AdaptAttributeBuilder ExcludeTypes(Func<Type, bool> predicate)
+
+		/// <summary>
+		/// Exclude certain types from the adaptation process based on a provided predicate.
+		/// </summary>
+		/// <param name="predicate">Predicate function should evaluate to true for types that you want to exclude from the mapping and false for types that should not be excluded.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder ExcludeTypes(Func<Type, bool> predicate)
         {
             foreach (var type in this.TypeSettings.Keys.ToList())
             {
@@ -73,67 +104,135 @@ namespace Mapster
             return this;
         }
 
-        public AdaptAttributeBuilder IgnoreAttributes(params Type[] attributes)
+
+		/// <summary>
+		/// Specifies attributes to ignore during mapping.
+		/// </summary>
+		/// <param name="attributes">An array of attributes to ignore.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder IgnoreAttributes(params Type[] attributes)
         {
             this.Attribute.IgnoreAttributes = attributes;
             return this;
         }
 
-        public AdaptAttributeBuilder IgnoreNoAttributes(params Type[] attributes)
+
+		/// <summary>
+		/// Specifies attributes that should not be ignored during mapping.
+		/// </summary>
+		/// <param name="attributes">An array of attributes that should not be ignored.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder IgnoreNoAttributes(params Type[] attributes)
         {
             this.Attribute.IgnoreNoAttributes = attributes;
             return this;
         }
 
-        public AdaptAttributeBuilder IgnoreNamespaces(params string[] namespaces)
+
+		/// <summary>
+		/// Specifies namespaces to ignore during mapping.
+		/// </summary>
+		/// <param name="namespaces">An array of namespaces to ignore.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder IgnoreNamespaces(params string[] namespaces)
         {
             this.Attribute.IgnoreNamespaces = namespaces;
             return this;
         }
 
-        public AdaptAttributeBuilder IgnoreNullValues(bool value)
+
+		/// <summary>
+		/// Configures whether null values should be ignored during mapping.
+		/// </summary>
+		/// <param name="value">A boolean value indicating whether to ignore null values.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder IgnoreNullValues(bool value)
         {
             this.Attribute.IgnoreNullValues = value;
             return this;
         }
 
-        public AdaptAttributeBuilder RequireDestinationMemberSource(bool value)
+
+		/// <summary>
+		/// Configures whether a destination member source is required during.
+		/// </summary>
+		/// <param name="value">A boolean value indicating whether a destination member source is required.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder RequireDestinationMemberSource(bool value)
         {
             this.Attribute.RequireDestinationMemberSource = value;
             return this;
         }
 
-        public AdaptAttributeBuilder MapToConstructor(bool value)
+
+		/// <summary>
+		/// Configures whether mapping should be performed to constructors.
+		/// </summary>
+		/// <param name="value">A boolean value indicating whether mapping to constructors is enabled.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder MapToConstructor(bool value)
         {
             this.Attribute.MapToConstructor = value;
             return this;
         }
 
-        public AdaptAttributeBuilder MaxDepth(int depth)
+
+		/// <summary>
+		/// Sets the maximum depth for mapping.
+		/// </summary>
+		/// <param name="depth">The maximum depth for mapping.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder MaxDepth(int depth)
         {
             this.Attribute.MaxDepth = depth;
             return this;
         }
-        
-        public AdaptAttributeBuilder PreserveReference(bool value)
+
+
+		/// <summary>
+		/// Configures whether to preserve object references during mapping.
+		/// </summary>
+		/// <param name="value">A boolean value indicating whether to preserve object references.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder PreserveReference(bool value)
         {
             this.Attribute.PreserveReference = value;
             return this;
         }
-        
-        public AdaptAttributeBuilder ShallowCopyForSameType(bool value)
+
+
+		/// <summary>
+		/// Configures whether to perform a shallow copy for the same source and destination type.
+		/// </summary>
+		/// <param name="value">A boolean value indicating whether to perform a shallow copy.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder ShallowCopyForSameType(bool value)
         {
             this.Attribute.ShallowCopyForSameType = value;
             return this;
         }
 
-        public AdaptAttributeBuilder AlterType<TFrom, TTo>()
+
+		/// <summary>
+		/// Forward property types.
+		/// </summary>
+		/// <typeparam name="TFrom">Forward property from type.</typeparam>
+		/// <typeparam name="TTo">Forward property to type.</typeparam>
+		/// <returns></returns>
+		public AdaptAttributeBuilder AlterType<TFrom, TTo>()
         {
             this.AlterTypes.Add(type => type == typeof(TFrom) ? typeof(TTo) : null);
             return this;
         }
 
-        public AdaptAttributeBuilder AlterType(Func<Type, bool> predicate, Type toType)
+
+		/// <summary>
+		/// Forward property types for Code generation.
+		/// </summary>
+		/// <param name="predicate">A function that takes a Type as input and returns a Boolean value. This function is used to evaluate whether the forward property should be applied to the target type. If the predicate returns true, the target type will be replaced; otherwise, it remains unchanged.</param>
+		/// <param name="toType">Type of destination to forward property type.</param>
+		/// <returns></returns>
+		public AdaptAttributeBuilder AlterType(Func<Type, bool> predicate, Type toType)
         {
             this.AlterTypes.Add(type => predicate(type) ? toType : null);
             return this;

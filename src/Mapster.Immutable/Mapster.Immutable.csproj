@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
     <Description>Immutable collection supports for Mapster</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>Mapster;Immutable</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Immutable.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.0</Version>
+    <Version>1.0.1-pre02</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
     <Description>Dependency Injection supports for Mapster</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>Mapster;DependencyInjection</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.DependencyInjection.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.1</Version>
+    <Version>1.0.1-pre02</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Include="icon.png" Pack="true" PackagePath="\" />
