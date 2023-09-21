@@ -7,7 +7,7 @@
     <PackageTags>Mapster;Async</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Async.snk</AssemblyOriginatorKeyFile>
-    <Version>2.0.1-pre02</Version>
+    <Version>2.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
