@@ -455,7 +455,8 @@ namespace Mapster.Adapters
 
             //adapt(source);
             var notUsingDestinationValue = mapping is not { UseDestinationValue: true };
-            var exp = source.Type == destinationType && arg.Settings.ShallowCopyForSameType == true && notUsingDestinationValue
+            var exp = source.Type == destinationType && arg.Settings.ShallowCopyForSameType == true && notUsingDestinationValue &&
+                      !arg.Context.Config.HasRuleFor(source.Type, destinationType)
                 ? source
                 : CreateAdaptExpressionCore(source, destinationType, arg, mapping, destination);
 
