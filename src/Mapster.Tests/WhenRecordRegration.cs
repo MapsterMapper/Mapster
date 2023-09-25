@@ -211,7 +211,7 @@ namespace Mapster.Tests
 
         }
 
-    }
+
 
 
 
@@ -220,7 +220,15 @@ namespace Mapster.Tests
 
     #region NowNotWorking
 
+    [TestMethod]
+    public void DetectFakeRecord()
+    {
+        var _sourse = new TestClassPublicCtr(200);
 
+        var _destination = new FakeRecord { X = 300 };
+
+        var _result = _sourse.Adapt(_destination);
+    }
 
 
     /// <summary>
@@ -268,22 +276,39 @@ namespace Mapster.Tests
     //        return dest;
     //    }
 
+ #endregion NowNotWorking
+
+
+ }
 
 
 
-    //}
 
 
-
-
-
-    #endregion NowNotWorking
+   
 
 
 
 
 
     #region TestClases
+
+    public class FakeRecord
+    {
+        protected FakeRecord(FakeRecord fake)
+        {
+
+        }
+
+        public FakeRecord()
+        {
+
+        }
+
+        public int X { get; set; }
+    }
+
+
 
 
     class UserAccount
