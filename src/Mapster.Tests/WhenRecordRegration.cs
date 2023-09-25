@@ -15,7 +15,7 @@ namespace Mapster.Tests
 
 
         [TestMethod]
-        public void AdaptRecord()
+        public void AdaptRecordToRecord()
         {
             var _sourse = new TestREcord() { X = 700 };
 
@@ -23,35 +23,50 @@ namespace Mapster.Tests
 
             var _result = _sourse.Adapt(_destination);
 
+
+
+            _result.X.ShouldBe(700);
+
             object.ReferenceEquals(_result, _destination).ShouldBeFalse();
+        }
 
-
+        [TestMethod]
+        public void AdaptPositionalRecordToPositionalRecord()
+        {
             var _sourcePositional = new TestRecordPositional(600);
 
             var _destinationPositional = new TestRecordPositional(900);
 
             var _positionalResult = _sourcePositional.Adapt(_destinationPositional);
 
+
+
+            _positionalResult.X.ShouldBe(600);
+
             object.ReferenceEquals(_destinationPositional, _positionalResult).ShouldBeFalse();
 
+        }
 
-
-
+        [TestMethod]
+        public void AdaptRecordStructToRecordStruct()
+        {
             var _sourceStruct = new TestRecordStruct() { X = 1000 };
 
             var _destinationStruct = new TestRecordStruct() { X = 800 };
 
             var _structResult = _sourceStruct.Adapt(_destinationStruct);
 
-            object.ReferenceEquals(_destinationPositional, _positionalResult).ShouldBeFalse();
 
-
-            _result.X.ShouldBe(700);
-
-            _positionalResult.X.ShouldBe(600);
 
             _structResult.X.ShouldBe(1000);
+
+            object.ReferenceEquals(_destinationStruct, _structResult).ShouldBeFalse();
+
+
         }
+
+
+
 
 
         [TestMethod]
@@ -64,11 +79,14 @@ namespace Mapster.Tests
             var _result = _sourse.Adapt(_destination);
 
 
-            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
+
 
             _destination.ShouldBeOfType<TestClassProtectedCtr>();
 
             _destination.X.ShouldBe(200);
+
+
+            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
         }
 
         [TestMethod]
@@ -81,11 +99,14 @@ namespace Mapster.Tests
             var _result = _sourse.Adapt(_destination);
 
 
-            object.ReferenceEquals(_destination, _result).ShouldBeFalse();
+
 
             _destination.ShouldBeOfType<TestRecordPositional>();
 
             _result.X.ShouldBe(200);
+
+
+            object.ReferenceEquals(_destination, _result).ShouldBeFalse();
         }
 
 
@@ -93,7 +114,28 @@ namespace Mapster.Tests
 
 
         [TestMethod]
-        public void AdaptClassIsNotNewInstanse()
+        public void AdaptClassToClassPublicCtr_IsNotInstanse()
+        {
+            var _sourse = new TestClassPublicCtr(200);
+
+            var _destination = new TestClassPublicCtr(400);
+
+            var _result = _sourse.Adapt(_destination);
+
+
+
+
+            _destination.ShouldBeOfType<TestClassPublicCtr>();
+
+            _destination.X.ShouldBe(200);
+
+
+            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
+        }
+
+
+        [TestMethod]
+        public void AdaptClassToClassProtectdCtr_IsNotInstanse()
         {
             var _sourse = new TestClassPublicCtr(200);
 
@@ -102,12 +144,23 @@ namespace Mapster.Tests
             var _result = _sourse.Adapt(_destination);
 
 
-            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
+
 
             _destination.ShouldBeOfType<TestClassProtectedCtr>();
 
             _destination.X.ShouldBe(200);
+
+
+            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
         }
+
+
+
+
+
+
+
+
 
         /// <summary>
         /// https://github.com/MapsterMapper/Mapster/issues/615
@@ -136,7 +189,7 @@ namespace Mapster.Tests
         /// https://github.com/MapsterMapper/Mapster/issues/482
         /// </summary>
         [TestMethod]
-        public void AdaptClassIsPrivateProperty()
+        public void AdaptClassToClassFromPrivateProperty_IsNotInstanse()
         {
             var _sourse = new TestClassPublicCtr(200);
 
@@ -145,13 +198,16 @@ namespace Mapster.Tests
             var _result = _sourse.Adapt(_destination);
 
 
-            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
+
 
             _destination.ShouldBeOfType<TestClassProtectedCtrPrivateProperty>();
 
             _destination.X.ShouldBe(200);
 
             _destination.Name.ShouldBe("Me");
+
+
+            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
         }
 
 
@@ -214,21 +270,17 @@ namespace Mapster.Tests
 
 
 
+        #region NowNotWorking
 
+    //    [TestMethod]
+    //public void DetectFakeRecord()
+    //{
+    //    var _sourse = new TestClassPublicCtr(200);
 
+    //    var _destination = new FakeRecord { X = 300 };
 
-
-    #region NowNotWorking
-
-    [TestMethod]
-    public void DetectFakeRecord()
-    {
-        var _sourse = new TestClassPublicCtr(200);
-
-        var _destination = new FakeRecord { X = 300 };
-
-        var _result = _sourse.Adapt(_destination);
-    }
+    //    var _result = _sourse.Adapt(_destination);
+    //}
 
 
     /// <summary>
