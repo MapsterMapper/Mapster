@@ -10,18 +10,18 @@ namespace Mapster.Tests
     /// </summary>
     [TestClass]
 
-    public class WhenRecordRegress
+    public class WhenMappingRecordRegression
     {
 
 
         [TestMethod]
         public void AdaptRecordToRecord()
         {
-            var _sourse = new TestREcord() { X = 700 };
+            var _source = new TestRecord() { X = 700 };
 
-            var _destination = new TestREcord() { X = 500 };
+            var _destination = new TestRecord() { X = 500 };
 
-            var _result = _sourse.Adapt(_destination);
+            var _result = _source.Adapt(_destination);
 
 
 
@@ -72,11 +72,11 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptRecordToClass()
         {
-            var _sourse = new TestRecordPositional(200);
+            var _sourсe = new TestRecordPositional(200);
 
             var _destination = new TestClassProtectedCtr(400);
 
-            var _result = _sourse.Adapt(_destination);
+            var _result = _sourсe.Adapt(_destination);
 
 
 
@@ -92,11 +92,11 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptClassToRecord()
         {
-            var _sourse = new TestClassProtectedCtr(200);
+            var _sourсe = new TestClassProtectedCtr(200);
 
             var _destination = new TestRecordPositional(400);
 
-            var _result = _sourse.Adapt(_destination);
+            var _result = _sourсe.Adapt(_destination);
 
 
 
@@ -116,11 +116,11 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptClassToClassPublicCtr_IsNotInstanse()
         {
-            var _sourse = new TestClassPublicCtr(200);
+            var _source = new TestClassPublicCtr(200);
 
             var _destination = new TestClassPublicCtr(400);
 
-            var _result = _sourse.Adapt(_destination);
+            var _result = _source.Adapt(_destination);
 
 
 
@@ -137,11 +137,11 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptClassToClassProtectdCtr_IsNotInstanse()
         {
-            var _sourse = new TestClassPublicCtr(200);
+            var _source = new TestClassPublicCtr(200);
 
             var _destination = new TestClassProtectedCtr(400);
 
-            var _result = _sourse.Adapt(_destination);
+            var _result = _source.Adapt(_destination);
 
 
 
@@ -191,11 +191,11 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptClassToClassFromPrivateProperty_IsNotInstanse()
         {
-            var _sourse = new TestClassPublicCtr(200);
+            var _source = new TestClassPublicCtr(200);
 
             var _destination = new TestClassProtectedCtrPrivateProperty(400, "Me");
 
-            var _result = _sourse.Adapt(_destination);
+            var _result = _source.Adapt(_destination);
 
 
 
@@ -217,7 +217,7 @@ namespace Mapster.Tests
         [TestMethod]
         public void UpdateNullable()
         {
-            var _sourse = new UserAccount("123", "123@gmail.com", new DateTime(2023, 9, 24));
+            var _source = new UserAccount("123", "123@gmail.com", new DateTime(2023, 9, 24));
 
             var _update = new UpdateUser
             {
@@ -231,7 +231,7 @@ namespace Mapster.Tests
                 .IgnoreNullValues(true);
 
 
-            _update.Adapt(_sourse, configDate);
+            _update.Adapt(_source, configDate);
 
 
 
@@ -252,10 +252,10 @@ namespace Mapster.Tests
             var _resultEmail = _updateEmail.Adapt(_sourseEmailUpdate, config);
 
 
-            _sourse.Id.ShouldBe("123");
-            _sourse.Created.ShouldBe(new DateTime(2023, 9, 24));
-            _sourse.Modified.ShouldBe(new DateTime(2025, 9, 24));
-            _sourse.Email.ShouldBe("123@gmail.com");
+            _source.Id.ShouldBe("123");
+            _source.Created.ShouldBe(new DateTime(2023, 9, 24));
+            _source.Modified.ShouldBe(new DateTime(2025, 9, 24));
+            _source.Email.ShouldBe("123@gmail.com");
 
 
             _sourseEmailUpdate.Id.ShouldBe("123");
@@ -272,61 +272,64 @@ namespace Mapster.Tests
 
         #region NowNotWorking
 
-    //    [TestMethod]
-    //public void DetectFakeRecord()
-    //{
-    //    var _sourse = new TestClassPublicCtr(200);
+        [TestMethod]
+    public void DetectFakeRecord()
+    {
+        var _source = new TestClassPublicCtr(200);
 
-    //    var _destination = new FakeRecord { X = 300 };
+        var _destination = new FakeRecord { X = 300 };
 
-    //    var _result = _sourse.Adapt(_destination);
-    //}
-
-
-    /// <summary>
-    /// https://github.com/MapsterMapper/Mapster/issues/430
-    /// </summary>
-    //    [TestMethod]
-    //    public void CollectionUpdate()
-    //    {
-    //        List<TestClassPublicCtr> sources = new()
-    //        {
-    //            new(541),
-    //            new(234)
-
-    //        };
+        var _result = _source.Adapt(_destination);
 
 
-    //        var destination = new List<TestClassPublicCtr>();
+    }
 
 
-    //        var _result = sources.Adapt(destination);
+        /// <summary>
+        ///   https://github.com/MapsterMapper/Mapster/issues/430
+        /// </summary>
+        [TestMethod]
+        public void CollectionUpdate()
+       {
+           List<TestClassPublicCtr> sources = new()
+           {
+                new(541),
+                new(234)
 
-    //        destination.Count.ShouldBe(_result.Count);
+            };
 
-    //    }
 
-    //    /// <summary>
-    //    /// https://github.com/MapsterMapper/Mapster/issues/524
-    //    /// </summary>
-    //    [TestMethod]
-    //    public void TSousreIsObjectUpdate()
-    //    {
-    //        var source = new TestClassPublicCtr { X = 123 };
+            var destination = new List<TestClassPublicCtr>();
 
-    //        var _result = Somemap(source);
 
-    //        _result.X.ShouldBe(123);
+           var _result = sources.Adapt(destination);
 
-    //    }
+           destination.Count.ShouldBe(_result.Count);
 
-    //     TestClassPublicCtr Somemap(object source)
-    //    {
-    //        var dest = new TestClassPublicCtr { X = 321 };
-    //        var dest1 = source.Adapt(dest);
+        }
 
-    //        return dest;
-    //    }
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/524
+        /// </summary>
+   
+        [TestMethod]
+        public void TSousreIsObjectUpdate()
+        {
+            var source = new TestClassPublicCtr { X = 123 };
+
+            var _result = Somemap(source);
+
+            _result.X.ShouldBe(123);
+
+        }
+
+         TestClassPublicCtr Somemap(object source)
+        {
+            var dest = new TestClassPublicCtr { X = 321 };
+            var dest1 = source.Adapt(dest);
+
+            return dest;
+        }
 
  #endregion NowNotWorking
 
@@ -337,13 +340,13 @@ namespace Mapster.Tests
 
 
 
-   
 
 
 
 
 
-    #region TestClases
+
+    #region TestClasses
 
     public class FakeRecord
     {
@@ -473,7 +476,7 @@ namespace Mapster.Tests
     }
 
 
-    record TestREcord()
+    record TestRecord()
     {
         
 
@@ -488,5 +491,5 @@ namespace Mapster.Tests
     }
 
 
-    #endregion TestClases
+    #endregion TestClasses
 }
