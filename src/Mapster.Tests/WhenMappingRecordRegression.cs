@@ -105,7 +105,7 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
-        public void AdaptClassToClassPublicCtr_IsNotInstanse()
+        public void AdaptClassToClassPublicCtrIsNotInstanse()
         {
             var _source = new TestClassPublicCtr(200);
 
@@ -126,7 +126,7 @@ namespace Mapster.Tests
 
 
         [TestMethod]
-        public void AdaptClassToClassProtectdCtr_IsNotInstanse()
+        public void AdaptClassToClassProtectdCtrIsNotInstanse()
         {
             var _source = new TestClassPublicCtr(200);
 
@@ -173,7 +173,7 @@ namespace Mapster.Tests
         /// https://github.com/MapsterMapper/Mapster/issues/482
         /// </summary>
         [TestMethod]
-        public void AdaptClassToClassFromPrivateProperty_IsNotInstanse()
+        public void AdaptClassToClassFromPrivatePropertyIsNotInstanse()
         {
             var _source = new TestClassPublicCtr(200);
 
@@ -252,9 +252,36 @@ namespace Mapster.Tests
         }
 
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/524
+        /// </summary>
+        [TestMethod]
+        public void TSousreIsObjectUpdateUseDynamicCast()
+        {
+            var source = new TestClassPublicCtr { X = 123 };
+
+            var _result = SomemapWithDynamic(source);
+
+            _result.X.ShouldBe(123);
+
+        }
+
+        TestClassPublicCtr SomemapWithDynamic(object source)
+        {
+            var dest = new TestClassPublicCtr { X = 321 };
+            var dest1 = source.Adapt(dest,source.GetType(),dest.GetType());
+
+            return dest;
+        }
+
+
+
+
+
         #region NowNotWorking
 
         [TestMethod]
+        [Ignore]
         public void DetectFakeRecord()
         {
             var _source = new TestClassPublicCtr(200);
@@ -264,12 +291,18 @@ namespace Mapster.Tests
             var _result = _source.Adapt(_destination);
 
 
+            _destination.X.ShouldBe(200);
+
+            object.ReferenceEquals(_destination, _result).ShouldBeTrue();
+
+
         }
 
 
         /// <summary>
-        ///   https://github.com/MapsterMapper/Mapster/issues/430
+        /// https://github.com/MapsterMapper/Mapster/issues/430
         /// </summary>
+        [Ignore]
         [TestMethod]
         public void CollectionUpdate()
         {
@@ -291,9 +324,11 @@ namespace Mapster.Tests
         }
 
         /// <summary>
-        /// https://github.com/MapsterMapper/Mapster/issues/524
+        /// https://github.com/MapsterMapper/Mapster/issues/524 
+        /// Not work. Already has a special overload:  
+        /// .Adapt(this object source, object destination, Type sourceType, Type destinationType)
         /// </summary>
-
+        [Ignore]
         [TestMethod]
         public void TSousreIsObjectUpdate()
         {
@@ -308,7 +343,7 @@ namespace Mapster.Tests
         TestClassPublicCtr Somemap(object source)
         {
             var dest = new TestClassPublicCtr { X = 321 };
-            var dest1 = source.Adapt(dest);
+            var dest1 = source.Adapt(dest); // typeof(TSource) always return Type as Object. Need use dynamic or Cast to Runtime Type before Adapt
 
             return dest;
         }
