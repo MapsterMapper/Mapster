@@ -170,9 +170,7 @@ namespace Mapster
 
             var props = type.GetFieldsAndProperties().ToList();
 
-            ///
-            ///
-            ///
+            
             #region SupportingСurrentBehavior for Config Clone and Fork 
 
             if (type == typeof(MulticastDelegate))
