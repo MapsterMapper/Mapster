@@ -183,22 +183,22 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static TDestination ValidateAndAdapt<TSource, TDestination>(this TSource source)
         {
-            var entityType = typeof(TSource);
+            var sourceType = typeof(TSource);
             var selectorType = typeof(TDestination);
 
-            var entityProperties = new HashSet<string>(entityType.GetProperties().Select(p => p.Name));
+            var sourceProperties = new HashSet<string>(sourceType.GetProperties().Select(p => p.Name));
             var selectorProperties = new HashSet<string>(selectorType.GetProperties().Select(p=> p.Name));
 
             foreach (var selectorProperty in selectorProperties)
             {
-                if (entityProperties.Contains(selectorProperty)) continue;
-                throw new Exception($"Property {selectorProperty} does not exist in {entityType.Name} and is not configured in Mapster");
+                if (sourceProperties.Contains(selectorProperty)) continue;
+                throw new Exception($"Property {selectorProperty} does not exist in {sourceType.Name} and is not configured in Mapster");
             }
             return source.Adapt<TDestination>();
         }
         
         /// <summary>
-        /// Validate properties and Adapt the source object to the destination type.
+        /// Validate properties with configuration and Adapt the source object to the destination type.
         /// </summary>
         /// <typeparam name="TSource">Source type.</typeparam>
         /// <typeparam name="TDestination">Destination type.</typeparam>
@@ -207,23 +207,23 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static TDestination ValidateAndAdapt<TSource, TDestination>(this TSource source, TypeAdapterConfig config)
         {
-            var entityType = typeof(TSource);
+            var sourceType = typeof(TSource);
             var selectorType = typeof(TDestination);
 
-            var entityProperties = new HashSet<string>(entityType.GetProperties().Select(p => p.Name));
+            var sourceProperties = new HashSet<string>(sourceType.GetProperties().Select(p => p.Name));
             var selectorProperties = new HashSet<string>(selectorType.GetProperties().Select(p=> p.Name));
 
             // Get the rule map for the current types
             var ruleMap = config.RuleMap;
-            var typeTuple = new TypeTuple(entityType, selectorType);
+            var typeTuple = new TypeTuple(sourceType, selectorType);
             ruleMap.TryGetValue(typeTuple, out var rule);
 
             foreach (var selectorProperty in selectorProperties)
             {
-                if (entityProperties.Contains(selectorProperty)) continue;
+                if (sourceProperties.Contains(selectorProperty)) continue;
                 // Check whether the adapter config has a config for the property
                 if (rule != null && rule.Settings.Resolvers.Any(r => r.DestinationMemberName.Equals(selectorProperty))) continue;
-                throw new Exception($"Property {selectorProperty} does not exist in {entityType.Name} and is not configured in Mapster");
+                throw new Exception($"Property {selectorProperty} does not exist in {sourceType.Name} and is not configured in Mapster");
             }
             return source.Adapt<TDestination>(config);
         }
