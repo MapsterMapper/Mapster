@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Mapster.Models;
 
 namespace Mapster
 {
@@ -169,6 +172,60 @@ namespace Mapster
                 //DynamicInvoke is slow, but works with non-public
                 return del.DynamicInvoke(source, destination);
             }
+        }
+        
+        /// <summary>
+        /// Validate properties and Adapt the source object to the destination type.
+        /// </summary>
+        /// <typeparam name="TSource">Source type.</typeparam>
+        /// <typeparam name="TDestination">Destination type.</typeparam>
+        /// <param name="source">Source object to adapt.</param>
+        /// <returns>Adapted destination type.</returns>
+        public static TDestination ValidateAndAdapt<TSource, TDestination>(this TSource source)
+        {
+            var sourceType = typeof(TSource);
+            var selectorType = typeof(TDestination);
+
+            var sourceProperties = new HashSet<string>(sourceType.GetProperties().Select(p => p.Name));
+            var selectorProperties = new HashSet<string>(selectorType.GetProperties().Select(p=> p.Name));
+
+            foreach (var selectorProperty in selectorProperties)
+            {
+                if (sourceProperties.Contains(selectorProperty)) continue;
+                throw new Exception($"Property {selectorProperty} does not exist in {sourceType.Name} and is not configured in Mapster");
+            }
+            return source.Adapt<TDestination>();
+        }
+        
+        /// <summary>
+        /// Validate properties with configuration and Adapt the source object to the destination type.
+        /// </summary>
+        /// <typeparam name="TSource">Source type.</typeparam>
+        /// <typeparam name="TDestination">Destination type.</typeparam>
+        /// <param name="source">Source object to adapt.</param>
+        /// <param name="config">Configuration</param>
+        /// <returns>Adapted destination type.</returns>
+        public static TDestination ValidateAndAdapt<TSource, TDestination>(this TSource source, TypeAdapterConfig config)
+        {
+            var sourceType = typeof(TSource);
+            var selectorType = typeof(TDestination);
+
+            var sourceProperties = new HashSet<string>(sourceType.GetProperties().Select(p => p.Name));
+            var selectorProperties = new HashSet<string>(selectorType.GetProperties().Select(p=> p.Name));
+
+            // Get the rule map for the current types
+            var ruleMap = config.RuleMap;
+            var typeTuple = new TypeTuple(sourceType, selectorType);
+            ruleMap.TryGetValue(typeTuple, out var rule);
+
+            foreach (var selectorProperty in selectorProperties)
+            {
+                if (sourceProperties.Contains(selectorProperty)) continue;
+                // Check whether the adapter config has a config for the property
+                if (rule != null && rule.Settings.Resolvers.Any(r => r.DestinationMemberName.Equals(selectorProperty))) continue;
+                throw new Exception($"Property {selectorProperty} does not exist in {sourceType.Name} and is not configured in Mapster");
+            }
+            return source.Adapt<TDestination>(config);
         }
     }
 
