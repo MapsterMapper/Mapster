@@ -209,7 +209,7 @@ namespace Mapster
             var ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).ToList();
 
             var isRecordTypeCtor = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(x => x.IsFamily == true)
+                .Where(x => x.IsFamily == true || (type.Attributes.HasFlag(TypeAttributes.Sealed) && x.IsPrivate == true)) // add target from Sealed record
                 .Any(x => x.GetParameters()
                          .Any(y => y.ParameterType == type));
 
