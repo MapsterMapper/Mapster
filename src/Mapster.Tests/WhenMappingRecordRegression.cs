@@ -192,6 +192,31 @@ namespace Mapster.Tests
             return dest;
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/569
+        /// </summary>
+        [TestMethod]
+        public void ImplicitOperatorCurrentWorkFromClass()
+        {
+            var guid = Guid.NewGuid();
+
+            var pocoWithGuid1 = new PocoWithGuid { Id = guid };
+            var pocoWithId2 = new PocoWithId { Id = new Id(guid) };
+
+            var pocoWithId1 = pocoWithGuid1.Adapt<PocoWithId>();
+            var pocoWithGuid2 = pocoWithId2.Adapt<PocoWithGuid>();
+
+            pocoWithId1.Id.ToString().Equals(guid.ToString()).ShouldBeTrue();
+            pocoWithGuid2.Id.Equals(guid).ShouldBeTrue();
+
+
+            var _result = pocoWithId1.Adapt(pocoWithGuid2);
+
+            _result.Id.ToString().Equals(guid.ToString()).ShouldBeTrue(); // Guid value transmitted
+            object.ReferenceEquals(_result, pocoWithGuid2).ShouldBeTrue(); // Not created new instanse from class pocoWithGuid2
+            _result.ShouldBeOfType<PocoWithGuid>();
+
+        }
 
         #region NowNotWorking
 
@@ -253,6 +278,28 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+
+    class PocoWithGuid
+    {
+        public Guid Id { get; init; }
+    }
+
+    class PocoWithId
+    {
+        public Id Id { get; init; }
+    }
+
+    class Id
+    {
+        private readonly Guid _guid;
+
+        public Id(Guid id) => _guid = id;
+
+        public static implicit operator Id(Guid value) => new(value);
+        public static implicit operator Guid(Id value) => value._guid;
+
+        public override string ToString() => _guid.ToString();
+    }
 
     public class FakeRecord
     {
