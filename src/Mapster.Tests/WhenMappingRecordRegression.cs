@@ -243,7 +243,6 @@ namespace Mapster.Tests
         #region NowNotWorking
 
         [TestMethod]
-        [Ignore]
         public void DetectFakeRecord()
         {
             var _source = new TestClassPublicCtr(200);
