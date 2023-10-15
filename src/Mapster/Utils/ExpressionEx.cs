@@ -301,6 +301,30 @@ namespace Mapster.Utils
                 value);
         }
 
+        /// <summary>
+        /// Unpack Enum Nullable TSource value
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public static Expression NullableEnumExtractor(this Expression param)
+        {
+            var _SourceType = param.Type;
+
+            if (_SourceType.IsNullable())
+            {
+                var _genericType = param.Type.GetGenericArguments()[0];
+
+                if (_genericType.IsEnum)
+                {
+                    var ExtractionExpression = Expression.Convert(param, typeof(object));
+                    return ExtractionExpression;
+                }
+
+                return param;
+            }
+
+            return param;
+        }
         public static Expression ApplyNullPropagation(this Expression getter)
         {
             var current = getter;
