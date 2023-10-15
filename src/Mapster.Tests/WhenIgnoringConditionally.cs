@@ -160,6 +160,7 @@ namespace Mapster.Tests
         public void IgnoreIf_Apply_To_RecordType()
         {
             TypeAdapterConfig<SimplePoco, SimpleRecord>.NewConfig()
+                .EnableNonPublicMembers(true) // add or
                 .IgnoreIf((src, dest) => src.Name == "TestName", dest => dest.Name)
                 .Compile();
 
@@ -187,7 +188,7 @@ namespace Mapster.Tests
             public string Name { get; set; }
         }
 
-        public class SimpleRecord
+        public class SimpleRecord // or Replace on record
         {
             public int Id { get; }
             public string Name { get; }

@@ -4,7 +4,7 @@ using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
-    internal class RecordTypeAdapter : BaseClassAdapter
+    internal class RecordTypeAdapter : ClassAdapter
     {
         protected override int Score => -149;
         protected override bool UseTargetValue => false;
@@ -34,12 +34,12 @@ namespace Mapster.Adapters
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            return Expression.Empty();
+            return base.CreateBlockExpression(source, destination, arg);
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
         {
-            return CreateInstantiationExpression(source, arg);
+            return base.CreateInstantiationExpression(source, arg);
         }
     }
 
