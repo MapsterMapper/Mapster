@@ -19,9 +19,16 @@ namespace Mapster.Tests
 
             MyClass myClass = new() { TypeEmployer = MyEnum.User };
 
+            MyClass myClassNull = new() { TypeEmployer = null};
+
+
             var _result = myClass?.Adapt<MyDestination?>(); // Work
 
+            var _resultNull = myClassNull.Adapt<MyDestination>(); // Null Not Error When (object)s if (MyEnum)s - NullReferenceException
+
             _result.TypeEmployer.Key.ShouldBe(MyEnum.User.ToString());
+
+            _resultNull.TypeEmployer.ShouldBeNull();
         }
 
         /// <summary>
