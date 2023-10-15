@@ -34,8 +34,7 @@ namespace Mapster.Tests
             TypeAdapterConfig<Enum?, KeyValueData?>
                 .NewConfig()
                 .MapWith(s => s == null ? null : new KeyValueData(s.ToString(), Enums.Manager));
-
-          
+                      
             MyClass myClass = new() { TypeEmployer = MyEnum.User };
 
             var mDest2 = new MyDestination() { TypeEmployer = new KeyValueData("Admin", null) };
@@ -45,8 +44,6 @@ namespace Mapster.Tests
 
             _result.TypeEmployer.Key.ShouldBe(MyEnum.User.ToString());
         }
-
-       
     }
 
     #region TestClasses
@@ -75,9 +72,7 @@ namespace Mapster.Tests
     class Enums
     {
         protected Enums(string data) {}
-
         public static FakeResourceManager Manager { get; set; }
-
     }
 
     record KeyValueData
