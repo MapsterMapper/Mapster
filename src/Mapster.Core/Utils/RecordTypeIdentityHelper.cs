@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mapster.Utils
 {
@@ -17,18 +14,18 @@ namespace Mapster.Utils
         {
             var ctors = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).ToList();
 
+            if (ctors.Count < 2)
+                return false;
+
             var isRecordTypeCtor = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(x => x.IsFamily == true || (type.IsSealed && x.IsPrivate == true)) // add target from Sealed record
                 .Any(x => x.GetParameters()
                          .Any(y => y.ParameterType == type));
 
-
-            if (ctors.Count >= 2 && isRecordTypeCtor) 
+            if (isRecordTypeCtor) 
                 return true;
 
-
             return false;
-
         }
 
         private static bool IsIncludedRecordCloneMethod(Type type)
@@ -44,9 +41,7 @@ namespace Mapster.Utils
             if (IsRecordСonstructor(type) && IsIncludedRecordCloneMethod(type))
                 return true;
 
-
             return false;
         }
-
     }
 }

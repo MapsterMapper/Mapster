@@ -221,7 +221,6 @@ namespace Mapster.Tests
         public void ImplicitOperatorCurrentWorkFromClass()
         {
             var guid = Guid.NewGuid();
-
             var pocoWithGuid1 = new PocoWithGuid { Id = guid };
             var pocoWithId2 = new PocoWithId { Id = new Id(guid) };
 
@@ -231,7 +230,6 @@ namespace Mapster.Tests
             pocoWithId1.Id.ToString().Equals(guid.ToString()).ShouldBeTrue();
             pocoWithGuid2.Id.Equals(guid).ShouldBeTrue();
 
-
             var _result = pocoWithId1.Adapt(pocoWithGuid2);
 
             _result.Id.ToString().Equals(guid.ToString()).ShouldBeTrue(); // Guid value transmitted
@@ -239,8 +237,6 @@ namespace Mapster.Tests
             _result.ShouldBeOfType<PocoWithGuid>();
 
         }
-
-        #region NowNotWorking
 
         [TestMethod]
         public void DetectFakeRecord()
@@ -251,6 +247,8 @@ namespace Mapster.Tests
             _destination.X.ShouldBe(200);
             object.ReferenceEquals(_destination, _result).ShouldBeTrue();
         }
+
+        #region NowNotWorking
 
         /// <summary>
         /// https://github.com/MapsterMapper/Mapster/issues/430
@@ -313,7 +311,6 @@ namespace Mapster.Tests
     class Id
     {
         private readonly Guid _guid;
-
         public Id(Guid id) => _guid = id;
 
         public static implicit operator Id(Guid value) => new(value);
