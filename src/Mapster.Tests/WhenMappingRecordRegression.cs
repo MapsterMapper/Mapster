@@ -41,7 +41,7 @@ namespace Mapster.Tests
             var _structResult = _sourceStruct.Adapt(_destinationStruct);
 
             _structResult.X.ShouldBe(1000);
-            object.ReferenceEquals(_destinationStruct, _structResult).ShouldBeFalse();
+            _destinationStruct.X.Equals(_structResult.X).ShouldBeFalse();
         }
 
         [TestMethod]
