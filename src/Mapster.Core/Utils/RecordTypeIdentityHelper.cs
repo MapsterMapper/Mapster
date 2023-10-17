@@ -17,10 +17,11 @@ namespace Mapster.Utils
             if (ctors.Count < 2)
                 return false;
 
-            var isRecordTypeCtor = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
+            var isRecordTypeCtor = 
+                ctors
                 .Where(x => x.IsFamily == true || (type.IsSealed && x.IsPrivate == true)) // add target from Sealed record
                 .Any(x => x.GetParameters()
-                         .Any(y => y.ParameterType == type));
+                            .Any(y => y.ParameterType == type));
 
             if (isRecordTypeCtor) 
                 return true;
