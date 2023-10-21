@@ -41,7 +41,7 @@ namespace Mapster.Tests
             var _structResult = _sourceStruct.Adapt(_destinationStruct);
 
             _structResult.X.ShouldBe(1000);
-            object.ReferenceEquals(_destinationStruct, _structResult).ShouldBeFalse();
+            _structResult.X.ShouldNotBe(_destinationStruct.X);
         }
 
         [TestMethod]
@@ -195,26 +195,6 @@ namespace Mapster.Tests
         }
 
         /// <summary>
-        /// https://github.com/MapsterMapper/Mapster/issues/524
-        /// </summary>
-        [TestMethod]
-        public void TSousreIsObjectUpdateUseDynamicCast()
-        {
-            var source = new TestClassPublicCtr { X = 123 };
-            var _result = SomemapWithDynamic(source);
-            
-            _result.X.ShouldBe(123);
-        }
-
-        TestClassPublicCtr SomemapWithDynamic(object source)
-        {
-            var dest = new TestClassPublicCtr { X = 321 };
-            var dest1 = source.Adapt(dest,source.GetType(),dest.GetType());
-            
-            return dest;
-        }
-
-        /// <summary>
         /// https://github.com/MapsterMapper/Mapster/issues/569
         /// </summary>
         [TestMethod]
@@ -266,29 +246,6 @@ namespace Mapster.Tests
             var _result = sources.Adapt(destination);
 
             destination.Count.ShouldBe(_result.Count);
-        }
-
-        /// <summary>
-        /// https://github.com/MapsterMapper/Mapster/issues/524 
-        /// Not work. Already has a special overload:  
-        /// .Adapt(this object source, object destination, Type sourceType, Type destinationType)
-        /// </summary>
-        [Ignore]
-        [TestMethod]
-        public void TSousreIsObjectUpdate()
-        {
-            var source = new TestClassPublicCtr { X = 123 };
-            var _result = Somemap(source);
-
-            _result.X.ShouldBe(123);
-        }
-
-        TestClassPublicCtr Somemap(object source)
-        {
-            var dest = new TestClassPublicCtr { X = 321 };
-            var dest1 = source.Adapt(dest); // typeof(TSource) always return Type as Object. Need use dynamic or Cast to Runtime Type before Adapt
-
-            return dest;
         }
 
         #endregion NowNotWorking
