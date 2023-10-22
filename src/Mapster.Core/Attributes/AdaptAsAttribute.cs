@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mapster.Attributes
+namespace Mapster
 {
     [AttributeUsage(AttributeTargets.Class
                     | AttributeTargets.Struct
@@ -9,10 +9,10 @@ namespace Mapster.Attributes
                     | AttributeTargets.Field, AllowMultiple = true)]
     public class AdaptAsAttribute : Attribute
     {
-        public AdaptDirectives AdaptDirective { get; }
+        public AdaptDirectives AdaptDirective { get; set; }
         public AdaptAsAttribute(AdaptDirectives directive)
         {
-            this.AdaptDirective = directive;
+            AdaptDirective = directive;
         }
     }
 }

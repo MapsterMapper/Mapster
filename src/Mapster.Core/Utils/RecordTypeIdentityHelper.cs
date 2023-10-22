@@ -44,5 +44,16 @@ namespace Mapster.Utils
 
             return false;
         }
+
+        public static bool IsDirectiveTagret(Type type)
+        {
+            var arrt = type.GetCustomAttributes<AdaptAsAttribute>()?.FirstOrDefault()?.AdaptDirective;
+
+            if (arrt == null) return false;
+            if (arrt != null)
+                if (arrt == AdaptDirectives.DestinationAsRecord) return true;
+
+            return false;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -168,34 +169,43 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
+            if(RecordTypeIdentityHelper.IsDirectiveTagret(type)) // added Support work from custom Attribute
+                return true;
+
             var props = type.GetFieldsAndProperties().ToList();
 
-            
             #region SupportingСurrentBehavior for Config Clone and Fork 
 
-            if (type == typeof(MulticastDelegate))
-                return true;
+            //  if (type == typeof(MulticastDelegate))
+            //      return true;
 
-            if (type == typeof(TypeAdapterSetter))
-                return true;
-
-            //  if (type == typeof(TypeAdapterRule))
+            //if (type == typeof(TypeAdapterSetter))
             //    return true;
 
-            if (type == typeof(TypeAdapterSettings))
+            ////  if (type == typeof(TypeAdapterRule))
+            ////    return true;
+
+            //if (type == typeof(TypeAdapterSettings))
+            //    return true;
+
+            //if (type == typeof(TypeTuple))
+            //    return true;
+
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                 return true;
 
-            if (type.IsValueType && type?.GetConstructors().Length != 0)
-            {
-                var test = type.GetConstructors()[0].GetParameters();
-                var param = type.GetConstructors()[0].GetParameters().ToArray();
 
-                if (param[0]?.ParameterType == typeof(TypeTuple) && param[1]?.ParameterType == typeof(TypeAdapterRule))
-                    return true;
-            }
+            //if (type.IsValueType && type?.GetConstructors().Length != 0)
+            //{
+            //    var test = type.GetConstructors()[0].GetParameters();
+            //    var param = type.GetConstructors()[0].GetParameters().ToArray();
 
-            if (type == typeof(TypeTuple))
-                return true;
+            //    if (param[0]?.ParameterType == typeof(TypeTuple) && param[1]?.ParameterType == typeof(TypeAdapterRule))
+            //      return true;
+            //}
+
+            
 
             #endregion SupportingСurrentBehavior for Config Clone and Fork 
 

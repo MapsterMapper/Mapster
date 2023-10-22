@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 
 namespace Mapster
 {
+    [AdaptAs(AdaptDirectives.DestinationAsRecord)]
     public class TypeAdapterSettings : SettingStore
     {
         public IgnoreDictionary Ignore
