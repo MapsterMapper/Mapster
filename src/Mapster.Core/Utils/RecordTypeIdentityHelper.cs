@@ -49,9 +49,10 @@ namespace Mapster.Utils
         {
             var arrt = type.GetCustomAttributes<AdaptAsAttribute>()?.FirstOrDefault()?.AdaptDirective;
 
-            if (arrt == null) return false;
-            if (arrt != null)
-                if (arrt == AdaptDirectives.DestinationAsRecord) return true;
+            if (arrt == null) 
+                return false;
+            if (arrt == AdaptDirectives.DestinationAsRecord) 
+                return true;
 
             return false;
         }

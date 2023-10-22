@@ -348,13 +348,11 @@ namespace Mapster.Tests
         public string MyString { get; private set; }
     }
 
-
     class InlinePoco501
     {
         public int MyInt { get; set; }
         public string MyString { get; set; }
     }
-
 
     record OnlyInitRecord501
     {
