@@ -75,7 +75,7 @@ namespace Mapster.Adapters
 
 
 
-            if ((arg.GetConstructUsing() != null || arg.Settings.MapToConstructor == null) && !IsEnableNonPublicMembersAndNotPublicCtorWithoutParams(arg))
+            if ((arg.GetConstructUsing() != null || arg.Settings.MapToConstructor == null))
                 return base.CreateInstantiationExpression(source, destination, arg);
 
             ClassMapping? classConverter;
