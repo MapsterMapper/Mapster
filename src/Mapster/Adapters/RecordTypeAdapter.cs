@@ -21,7 +21,7 @@ namespace Mapster.Adapters
             //new TDestination(src.Prop1, src.Prop2)
 
             if (arg.GetConstructUsing() != null)
-                return base.CreateInstantiationExpression(source, destination, arg);
+                return base.CreateInstantiationExpression(source, destination, arg); // this propably can inline Field activation, I didn’t see issue where it was requested :)
 
             var destType = arg.DestinationType.GetTypeInfo().IsInterface
                 ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0)
@@ -29,11 +29,11 @@ namespace Mapster.Adapters
             if (destType == null)
                 return base.CreateInstantiationExpression(source, destination, arg);
             var ctor = destType.GetConstructors()
-                    .OrderByDescending(it => it.GetParameters().Length).ToArray().FirstOrDefault();
+                    .OrderByDescending(it => it.GetParameters().Length).ToArray().FirstOrDefault(); // Will be used public constructor with the maximum number of parameters 
             var classModel = GetConstructorModel(ctor, false);
             var classConverter = CreateClassConverter(source, classModel, arg);
             var installExpr = CreateInstantiationExpression(source, classConverter, arg);
-            return RecordInlineExpression(source, arg, installExpr);
+            return RecordInlineExpression(source, arg, installExpr); // Activator field when not include in public ctor
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
