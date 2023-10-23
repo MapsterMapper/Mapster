@@ -47,7 +47,7 @@ namespace Mapster.Utils
 
         public static bool IsDirectiveTagret(Type type)
         {
-            var arrt = type.GetCustomAttributes<AdaptAsAttribute>()?.FirstOrDefault()?.AdaptDirective;
+            var arrt = type.GetCustomAttributes<AdaptWithAttribute>()?.FirstOrDefault()?.AdaptDirective;
 
             if (arrt == null) 
                 return false;

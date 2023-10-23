@@ -7,10 +7,10 @@ namespace Mapster
                     | AttributeTargets.Interface
                     | AttributeTargets.Property
                     | AttributeTargets.Field, AllowMultiple = true)]
-    public class AdaptAsAttribute : Attribute
+    public class AdaptWithAttribute : Attribute
     {
         public AdaptDirectives AdaptDirective { get; set; }
-        public AdaptAsAttribute(AdaptDirectives directive)
+        public AdaptWithAttribute(AdaptDirectives directive)
         {
             AdaptDirective = directive;
         }

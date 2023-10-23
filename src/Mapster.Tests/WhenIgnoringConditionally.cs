@@ -187,7 +187,7 @@ namespace Mapster.Tests
             public string Name { get; set; }
         }
 
-        [AdaptAs(AdaptDirectives.DestinationAsRecord)]
+        [AdaptWith(AdaptDirectives.DestinationAsRecord)]
         public class SimpleRecord
         {
             public int Id { get; }
