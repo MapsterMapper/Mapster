@@ -21,7 +21,7 @@ namespace Mapster.Adapters
             //new TDestination(src.Prop1, src.Prop2)
 
             if (arg.GetConstructUsing() != null)
-                return base.CreateInstantiationExpression(source, destination, arg); // this propably can inline Field activation, I didn’t see issue where it was requested :)
+                return base.CreateInstantiationExpression(source, destination, arg);
 
             var destType = arg.DestinationType.GetTypeInfo().IsInterface
                 ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0)
@@ -38,7 +38,7 @@ namespace Mapster.Adapters
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
         {
-            return base.CreateBlockExpression(source, destination, arg);
+            return Expression.Empty();
         }
 
         protected override Expression CreateInlineExpression(Expression source, CompileArgument arg)
