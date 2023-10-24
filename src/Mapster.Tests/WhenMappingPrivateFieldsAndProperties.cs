@@ -78,28 +78,25 @@ namespace Mapster.Tests
             dto.Name.ShouldBe(customerName);
         }
 
-        [Ignore]
         [TestMethod]
-        public void Should_Map_To_Private_Fields_Correctly() // this test not testing this scenario 
+        public void Should_Map_To_Private_Fields_Correctly() 
         {
-            SetUpMappingNonPublicFields<CustomerDTO, CustomerWithPrivateField>();
-            
-            var dto = new CustomerDTO
+            SetUpMappingNonPublicFields<CustomerDTOWithPrivateGet, CustomerWithPrivateField>();
+
+            var dto = new CustomerDTOWithPrivateGet
             {
                 Id = 1,
                 Name = "Customer 1"
             };
 
-            var customer = dto.Adapt<CustomerWithPrivateField>(); // creation as Record when constructor private member not used
+            var customer = dto.Adapt<CustomerWithPrivateField>(); 
 
-            Assert.IsNotNull(customer);
-            Assert.IsTrue(customer.HasId(dto.Id));
-            customer.Name.ShouldBe(dto.Name);            
+            customer.HasId().ShouldBe(1);
+            customer.Name.ShouldBe("Customer 1");
         }
 
-        [Ignore]
         [TestMethod]
-        public void Should_Map_To_Private_Properties_Correctly() // this test not testing this scenario 
+        public void Should_Map_To_Private_Properties_Correctly()
         {
             SetUpMappingNonPublicFields<CustomerDTO, CustomerWithPrivateProperty>();
 
@@ -109,11 +106,10 @@ namespace Mapster.Tests
                 Name = "Customer 1"
             };
 
-            var customer = dto.Adapt<CustomerWithPrivateProperty>(); // creation  as Record when constructor private member not used
+            var customer = dto.Adapt<CustomerWithPrivateProperty>();
 
-            Assert.IsNotNull(customer);
-            customer.Id.ShouldBe(dto.Id);
-            Assert.IsTrue(customer.HasName(dto.Name));
+            customer.Id.ShouldBe(1);
+            customer.HasName().ShouldBe("Customer 1");
         }
 
         [TestMethod]
@@ -168,41 +164,41 @@ namespace Mapster.Tests
 
         #region TestMethod Classes
 
-        public class CustomerWithPrivateField // this detect as Record 
+        public class CustomerWithPrivateField
         {
-            private readonly int _id; // this not taken into account no public getter
+            private int _id; 
             public string Name { get; private set; }
 
-            private CustomerWithPrivateField() { } // not public constructor not takened 
+            public CustomerWithPrivateField() { } 
 
-            public CustomerWithPrivateField(int id, string name) // two is two == true this worked as record
+            public CustomerWithPrivateField(int id, string name)
             {
                 _id = id;
                 Name = name;
             }
 
-            public bool HasId(int id) // it is not property  
+            public int HasId()
             {
-                return _id == id;
+                return _id;
             }
         }
 
-        public class CustomerWithPrivateProperty // this detect as Record 
+        public class CustomerWithPrivateProperty 
         {
             public int Id { get; private set; }
             private string Name { get; set; }
 
-            private CustomerWithPrivateProperty() { } // not public constructor is not taken 
+            public CustomerWithPrivateProperty() { } 
 
-            public CustomerWithPrivateProperty(int id, string name) // two is two == true this worked as record
+            public CustomerWithPrivateProperty(int id, string name) 
             {
                 Id = id;
                 Name = name;
             }
 
-            public bool HasName(string name)  // it is not property  
+            public string HasName()
             {
-                return Name == name;
+                return Name;
             }
         }
 
@@ -229,6 +225,12 @@ namespace Mapster.Tests
         {
             public int Id { get; set; }
             public string Name { get; set; }
+        }
+
+        public class CustomerDTOWithPrivateGet
+        {
+            public int Id {  private get; set; }
+            public string Name { private get; set; }
         }
 
         public class Pet
