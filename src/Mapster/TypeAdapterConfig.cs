@@ -21,6 +21,7 @@ namespace Mapster
             return new List<TypeAdapterRule>
             {
                 new PrimitiveAdapter().CreateRule(),    //-200
+                new ReadOnlyInterfaceAdapter().CreateRule(), // -151
                 new ClassAdapter().CreateRule(),        //-150
                 new RecordTypeAdapter().CreateRule(),   //-149
                 new CollectionAdapter().CreateRule(),   //-125

@@ -178,13 +178,6 @@ namespace Mapster
 
             #endregion SupportingСurrentBehavior for Config Clone and Fork 
 
-            var props = type.GetFieldsAndProperties().ToList();
-
-            //interface with readonly props
-            if (type.GetTypeInfo().IsInterface &&
-                props.Any(p => p.SetterModifier != AccessModifier.Public))
-                return true;
-
            if(RecordTypeIdentityHelper.IsRecordType(type))
                 return true;
 

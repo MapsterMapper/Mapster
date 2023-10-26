@@ -53,24 +53,7 @@ namespace Mapster.Adapters
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             //new TDestination(src.Prop1, src.Prop2)
-
-            ///
-            //bool IsEnableNonPublicMembersAndNotPublicCtorWithoutParams(CompileArgument arg)
-            //{
-            //    if (arg.Settings.EnableNonPublicMembers == null)
-            //        return false;
-            //    if (arg.Settings.EnableNonPublicMembers == false)
-            //        return false;
-            //    else
-            //    {
-            //        if (arg.DestinationType.GetConstructors().Any(x => x.GetParameters() != null))
-            //        {
-            //            return true;
-            //        }
-            //    }
-            //    return false;
-            //}
-
+                        
             if (arg.GetConstructUsing() != null || arg.Settings.MapToConstructor == null)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
