@@ -6,7 +6,7 @@ namespace Mapster.Adapters
 {
     internal class ReadOnlyInterfaceAdapter : ClassAdapter
     {
-        protected override int Score => -151;
+        protected override int Score => -148;
 
         protected override bool CanMap(PreCompileArgument arg)
         {
