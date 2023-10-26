@@ -17,10 +17,11 @@ namespace Mapster.Utils
             if (ctors.Count < 2)
                 return false;
 
-            var isRecordTypeCtor = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
+            var isRecordTypeCtor = 
+                ctors
                 .Where(x => x.IsFamily == true || (type.IsSealed && x.IsPrivate == true)) // add target from Sealed record
                 .Any(x => x.GetParameters()
-                         .Any(y => y.ParameterType == type));
+                            .Any(y => y.ParameterType == type));
 
             if (isRecordTypeCtor) 
                 return true;
@@ -39,6 +40,18 @@ namespace Mapster.Utils
         public static bool IsRecordType(Type type)
         {
             if (IsRecordСonstructor(type) && IsIncludedRecordCloneMethod(type))
+                return true;
+
+            return false;
+        }
+
+        public static bool IsDirectiveTagret(Type type)
+        {
+            var arrt = type.GetCustomAttributes<AdaptWithAttribute>()?.FirstOrDefault()?.AdaptDirective;
+
+            if (arrt == null) 
+                return false;
+            if (arrt == AdaptDirectives.DestinationAsRecord) 
                 return true;
 
             return false;
