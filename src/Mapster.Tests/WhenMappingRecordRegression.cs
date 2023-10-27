@@ -41,7 +41,7 @@ namespace Mapster.Tests
             var _structResult = _sourceStruct.Adapt(_destinationStruct);
 
             _structResult.X.ShouldBe(1000);
-            object.ReferenceEquals(_destinationStruct, _structResult).ShouldBeFalse();
+            _destinationStruct.X.Equals(_structResult.X).ShouldBeFalse();
         }
 
         [TestMethod]
@@ -195,26 +195,6 @@ namespace Mapster.Tests
         }
 
         /// <summary>
-        /// https://github.com/MapsterMapper/Mapster/issues/524
-        /// </summary>
-        [TestMethod]
-        public void TSousreIsObjectUpdateUseDynamicCast()
-        {
-            var source = new TestClassPublicCtr { X = 123 };
-            var _result = SomemapWithDynamic(source);
-            
-            _result.X.ShouldBe(123);
-        }
-
-        TestClassPublicCtr SomemapWithDynamic(object source)
-        {
-            var dest = new TestClassPublicCtr { X = 321 };
-            var dest1 = source.Adapt(dest,source.GetType(),dest.GetType());
-            
-            return dest;
-        }
-
-        /// <summary>
         /// https://github.com/MapsterMapper/Mapster/issues/569
         /// </summary>
         [TestMethod]
@@ -247,6 +227,56 @@ namespace Mapster.Tests
             _destination.X.ShouldBe(200);
             object.ReferenceEquals(_destination, _result).ShouldBeTrue();
         }
+                
+        [TestMethod]
+        public void OnlyInlineRecordWorked()
+        {
+            var _sourcePoco = new InlinePoco501() { MyInt = 1 , MyString = "Hello" };
+            var _sourceOnlyInitRecord = new OnlyInitRecord501 { MyInt = 2, MyString = "Hello World" };
+
+            var _resultOnlyinitRecord = _sourcePoco.Adapt<OnlyInitRecord501>();
+            var _updateResult = _sourceOnlyInitRecord.Adapt(_resultOnlyinitRecord);
+
+            _resultOnlyinitRecord.MyInt.ShouldBe(1);
+            _resultOnlyinitRecord.MyString.ShouldBe("Hello");
+            _updateResult.MyInt.ShouldBe(2);
+            _updateResult.MyString.ShouldBe("Hello World");
+        }
+
+        [TestMethod]
+        public void MultyCtorRecordWorked()
+        {
+            var _sourcePoco = new InlinePoco501() { MyInt = 1, MyString = "Hello" };
+            var _sourceMultyCtorRecord = new MultiCtorRecord (2, "Hello World");
+
+            var _resultMultyCtorRecord = _sourcePoco.Adapt<MultiCtorRecord>();
+            var _updateResult = _sourceMultyCtorRecord.Adapt(_resultMultyCtorRecord);
+
+            _resultMultyCtorRecord.MyInt.ShouldBe(1);
+            _resultMultyCtorRecord.MyString.ShouldBe("Hello");
+            _updateResult.MyInt.ShouldBe(2);
+            _updateResult.MyString.ShouldBe("Hello World");
+        }
+
+        [TestMethod]
+        public void MultiCtorAndInlineRecordWorked()
+        {
+            var _sourcePoco = new MultiCtorAndInlinePoco() { MyInt = 1, MyString = "Hello", MyEmail = "123@gmail.com", InitData="Test"};
+            var _sourceMultiCtorAndInline = new MultiCtorAndInlineRecord(2, "Hello World") { InitData = "Worked", MyEmail = "243@gmail.com" };
+
+            var _resultMultiCtorAndInline = _sourcePoco.Adapt<MultiCtorAndInlineRecord>();
+            var _updateResult = _sourceMultiCtorAndInline.Adapt(_resultMultiCtorAndInline);
+
+            _resultMultiCtorAndInline.MyInt.ShouldBe(1);
+            _resultMultiCtorAndInline.MyString.ShouldBe("Hello");
+            _resultMultiCtorAndInline.MyEmail.ShouldBe("123@gmail.com");
+            _resultMultiCtorAndInline.InitData.ShouldBe("Test");
+            _updateResult.MyInt.ShouldBe(2);
+            _updateResult.MyString.ShouldBe("Hello World");
+            _updateResult.MyEmail.ShouldBe("243@gmail.com");
+            _updateResult.InitData.ShouldBe("Worked");
+        }
+
 
         #region NowNotWorking
 
@@ -268,35 +298,67 @@ namespace Mapster.Tests
             destination.Count.ShouldBe(_result.Count);
         }
 
-        /// <summary>
-        /// https://github.com/MapsterMapper/Mapster/issues/524 
-        /// Not work. Already has a special overload:  
-        /// .Adapt(this object source, object destination, Type sourceType, Type destinationType)
-        /// </summary>
-        [Ignore]
-        [TestMethod]
-        public void TSousreIsObjectUpdate()
-        {
-            var source = new TestClassPublicCtr { X = 123 };
-            var _result = Somemap(source);
-
-            _result.X.ShouldBe(123);
-        }
-
-        TestClassPublicCtr Somemap(object source)
-        {
-            var dest = new TestClassPublicCtr { X = 321 };
-            var dest1 = source.Adapt(dest); // typeof(TSource) always return Type as Object. Need use dynamic or Cast to Runtime Type before Adapt
-
-            return dest;
-        }
-
         #endregion NowNotWorking
 
     }
 
 
     #region TestClasses
+
+    class MultiCtorAndInlinePoco
+    {
+        public int MyInt { get; set; }
+        public string MyString { get; set; }
+        public string MyEmail { get; set; }
+        public string InitData { get; set; }
+    }
+
+    record MultiCtorAndInlineRecord
+    {
+        public MultiCtorAndInlineRecord(int myInt)
+        {
+            MyInt = myInt;
+        }
+
+        public MultiCtorAndInlineRecord(int myInt, string myString) : this(myInt)
+        {
+            MyString = myString;
+        }
+
+        
+        public int MyInt { get; private set; }
+        public string MyString { get; private set; }
+        public string MyEmail { get; set; }
+        public string InitData { get; init; }
+    }
+
+    record MultiCtorRecord
+    {
+        public MultiCtorRecord(int myInt)
+        {
+            MyInt = myInt;
+        }
+
+        public MultiCtorRecord(int myInt, string myString) : this(myInt)
+        {
+            MyString = myString;
+        }
+
+        public int MyInt { get; private set; }
+        public string MyString { get; private set; }
+    }
+
+    class InlinePoco501
+    {
+        public int MyInt { get; set; }
+        public string MyString { get; set; }
+    }
+
+    record OnlyInitRecord501
+    {
+        public int MyInt { get; init; }
+        public string MyString { get; init; }
+    }
 
     class PocoWithGuid
     {

@@ -8,6 +8,7 @@ using Mapster.Utils;
 
 namespace Mapster
 {
+    [AdaptWith(AdaptDirectives.DestinationAsRecord)]
     public class TypeAdapterSetter
     {
         protected const string SourceParameterName = "source";
