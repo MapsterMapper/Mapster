@@ -24,7 +24,6 @@ namespace Mapster.Adapters
 
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
-            //new TDestination(src.Prop1, src.Prop2)
             var destintionType = arg.DestinationType;
             var props = destintionType.GetFieldsAndProperties().ToList();
 
