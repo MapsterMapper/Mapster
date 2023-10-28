@@ -7,6 +7,7 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenMappingPrimitiveCustomMappingRegression
     {
+        [TestMethod]
         public void CustomMappingDateTimeToPrimitive()
         {
             TypeAdapterConfig<DateTime, long>
@@ -22,7 +23,9 @@ namespace Mapster.Tests
             var _resultToLong = _source.Adapt<long>();
             var _resultToString = _source.Adapt<string>();
 
-
+            _resultToLong.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27)).ToUnixTimeSeconds());
+            _resultToString.ShouldNotBe(_source.ToString());
+            _resultToString.ShouldBe(_source.ToShortDateString());
         }
 
         /// <summary>
