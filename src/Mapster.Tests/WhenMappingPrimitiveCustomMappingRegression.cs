@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Mapster.Tests
 {
@@ -69,11 +71,37 @@ namespace Mapster.Tests
             var c1 = new Source407 { Time = fromC1 };
             var c2 = new Destination407 { Time = fromC2 };
 
-            var _result = c1.Adapt<Destination407>(); // Work 
+            var _result = c1.Adapt<Destination407>();
             var _resultLongtoDateTime = c2.Adapt<Source407>();
 
             _result.Time.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds());               
             _resultLongtoDateTime.Time.ShouldBe(new DateTime(2025, 11, 23).Date);
+        }
+
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/407
+        /// </summary>
+        [TestMethod]
+        public void CustomMappingPrimitiveToProjection()
+        {
+            TypeAdapterConfig<DateTime, long>
+               .NewConfig()
+               .MapWith(src => new DateTimeOffset(src).ToUnixTimeSeconds());
+
+            TypeAdapterConfig<long, DateTime>
+              .NewConfig()
+              .MapWith(src => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(src).Date);
+
+            var _sourceList = new List<Source407>();
+            _sourceList.Add(new Source407 { Time = new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc) });
+            var _fromC2List = new List<Destination407>();
+            _fromC2List.Add(new Destination407 { Time = new DateTimeOffset(new DateTime(2025, 11, 23, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds() });
+
+            var _resultProjectionDateTimeTolong = _sourceList.AsQueryable().ProjectToType<Destination407>().ToList();
+            var _resultProjectionLongToDateTime = _fromC2List.AsQueryable().ProjectToType<Source407>().ToList();
+
+            _resultProjectionDateTimeTolong[0].Time.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds());
+            _resultProjectionLongToDateTime[0].Time.ShouldBe(new DateTime(2025, 11, 23).Date);
         }
 
     }
