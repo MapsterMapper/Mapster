@@ -611,6 +611,11 @@ namespace Mapster
         {
             this.CheckCompiled();
 
+            if(typeof(TSource).IsMapsterPrimitive() || typeof(TDestination).IsMapsterPrimitive())
+            {
+                this.Settings.MapWithToPrimitive = true;
+            }
+
             if (applySettings)
             {
                 var adapter = new DelegateAdapter(converterFactory);
@@ -633,6 +638,11 @@ namespace Mapster
         public TypeAdapterSetter<TSource, TDestination> MapToTargetWith(Expression<Func<TSource, TDestination, TDestination>> converterFactory, bool applySettings = false)
         {
             this.CheckCompiled();
+
+            if (typeof(TSource).IsMapsterPrimitive() || typeof(TDestination).IsMapsterPrimitive())
+            {
+                this.Settings.MapToTargetPrimitive = true;
+            }
 
             if (applySettings)
             {
