@@ -65,7 +65,7 @@ namespace Mapster.Tests
 
             var emptySource = new Source407() { Time = DateTime.UtcNow.Date };
             var fromC1 = new DateTime(2023, 10, 27);
-            var fromC2 = new DateTimeOffset(new DateTime(2025, 11, 23)).ToUnixTimeSeconds();
+            var fromC2 = new DateTimeOffset(new DateTime(2025, 11, 23,0,0,0,DateTimeKind.Utc)).ToUnixTimeSeconds();
             var c1 = new Source407 { Time = fromC1 };
             var c2 = new Destination407 { Time = fromC2 };
 
@@ -73,7 +73,7 @@ namespace Mapster.Tests
             var _resultLongtoDateTime = c2.Adapt<Source407>();
 
             _result.Time.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27)).ToUnixTimeSeconds()); // Work                  
-            _resultLongtoDateTime.Time.ShouldBe(new DateTime(2025, 11, 22).Date); // work but but it turns out to be a day less. Perhaps this is how it was intended
+            _resultLongtoDateTime.Time.ShouldBe(new DateTime(2025, 11, 23).Date); // work but but it turns out to be a day less. Perhaps this is how it was intended
         }
 
     }
