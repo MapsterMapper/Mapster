@@ -18,12 +18,12 @@ namespace Mapster.Tests
                .NewConfig()
                .MapWith(src => src.ToShortDateString());
 
-            var _source = new DateTime(2023, 10, 27);
+            var _source = new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc);
 
             var _resultToLong = _source.Adapt<long>();
             var _resultToString = _source.Adapt<string>();
 
-            _resultToLong.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27)).ToUnixTimeSeconds());
+            _resultToLong.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds());
             _resultToString.ShouldNotBe(_source.ToString());
             _resultToString.ShouldBe(_source.ToShortDateString());
         }
@@ -65,15 +65,15 @@ namespace Mapster.Tests
 
             var emptySource = new Source407() { Time = DateTime.UtcNow.Date };
             var fromC1 = new DateTime(2023, 10, 27,0,0,0,DateTimeKind.Utc);
-            var fromC2 = new DateTimeOffset(new DateTime(2025, 11, 23,0,0,0,DateTimeKind.Utc)).ToUnixTimeSeconds();
+            var fromC2 = new DateTimeOffset(new DateTime(2025, 11, 23, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds();
             var c1 = new Source407 { Time = fromC1 };
             var c2 = new Destination407 { Time = fromC2 };
 
             var _result = c1.Adapt<Destination407>(); // Work 
             var _resultLongtoDateTime = c2.Adapt<Source407>();
 
-            _result.Time.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds()); // Work                  
-            _resultLongtoDateTime.Time.ShouldBe(new DateTime(2025, 11, 23).Date); // work but but it turns out to be a day less. Perhaps this is how it was intended
+            _result.Time.ShouldBe(new DateTimeOffset(new DateTime(2023, 10, 27, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeSeconds());               
+            _resultLongtoDateTime.Time.ShouldBe(new DateTime(2025, 11, 23).Date);
         }
 
     }
