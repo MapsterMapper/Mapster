@@ -36,6 +36,11 @@ namespace Mapster
         }
 #endif
 
+        public static bool IsMapsterPrimitive(this Type type)
+        {
+            return _primitiveTypes.TryGetValue(type, out var primitiveType) || type == typeof(string);
+        }
+
         public static bool IsNullable(this Type type)
         {
             return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
