@@ -16,7 +16,7 @@ namespace Mapster.Tests
         {
             var config = new TypeAdapterConfig();
             IList<IRegister> registers = config.Scan(Assembly.GetExecutingAssembly());
-            registers.Count.ShouldBe(2);
+            registers.Count.ShouldBe(3);
 
             var typeTuples = config.RuleMap.Keys.ToList();
 
