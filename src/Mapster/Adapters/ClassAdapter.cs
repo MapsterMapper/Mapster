@@ -150,18 +150,19 @@ namespace Mapster.Adapters
                     }
                     else
                     {
-                        //Todo Try catch block should be removed after pull request approved
-                        try
+                        var destinationPropertyInfo = (PropertyInfo)member.DestinationMember.Info!;
+
+                        if (!adapt.IsComplex() && arg.MapType == MapType.MapToTarget)
                         {
-                            var destinationPropertyInfo = (PropertyInfo)member.DestinationMember.Info!;
-                            adapt = destinationPropertyInfo.IsInitOnly()
-                                ? SetValueByReflection(destination, (MemberExpression)adapt, arg.DestinationType)
-                                : member.DestinationMember.SetExpression(destination, adapt);
+                            if (arg.DestinationType.IsInterface || arg.DestinationType.IsCollectionCompatible())
+                                adapt = member.DestinationMember.SetExpression(destination, adapt);
+                            else if (destinationPropertyInfo.IsInitOnly() || destinationPropertyInfo.SetMethod.IsPublic == false)
+                                adapt = SetValueByReflection(destination, (MemberExpression)adapt, arg.DestinationType);
+                            else
+                                adapt = member.DestinationMember.SetExpression(destination, adapt);
                         }
-                        catch (Exception e)
-                        {
+                        else
                             adapt = member.DestinationMember.SetExpression(destination, adapt);
-                        }
                     }
                 }
                 else if (!adapt.IsComplex())
