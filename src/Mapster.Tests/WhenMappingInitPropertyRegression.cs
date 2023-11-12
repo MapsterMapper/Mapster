@@ -14,29 +14,29 @@ namespace Mapster.Tests
         [TestMethod]
         public void InitPropertyWorked()
         {
-            MapsterTest mapster = new MapsterTest();
+            MapsterTest656 mapster = new MapsterTest656();
 
             var from = new MyClass656 { MyProperty = 1 };
             var to = mapster.Mapper.Map<DtoClass656>(from);
 
-            to.MyPropertyDto.ShouldNotBe(1);
+            to.MyPropertyDto.ShouldBe(1);
         }
 
 
     }
 
     #region TestClasses
-    public class MapsterTest
+    public class MapsterTest656
     {
         public Mapper Mapper { get; }
 
         TypeAdapterConfig config;
 
-        public MapsterTest()
+        public MapsterTest656()
         {
             config = new TypeAdapterConfig();
             config.Default.Settings.PreserveReference = true;
-            config.Scan(Assembly.GetAssembly(typeof(MapsterTest)));
+            config.Scan(Assembly.GetAssembly(typeof(MapsterTest656)));
             config.Compile();
             Mapper = new Mapper(config);
         }
@@ -49,7 +49,7 @@ namespace Mapster.Tests
 
     public class DtoClass656
     {
-        public int MyPropertyDto { get; protected init; }
+        public int MyPropertyDto { get; init; }
     }
     internal class Register656 : IRegister
     {
