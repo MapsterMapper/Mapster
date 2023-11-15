@@ -170,27 +170,46 @@ namespace Mapster
 
             var props = type.GetFieldsAndProperties().ToList();
 
+            
+            #region SupportingСurrentBehavior for Config Clone and Fork 
+
+            if (type == typeof(MulticastDelegate))
+                return true;
+
+            if (type == typeof(TypeAdapterSetter))
+                return true;
+
+            //  if (type == typeof(TypeAdapterRule))
+            //    return true;
+
+            if (type == typeof(TypeAdapterSettings))
+                return true;
+
+            if (type.IsValueType && type?.GetConstructors().Length != 0)
+            {
+                var test = type.GetConstructors()[0].GetParameters();
+                var param = type.GetConstructors()[0].GetParameters().ToArray();
+
+                if (param[0]?.ParameterType == typeof(TypeTuple) && param[1]?.ParameterType == typeof(TypeAdapterRule))
+                    return true;
+            }
+
+            if (type == typeof(TypeTuple))
+                return true;
+
+            #endregion SupportingСurrentBehavior for Config Clone and Fork 
+
+
             //interface with readonly props
-            if (type.GetTypeInfo().IsInterface && 
+            if (type.GetTypeInfo().IsInterface &&
                 props.Any(p => p.SetterModifier != AccessModifier.Public))
                 return true;
 
-            //1 constructor
-            var ctors = type.GetConstructors().ToList();
-            if (ctors.Count != 1)
-                return false;
+           if(RecordTypeIdentityHelper.IsRecordType(type))
+                return true;
 
-            //ctor must not empty
-            var ctorParams = ctors[0].GetParameters();
-            if (ctorParams.Length == 0)
-                return false;
 
-            //all parameters should match getter
-            return props.All(prop =>
-            {
-                var name = prop.Name.ToPascalCase();
-                return ctorParams.Any(p => p.ParameterType == prop.Type && p.Name?.ToPascalCase() == name);
-            });
+            return false;
         }
 
         public static bool IsConvertible(this Type type)
