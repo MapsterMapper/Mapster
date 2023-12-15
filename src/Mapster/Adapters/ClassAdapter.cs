@@ -134,7 +134,7 @@ namespace Mapster.Adapters
                         {
                             var destinationPropertyInfo = (PropertyInfo)member.DestinationMember.Info!;
                             adapt = destinationPropertyInfo.IsInitOnly()
-                                ? SetValueByReflection(destination, (MemberExpression)adapt, arg.DestinationType)
+                                ? SetValueByReflection(member, (MemberExpression)adapt)
                                 : member.DestinationMember.SetExpression(destination, adapt);
                         }
                         catch (Exception e)
@@ -178,19 +178,17 @@ namespace Mapster.Adapters
             return lines.Count > 0 ? (Expression)Expression.Block(lines) : Expression.Empty();
         }
 
-        private static Expression SetValueByReflection(Expression destination, MemberExpression adapt,
-            Type destinationType)
+        private static Expression SetValueByReflection(MemberMapping member, MemberExpression adapt)
         {
-            var memberName = adapt.Member.Name;
-            var typeofExpression = Expression.Constant(destinationType);
+            var typeofExpression = Expression.Constant(member.Destination!.Type);
             var getPropertyMethod = typeof(Type).GetMethod("GetProperty", new[] { typeof(string) })!;
             var getPropertyExpression = Expression.Call(typeofExpression, getPropertyMethod,
-                Expression.Constant(memberName));
+                Expression.Constant(member.DestinationMember.Name));
             var setValueMethod =
                 typeof(PropertyInfo).GetMethod("SetValue", new[] { typeof(object), typeof(object) })!;
             var memberAsObject = adapt.To(typeof(object));
             return Expression.Call(getPropertyExpression, setValueMethod,
-                new[] { destination, memberAsObject });
+                new[] { member.Destination, memberAsObject });
         }
 
         protected override Expression? CreateInlineExpression(Expression source, CompileArgument arg)
