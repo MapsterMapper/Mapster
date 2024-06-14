@@ -60,7 +60,7 @@ namespace Mapster.Tool
 
         private static void GenerateMappers(MapperOptions opt)
         {
-            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
+            var assembly = IsolatedAssemblyContext.LoadAssemblyFrom(Path.GetFullPath(opt.Assembly));
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
@@ -150,7 +150,7 @@ namespace Mapster.Tool
 
         private static void GenerateModels(ModelOptions opt)
         {
-            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
+            var assembly = IsolatedAssemblyContext.LoadAssemblyFrom(Path.GetFullPath(opt.Assembly));
             var codeGenConfig = new CodeGenerationConfig();
             codeGenConfig.Scan(assembly);
 
@@ -381,7 +381,7 @@ namespace Mapster.Tool
 
         private static void GenerateExtensions(ExtensionOptions opt)
         {
-            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
+            var assembly = IsolatedAssemblyContext.LoadAssemblyFrom(Path.GetFullPath(opt.Assembly));
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
