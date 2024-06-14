@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using CommandLine;
 using ExpressionDebugger;
@@ -60,7 +61,26 @@ namespace Mapster.Tool
 
         private static void GenerateMappers(MapperOptions opt)
         {
-            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
+            // We want loaded assemblies that we're scanning to be isolated from our currently
+            // running assembly load context in order to avoid type/framework collisions between Mapster assemblies
+            // and their dependencies and the scanned assemblies and their dependencies
+
+            // However, we also need *some* of those scanned assemblies and thus their types to resolve from our
+            // currently running AssemblyLoadContext.Default: The Mapster assembly basically.
+
+            // This way when we compare attribute types (such as MapperAttribute) between our running assembly
+            // and the scanned assembly the two types with the same FullName can be considered equal because
+            // they both were resolved from AssemblyLoadContext.Default.
+            
+            // This isolated Assembly Load Context will be able to resolve the Mapster assembly, but
+            // the resolved Assembly will be the same one that is in AssemblyLoadContext.Default
+            // (the runtime assembly load context that our code refers to by default when referencing
+            // types)
+            var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
+                assemblyPath: Path.GetFullPath(opt.Assembly),
+                deferToContext: AssemblyLoadContext.Default,
+                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
+            );
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
@@ -150,7 +170,11 @@ namespace Mapster.Tool
 
         private static void GenerateModels(ModelOptions opt)
         {
-            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
+            var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
+                assemblyPath: Path.GetFullPath(opt.Assembly),
+                deferToContext: AssemblyLoadContext.Default,
+                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
+            );
             var codeGenConfig = new CodeGenerationConfig();
             codeGenConfig.Scan(assembly);
 
@@ -381,7 +405,11 @@ namespace Mapster.Tool
 
         private static void GenerateExtensions(ExtensionOptions opt)
         {
-            var assembly = Assembly.LoadFrom(Path.GetFullPath(opt.Assembly));
+            var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
+                assemblyPath: Path.GetFullPath(opt.Assembly),
+                deferToContext: AssemblyLoadContext.Default,
+                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
+            );
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
