@@ -16,12 +16,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.x.x
     - name: Show dotnet version
       run: |
         dotnet --list-sdks
         dotnet --list-runtimes
     - name: Build with dotnet
       run: dotnet build ./src/Mapster.sln
-    - name: Run tests on .NET 7.0
+    - name: Run tests on .NET 8.0
       run: dotnet test --verbosity normal ./src/Mapster.sln
