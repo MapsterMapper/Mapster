@@ -79,7 +79,8 @@ namespace Mapster.Tool
             var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
                 assemblyPath: Path.GetFullPath(opt.Assembly),
                 deferToContext: AssemblyLoadContext.Default,
-                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
+                typeof(MapperAttribute).Assembly.GetName(),
+                typeof(IRegister).Assembly.GetName()
             );
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
@@ -173,7 +174,8 @@ namespace Mapster.Tool
             var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
                 assemblyPath: Path.GetFullPath(opt.Assembly),
                 deferToContext: AssemblyLoadContext.Default,
-                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
+                typeof(MapperAttribute).Assembly.GetName(),
+                typeof(IRegister).Assembly.GetName()
             );
             var codeGenConfig = new CodeGenerationConfig();
             codeGenConfig.Scan(assembly);
@@ -408,7 +410,8 @@ namespace Mapster.Tool
             var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
                 assemblyPath: Path.GetFullPath(opt.Assembly),
                 deferToContext: AssemblyLoadContext.Default,
-                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
+                typeof(MapperAttribute).Assembly.GetName(),
+                typeof(IRegister).Assembly.GetName()
             );
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
