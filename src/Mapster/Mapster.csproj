@@ -4,7 +4,7 @@
     <Description>A fast, fun and stimulating object to object mapper.  Kind of like AutoMapper, just simpler and way, way faster.</Description>
     <Copyright>Copyright (c) 2016 Chaowlert Chaisrichalermpol, Eric Swann</Copyright>
     <Authors>chaowlert;eric_swann</Authors>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
     <AssemblyName>Mapster</AssemblyName>
     <Description>A fast, fun and stimulating object to object mapper. Kind of like AutoMapper, just simpler and way, way faster.</Description>
     <PackageId>Mapster</PackageId>
@@ -16,7 +16,7 @@
     <PackageLicenseUrl></PackageLicenseUrl>
 	<IsPackable>true</IsPackable>
     <RootNamespace>Mapster</RootNamespace>
-    <Version>7.4.0</Version>
+    <Version>7.4.1-pre01</Version>
     <Nullable>enable</Nullable>
     <NoWarn>1701;1702;8618</NoWarn>
   </PropertyGroup>

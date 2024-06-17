@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
     <Description>Json.net conversion supports for Mapster</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>Mapster;Json.net</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.JsonNet.snk</AssemblyOriginatorKeyFile>
-    <Version>1.1.1</Version>
+    <Version>1.1.2-pre01</Version>
   </PropertyGroup>
 
   <ItemGroup>
