@@ -481,7 +481,6 @@ namespace Mapster.Tool
                 deferToContext: AssemblyLoadContext.Default,
                 typeof(MapperAttribute).Assembly.GetName(),
                 typeof(IRegister).Assembly.GetName()
-                deferredDependencyAssemblyNames: typeof(MapperAttribute).Assembly.GetName()
             );
             var config = TypeAdapterConfig.GlobalSettings;
             config.SelfContainedCodeGeneration = true;
