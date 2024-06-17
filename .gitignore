@@ -181,3 +181,8 @@ project.lock.json
 /src/.vs
 /.vs
 src/.idea
+
+# VS Code settings
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
