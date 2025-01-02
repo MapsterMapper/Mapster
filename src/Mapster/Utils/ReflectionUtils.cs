@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Mapster.Models;
+using Mapster.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Models;
-using Mapster.Utils;
 
 // ReSharper disable once CheckNamespace
 namespace Mapster
@@ -173,37 +173,17 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
-            var props = type.GetFieldsAndProperties().ToList();
-
-            
+            if(RecordTypeIdentityHelper.IsDirectiveTagret(type)) // added Support work from custom Attribute
+                return true;
+          
             #region SupportingСurrentBehavior for Config Clone and Fork 
 
-            if (type == typeof(MulticastDelegate))
-                return true;
-
-            if (type == typeof(TypeAdapterSetter))
-                return true;
-
-            //  if (type == typeof(TypeAdapterRule))
-            //    return true;
-
-            if (type == typeof(TypeAdapterSettings))
-                return true;
-
-            if (type.IsValueType && type?.GetConstructors().Length != 0)
-            {
-                var test = type.GetConstructors()[0].GetParameters();
-                var param = type.GetConstructors()[0].GetParameters().ToArray();
-
-                if (param[0]?.ParameterType == typeof(TypeTuple) && param[1]?.ParameterType == typeof(TypeAdapterRule))
-                    return true;
-            }
-
-            if (type == typeof(TypeTuple))
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                 return true;
 
             #endregion SupportingСurrentBehavior for Config Clone and Fork 
 
+            var props = type.GetFieldsAndProperties().ToList();
 
             //interface with readonly props
             if (type.GetTypeInfo().IsInterface &&
@@ -212,7 +192,6 @@ namespace Mapster
 
            if(RecordTypeIdentityHelper.IsRecordType(type))
                 return true;
-
 
             return false;
         }
