@@ -12,16 +12,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.x.x
+        dotnet-version: |
+          8.x
+          9.x
     - name: Show dotnet version
       run: |
         dotnet --list-sdks
         dotnet --list-runtimes
     - name: Build with dotnet
       run: dotnet build ./src/Mapster.sln
-    - name: Run tests on .NET 8.0
+    - name: Run tests on .NET 9.0
       run: dotnet test --verbosity normal ./src/Mapster.sln
