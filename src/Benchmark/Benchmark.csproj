@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
       <OutputType>Exe</OutputType>
-      <TargetFramework>net6.0</TargetFramework>
+      <TargetFramework>net9.0</TargetFramework>
       <CopyLocalLockFileAssemblies Condition=" '$(Configuration)'=='Debug' ">true</CopyLocalLockFileAssemblies>
       <DefaultItemExcludes>**/*.g.cs</DefaultItemExcludes>
     </PropertyGroup>
@@ -19,11 +19,11 @@
       </Compile>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
         <PackageReference Include="ExpressionDebugger" Version="2.2.1" />
         <PackageReference Include="ExpressionTranslator" Version="2.5.0" />
-        <PackageReference Include="AutoMapper" Version="10.1.1" />
-        <PackageReference Include="FastExpressionCompiler" Version="3.2.1" />
+        <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="FastExpressionCompiler" Version="5.0.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\ExpressionDebugger\ExpressionDebugger.csproj" />

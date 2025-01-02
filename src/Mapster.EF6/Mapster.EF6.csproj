@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;</TargetFrameworks>
     <Description>EF6 plugin for Mapster</Description>
     <IsPackable>true</IsPackable>
 	<PackageTags>Mapster;EF6</PackageTags>
     <SignAssembly>True</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>Mapster.EF6.snk</AssemblyOriginatorKeyFile>
-    <Version>2.0.2-pre01</Version>
+    <Version>2.0.3-pre01</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="EntityFramework" Version="6.5.1" />
   </ItemGroup>
 
   <ItemGroup>
