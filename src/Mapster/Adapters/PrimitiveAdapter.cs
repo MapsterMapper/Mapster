@@ -18,6 +18,24 @@ namespace Mapster.Adapters
 
         protected override Expression CreateExpressionBody(Expression source, Expression? destination, CompileArgument arg)
         {
+
+            if (arg.Settings.MapToTargetPrimitive == true)
+            {
+                Expression dest;
+
+                if (destination == null)
+                {
+                    dest = arg.DestinationType.CreateDefault();
+                }
+                else
+                    dest = destination;
+
+                var customConvert = arg.Context.Config.CreateMapToTargetInvokeExpressionBody(source.Type, arg.DestinationType, source, dest);
+
+                arg.MapType = MapType.MapToTarget;
+                return customConvert;
+            }
+
             Expression convert = source;
             var sourceType = arg.SourceType;
             var destinationType = arg.DestinationType;

@@ -83,6 +83,27 @@ namespace Mapster
             set => Set(nameof(GenerateMapper), value);
         }
 
+        public bool? MapWithToPrimitive
+        {
+            get => Get(nameof(MapWithToPrimitive));
+            set => Set(nameof(MapWithToPrimitive), value);
+        }
+
+        /// <summary>
+        /// Not implemented
+        /// </summary>
+        public bool? MapToPrimitive
+        {
+            get => Get(nameof(MapToPrimitive));
+            set => Set(nameof(MapToPrimitive), value);
+        }
+
+        public bool? MapToTargetPrimitive
+        {
+            get => Get(nameof(MapToTargetPrimitive));
+            set => Set(nameof(MapToTargetPrimitive), value);
+        }
+
         public List<Func<IMemberModel, MemberSide, bool?>> ShouldMapMember
         {
             get => Get(nameof(ShouldMapMember), () => new List<Func<IMemberModel, MemberSide, bool?>>());
