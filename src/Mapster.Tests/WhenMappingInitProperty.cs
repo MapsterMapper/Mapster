@@ -23,6 +23,21 @@ public class WhenMappingInitProperty
         s.Id.ShouldBe(156);
     }
 
+    [TestMethod]
+    public void WhenMappingToHiddenandNewInitFieldWithConstructUsing()
+    {
+        TypeAdapterConfig<Source672, BDestination>.NewConfig().ConstructUsing(_ => new BDestination());
+
+
+        var source = new Source672() { Id = 256 };
+        var c = source.Adapt<BDestination>();
+        var s = source.Adapt(new BDestination());
+
+        ((ADestination)c).Id.ShouldBe(256);
+        s.Id.ShouldBe(256);
+    }
+
+
     #endregion Tests
 
 
