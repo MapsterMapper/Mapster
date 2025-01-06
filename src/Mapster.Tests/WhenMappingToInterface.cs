@@ -266,6 +266,41 @@ namespace Mapster.Tests
             );
         }
 
+        [TestMethod]
+        public void MappingToInteraceWithIgnorePrivateSetProperty()
+        {
+            TypeAdapterConfig<InterfaceSource723, InterfaceDestination723>
+                .NewConfig()
+                .TwoWays()
+                .Ignore(dest => dest.Ignore);
+
+
+            InterfaceDestination723 data = new Data723() { Inter = "234", Ignore = "00" };
+            InterfaceSource723 datas = new Data723() { Inter = "150", Ignore = "10" };
+
+            var idestination = data.Adapt<InterfaceDestination723>();
+            var isourse = data.Adapt<InterfaceSource723>();
+
+            var result = datas.Adapt(data);
+        }
+
+        public interface InterfaceDestination723 : InterfaceSource723
+        {
+            public string Ignore { get; }
+        }
+
+        public interface InterfaceSource723
+        {
+            public string Inter { get; set; }
+        }
+
+        private class Data723 : InterfaceDestination723
+        {
+            public string Ignore { get; set; }
+
+            public string Inter { get; set; }
+        }
+
         public interface IInheritedDtoWithoutProperties : IInheritedDto
         {
         }
