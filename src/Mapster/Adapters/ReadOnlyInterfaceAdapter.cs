@@ -33,7 +33,7 @@ namespace Mapster.Adapters
                 if (arg.GetConstructUsing() != null)
                     return base.CreateInstantiationExpression(source, destination, arg);
 
-                var destType = DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0);
+                var destType = DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0, arg.Settings.Ignore);
                 if (destType == null)
                     return base.CreateInstantiationExpression(source, destination, arg);
                 var ctor = destType.GetConstructors()[0];
