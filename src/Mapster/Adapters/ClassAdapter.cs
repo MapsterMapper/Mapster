@@ -183,7 +183,7 @@ namespace Mapster.Adapters
             var typeofExpression = Expression.Constant(member.Destination!.Type);
             var getPropertyMethod = typeof(Type).GetMethod("GetProperty", new[] { typeof(string) })!;
             var getPropertyExpression = Expression.Call(typeofExpression, getPropertyMethod,
-                Expression.Constant(member.DestinationMember.Name));
+                Expression.Constant(member.DestinationMember.Name, member.DestinationMember.Type));
             var setValueMethod =
                 typeof(PropertyInfo).GetMethod("SetValue", new[] { typeof(object), typeof(object) })!;
             var memberAsObject = adapt.To(typeof(object));
