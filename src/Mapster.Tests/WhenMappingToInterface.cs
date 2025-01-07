@@ -9,6 +9,8 @@ namespace Mapster.Tests
     [TestClass]
     public class WhenMappingToInterface
     {
+
+        #region Tests
         [TestInitialize]
         public void Setup()
         {
@@ -266,6 +268,9 @@ namespace Mapster.Tests
             );
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/723
+        /// </summary>
         [TestMethod]
         public void MappingToInteraceWithIgnorePrivateSetProperty()
         {
@@ -274,16 +279,24 @@ namespace Mapster.Tests
                 .TwoWays()
                 .Ignore(dest => dest.Ignore);
 
+            InterfaceSource723 dataSourse = new Data723() { Inter = "IterDataSourse", Ignore = "IgnoreDataSourse" };
+            InterfaceDestination723 dataDestination = new Data723() { Inter = "IterDataDestination", Ignore = "IgnoreDataDestination" };
 
-            InterfaceDestination723 data = new Data723() { Inter = "234", Ignore = "00" };
-            InterfaceSource723 datas = new Data723() { Inter = "150", Ignore = "10" };
+            var idestination = dataDestination.Adapt<InterfaceDestination723>();
+            var isourse = dataDestination.Adapt<InterfaceSource723>();
 
-            var idestination = data.Adapt<InterfaceDestination723>();
-            var isourse = data.Adapt<InterfaceSource723>();
+            var result = dataSourse.Adapt(dataDestination);
 
-            var result = datas.Adapt(data);
+            idestination.Ignore.ShouldBeNull(); // Not create initializer and param in constructor  
+            idestination.Inter.ShouldBe("IterDataDestination");
+
+            result.Ignore.ShouldBe("IgnoreDataDestination");
+            result.Inter.ShouldBe("IterDataSourse");
         }
 
+        #endregion Tests
+
+        #region TestClasses
         public interface InterfaceDestination723 : InterfaceSource723
         {
             public string Ignore { get; }
@@ -409,6 +422,6 @@ namespace Mapster.Tests
             public int Property1 { get; set; }
             public int Property2 { get; set; }
         }
-
+        #endregion TestClasses
     }
 }
