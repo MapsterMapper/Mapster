@@ -192,6 +192,8 @@ namespace Mapster.Utils
             var ignorFields = ignoreMembers.Select(x => x.Key).ToArray();
             List<FieldBuilder> filtered = new List<FieldBuilder>();
 
+            if (ignorFields.Length == 0)
+                return fields;
 
             foreach (var item in fields)
             {
