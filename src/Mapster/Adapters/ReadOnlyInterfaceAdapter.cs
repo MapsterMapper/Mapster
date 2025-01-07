@@ -10,7 +10,7 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return arg.DestinationType.IsInterface;
+            return arg.DestinationType.IsInterface && arg.DestinationType.GetProperties().Length > 0;
         }
 
         protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
