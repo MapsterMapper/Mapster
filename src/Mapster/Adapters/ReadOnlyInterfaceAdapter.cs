@@ -45,5 +45,21 @@ namespace Mapster.Adapters
                 return base.CreateInstantiationExpression(source,destination, arg);
         }
 
+        protected override Expression CreateExpressionBody(Expression source, Expression? destination, CompileArgument arg)
+        {
+            if (source.Type.IsInterface)
+            {
+                if (arg.MapType != MapType.MapToTarget && source.Type.IsAssignableFrom(arg.DestinationType))
+                    return Expression.Convert(source, arg.DestinationType);
+
+                if (arg.MapType == MapType.MapToTarget && destination.Type.IsAssignableFrom(arg.SourceType))
+                    return source;
+
+                return base.CreateExpressionBody(source, destination, arg);
+            }
+
+            return base.CreateExpressionBody(source, destination, arg);
+        }
+
     }
 }

@@ -278,6 +278,52 @@ namespace Mapster.Tests
         }
 
 
+        [TestMethod]
+        public void MappingInterfaceToInterface()
+        {
+
+            SampleInterfaceClsBase source = new SampleInterfaceClsBase
+            {
+                ActivityData = new SampleActivityData
+                {
+                    Data = new SampleActivityParsedData
+                    {
+                        Steps = new List<string> { "A", "B", "C" }
+                    },
+                    Temp = "Temp data"
+
+                }
+
+            };
+            SampleInterfaceClsBase source2 = new SampleInterfaceClsBase
+            {
+                ActivityData = new SampleActivityData
+                {
+                    Data = new SampleActivityParsedData
+                    {
+                        Steps = new List<string> { "X", "Y", "Z" }
+                    },
+                    Temp = "Update Temp data"
+
+                }
+
+            };
+
+            var target = source.Adapt<SampleInterfaceClsDerived>();
+            var target2 = source2.Adapt<SampleInterfaceClsBase>();
+            var update = target.Adapt(target2);
+
+            target.ShouldNotBeNull();
+            target.ShouldSatisfyAllConditions(
+                () => target.ActivityData.ShouldBe(source.ActivityData)
+            );
+
+            update.ActivityData.ShouldBe(target.ActivityData);
+
+        }
+
+
+
         #region NowNotWorking
 
         /// <summary>
@@ -304,6 +350,69 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+
+    public interface IActivityData : IActivityDataBase
+    {
+        public string Temp { get; set; }
+    }
+
+    public interface IActivityDataBase
+    {
+
+    }
+
+    public class SampleInterfaceClsBase
+    {
+        public IActivityDataBase? ActivityData { get; set; }
+
+        public SampleInterfaceClsBase()
+        {
+
+        }
+
+        public SampleInterfaceClsBase(IActivityDataBase data)
+        {
+            SetActivityData(data);
+        }
+
+        public void SetActivityData(IActivityDataBase data)
+        {
+            ActivityData = data;
+        }
+    }
+
+    public class SampleInterfaceClsDerived
+    {
+        public IActivityData? ActivityData { get; set; }
+
+        public SampleInterfaceClsDerived()
+        {
+
+        }
+
+        public SampleInterfaceClsDerived(IActivityData data)
+        {
+            SetActivityData(data);
+        }
+
+        public void SetActivityData(IActivityData data)
+        {
+            ActivityData = data;
+        }
+    }
+
+    public class SampleActivityData : IActivityData
+    {
+        public SampleActivityParsedData Data { get; set; }
+        public string Temp { get; set; }
+    }
+
+    public class SampleActivityParsedData
+    {
+        public List<string> Steps { get; set; } = new List<string>();
+    }
+
+
 
     class MultiCtorAndInlinePoco
     {
@@ -498,6 +607,15 @@ namespace Mapster.Tests
     }
 
     sealed record TestSealedRecordPositional(int X);
+
+
+
+
+
+
+
+
+
 
     #endregion TestClasses
 }
