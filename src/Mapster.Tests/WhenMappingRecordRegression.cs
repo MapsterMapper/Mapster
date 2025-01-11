@@ -345,7 +345,7 @@ namespace Mapster.Tests
                 ()=> updExt.ActivityData.ShouldBe(targetExtention.ActivityData), 
                 () => ((SampleActivityDataExtentions)updExt.ActivityData).Temp.ShouldBe(sourceDerived.ActivityData.Temp),
                 () => ((SampleActivityDataExtentions)updExt.ActivityData).TempLength.ShouldBe(sourceDerived.ActivityData.Temp.Length),
-                // All implementations of the IActivityData interface do not provide access to the Data property for all implementations of the SampleActivityData class,
+                // IActivityData interface and all its derivatives  do not provide access to the Data property for all implementations of the SampleActivityData class,
                 // so this property will not be changed by mapping 
                 () => ((SampleActivityDataExtentions)updExt.ActivityData).Data.ShouldBe(((SampleActivityDataExtentions)targetExtention.ActivityData).Data)
 
