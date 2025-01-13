@@ -3,6 +3,8 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Mapster.Tests
 {
@@ -266,6 +268,27 @@ namespace Mapster.Tests
             );
         }
 
+        [TestMethod]
+        public void MappingToInterface_VerifyReadonlyPropsInterfaceRule()
+        {
+            SampleInterfaceCls source = new SampleInterfaceCls
+            {
+                ActivityData = new SampleActivityData
+                {
+                    Data = new SampleActivityParsedData
+                    {
+                        Steps = new List<string> { "A", "B", "C" }
+                    }
+                }
+            };
+
+            SampleInterfaceCls target = source.Adapt<SampleInterfaceCls>();
+            target.ShouldNotBeNull();
+            target.ShouldSatisfyAllConditions(
+                () => target.ActivityData.ShouldBe(source.ActivityData)
+            );
+        }
+
         public interface IInheritedDtoWithoutProperties : IInheritedDto
         {
         }
@@ -373,6 +396,42 @@ namespace Mapster.Tests
         {
             public int Property1 { get; set; }
             public int Property2 { get; set; }
+        }
+        
+        public interface IActivityData
+        {
+    
+        }
+
+        public class SampleInterfaceCls
+        {
+            [Newtonsoft.Json.JsonIgnore]
+            public IActivityData? ActivityData { get; set; }
+
+            public SampleInterfaceCls()
+            {
+        
+            }
+
+            public SampleInterfaceCls(IActivityData data)
+            {
+                SetActivityData(data);
+            }
+    
+            public void SetActivityData(IActivityData data)
+            {
+                ActivityData = data;
+            }
+        }
+        
+        public class SampleActivityData : IActivityData
+        {
+            public SampleActivityParsedData Data { get; set; }
+        }
+        
+        public class SampleActivityParsedData
+        {
+            public List<string> Steps { get; set; } = new List<string>();
         }
 
     }
