@@ -96,8 +96,8 @@ namespace Mapster
         /// <returns>Adapted destination type.</returns>
         public static TDestination Adapt<TSource, TDestination>(this TSource source, TDestination destination, TypeAdapterConfig config)
         {
-            var sourceType = source.GetType();
-            var destinationType = destination.GetType();
+            var sourceType = source?.GetType();
+            var destinationType = destination?.GetType();
 
             if (sourceType == typeof(object)) // Infinity loop in ObjectAdapter if Runtime Type of source is Object 
                 return destination;
