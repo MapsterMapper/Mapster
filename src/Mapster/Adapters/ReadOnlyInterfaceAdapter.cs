@@ -10,7 +10,7 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return arg.DestinationType.IsInterface && arg.DestinationType.GetProperties().Length > 0;
+            return arg.DestinationType.IsInterface;
         }
 
         protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
@@ -43,6 +43,25 @@ namespace Mapster.Adapters
             }
             else
                 return base.CreateInstantiationExpression(source,destination, arg);
+        }
+
+        protected override Expression CreateExpressionBody(Expression source, Expression? destination, CompileArgument arg)
+        {
+            if (source.Type.IsInterface)
+            {
+                if (!arg.DestinationType.IsAssignableFrom(arg.SourceType))
+                    return base.CreateExpressionBody(source, destination, arg);
+                   
+                if (arg.MapType != MapType.MapToTarget)
+                    return Expression.Convert(source, arg.DestinationType);
+
+                if (arg.MapType == MapType.MapToTarget)
+                    return source;
+
+                return base.CreateExpressionBody(source, destination, arg);
+            }
+
+            return base.CreateExpressionBody(source, destination, arg);
         }
 
     }

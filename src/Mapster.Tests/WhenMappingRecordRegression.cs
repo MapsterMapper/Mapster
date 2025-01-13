@@ -278,6 +278,83 @@ namespace Mapster.Tests
         }
 
 
+        [TestMethod]
+        public void MappingInterfaceToInterface()
+        {
+            TypeAdapterConfig<IActivityData, IActivityDataExtentions>
+                .ForType()
+                .Map(dest => dest.TempLength, src => src.Temp.Length);
+
+
+            var sourceBase = new SampleInterfaceClsBase
+            {
+                ActivityData = new SampleActivityData
+                {
+                    Data = new SampleActivityParsedData
+                    {
+                        Steps = new List<string> { "A", "B", "C" }
+                    },
+                    Temp = "Temp data"
+
+                }
+
+            };
+            var sourceDerived = new SampleInterfaceClsDerived
+            {
+                ActivityData = new SampleActivityData
+                {
+                    Data = new SampleActivityParsedData
+                    {
+                        Steps = new List<string> { "X", "Y", "Z" }
+                    },
+                    Temp = "Update Temp data"
+
+                }
+
+            };
+
+            var sourceExt = new SampleInterfaceClsExtentions
+            {
+                ActivityData = new SampleActivityDataExtentions
+                {
+                    Data = new SampleActivityParsedData
+                    {
+                        Steps = new List<string> { "o", "o", "o" }
+                    },
+                    Temp = "Extentions data",
+                    TempLength = "Extentions data".Length
+
+                }
+
+            };
+
+            var TargetBase = sourceBase.Adapt<SampleInterfaceClsBase>();
+            var targetDerived = sourceDerived.Adapt<SampleInterfaceClsDerived>();
+            var update = targetDerived.Adapt(TargetBase);
+
+            var targetExtention = sourceExt.Adapt<SampleInterfaceClsExtentions>();
+
+
+            var updExt = targetDerived.Adapt(targetExtention);
+
+            targetDerived.ShouldNotBeNull();
+            targetDerived.ShouldSatisfyAllConditions(
+                () => targetDerived.ActivityData.ShouldBe(sourceDerived.ActivityData),
+                () => update.ActivityData.ShouldBe(targetDerived.ActivityData),
+
+                ()=> updExt.ActivityData.ShouldBe(targetExtention.ActivityData), 
+                () => ((SampleActivityDataExtentions)updExt.ActivityData).Temp.ShouldBe(sourceDerived.ActivityData.Temp),
+                () => ((SampleActivityDataExtentions)updExt.ActivityData).TempLength.ShouldBe(sourceDerived.ActivityData.Temp.Length),
+                // IActivityData interface and all its derivatives  do not provide access to the Data property for all implementations of the SampleActivityData class,
+                // so this property will not be changed by mapping 
+                () => ((SampleActivityDataExtentions)updExt.ActivityData).Data.ShouldBe(((SampleActivityDataExtentions)targetExtention.ActivityData).Data)
+
+            );
+
+        }
+
+
+
         #region NowNotWorking
 
         /// <summary>
@@ -304,6 +381,104 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+
+    public interface IActivityDataExtentions : IActivityData
+    {
+        public int TempLength { get; set; }
+    }
+
+    public interface IActivityData : IActivityDataBase
+    {
+        public string Temp { get; set; }
+    }
+
+    public interface IActivityDataBase
+    {
+
+    }
+
+
+    public class SampleInterfaceClsExtentions
+    {
+        public IActivityDataExtentions? ActivityData { get; set; }
+
+        public SampleInterfaceClsExtentions()
+        {
+
+        }
+
+        public SampleInterfaceClsExtentions(IActivityDataExtentions data)
+        {
+            SetActivityData(data);
+        }
+
+        public void SetActivityData(IActivityDataExtentions data)
+        {
+            ActivityData = data;
+        }
+    }
+
+
+
+    public class SampleInterfaceClsBase
+    {
+        public IActivityDataBase? ActivityData { get; set; }
+
+        public SampleInterfaceClsBase()
+        {
+
+        }
+
+        public SampleInterfaceClsBase(IActivityDataBase data)
+        {
+            SetActivityData(data);
+        }
+
+        public void SetActivityData(IActivityDataBase data)
+        {
+            ActivityData = data;
+        }
+    }
+
+    public class SampleInterfaceClsDerived
+    {
+        public IActivityData? ActivityData { get; set; }
+
+        public SampleInterfaceClsDerived()
+        {
+
+        }
+
+        public SampleInterfaceClsDerived(IActivityData data)
+        {
+            SetActivityData(data);
+        }
+
+        public void SetActivityData(IActivityData data)
+        {
+            ActivityData = data;
+        }
+    }
+
+    public class SampleActivityDataExtentions : IActivityDataExtentions
+    {
+        public SampleActivityParsedData Data { get; set; }
+        public string Temp { get; set; }
+        public int TempLength { get; set; }
+    }
+
+    public class SampleActivityData : IActivityData
+    {
+        public SampleActivityParsedData Data { get; set; }
+        public string Temp { get; set; }
+    }
+
+    public class SampleActivityParsedData
+    {
+        public List<string> Steps { get; set; } = new List<string>();
+    }
+
+
 
     class MultiCtorAndInlinePoco
     {
@@ -498,6 +673,15 @@ namespace Mapster.Tests
     }
 
     sealed record TestSealedRecordPositional(int X);
+
+
+
+
+
+
+
+
+
 
     #endregion TestClasses
 }
