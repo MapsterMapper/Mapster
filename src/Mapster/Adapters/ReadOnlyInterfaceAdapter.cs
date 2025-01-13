@@ -11,7 +11,6 @@ namespace Mapster.Adapters
         protected override bool CanMap(PreCompileArgument arg)
         {
             return arg.DestinationType.IsInterface;
-
         }
 
         protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
