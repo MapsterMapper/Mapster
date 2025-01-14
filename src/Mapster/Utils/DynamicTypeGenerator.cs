@@ -96,7 +96,7 @@ namespace Mapster.Utils
 
             if (hasReadonlyProps)
             {
-                var filteredArgs = DropIgnorMemebers(args);
+                var filteredArgs = DropIgnoredMemebers(args);
                 var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public,
                     CallingConventions.Standard,
                     filteredArgs.Select(it => it.FieldType).ToArray());
@@ -187,7 +187,7 @@ namespace Mapster.Utils
             builder.DefineMethodOverride(classMethod, interfaceMethod);
         }
 
-        private static List<FieldBuilder> DropIgnorMemebers(List<FieldBuilder> fields)
+        private static List<FieldBuilder> DropIgnoredMemebers(List<FieldBuilder> fields)
         {
             if (ignoreMembers != null)
             {
