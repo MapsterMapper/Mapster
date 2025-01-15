@@ -189,13 +189,11 @@ namespace Mapster.Utils
 
         private static List<FieldBuilder> DropIgnoredMemebers(List<FieldBuilder> fields)
         {
-            if (ignoreMembers != null)
-            {
+            if (ignoreMembers == null || ignoreMembers.Count == 0)
+                return fields;
+           
                 var ignoreFields = ignoreMembers.Select(x => x.Key).ToArray();
                 var filtered = new List<FieldBuilder>();
-
-                if (ignoreFields.Length == 0)
-                    return fields;
 
                 foreach (var item in fields)
                 {
@@ -207,9 +205,6 @@ namespace Mapster.Utils
                 }
 
                 return filtered;
-            }
-            
-            return fields;
         }
     }
 }
