@@ -22,6 +22,16 @@ namespace Mapster.Utils
         private static readonly ConcurrentDictionary<Type, Type> _generated = new ConcurrentDictionary<Type, Type>();
         private static int _generatedCounter;
 
+        private static IgnoreDictionary? ignoreMembers;
+
+        public static Type? GetTypeForInterface(Type interfaceType, bool ignoreError, IgnoreDictionary ignorMembers)
+        {
+            ignoreMembers = ignorMembers;
+
+            return GetTypeForInterface(interfaceType, ignoreError);
+
+        }
+
         public static Type? GetTypeForInterface(Type interfaceType, bool ignoreError)
         {
             try
@@ -86,13 +96,14 @@ namespace Mapster.Utils
 
             if (hasReadonlyProps)
             {
-                var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public, 
+                var filteredArgs = DropIgnoredMemebers(args);
+                var ctorBuilder = builder.DefineConstructor(MethodAttributes.Public,
                     CallingConventions.Standard,
-                    args.Select(it => it.FieldType).ToArray());
+                    filteredArgs.Select(it => it.FieldType).ToArray());
                 var ctorIl = ctorBuilder.GetILGenerator();
-                for (var i = 0; i < args.Count; i++)
+                for (var i = 0; i < filteredArgs.Count; i++)
                 {
-                    var arg = args[i];
+                    var arg = filteredArgs[i];
                     ctorBuilder.DefineParameter(i + 1, ParameterAttributes.None, arg.Name.Substring(1));
                     ctorIl.Emit(OpCodes.Ldarg_0);
                     ctorIl.Emit(OpCodes.Ldarg_S, i + 1);
@@ -174,6 +185,26 @@ namespace Mapster.Utils
             classMethodIl.ThrowException(typeof(NotImplementedException));
 
             builder.DefineMethodOverride(classMethod, interfaceMethod);
+        }
+
+        private static List<FieldBuilder> DropIgnoredMemebers(List<FieldBuilder> fields)
+        {
+            if (ignoreMembers == null || ignoreMembers.Count == 0)
+                return fields;
+           
+                var ignoreFields = ignoreMembers.Select(x => x.Key).ToArray();
+                var filtered = new List<FieldBuilder>();
+
+                foreach (var item in fields)
+                {
+                    foreach (var check in ignoreFields)
+                    {
+                        if (item.Name != $"_{MapsterHelper.CamelCase(check)}")
+                            filtered.Add(item);
+                    }
+                }
+
+                return filtered;
         }
     }
 }
