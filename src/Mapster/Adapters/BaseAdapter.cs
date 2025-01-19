@@ -495,6 +495,21 @@ namespace Mapster.Adapters
                 if (transform != null)
                     exp = transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
             }
+            else
+            {
+                if (exp.NodeType == ExpressionType.Call)
+                {
+                    var argExt = new CompileArgument
+                    {
+                        DestinationType = arg.DestinationType,
+                        SourceType = arg.DestinationType,
+                        MapType = MapType.MapToTarget,
+                        Context = arg.Context,
+                    };
+
+                    return CreateAdaptExpressionCore(exp, destinationType, argExt, mapping, destination);
+                }
+            }
 
             return exp.To(destinationType);
         }
