@@ -14,10 +14,6 @@ public class WhenUseDestinatonValueMappingRegression
         [TestMethod]
         public void UseDestinatonValueUsingMapWithasParam()
         {
-            TypeAdapterConfig.GlobalSettings.Default.UseDestinationValue(m => m.SetterModifier == AccessModifier.None &&
-                                                    m.Type.IsGenericType &&
-                                                    m.Type.GetGenericTypeDefinition() == typeof(ICollection<>));
-
             TypeAdapterConfig<ThumbnailDetailsSource, ICollection<ThumbnailDestination>>
                 .NewConfig()
                 .MapWith(src => MapThumbnailDetailsData(src).ToList());
@@ -43,10 +39,7 @@ public class WhenUseDestinatonValueMappingRegression
 
                 TempThumbnails = new List<int>() { 1, 2, 3 }
             };
-
-            var script = channelSrc.BuildAdapter()
-                   .CreateMapExpression<ChannelDestination>();
-
+                       
             var channelDest = channelSrc.Adapt<ChannelDestination>();
 
             channelDest.Thumbnails.Count.ShouldBe(3);
@@ -57,7 +50,6 @@ public class WhenUseDestinatonValueMappingRegression
         #region TestClasses
         private static IEnumerable<ThumbnailDestination> MapThumbnailDetailsData(ThumbnailDetailsSource thumbnailDetails)
         {
-
             yield return MapThumbnail(thumbnailDetails.Default, "Default");
             yield return MapThumbnail(thumbnailDetails.Medium, "Medium");
             yield return MapThumbnail(thumbnailDetails.High, "High");
@@ -73,11 +65,14 @@ public class WhenUseDestinatonValueMappingRegression
             };
 
 
-
         public class ChannelDestination
         {
             public string ChannelId { get; set; } = default!;
+
+            [UseDestinationValue]
             public ICollection<ThumbnailDestination> Thumbnails { get; } = new List<ThumbnailDestination>();
+
+            [UseDestinationValue]
             public ICollection<string> TempThumbnails { get; } = new List<string>();
         }
 
@@ -92,7 +87,6 @@ public class WhenUseDestinatonValueMappingRegression
             public string ChannelId { get; set; } = default!;
             public ThumbnailDetailsSource Thumbnails { get; set; } = default!;
             public ICollection<int> TempThumbnails { get; set; } = new List<int>();
-
         }
 
         public class ThumbnailDetailsSource
