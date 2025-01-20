@@ -497,7 +497,7 @@ namespace Mapster.Adapters
             }
             else
             {
-                if (exp.NodeType == ExpressionType.Call)
+                if (exp.NodeType != ExpressionType.Invoke)
                 {
                     var argExt = new CompileArgument
                     {
@@ -507,7 +507,7 @@ namespace Mapster.Adapters
                         Context = arg.Context,
                     };
 
-                    return CreateAdaptExpressionCore(exp, destinationType, argExt, mapping, destination);
+                    return CreateAdaptExpressionCore(exp, destinationType, argExt, mapping, destination).To(destinationType);
                 }
             }
 
