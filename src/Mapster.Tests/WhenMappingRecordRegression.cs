@@ -353,6 +353,25 @@ namespace Mapster.Tests
 
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/456
+        /// </summary>
+        [TestMethod]
+        public void WhenRecordReceivedIgnoreCtorParamProcessing()
+        {
+            TypeAdapterConfig<UserDto456,UserRecord456>.NewConfig()
+             .Ignore(dest => dest.Name);
+
+            var userDto = new UserDto456("Amichai");
+            var user = new UserRecord456("John");
+
+            var map = userDto.Adapt<UserRecord456>();
+            var maptoTarget = userDto.Adapt(user);
+
+            map.Name.ShouldBeNullOrEmpty();
+            maptoTarget.Name.ShouldBe("John");
+        }
+
 
 
         #region NowNotWorking
@@ -381,6 +400,11 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+
+
+    public record UserRecord456(string Name);
+
+    public record UserDto456(string Name);
 
     public interface IActivityDataExtentions : IActivityData
     {

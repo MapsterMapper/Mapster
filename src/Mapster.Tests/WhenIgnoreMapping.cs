@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Shouldly;
@@ -55,6 +57,69 @@ namespace Mapster.Tests
             poco2.Name.ShouldBeNull();
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/707
+        /// </summary>
+        [TestMethod]
+        public void WhenClassIgnoreCtorParamGetDefaultValue()
+        {
+            var config = new TypeAdapterConfig() 
+            { 
+                RequireDestinationMemberSource = true, 
+            };
+            config.Default
+                   .NameMatchingStrategy(new NameMatchingStrategy
+                    {
+                        SourceMemberNameConverter = input => input.ToLowerInvariant(),
+                        DestinationMemberNameConverter = input => input.ToLowerInvariant(),
+                    })
+                   ;
+            config
+                .NewConfig<A707, B707>()
+                .MapToConstructor(GetConstructor<B707>())
+                .Ignore(e => e.Id);
+
+            var source = new A707 { Text = "test" };
+            var dest = new B707(123, "Hello");
+
+            var docKind = source.Adapt<B707>(config); 
+            var mapTotarget = source.Adapt(dest,config);
+
+            docKind.Id.ShouldBe(0);
+            mapTotarget.Id.ShouldBe(123);
+            mapTotarget.Text.ShouldBe("test");
+        }
+
+        #region TestClasses
+        static ConstructorInfo? GetConstructor<TDestination>()
+        {
+            var parameterlessCtorInfo = typeof(TDestination).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, new Type[0]);
+
+            var ctors = typeof(TDestination).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            var validCandidateCtors = ctors.Except(new[] { parameterlessCtorInfo }).ToArray();
+            var ctorToUse = validCandidateCtors.Length == 1
+                ? validCandidateCtors.First()
+                : validCandidateCtors.OrderByDescending(c => c.GetParameters().Length).First();
+
+            return ctorToUse;
+        }
+        public class A707
+        {
+            public string? Text { get; set; }
+        }
+
+        public class B707
+        {
+            public int Id { get; private set; }
+            public string Text { get; private set; }
+
+            public B707(int id, string text)
+            {
+                Id = id;
+                Text = text;
+            }
+        }
+
         public class Poco
         {
             public Guid Id { get; set; }
@@ -67,5 +132,7 @@ namespace Mapster.Tests
             [JsonIgnore]
             public string Name { get; set; }
         }
+
+        #endregion TestClasses
     }
 }
