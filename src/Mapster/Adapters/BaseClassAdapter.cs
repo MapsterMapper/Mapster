@@ -15,7 +15,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null, bool CtorMapping = false)
         {
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
@@ -29,7 +29,7 @@ namespace Mapster.Adapters
                         : ExpressionEx.PropertyOrFieldPath(source, (string)src)));
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg, destinationMember, out var ignore))
+                if (ProcessIgnores(arg, destinationMember, out var ignore) && !CtorMapping)
                     continue;
 
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
@@ -80,7 +80,8 @@ namespace Mapster.Adapters
                         {
                             if (classModel.BreakOnUnmatched)
                                 return null!;
-                            unmappedDestinationMembers.Add(destinationMember.Name);
+                            if(!arg.Settings.Ignore.Any(x=>x.Key == destinationMember.Name)) // Don't mark a constructor parameter if it was explicitly ignored
+                                unmappedDestinationMembers.Add(destinationMember.Name);
                         }
 
                         properties.Add(propertyModel);
@@ -128,7 +129,7 @@ namespace Mapster.Adapters
                    && ignore.Condition == null;
         }
 
-        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg)
+        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg, Expression? destination)
         {
             var members = classConverter.Members;
 
@@ -155,6 +156,27 @@ namespace Mapster.Adapters
                             : member.Ignore.Condition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault());
                         var condition = ExpressionEx.Not(body);
                         getter = Expression.Condition(condition, getter, defaultConst);
+                    }
+                    else
+                        if (arg.Settings.Ignore.Count != 0)
+                    {
+                        if (arg.MapType != MapType.MapToTarget && arg.Settings.Ignore.Any(x => x.Key == member.DestinationMember.Name))
+                            getter = defaultConst;
+
+                        if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
+                        {
+                            if (arg.Settings.Ignore.Any(x => x.Key == member.DestinationMember.Name))
+                            {
+                                var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
+                                    .Where(x => x.Name == member.DestinationMember.Name).FirstOrDefault();
+
+                                if (find != null)
+                                    getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
+                            }
+                            else
+                                getter = defaultConst;
+                        }
+
                     }
                 }
                 arguments.Add(getter);
