@@ -158,25 +158,18 @@ namespace Mapster.Adapters
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
                     else
-                        if (arg.Settings.Ignore.Count != 0)
+                        if (arg.Settings.Ignore.Any(x => x.Key == member.DestinationMember.Name))
                     {
-                        if (arg.MapType != MapType.MapToTarget && arg.Settings.Ignore.Any(x => x.Key == member.DestinationMember.Name))
-                            getter = defaultConst;
+                        getter = defaultConst;
 
                         if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
                         {
-                            if (arg.Settings.Ignore.Any(x => x.Key == member.DestinationMember.Name))
-                            {
-                                var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
-                                    .Where(x => x.Name == member.DestinationMember.Name).FirstOrDefault();
+                            var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
+                                .Where(x => x.Name == member.DestinationMember.Name).FirstOrDefault();
 
-                                if (find != null)
-                                    getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
-                            }
-                            else
-                                getter = defaultConst;
+                            if (find != null)
+                                getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
                         }
-
                     }
                 }
                 arguments.Add(getter);
