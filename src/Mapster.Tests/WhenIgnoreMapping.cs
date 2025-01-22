@@ -90,7 +90,47 @@ namespace Mapster.Tests
             mapTotarget.Text.ShouldBe("test");
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/723
+        /// </summary>
+        [TestMethod]
+        public void MappingToIntefaceWithIgnorePrivateSetProperty()
+        {
+            TypeAdapterConfig<InterfaceSource723, InterfaceDestination723>
+                .NewConfig()
+                .TwoWays()
+                .Ignore(dest => dest.Ignore);
+
+            InterfaceDestination723 dataDestination = new Data723() { Inter = "IterDataDestination", Ignore = "IgnoreDataDestination" };
+
+            Should.NotThrow(() =>
+            {
+                var isourse = dataDestination.Adapt<InterfaceSource723>();
+                var idestination = dataDestination.Adapt<InterfaceDestination723>();
+            });
+
+        }
+
         #region TestClasses
+
+        public interface InterfaceDestination723
+        {
+            public string Inter { get; set; }
+            public string Ignore { get; }
+        }
+
+        public interface InterfaceSource723
+        {
+            public string Inter { get; set; }
+        }
+
+        private class Data723 : InterfaceSource723, InterfaceDestination723
+        {
+            public string Ignore { get; set; }
+
+            public string Inter { get; set; }
+        }
+
         static ConstructorInfo? GetConstructor<TDestination>()
         {
             var parameterlessCtorInfo = typeof(TDestination).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, new Type[0]);
