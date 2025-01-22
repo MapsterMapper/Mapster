@@ -69,13 +69,13 @@ namespace Mapster.Adapters
                 classConverter = destType.GetConstructors()
                     .OrderByDescending(it => it.GetParameters().Length)
                     .Select(it => GetConstructorModel(it, true))
-                    .Select(it => CreateClassConverter(source, it, arg, CtorMapping:true))
+                    .Select(it => CreateClassConverter(source, it, arg, ctorMapping:true))
                     .FirstOrDefault(it => it != null);
             }
             else
             {
                 var model = GetConstructorModel(ctor, false);
-                classConverter = CreateClassConverter(source, model, arg, CtorMapping:true);
+                classConverter = CreateClassConverter(source, model, arg, ctorMapping:true);
             }
 
             if (classConverter == null)

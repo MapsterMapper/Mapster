@@ -15,7 +15,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null, bool CtorMapping = false)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null, bool ctorMapping = false)
         {
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
@@ -29,7 +29,7 @@ namespace Mapster.Adapters
                         : ExpressionEx.PropertyOrFieldPath(source, (string)src)));
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg, destinationMember, out var ignore) && !CtorMapping)
+                if (ProcessIgnores(arg, destinationMember, out var ignore) && !ctorMapping)
                     continue;
 
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
