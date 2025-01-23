@@ -34,7 +34,11 @@ namespace Mapster.Adapters
 
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
                 if (arg.Settings.IgnoreNonMapped == true)
+                {
+                    arg.Settings.SkipDestinationMemberCheck = true;
                     resolvers = resolvers.Where(ValueAccessingStrategy.CustomResolvers.Contains);
+                }
+                    
                 var getter = (from fn in resolvers
                         from src in sources
                         select fn(src, destinationMember, arg))
