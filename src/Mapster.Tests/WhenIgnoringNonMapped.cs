@@ -12,6 +12,7 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
                 .Map(dest => dest.Id, src => src.Id)
+                .RequireDestinationMemberSource(true)
                 .IgnoreNonMapped(true)
                 .Compile();
 
