@@ -54,6 +54,15 @@ namespace Mapster.Adapters
                     Destination = (ParameterExpression?)destination,
                     UseDestinationValue = arg.MapType != MapType.Projection && destinationMember.UseDestinationValue(arg),
                 };
+                if (arg.MapType == MapType.MapToTarget && getter == null && arg.DestinationType.IsRecordType())
+                {
+                    var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
+                                .Where(x => x.Name == destinationMember.Name).FirstOrDefault();
+
+                    if (find != null)
+                        getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
+
+                }
                 if (getter != null)
                 {
                     propertyModel.Getter = arg.MapType == MapType.Projection 
