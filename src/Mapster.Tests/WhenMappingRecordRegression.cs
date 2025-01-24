@@ -15,10 +15,10 @@ namespace Mapster.Tests
         public void AdaptRecordToRecord()
         {
             var _source = new TestRecord() { X = 700 };
-            var _destination = new TestRecord() { X = 500 };
+            var _destination = new TestRecordY() { X = 500 , Y = 200 };
             var _result = _source.Adapt(_destination);
-
             _result.X.ShouldBe(700);
+            _result.Y.ShouldBe(200);
             object.ReferenceEquals(_result, _destination).ShouldBeFalse();
         }
 
@@ -400,7 +400,11 @@ namespace Mapster.Tests
 
 
     #region TestClasses
-
+    public record TestRecordY()
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
 
     public record UserRecord456(string Name);
 

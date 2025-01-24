@@ -33,7 +33,7 @@ namespace Mapster.Adapters
             var classModel = GetConstructorModel(ctor, false);
             var classConverter = CreateClassConverter(source, classModel, arg, ctorMapping:true);
             var installExpr = CreateInstantiationExpression(source, classConverter, arg, destination);
-            return RecordInlineExpression(source, arg, installExpr); // Activator field when not include in public ctor
+            return RecordInlineExpression(source, destination, arg, installExpr); // Activator field when not include in public ctor
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)
@@ -46,7 +46,7 @@ namespace Mapster.Adapters
             return base.CreateInstantiationExpression(source, arg);
         }
 
-        private Expression? RecordInlineExpression(Expression source, CompileArgument arg, Expression installExpr)
+        private Expression? RecordInlineExpression(Expression source, Expression? destination,  CompileArgument arg, Expression installExpr)
         {
             //new TDestination {
             //  Prop1 = convert(src.Prop1),
@@ -58,7 +58,7 @@ namespace Mapster.Adapters
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
             var contructorMembers = newInstance.Arguments.OfType<MemberExpression>().Select(me => me.Member).ToArray();
             var classModel = GetSetterModel(arg);
-            var classConverter = CreateClassConverter(source, classModel, arg);
+            var classConverter = CreateClassConverter(source, classModel, arg, destination:destination);
             var members = classConverter.Members;
 
             var lines = new List<MemberBinding>();
