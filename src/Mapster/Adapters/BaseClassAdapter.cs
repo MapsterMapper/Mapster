@@ -59,7 +59,7 @@ namespace Mapster.Adapters
                     var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
                                 .Where(x => x.Name == destinationMember.Name).FirstOrDefault();
 
-                    if (find != null)
+                    if (find != null && destination != null)
                         getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
 
                 }
@@ -154,6 +154,15 @@ namespace Mapster.Adapters
                 if (member.Getter == null)
                 {
                     getter = defaultConst;
+
+                    if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
+                    {
+                        var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
+                                .Where(x => x.Name == member.DestinationMember.Name).FirstOrDefault();
+
+                        if (find != null && destination != null)
+                            getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
+                    }
                 }
                 else
                 {

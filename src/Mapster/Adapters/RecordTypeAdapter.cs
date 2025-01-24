@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Utils;
+using static Mapster.IgnoreDictionary;
 
 namespace Mapster.Adapters
 {
@@ -20,19 +22,18 @@ namespace Mapster.Adapters
         {
             //new TDestination(src.Prop1, src.Prop2)
 
-            if (arg.GetConstructUsing() != null)
-                return base.CreateInstantiationExpression(source, destination, arg);
+            Expression installExpr;
 
-            var destType = arg.DestinationType.GetTypeInfo().IsInterface
-                ? DynamicTypeGenerator.GetTypeForInterface(arg.DestinationType, arg.Settings.Includes.Count > 0)
-                : arg.DestinationType;
-            if (destType == null)
-                return base.CreateInstantiationExpression(source, destination, arg);
-            var ctor = destType.GetConstructors()
-                    .OrderByDescending(it => it.GetParameters().Length).ToArray().FirstOrDefault(); // Will be used public constructor with the maximum number of parameters 
-            var classModel = GetConstructorModel(ctor, false);
-            var classConverter = CreateClassConverter(source, classModel, arg, ctorMapping:true);
-            var installExpr = CreateInstantiationExpression(source, classConverter, arg, destination);
+            if (arg.GetConstructUsing() != null || arg.DestinationType == null)
+                installExpr = base.CreateInstantiationExpression(source, destination, arg);
+            else
+            {
+                var ctor = arg.DestinationType.GetConstructors()
+                        .OrderByDescending(it => it.GetParameters().Length).ToArray().FirstOrDefault(); // Will be used public constructor with the maximum number of parameters 
+                var classModel = GetConstructorModel(ctor, false);
+                var classConverter = CreateClassConverter(source, classModel, arg, ctorMapping: true);
+                installExpr = CreateInstantiationExpression(source, classConverter, arg, destination);
+            }
             return RecordInlineExpression(source, destination, arg, installExpr); // Activator field when not include in public ctor
         }
 
@@ -56,7 +57,9 @@ namespace Mapster.Adapters
             var exp = installExpr;
             var memberInit = exp as MemberInitExpression;
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
-            var contructorMembers = newInstance.Arguments.OfType<MemberExpression>().Select(me => me.Member).ToArray();
+            var contructorMembers = arg.DestinationType.GetConstructors()
+                    .OrderByDescending(it => it.GetParameters().Length).FirstOrDefault()
+                    .GetParameters().ToList();
             var classModel = GetSetterModel(arg);
             var classConverter = CreateClassConverter(source, classModel, arg, destination:destination);
             var members = classConverter.Members;
@@ -70,7 +73,7 @@ namespace Mapster.Adapters
                     return null;
 
                 if (!arg.Settings.Resolvers.Any(r => r.DestinationMemberName == member.DestinationMember.Name)
-                    && member.Getter is MemberExpression memberExp && contructorMembers.Contains(memberExp.Member))
+                    && contructorMembers.Any(x=>string.Equals(x.Name, member.DestinationMember.Name, StringComparison.InvariantCultureIgnoreCase)))
                     continue;
 
                 if (member.DestinationMember.SetterModifier == AccessModifier.None)
@@ -93,7 +96,38 @@ namespace Mapster.Adapters
                 lines.Add(bind);
             }
 
+            if(arg.MapType == MapType.MapToTarget)
+                lines.AddRange(RecordIngnoredWithoutConditonRestore(destination, arg, contructorMembers));
+
             return Expression.MemberInit(newInstance, lines);
+        }
+
+        private List<MemberBinding> RecordIngnoredWithoutConditonRestore(Expression? destination, CompileArgument arg, List<ParameterInfo> contructorMembers)
+        {
+           var members =  arg.DestinationType
+                            .GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault())
+                            .Where(x=> arg.Settings.Ignore.Any(y=> y.Key == x.Name));
+
+            var lines = new List<MemberBinding>();
+
+
+            foreach (var member in members)
+            {
+                if(destination == null)
+                    continue;
+
+                IgnoreItem ignore;
+                ProcessIgnores(arg, member, out ignore);
+
+                if (member.SetterModifier == AccessModifier.None ||
+                   ignore.Condition != null ||
+                   contructorMembers.Any(x=> string.Equals(x.Name, member.Name, StringComparison.InvariantCultureIgnoreCase)))
+                    continue;
+
+               lines.Add(Expression.Bind((MemberInfo)member.Info, Expression.MakeMemberAccess(destination, (MemberInfo)member.Info)));
+            }
+
+            return lines;
         }
     }
 

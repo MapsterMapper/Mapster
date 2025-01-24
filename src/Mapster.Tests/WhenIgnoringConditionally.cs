@@ -164,6 +164,8 @@ namespace Mapster.Tests
                 .Compile();
 
             var poco = new SimplePoco { Id = 1, Name = "TestName" };
+
+            var srt = poco.BuildAdapter().CreateMapToTargetExpression<SimpleRecord>();
             var dto = TypeAdapter.Adapt<SimplePoco, SimpleRecord>(poco);
 
             dto.Id.ShouldBe(1);
@@ -190,8 +192,8 @@ namespace Mapster.Tests
         [AdaptWith(AdaptDirectives.DestinationAsRecord)]
         public class SimpleRecord
         {
-            public int Id { get; }
-            public string Name { get; }
+            public int Id { get; private set; }
+            public string Name { get; private set; }
 
             public SimpleRecord(int id, string name)
             {

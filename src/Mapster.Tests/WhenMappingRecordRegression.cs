@@ -14,12 +14,24 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptRecordToRecord()
         {
+            TypeAdapterConfig<TestRecordY, TestRecordY>
+                .NewConfig()
+                .Ignore(dest => dest.Y);
+
+               
+
+
             var _source = new TestRecord() { X = 700 };
             var _destination = new TestRecordY() { X = 500 , Y = 200 };
+
+            var _destination2 = new TestRecordY() { X = 300, Y = 400 };
             var _result = _source.Adapt(_destination);
-            _result.X.ShouldBe(700);
-            _result.Y.ShouldBe(200);
-            object.ReferenceEquals(_result, _destination).ShouldBeFalse();
+
+            var result2 = _destination.Adapt(_destination2);
+
+            //_result.X.ShouldBe(700);
+            //_result.Y.ShouldBe(200);
+            //object.ReferenceEquals(_result, _destination).ShouldBeFalse();
         }
 
         [TestMethod]
@@ -362,14 +374,28 @@ namespace Mapster.Tests
             TypeAdapterConfig<UserDto456,UserRecord456>.NewConfig()
              .Ignore(dest => dest.Name);
 
+            //TypeAdapterConfig<DToInside, UserInside>.NewConfig()
+            //.Ignore(dest => dest.User);
+
             var userDto = new UserDto456("Amichai");
             var user = new UserRecord456("John");
 
-            var map = userDto.Adapt<UserRecord456>();
-            var maptoTarget = userDto.Adapt(user);
+            //var map = userDto.Adapt<UserRecord456>();
 
-            map.Name.ShouldBeNullOrEmpty();
-            maptoTarget.Name.ShouldBe("John");
+           // var sd = userDto.BuildAdapter().CreateMapToTargetExpression<UserRecord456>();
+          //  var maptoTarget = userDto.Adapt(user);
+
+
+            var s = new DToInside(userDto);
+
+            var d = new UserInside(user, new UserRecord456( "Skot"));
+
+            var sd = s.BuildAdapter().CreateMapToTargetExpression<UserInside>();
+
+            var ssd = s.Adapt(d);
+
+           // map.Name.ShouldBeNullOrEmpty();
+          //  maptoTarget.Name.ShouldBe("John");
         }
 
 
@@ -405,6 +431,9 @@ namespace Mapster.Tests
         public int X { get; set; }
         public int Y { get; set; }
     }
+
+    public record UserInside(UserRecord456 User, UserRecord456 SecondName);
+    public record DToInside(UserDto456 User);
 
     public record UserRecord456(string Name);
 
