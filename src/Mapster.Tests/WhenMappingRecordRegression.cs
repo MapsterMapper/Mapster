@@ -18,9 +18,6 @@ namespace Mapster.Tests
                 .NewConfig()
                 .Ignore(dest => dest.Y);
 
-               
-
-
             var _source = new TestRecord() { X = 700 };
             var _destination = new TestRecordY() { X = 500 , Y = 200 };
 
@@ -29,9 +26,9 @@ namespace Mapster.Tests
 
             var result2 = _destination.Adapt(_destination2);
 
-            //_result.X.ShouldBe(700);
-            //_result.Y.ShouldBe(200);
-            //object.ReferenceEquals(_result, _destination).ShouldBeFalse();
+            _result.X.ShouldBe(700);
+            _result.Y.ShouldBe(200);
+            object.ReferenceEquals(_result, _destination).ShouldBeFalse();
         }
 
         [TestMethod]
@@ -374,28 +371,24 @@ namespace Mapster.Tests
             TypeAdapterConfig<UserDto456,UserRecord456>.NewConfig()
              .Ignore(dest => dest.Name);
 
-            //TypeAdapterConfig<DToInside, UserInside>.NewConfig()
-            //.Ignore(dest => dest.User);
+            TypeAdapterConfig<DtoInside, UserInside>.NewConfig()
+                .Ignore(dest => dest.User);
 
             var userDto = new UserDto456("Amichai");
             var user = new UserRecord456("John");
+            var DtoInsider = new DtoInside(userDto);
+            var UserInsider = new UserInside(user, new UserRecord456("Skot"));
 
-            //var map = userDto.Adapt<UserRecord456>();
+            var map = userDto.Adapt<UserRecord456>();
+            var maptoTarget = userDto.Adapt(user);
 
-           // var sd = userDto.BuildAdapter().CreateMapToTargetExpression<UserRecord456>();
-          //  var maptoTarget = userDto.Adapt(user);
+            var MapToTargetInsider = DtoInsider.Adapt(UserInsider);
 
+            map.Name.ShouldBeNullOrEmpty(); // Ignore is work set default value
+            maptoTarget.Name.ShouldBe("John"); // Ignore is work ignored member save value from Destination
+            MapToTargetInsider.User.Name.ShouldBe("John"); // Ignore is work member save value from Destination
+            MapToTargetInsider.SecondName.Name.ShouldBe("Skot"); // Unmached member save value from Destination
 
-            var s = new DToInside(userDto);
-
-            var d = new UserInside(user, new UserRecord456( "Skot"));
-
-            var sd = s.BuildAdapter().CreateMapToTargetExpression<UserInside>();
-
-            var ssd = s.Adapt(d);
-
-           // map.Name.ShouldBeNullOrEmpty();
-          //  maptoTarget.Name.ShouldBe("John");
         }
 
 
@@ -433,7 +426,7 @@ namespace Mapster.Tests
     }
 
     public record UserInside(UserRecord456 User, UserRecord456 SecondName);
-    public record DToInside(UserDto456 User);
+    public record DtoInside(UserDto456 User);
 
     public record UserRecord456(string Name);
 
