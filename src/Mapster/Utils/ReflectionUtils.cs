@@ -61,6 +61,12 @@ namespace Mapster
             if (type.IsConvertible())
                 return false;
 
+            if (type == typeof(Type) || type.BaseType == typeof(MulticastDelegate))
+                return false;
+
+            if (type.IsClass && type.GetProperties().Count() != 0)
+                return true;
+
             return type.GetFieldsAndProperties().Any(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) != 0);
         }
 
