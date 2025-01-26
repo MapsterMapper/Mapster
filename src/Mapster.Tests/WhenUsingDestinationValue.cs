@@ -35,6 +35,32 @@ namespace Mapster.Tests
             poco.Strings.ShouldBe(strings);
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/410
+        /// </summary>
+        [TestMethod]
+        public void MappingToReadonlyPropertyWhenPocoDetectRegression()
+        {
+            var studentDto = new StudentDtoOrigin { Name = "Marta" };
+            var student = studentDto.Adapt<StudentOrigin>();  // No exception.
+
+            student.Name.ShouldBe("John");
+        }
+
+
+        public class StudentOrigin
+        {
+            [UseDestinationValue]
+            public string Name { get; } = "John"; // only readonly
+        }
+
+        public class StudentDtoOrigin
+        {
+
+            public string Name { get; set; }
+        }
+
+
         public class ContractingParty
         {
             public string Name { get; set; }
