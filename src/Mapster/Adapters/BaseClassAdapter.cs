@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Mapster.Models;
+using Mapster.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -15,7 +15,7 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null, bool ctorMapping = false)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null, bool ctorMapping = false, ClassModel recordRestorMemberModel = null)
         {
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
@@ -56,12 +56,7 @@ namespace Mapster.Adapters
                 };
                 if (arg.MapType == MapType.MapToTarget && getter == null && arg.DestinationType.IsRecordType())
                 {
-                    var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
-                                .Where(x => x.Name == destinationMember.Name).FirstOrDefault();
-
-                    if (find != null && destination != null)
-                        getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
-
+                    getter = TryRestoreRecordMember(destinationMember, recordRestorMemberModel, destination) ?? getter;
                 }
                 if (getter != null)
                 {
@@ -138,7 +133,7 @@ namespace Mapster.Adapters
                    && ignore.Condition == null;
         }
 
-        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg, Expression? destination)
+        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg, Expression? destination, ClassModel recordRestorParamModel = null)
         {
             var members = classConverter.Members;
 
@@ -156,13 +151,7 @@ namespace Mapster.Adapters
                     getter = defaultConst;
 
                     if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
-                    {
-                        var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
-                                .Where(x => x.Name == member.DestinationMember.Name).FirstOrDefault();
-
-                        if (find != null && destination != null)
-                            getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
-                    }
+                        getter = TryRestoreRecordMember(member.DestinationMember,recordRestorParamModel,destination) ?? getter;
                 }
                 else
                 {
@@ -181,13 +170,7 @@ namespace Mapster.Adapters
                         getter = defaultConst;
 
                         if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
-                        {
-                            var find = arg.DestinationType.GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault()).ToArray()
-                                .Where(x => x.Name == member.DestinationMember.Name).FirstOrDefault();
-
-                            if (find != null)
-                                getter = Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
-                        }
+                           getter = TryRestoreRecordMember(member.DestinationMember, recordRestorParamModel, destination) ?? getter;
                     }
                 }
                 arguments.Add(getter);
@@ -212,6 +195,20 @@ namespace Mapster.Adapters
             {
                 Members = arg.DestinationType.GetFieldsAndProperties(true)
             };
+        }
+
+        protected MemberExpression? TryRestoreRecordMember(IMemberModelEx member, ClassModel? restorRecordModel, Expression? destination)
+        {
+            if (restorRecordModel != null && destination != null)
+            {
+                var find = restorRecordModel.Members
+                               .Where(x => x.Name == member.Name).FirstOrDefault();
+
+                if (find != null)
+                    return Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
+            }
+
+            return null;
         }
 
         #endregion

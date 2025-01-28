@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mapster.Models;
 using Mapster.Utils;
 using static Mapster.IgnoreDictionary;
 
@@ -31,8 +32,9 @@ namespace Mapster.Adapters
                 var ctor = arg.DestinationType.GetConstructors()
                         .OrderByDescending(it => it.GetParameters().Length).ToArray().FirstOrDefault(); // Will be used public constructor with the maximum number of parameters 
                 var classModel = GetConstructorModel(ctor, false);
+                var restorParamModel = GetSetterModel(arg);
                 var classConverter = CreateClassConverter(source, classModel, arg, ctorMapping: true);
-                installExpr = CreateInstantiationExpression(source, classConverter, arg, destination);
+                installExpr = CreateInstantiationExpression(source, classConverter, arg, destination, restorParamModel);
             }
             return RecordInlineExpression(source, destination, arg, installExpr); // Activator field when not include in public ctor
         }
@@ -57,11 +59,9 @@ namespace Mapster.Adapters
             var exp = installExpr;
             var memberInit = exp as MemberInitExpression;
             var newInstance = memberInit?.NewExpression ?? (NewExpression)exp;
-            var contructorMembers = arg.DestinationType.GetConstructors()
-                    .OrderByDescending(it => it.GetParameters().Length).FirstOrDefault()
-                    .GetParameters().ToList();
+            var contructorMembers = newInstance.Constructor?.GetParameters().ToList() ?? new();
             var classModel = GetSetterModel(arg);
-            var classConverter = CreateClassConverter(source, classModel, arg, destination:destination);
+            var classConverter = CreateClassConverter(source, classModel, arg, destination:destination,recordRestorMemberModel:classModel);
             var members = classConverter.Members;
 
             var lines = new List<MemberBinding>();
@@ -97,15 +97,14 @@ namespace Mapster.Adapters
             }
 
             if(arg.MapType == MapType.MapToTarget)
-                lines.AddRange(RecordIngnoredWithoutConditonRestore(destination, arg, contructorMembers));
+                lines.AddRange(RecordIngnoredWithoutConditonRestore(destination, arg, contructorMembers, classModel));
 
             return Expression.MemberInit(newInstance, lines);
         }
 
-        private List<MemberBinding> RecordIngnoredWithoutConditonRestore(Expression? destination, CompileArgument arg, List<ParameterInfo> contructorMembers)
+        private List<MemberBinding> RecordIngnoredWithoutConditonRestore(Expression? destination, CompileArgument arg, List<ParameterInfo> contructorMembers, ClassModel restorPropertyModel)
         {
-           var members =  arg.DestinationType
-                            .GetFieldsAndProperties(arg.Settings.EnableNonPublicMembers.GetValueOrDefault())
+           var members = restorPropertyModel.Members
                             .Where(x=> arg.Settings.Ignore.Any(y=> y.Key == x.Name));
 
             var lines = new List<MemberBinding>();
