@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -69,17 +70,19 @@ namespace Mapster.Adapters
                 lines.AddRange(memberInit.Bindings);
             foreach (var member in members)
             {
-                if (member.UseDestinationValue)
-                    return null;
+                Expression? value;
 
                 if (!arg.Settings.Resolvers.Any(r => r.DestinationMemberName == member.DestinationMember.Name)
                     && contructorMembers.Any(x=>string.Equals(x.Name, member.DestinationMember.Name, StringComparison.InvariantCultureIgnoreCase)))
                     continue;
 
-                if (member.DestinationMember.SetterModifier == AccessModifier.None)
+                if (member.DestinationMember.SetterModifier == AccessModifier.None && member.UseDestinationValue == false)
                     continue;
 
-                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
+                if (member.DestinationMember.SetterModifier == AccessModifier.None && member.UseDestinationValue)
+                    continue; // work in progress
+                else
+                    value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
 
                 //special null property check for projection
                 //if we don't set null to property, EF will create empty object
