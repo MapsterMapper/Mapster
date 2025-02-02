@@ -197,7 +197,7 @@ namespace Mapster.Adapters
             };
         }
 
-        protected MemberExpression? TryRestoreRecordMember(IMemberModelEx member, ClassModel? restorRecordModel, Expression? destination)
+        protected Expression? TryRestoreRecordMember(IMemberModelEx member, ClassModel? restorRecordModel, Expression? destination)
         {
             if (restorRecordModel != null && destination != null)
             {
@@ -205,7 +205,11 @@ namespace Mapster.Adapters
                                .Where(x => x.Name == member.Name).FirstOrDefault();
 
                 if (find != null)
-                    return Expression.MakeMemberAccess(destination, (MemberInfo)find.Info);
+                {
+                    var compareNull = Expression.Equal(destination, Expression.Constant(null, destination.Type));
+                    return Expression.Condition(compareNull, member.Type.CreateDefault(), Expression.MakeMemberAccess(destination, (MemberInfo)find.Info));
+                }
+
             }
 
             return null;
