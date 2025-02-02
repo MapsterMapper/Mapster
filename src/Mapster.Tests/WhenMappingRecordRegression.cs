@@ -391,7 +391,36 @@ namespace Mapster.Tests
 
         }
 
+        [TestMethod]
+        public void WhenRecordTypeWorksWithUseDestinationValueAndIgnoreNullValues()
+        {
 
+            TypeAdapterConfig<SourceFromTestUseDestValue, TestRecordUseDestValue>
+              .NewConfig()
+              .IgnoreNullValues(true);
+
+            var _source = new SourceFromTestUseDestValue() { X = 300, Y = 200, Name = new StudentNameRecord() { Name = "John" } };
+            var result = _source.Adapt<TestRecordUseDestValue>();
+
+            var _sourceFromMapToTarget = new SourceFromTestUseDestValue() { A = 100, X = null, Y = null, Name = null };
+
+            var txt1 = _sourceFromMapToTarget.BuildAdapter().CreateMapExpression<TestRecordUseDestValue>();
+
+            var txt = _sourceFromMapToTarget.BuildAdapter().CreateMapToTargetExpression<TestRecordUseDestValue>();
+
+            var _resultMapToTarget = _sourceFromMapToTarget.Adapt(result);
+
+            result.A.ShouldBe(0);               // default Value - not match
+            result.S.ShouldBe("Inside Data");   // is not AutoProperty not mod by source
+            result.Y.ShouldBe(200);             // Y is AutoProperty value transmitted from source
+            result.Name.Name.ShouldBe("John");  // transmitted from source standart method
+
+            _resultMapToTarget.A.ShouldBe(100);
+            _resultMapToTarget.X.ShouldBe(300);            // Ignore NullValues work
+            _resultMapToTarget.Y.ShouldBe(200);            // Ignore NullValues work
+            _resultMapToTarget.Name.Name.ShouldBe("John"); // Ignore NullValues work
+
+        }
 
         #region NowNotWorking
 
@@ -419,6 +448,37 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+    public class SourceFromTestUseDestValue
+    {
+        public int? A { get; set; }
+        public int? X { get; set; }
+        public int? Y { get; set; }
+        public StudentNameRecord Name { get; set; }
+    }
+
+
+    public record TestRecordUseDestValue()
+    {
+        private string _s = "Inside Data";
+
+        public int A { get; set; }
+        public int X { get; set; }
+
+        [UseDestinationValue]
+        public int Y { get; }
+
+        [UseDestinationValue]
+        public string S { get => _s; }
+
+        [UseDestinationValue]
+        public StudentNameRecord Name { get; } = new StudentNameRecord() { Name = "Marta" };
+    }
+
+    public record StudentNameRecord
+    {
+        public string Name { get; set; }
+    }
+
     public record TestRecordY()
     {
         public int X { get; set; }
@@ -723,15 +783,6 @@ namespace Mapster.Tests
     }
 
     sealed record TestSealedRecordPositional(int X);
-
-
-
-
-
-
-
-
-
 
     #endregion TestClasses
 }
