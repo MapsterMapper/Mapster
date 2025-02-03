@@ -194,9 +194,11 @@ namespace Mapster.Adapters
                                 var var2Param = ClassConverterContext.Members.Where(x => x.DestinationMember.Name == member.DestinationMember.Name).FirstOrDefault();
 
                                 Expression destMemberVar2 = var2Param.DestinationMember.GetExpression(var2Param.Destination);
+                                var ParamLambdaVar2 = destMemberVar2;
                                 if(member.DestinationMember.Type.IsRecordType())
-                                    destMemberVar2 = arg.Context.Config.CreateMapInvokeExpressionBody(member.Getter.Type, member.DestinationMember.Type, destMemberVar2);
-                                var blocksVar2 = Expression.Block(SetValueTypeAutoPropertyByReflection(member, destMemberVar2, classModel));
+                                    ParamLambdaVar2 = arg.Context.Config.CreateMapInvokeExpressionBody(member.Getter.Type, member.DestinationMember.Type, destMemberVar2);
+                                
+                                var blocksVar2 = Expression.Block(SetValueTypeAutoPropertyByReflection(member, ParamLambdaVar2, classModel));
                                 var lambdaVar2 = Expression.Lambda(blocksVar2, parameters: new[] { (ParameterExpression)var2Param.Destination, (ParameterExpression)destination });
                                 var adaptVar2 = Expression.Invoke(lambdaVar2, var2Param.Destination, destination);
 
