@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-mapster</ToolCommandName>
@@ -10,7 +10,7 @@
     <PackageTags>Mapster;Tool</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Mapster.Tool.snk</AssemblyOriginatorKeyFile>
-    <Version>8.4.0</Version>
+    <Version>8.5.0</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

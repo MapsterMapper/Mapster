@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <Description>Async supports for Mapster</Description>
     <IsPackable>true</IsPackable>
     <PackageTags>Mapster;Async</PackageTags>
