@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Mapster.Models;
+using Mapster.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mapster.Models;
-using Mapster.Utils;
 
 namespace Mapster.Adapters
 {
@@ -15,11 +15,12 @@ namespace Mapster.Adapters
 
         #region Build the Adapter Model
 
-        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null)
+        protected ClassMapping CreateClassConverter(Expression source, ClassModel classModel, CompileArgument arg, Expression? destination = null, bool ctorMapping = false, ClassModel recordRestorMemberModel = null)
         {
             var destinationMembers = classModel.Members;
             var unmappedDestinationMembers = new List<string>();
             var properties = new List<MemberMapping>();
+            arg.ConstructorMapping = ctorMapping;
 
             var sources = new List<Expression> {source};
             sources.AddRange(
@@ -29,7 +30,7 @@ namespace Mapster.Adapters
                         : ExpressionEx.PropertyOrFieldPath(source, (string)src)));
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg, destinationMember, out var ignore))
+                if (ProcessIgnores(arg, destinationMember, out var ignore) && !ctorMapping)
                     continue;
 
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
@@ -54,6 +55,10 @@ namespace Mapster.Adapters
                     Destination = (ParameterExpression?)destination,
                     UseDestinationValue = arg.MapType != MapType.Projection && destinationMember.UseDestinationValue(arg),
                 };
+                if (arg.MapType == MapType.MapToTarget && getter == null && arg.DestinationType.IsRecordType())
+                {
+                    getter = TryRestoreRecordMember(destinationMember, recordRestorMemberModel, destination) ?? getter;
+                }
                 if (getter != null)
                 {
                     propertyModel.Getter = arg.MapType == MapType.Projection 
@@ -80,7 +85,8 @@ namespace Mapster.Adapters
                         {
                             if (classModel.BreakOnUnmatched)
                                 return null!;
-                            unmappedDestinationMembers.Add(destinationMember.Name);
+                            if(!arg.Settings.Ignore.Any(x=>x.Key == destinationMember.Name)) // Don't mark a constructor parameter if it was explicitly ignored
+                                unmappedDestinationMembers.Add(destinationMember.Name);
                         }
 
                         properties.Add(propertyModel);
@@ -128,7 +134,7 @@ namespace Mapster.Adapters
                    && ignore.Condition == null;
         }
 
-        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg)
+        protected Expression CreateInstantiationExpression(Expression source, ClassMapping classConverter, CompileArgument arg, Expression? destination, ClassModel recordRestorParamModel = null)
         {
             var members = classConverter.Members;
 
@@ -144,6 +150,9 @@ namespace Mapster.Adapters
                 if (member.Getter == null)
                 {
                     getter = defaultConst;
+
+                    if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
+                        getter = TryRestoreRecordMember(member.DestinationMember,recordRestorParamModel,destination) ?? getter;
                 }
                 else
                 {
@@ -155,6 +164,14 @@ namespace Mapster.Adapters
                             : member.Ignore.Condition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault());
                         var condition = ExpressionEx.Not(body);
                         getter = Expression.Condition(condition, getter, defaultConst);
+                    }
+                    else
+                        if (arg.Settings.Ignore.Any(x => x.Key == member.DestinationMember.Name))
+                    {
+                        getter = defaultConst;
+
+                        if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
+                           getter = TryRestoreRecordMember(member.DestinationMember, recordRestorParamModel, destination) ?? getter;
                     }
                 }
                 arguments.Add(getter);
@@ -179,6 +196,24 @@ namespace Mapster.Adapters
             {
                 Members = arg.DestinationType.GetFieldsAndProperties(true)
             };
+        }
+
+        protected Expression? TryRestoreRecordMember(IMemberModelEx member, ClassModel? restorRecordModel, Expression? destination)
+        {
+            if (restorRecordModel != null && destination != null)
+            {
+                var find = restorRecordModel.Members
+                               .Where(x => x.Name == member.Name).FirstOrDefault();
+
+                if (find != null)
+                {
+                    var compareNull = Expression.Equal(destination, Expression.Constant(null, destination.Type));
+                    return Expression.Condition(compareNull, member.Type.CreateDefault(), Expression.MakeMemberAccess(destination, (MemberInfo)find.Info));
+                }
+
+            }
+
+            return null;
         }
 
         #endregion

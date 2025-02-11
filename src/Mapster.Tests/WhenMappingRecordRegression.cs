@@ -2,6 +2,7 @@
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using static Mapster.Tests.WhenMappingDerived;
 
 namespace Mapster.Tests
 {
@@ -14,11 +15,20 @@ namespace Mapster.Tests
         [TestMethod]
         public void AdaptRecordToRecord()
         {
+            TypeAdapterConfig<TestRecordY, TestRecordY>
+                .NewConfig()
+                .Ignore(dest => dest.Y);
+
             var _source = new TestRecord() { X = 700 };
-            var _destination = new TestRecord() { X = 500 };
+            var _destination = new TestRecordY() { X = 500 , Y = 200 };
+
+            var _destination2 = new TestRecordY() { X = 300, Y = 400 };
             var _result = _source.Adapt(_destination);
 
+            var result2 = _destination.Adapt(_destination2);
+
             _result.X.ShouldBe(700);
+            _result.Y.ShouldBe(200);
             object.ReferenceEquals(_result, _destination).ShouldBeFalse();
         }
 
@@ -353,7 +363,85 @@ namespace Mapster.Tests
 
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/456
+        /// </summary>
+        [TestMethod]
+        public void WhenRecordReceivedIgnoreCtorParamProcessing()
+        {
+            TypeAdapterConfig<UserDto456,UserRecord456>.NewConfig()
+             .Ignore(dest => dest.Name);
 
+            TypeAdapterConfig<DtoInside, UserInside>.NewConfig()
+                .Ignore(dest => dest.User);
+
+            var userDto = new UserDto456("Amichai");
+            var user = new UserRecord456("John");
+            var DtoInsider = new DtoInside(userDto);
+            var UserInsider = new UserInside(user, new UserRecord456("Skot"));
+
+            var map = userDto.Adapt<UserRecord456>();
+            var maptoTarget = userDto.Adapt(user);
+
+            var MapToTargetInsider = DtoInsider.Adapt(UserInsider);
+
+            map.Name.ShouldBeNullOrEmpty(); // Ignore is work set default value
+            maptoTarget.Name.ShouldBe("John"); // Ignore is work ignored member save value from Destination
+            MapToTargetInsider.User.Name.ShouldBe("John"); // Ignore is work member save value from Destination
+            MapToTargetInsider.SecondName.Name.ShouldBe("Skot"); // Unmached member save value from Destination
+
+        }
+
+        [TestMethod]
+        public void WhenRecordTypeWorksWithUseDestinationValueAndIgnoreNullValues()
+        {
+
+            TypeAdapterConfig<SourceFromTestUseDestValue, TestRecordUseDestValue>
+              .NewConfig()
+              .IgnoreNullValues(true);
+
+            var _source = new SourceFromTestUseDestValue() { X = 300, Y = 200, Name = new StudentNameRecord() { Name = "John" } };
+            var result = _source.Adapt<TestRecordUseDestValue>();
+
+            var _sourceFromMapToTarget = new SourceFromTestUseDestValue() { A = 100, X = null, Y = null, Name = null };
+
+            var txt1 = _sourceFromMapToTarget.BuildAdapter().CreateMapExpression<TestRecordUseDestValue>();
+
+            var txt = _sourceFromMapToTarget.BuildAdapter().CreateMapToTargetExpression<TestRecordUseDestValue>();
+
+            var _resultMapToTarget = _sourceFromMapToTarget.Adapt(result);
+
+            result.A.ShouldBe(0);               // default Value - not match
+            result.S.ShouldBe("Inside Data");   // is not AutoProperty not mod by source
+            result.Y.ShouldBe(200);             // Y is AutoProperty value transmitted from source
+            result.Name.Name.ShouldBe("John");  // transmitted from source standart method
+
+            _resultMapToTarget.A.ShouldBe(100);
+            _resultMapToTarget.X.ShouldBe(300);            // Ignore NullValues work
+            _resultMapToTarget.Y.ShouldBe(200);            // Ignore NullValues work
+            _resultMapToTarget.Name.Name.ShouldBe("John"); // Ignore NullValues work
+
+        }
+
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/771
+        /// https://github.com/MapsterMapper/Mapster/issues/746
+        /// </summary>
+        [TestMethod]
+        public void FixCtorParamMapping()
+        {
+            var sourceRequestPaymentDto = new PaymentDTO771("MasterCard", "1234", "12/99", "234", 12);
+            var sourceRequestOrderDto = new OrderDTO771(Guid.NewGuid(), Guid.NewGuid(), "order123", sourceRequestPaymentDto);
+            var db = new Database746(UserID: "256", Password: "123");
+           
+
+            var result = new CreateOrderRequest771(sourceRequestOrderDto).Adapt<CreateOrderCommand771>();
+            var resultID = db.Adapt(new Database746());
+           
+
+            result.Order.Payment.CVV.ShouldBe("234");
+            resultID.UserID.ShouldBe("256");
+        }
 
         #region NowNotWorking
 
@@ -381,6 +469,77 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+
+    public sealed record Database746(
+    string Server = "",
+    string Name = "",
+    string? UserID = null,
+    string? Password = null);
+
+    public record CreateOrderRequest771(OrderDTO771 Order);
+
+    public record CreateOrderCommand771(OrderDTO771 Order);
+
+
+    public record OrderDTO771
+    (
+    Guid Id,
+    Guid CustomerId,
+    string OrderName,
+    PaymentDTO771 Payment
+    );
+
+    public record PaymentDTO771
+    (
+    string CardName,
+    string CardNumber,
+    string Expiration,
+    string CVV,
+    int PaymentMethod
+    );
+    public class SourceFromTestUseDestValue
+    {
+        public int? A { get; set; }
+        public int? X { get; set; }
+        public int? Y { get; set; }
+        public StudentNameRecord Name { get; set; }
+    }
+
+
+    public record TestRecordUseDestValue()
+    {
+        private string _s = "Inside Data";
+
+        public int A { get; set; }
+        public int X { get; set; }
+
+        [UseDestinationValue]
+        public int Y { get; }
+
+        [UseDestinationValue]
+        public string S { get => _s; }
+
+        [UseDestinationValue]
+        public StudentNameRecord Name { get; } = new StudentNameRecord() { Name = "Marta" };
+    }
+
+    public record StudentNameRecord
+    {
+        public string Name { get; set; }
+    }
+
+    public record TestRecordY()
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    public record UserInside(UserRecord456 User, UserRecord456 SecondName);
+    public record DtoInside(UserDto456 User);
+
+    public record UserRecord456(string Name);
+
+    public record UserDto456(string Name);
 
     public interface IActivityDataExtentions : IActivityData
     {
@@ -673,15 +832,6 @@ namespace Mapster.Tests
     }
 
     sealed record TestSealedRecordPositional(int X);
-
-
-
-
-
-
-
-
-
 
     #endregion TestClasses
 }

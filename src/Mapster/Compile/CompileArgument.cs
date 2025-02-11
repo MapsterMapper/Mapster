@@ -15,6 +15,7 @@ namespace Mapster
         public TypeAdapterSettings Settings { get; set; }
         public CompileContext Context { get; set; }
         public bool UseDestinationValue { get; set; }
+        public bool? ConstructorMapping { get; set; }
 
         private HashSet<string>? _srcNames;
         internal HashSet<string> GetSourceNames()

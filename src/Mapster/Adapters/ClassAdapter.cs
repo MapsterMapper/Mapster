@@ -69,19 +69,19 @@ namespace Mapster.Adapters
                 classConverter = destType.GetConstructors()
                     .OrderByDescending(it => it.GetParameters().Length)
                     .Select(it => GetConstructorModel(it, true))
-                    .Select(it => CreateClassConverter(source, it, arg))
+                    .Select(it => CreateClassConverter(source, it, arg, ctorMapping:true))
                     .FirstOrDefault(it => it != null);
             }
             else
             {
                 var model = GetConstructorModel(ctor, false);
-                classConverter = CreateClassConverter(source, model, arg);
+                classConverter = CreateClassConverter(source, model, arg, ctorMapping:true);
             }
 
             if (classConverter == null)
                 return base.CreateInstantiationExpression(source, destination, arg);
 
-            return CreateInstantiationExpression(source, classConverter, arg);
+            return CreateInstantiationExpression(source, classConverter, arg, destination);
         }
 
         protected override Expression CreateBlockExpression(Expression source, Expression destination, CompileArgument arg)

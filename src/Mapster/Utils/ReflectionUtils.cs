@@ -311,11 +311,14 @@ namespace Mapster
             return predicates.Any(predicate => predicate(member));
         }
 
-        public static string GetMemberName(this IMemberModel member, MemberSide side, List<Func<IMemberModel, MemberSide, string?>> getMemberNames, Func<string, string> nameConverter)
+        public static string GetMemberName(this IMemberModel member, MemberSide side, List<Func<IMemberModel, MemberSide, string?>> getMemberNames, Func<string, string> nameConverter, CompileArgument arg)
         {
             var memberName = getMemberNames.Select(func => func(member, side))
-                .FirstOrDefault(name => name != null)
-                ?? member.Name;
+                .FirstOrDefault(name => name != null);
+            if (memberName == null && arg.ConstructorMapping == true)
+                memberName = member.Name.ToPascalCase();
+            if (memberName == null)
+                memberName = member.Name;
 
             return nameConverter(memberName);
         }
