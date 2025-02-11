@@ -73,10 +73,10 @@ namespace Mapster
         {
             var members = source.Type.GetFieldsAndProperties(true);
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
             return members
                 .Where(member => member.ShouldMapMember(arg, MemberSide.Source))
-                .Where(member => member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter) == destinationMemberName)
+                .Where(member => member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter, arg) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();
         }
@@ -86,7 +86,7 @@ namespace Mapster
             if (arg.MapType == MapType.Projection)
                 return null;
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = "Get" + destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = "Get" + destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
             var getMethod = Array.Find(source.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance), m => strategy.SourceMemberNameConverter(m.Name) == destinationMemberName && m.GetParameters().Length == 0);
             if (getMethod == null)
                 return null;
@@ -98,7 +98,7 @@ namespace Mapster
         private static Expression? FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
             return GetDeepFlattening(source, destinationMemberName, arg);
         }
 
@@ -111,7 +111,7 @@ namespace Mapster
                 if (!member.ShouldMapMember(arg, MemberSide.Source))
                     continue;
 
-                var sourceMemberName = member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
+                var sourceMemberName = member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter, arg);
                 if (string.Equals(propertyName, sourceMemberName))
                     return member.GetExpression(source);
 
@@ -132,14 +132,14 @@ namespace Mapster
         internal static IEnumerable<InvokerModel> FindUnflatteningPairs(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
             var members = source.Type.GetFieldsAndProperties(true);
 
             foreach (var member in members)
             {
                 if (!member.ShouldMapMember(arg, MemberSide.Source))
                     continue;
-                var sourceMemberName = member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter);
+                var sourceMemberName = member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter, arg);
                 if (!sourceMemberName.StartsWith(destinationMemberName) || sourceMemberName == destinationMemberName)
                     continue;
                 foreach (var prop in GetDeepUnflattening(destinationMember, sourceMemberName.Substring(destinationMemberName.Length).TrimStart('_'), arg))
@@ -161,7 +161,7 @@ namespace Mapster
             {
                 if (!member.ShouldMapMember(arg, MemberSide.Destination))
                     continue;
-                var destMemberName = member.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+                var destMemberName = member.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
                 var propertyType = member.Type;
                 if (string.Equals(propertyName, destMemberName))
                 {
@@ -185,7 +185,7 @@ namespace Mapster
                 return null;
 
             var strategy = arg.Settings.NameMatchingStrategy;
-            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter);
+            var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
             var key = Expression.Constant(destinationMemberName);
             var args = dictType.GetGenericArguments();
             if (strategy.SourceMemberNameConverter != MapsterHelper.Identity)

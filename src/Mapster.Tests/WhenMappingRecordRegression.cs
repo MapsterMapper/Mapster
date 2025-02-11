@@ -2,6 +2,7 @@
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using static Mapster.Tests.WhenMappingDerived;
 
 namespace Mapster.Tests
 {
@@ -422,6 +423,26 @@ namespace Mapster.Tests
 
         }
 
+        /// <summary>
+        /// https://github.com/MapsterMapper/Mapster/issues/771
+        /// https://github.com/MapsterMapper/Mapster/issues/746
+        /// </summary>
+        [TestMethod]
+        public void FixCtorParamMapping()
+        {
+            var sourceRequestPaymentDto = new PaymentDTO771("MasterCard", "1234", "12/99", "234", 12);
+            var sourceRequestOrderDto = new OrderDTO771(Guid.NewGuid(), Guid.NewGuid(), "order123", sourceRequestPaymentDto);
+            var db = new Database746(UserID: "256", Password: "123");
+           
+
+            var result = new CreateOrderRequest771(sourceRequestOrderDto).Adapt<CreateOrderCommand771>();
+            var resultID = db.Adapt(new Database746());
+           
+
+            result.Order.Payment.CVV.ShouldBe("234");
+            resultID.UserID.ShouldBe("256");
+        }
+
         #region NowNotWorking
 
         /// <summary>
@@ -448,6 +469,34 @@ namespace Mapster.Tests
 
 
     #region TestClasses
+
+    public sealed record Database746(
+    string Server = "",
+    string Name = "",
+    string? UserID = null,
+    string? Password = null);
+
+    public record CreateOrderRequest771(OrderDTO771 Order);
+
+    public record CreateOrderCommand771(OrderDTO771 Order);
+
+
+    public record OrderDTO771
+    (
+    Guid Id,
+    Guid CustomerId,
+    string OrderName,
+    PaymentDTO771 Payment
+    );
+
+    public record PaymentDTO771
+    (
+    string CardName,
+    string CardNumber,
+    string Expiration,
+    string CVV,
+    int PaymentMethod
+    );
     public class SourceFromTestUseDestValue
     {
         public int? A { get; set; }
