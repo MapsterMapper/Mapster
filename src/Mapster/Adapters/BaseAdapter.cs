@@ -60,6 +60,8 @@ namespace Mapster.Adapters
 
         protected virtual bool CanInline(Expression source, Expression? destination, CompileArgument arg)
         {
+            if (arg.Settings.Resolvers.Any(x=>x.IsThrowWhenNull))
+                return false;
             if (arg.MapType == MapType.Projection)
                 return true;
 

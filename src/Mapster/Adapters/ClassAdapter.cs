@@ -161,7 +161,18 @@ namespace Mapster.Adapters
                     tuple.Item1.Add(adapt);
                 }
                 else
-                    lines.Add(adapt);
+                {
+                    var whenNullisThrow = arg.Settings.Resolvers
+                       .Where(x => x.IsThrowWhenNull && x.DestinationMemberName == member.DestinationMember.Name)
+                       .FirstOrDefault()?.IsThrowWhenNull;
+
+                    if (whenNullisThrow == true)
+                    {
+                        lines.Add(adapt.ApplyThrowPropagation());
+                    }
+                    else
+                        lines.Add(adapt);
+                }
             }
 
             if (conditions != null)

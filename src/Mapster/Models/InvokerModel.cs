@@ -9,6 +9,8 @@ namespace Mapster.Models
         public LambdaExpression? Invoker { get; set; }
         public string? SourceMemberName { get; set; }
         public LambdaExpression? Condition { get; set; }
+        public LambdaExpression? DefaultValue { get; set; }
+        public bool IsThrowWhenNull { get; set; }
         public bool IsChildPath { get; set; }
 
         public InvokerModel? Next(ParameterExpression source, string destMemberName)

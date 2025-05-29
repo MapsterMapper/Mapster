@@ -325,32 +325,112 @@ namespace Mapster.Utils
 
             return param;
         }
-        public static Expression ApplyNullPropagation(this Expression getter)
+        public static Expression ApplyNullPropagation(this Expression getter, LambdaExpression? customDefaultValue)
         {
             var current = getter;
             var result = getter;
+            var memberNestingLevel = 0; 
+
             while (current.NodeType == ExpressionType.MemberAccess)
             {
-                var memEx = (MemberExpression) current;
+                var memEx = (MemberExpression)current;
                 var expr = memEx.Expression;
                 if (expr == null)
                     break;
-                if (expr.NodeType == ExpressionType.Parameter) 
+
+                if (expr.NodeType == ExpressionType.Parameter && customDefaultValue == null)
                     return result;
 
+                var defValue = customDefaultValue == null ? result.Type.CreateDefault() : customDefaultValue.Body;
+
+                if (!defValue.Type.CanBeNull())
+                {
+                    defValue = Expression.Convert(defValue, typeof(Nullable<>).MakeGenericType(defValue.Type));
+                    if(customDefaultValue == null)
+                        defValue = defValue.Type.CreateDefault();
+                }
                 if (expr.CanBeNull())
                 {
                     var compareNull = Expression.Equal(expr, Expression.Constant(null, expr.Type));
+
+                    if (memberNestingLevel == 0 && customDefaultValue != null && getter.Type.CanBeNull())
+                        compareNull = Expression.OrElse(compareNull, Expression.Equal(getter, Expression.Constant(null, getter.Type)));
+
                     if (!result.Type.CanBeNull())
                         result = Expression.Convert(result, typeof(Nullable<>).MakeGenericType(result.Type));
-                    result = Expression.Condition(compareNull, result.Type.CreateDefault(), result);
+                    result = Expression.Condition(compareNull, defValue, result);
                 }
 
+                memberNestingLevel++;
                 current = expr;
             }
 
+            if (current.NodeType == ExpressionType.Parameter && customDefaultValue != null)
+                return result;
+
             return getter;
         }
+
+        public static Expression ApplyThrowPropagation(this Expression getter)
+        {
+            var types = new Type[1];
+            types[0] =(typeof(string));
+            var constructorInfo = typeof(NullReferenceException).GetConstructor(types);
+
+            string labelSource = "{Source}";
+
+            if (getter is BinaryExpression get)
+            {
+                var resultType = ((MemberExpression)get.Left).Expression?.Type.Name;
+                var sourceType = ((MemberExpression)get.Right).Expression?.Type.Name;
+                var memberNestingLevel = 0;
+
+                var current = get.Right;
+                var result = getter;
+                while (current.NodeType == ExpressionType.MemberAccess)
+                {
+                    var memEx = (MemberExpression)current;
+                    var expr = memEx.Expression;
+                    if (expr == null)
+                        break;
+                
+                    if (expr.CanBeNull())
+                    {
+                        var compareNull = Expression.Equal(expr, Expression.Constant(null, expr.Type));
+
+                        var argumets = new Expression[1];
+                        string membername;
+                        if (expr.NodeType == ExpressionType.Parameter)
+                            membername = "Source";
+                        else
+                            membername = (expr as MemberExpression).Member.Name;
+
+                        if (memberNestingLevel == 0 && current.Type.CanBeNull())
+                        {
+                            compareNull = Expression.OrElse(compareNull, Expression.Equal(current, Expression.Constant(null, current.Type)));
+                            
+                            var memberPath = Expression.Lambda(memEx).GetMemberPath(noError: true);
+                            argumets[0] = Expression.Constant($"Member: .{membername} or .{memEx.Member.Name} by path: {labelSource}.{memberPath} was null!; Mapping Types: {sourceType} to {resultType}");
+                        }
+                        else
+                        {
+                            var memberPath = Expression.Lambda(expr).GetMemberPath(noError: true);
+                            argumets[0] = Expression.Constant($"Member: .{membername} by path: {labelSource}.{memberPath} was null!; Mapping Types: {sourceType} to {resultType}");
+                        }
+
+                        result = Expression.IfThenElse(compareNull, Expression
+                            .Throw(Expression.New(constructorInfo, argumets)), result);
+                    }
+
+                    current = expr;
+                    memberNestingLevel++;
+                }
+
+                return result;
+            }
+            return getter;
+        }
+
 
         public static string? GetMemberPath(this LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
         {

@@ -54,13 +54,26 @@ namespace Mapster.Adapters
                     Destination = (ParameterExpression?)destination,
                     UseDestinationValue = arg.MapType != MapType.Projection && destinationMember.UseDestinationValue(arg),
                 };
-                if (getter != null)
-                {
-                    propertyModel.Getter = arg.MapType == MapType.Projection 
-                        ? getter 
-                        : getter.ApplyNullPropagation();
-                    properties.Add(propertyModel);
-                }
+				if (getter != null)
+				{
+					var customDefault = arg.Settings.Resolvers
+						.Where(x=>x.DefaultValue != null && x.DestinationMemberName == destinationMember.Name)
+						.FirstOrDefault()?.DefaultValue;
+
+					var whenNullisThrow = arg.Settings.Resolvers
+					   .Where(x => x.IsThrowWhenNull && x.DestinationMemberName == destinationMember.Name)
+					   .FirstOrDefault()?.IsThrowWhenNull;
+
+					if (whenNullisThrow == true)
+                        propertyModel.Getter = getter;
+					else
+					{
+						propertyModel.Getter = arg.MapType == MapType.Projection
+						? getter
+						: getter.ApplyNullPropagation(customDefault);
+					}
+				    properties.Add(propertyModel);
+				}
                 else
                 {
                     if (arg.Settings.IgnoreNonMapped != true &&

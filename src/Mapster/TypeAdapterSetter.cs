@@ -337,49 +337,7 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TDestination> Map<TDestinationMember, TSourceMember>(
-            Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSourceMember>> source)
-        {
-            this.CheckCompiled();
-
-            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
-            if (member.IsIdentity())
-            {
-                Settings.ExtraSources.Add(invoker);
-                return this;
-            }
-
-            Settings.Resolvers.Add(new InvokerModel
-            {
-                DestinationMemberName = member.GetMemberPath()!,
-                Invoker = invoker,
-                Condition = null
-            });
-            return this;
-        }
-
-        public TypeAdapterSetter<TDestination> Map<TDestinationMember>(
-            Expression<Func<TDestination, TDestinationMember>> destinationMember,
-            string sourceMemberName)
-        {
-            this.CheckCompiled();
-
-            if (destinationMember.IsIdentity())
-            {
-                Settings.ExtraSources.Add(sourceMemberName);
-                return this;
-            }
-
-            Settings.Resolvers.Add(new InvokerModel
-            {
-                DestinationMemberName = destinationMember.GetMemberPath()!,
-                SourceMemberName = sourceMemberName,
-                Condition = null
-            });
-
-            return this;
-        }
+        
 
         public TypeAdapterSetter<TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
         {
@@ -472,23 +430,49 @@ namespace Mapster
 
         #region replace for chaining
 
+        public MapTypeAdapterSetterAllMemberTypes<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+           Expression<Func<TDestination, TDestinationMember>> member,
+           Expression<Func<TSource, TSourceMember>> source,
+           Expression<Func<TSource, bool>>? shouldMap = null)
+        {
+            this.CheckCompiled();
+
+           var result = new MapTypeAdapterSetterAllMemberTypes<TSource, TDestination>(this.Settings,this.Config).Map(member, source, shouldMap);
+           return result;
+        }
+
+        public MapTypeAdapterSetter<TSource, TDestination> Map<TSourceMember>(
+            string memberName,
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
+        {
+            this.CheckCompiled();
+
+            var result = new MapTypeAdapterSetter<TSource, TDestination>(this.Settings, this.Config).Map<TSourceMember>(memberName, source, shouldMap);
+            return result;
+        }
+
         public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
         {
             return (TypeAdapterSetter<TSource, TDestination>)base.Ignore(members);
         }
 
-        public new TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+        public new MapTypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
             Expression<Func<TSourceMember>> source)
         {
-            return (TypeAdapterSetter<TSource, TDestination>)base.Map(member, source);
+
+           var result =  new MapTypeAdapterSetter<TSource, TDestination>(this.Settings,this.Config).Map(member, source);
+
+            return result;
         }
 
-        public new TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember>(
+        public new MapTypeAdapterSetter<TSource, TDestination> Map<TDestinationMember>(
             Expression<Func<TDestination, TDestinationMember>> destinationMember,
             string sourceMemberName)
         {
-            return (TypeAdapterSetter<TSource, TDestination>)base.Map(destinationMember, sourceMemberName);
+
+            var result = new MapTypeAdapterSetter<TSource, TDestination>(this.Settings, this.Config).Map<TDestinationMember>(destinationMember, sourceMemberName);
+            return result;
         }
 
         public new TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TDestination>> constructUsing)
@@ -550,45 +534,7 @@ namespace Mapster
             return this;
         }
 
-        public TypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
-            Expression<Func<TDestination, TDestinationMember>> member,
-            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
-        {
-            this.CheckCompiled();
-
-            var sourceName = source.GetMemberPath(noError: true);
-            if (member.IsIdentity())
-            {
-                Settings.ExtraSources.Add((object?)sourceName ?? source);
-                return this;
-            }
-
-            Settings.Resolvers.Add(new InvokerModel
-            {
-                DestinationMemberName = member.GetMemberPath()!,
-                SourceMemberName = sourceName,
-                Invoker = source,
-                Condition = shouldMap
-            });
-            return this;
-        }
-
-        public TypeAdapterSetter<TSource, TDestination> Map<TSourceMember>(
-            string memberName,
-            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
-        {
-            this.CheckCompiled();
-
-            Settings.Resolvers.Add(new InvokerModel
-            {
-                DestinationMemberName = memberName,
-                SourceMemberName = source.GetMemberPath(noError: true),
-                Invoker = source,
-                Condition = shouldMap
-            });
-
-            return this;
-        }
+       
 
         public TypeAdapterSetter<TSource, TDestination> ConstructUsing(Expression<Func<TSource, TDestination>> constructUsing)
         {
@@ -1089,5 +1035,179 @@ namespace Mapster
             DestinationToSourceSetter.GenerateMapper(mapType);
             return this;
         }
+    }
+
+    public class MapTypeAdapterSetter<TSource, TDestination> : TypeAdapterSetter<TSource, TDestination>, IMapTypeAdapterSetter
+    {
+        public MapTypeAdapterSetter(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
+            : base(settings, parentConfig)
+        { }
+
+        public string TSourceMemberName { get; set; }
+        public string TDestinationMemberName { get; set; }
+
+        public new MapTypeAdapterSetter<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSourceMember>> source)
+        {
+            this.CheckCompiled();
+
+            this.TSourceMemberName = source.GetMemberPath()!;
+            this.TDestinationMemberName = member.GetMemberPath()!;
+
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
+            if (member.IsIdentity())
+            {
+                Settings.ExtraSources.Add(invoker);
+                return this;
+            }
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = member.GetMemberPath(noError: true)!,
+                Invoker = invoker,
+                Condition = null
+            });
+            return this;
+        }
+
+        public new MapTypeAdapterSetter<TSource, TDestination> Map<TDestinationMember>(
+            Expression<Func<TDestination, TDestinationMember>> destinationMember,
+            string sourceMemberName)
+        {
+            this.CheckCompiled();
+
+            this.TSourceMemberName = sourceMemberName;
+            this.TDestinationMemberName = destinationMember.GetMemberPath(noError: true)!;
+
+            if (destinationMember.IsIdentity())
+            {
+                Settings.ExtraSources.Add(sourceMemberName);
+                return this;
+            }
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = destinationMember.GetMemberPath(noError: true)!,
+                SourceMemberName = sourceMemberName,
+                Condition = null
+            });
+
+            return this;
+        }
+
+        
+
+        public new MapTypeAdapterSetter<TSource, TDestination> Map<TSourceMember>(
+            string memberName,
+            Expression<Func<TSource, TSourceMember>> source, Expression<Func<TSource, bool>>? shouldMap = null)
+        {
+            this.CheckCompiled();
+
+            this.TSourceMemberName = source.GetMemberPath(noError: true)!;
+            this.TDestinationMemberName = memberName;
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = memberName,
+                SourceMemberName = source.GetMemberPath(noError: true),
+                Invoker = source,
+                Condition = shouldMap
+            });
+
+            return this;
+        }
+
+        
+
+    }
+
+    public class MapTypeAdapterSetterAllMemberTypes<TSource, TDestination> : MapTypeAdapterSetter<TSource, TDestination>, IMapTypeAdapterAllMembertypes
+    {
+        public MapTypeAdapterSetterAllMemberTypes(TypeAdapterSettings settings, TypeAdapterConfig parentConfig)
+            : base(settings, parentConfig)
+        { }
+
+        public Type TSourceMember { get; set; }
+        public Type TDestinationMember { get; set; }
+        public string TSourceMemberName { get; set; }
+        public string TDestinationMemberName { get; set; }
+
+        public new MapTypeAdapterSetterAllMemberTypes<TSource, TDestination> Map<TDestinationMember, TSourceMember>(
+           Expression<Func<TDestination, TDestinationMember>> member,
+           Expression<Func<TSource, TSourceMember>> source,
+           Expression<Func<TSource, bool>>? shouldMap = null)
+        {
+            this.CheckCompiled();
+
+            this.TSourceMemberName = source.GetMemberPath(noError: true)!;
+            this.TDestinationMemberName = member.GetMemberPath(noError: true)!;
+            this.TSourceMember = source.ReturnType;
+            this.TDestinationMember = source.ReturnType;
+
+            var sourceName = source.GetMemberPath(noError: true);
+            if (member.IsIdentity())
+            {
+                Settings.ExtraSources.Add((object?)sourceName ?? source);
+                return this;
+            }
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = member.GetMemberPath(noError: true)!,
+                SourceMemberName = sourceName,
+                Invoker = source,
+                Condition = shouldMap
+            });
+            return this;
+        }
+    }
+
+    public interface IMapTypeAdapterAllMembertypes : IMapTypeAdapterSetter
+    {
+        Type TSourceMember { get; set; }
+        Type TDestinationMember { get; set; }
+    }
+
+    public interface IMapTypeAdapterSetter
+    {
+        string TSourceMemberName { get; set; }
+        string TDestinationMemberName { get; set; }
+    }
+
+    public static class SetterExtention
+    {
+        public static TSetter ThrowWhenNull<TSetter>(this TSetter setter) where TSetter : TypeAdapterSetter, IMapTypeAdapterSetter 
+        {
+            setter.CheckCompiled();
+
+            var find = setter.Settings.Resolvers
+                .Where(x => x.SourceMemberName == setter.TSourceMemberName && x.DestinationMemberName == setter.TDestinationMemberName)
+                .FirstOrDefault();
+
+            if (find != null)
+                find.IsThrowWhenNull = true;
+
+            return setter;
+        }
+
+        public static TSetter SourceDefaultValue<TSetter,TSourceMember>(this TSetter setter, TSourceMember defaultValue) where TSetter : TypeAdapterSetter, IMapTypeAdapterAllMembertypes
+        {
+            setter.CheckCompiled();
+
+            if (typeof(TSourceMember) != setter.TSourceMember)
+                throw new ArgumentException($"Type of DefaultValue is {typeof(TSourceMember).Name}, but must be {setter.TSourceMember.Name}");
+
+            var find = setter.Settings.Resolvers
+                .Where(x => x.SourceMemberName == setter.TSourceMemberName && x.DestinationMemberName == setter.TDestinationMemberName)
+                .FirstOrDefault();
+
+            if (find != null)
+                find.DefaultValue = Expression.Lambda(Expression.Constant(defaultValue));
+
+
+            return setter;
+        }
+
     }
 }
