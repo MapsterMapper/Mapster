@@ -82,9 +82,19 @@ namespace Mapster.EFCore
         {
             var enumerable = ((IAsyncQueryProvider)_provider).ExecuteAsync<TResult>(expression, cancellationToken);
             var enumerableType = typeof(TResult);
+            if (!IsAsyncEnumerableType(enumerableType))
+            {
+                return enumerable;
+            }
             var elementType = enumerableType.GetGenericArguments()[0];
             var wrapType = typeof(MapsterAsyncEnumerable<>).MakeGenericType(elementType);
             return (TResult) Activator.CreateInstance(wrapType, enumerable, _builder);
+        }
+
+        private static bool IsAsyncEnumerableType(Type type)
+        {
+            return type.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
         }
 
         public IAsyncEnumerable<TResult> ExecuteEnumerableAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
