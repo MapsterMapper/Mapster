@@ -31,7 +31,7 @@ namespace Mapster.Tests
                 .Compile();
 
             var source = new SourceClass();
-            var dest = source.Adapt(new DestClass());
+            var dest = source.AdaptToTarget(new DestClass());
 
             Assert.AreEqual("Hello", dest.Title);
             Assert.IsNotNull(dest.Sub);

@@ -47,7 +47,7 @@ namespace Mapster.Tests
 
             var destination = new Poco() { Name = "Destination", State = 2 };
             var source = new Dto() { Name = "Source" };
-            var result = source.Adapt(destination);
+            var result = source.AdaptToTarget(destination);
             result.State.ShouldBe(2);
             result.Name.ShouldBe("Source");
         }

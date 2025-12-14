@@ -47,7 +47,7 @@ namespace Mapster.Tests
             var source = new Source524 { X1 = 123 };
             var RealObject = new Object();
 
-            var _result = source.Adapt(RealObject);
+            var _result = source.AdaptToTarget(RealObject);
 
             _result.ShouldBeOfType<Source524>();
             ((Source524)_result).X1.ShouldBe(source.X1);
@@ -60,7 +60,7 @@ namespace Mapster.Tests
             var source = new Source524 { X1 = 123 };
             var RealObject = new Object();
 
-            var _result = RealObject.Adapt(source);
+            var _result = RealObject.AdaptToTarget(source);
 
             _result.ShouldBeOfType<Source524>();
             ((Source524)_result).X1.ShouldBe(source.X1);
@@ -72,7 +72,7 @@ namespace Mapster.Tests
             var _source = new InsaderObject() { X1 = 1 };
             var _Destination = new InsaderObject() { X1 = 2 };
 
-            var _result = _source.Adapt(_Destination);
+            var _result = _source.AdaptToTarget(_Destination);
 
             _result.X1.ShouldBe(_source.X1);
         }
@@ -83,7 +83,7 @@ namespace Mapster.Tests
             var _source = new InsaderObject() { X1 = 1 };
             var _Destination = new InsaderObject() { X1 = new Object() };
 
-            var _result = _source.Adapt(_Destination);
+            var _result = _source.AdaptToTarget(_Destination);
 
             _result.X1.ShouldBe(_source.X1);
         }
@@ -94,7 +94,7 @@ namespace Mapster.Tests
             var _source = new InsaderObject() { X1 = new Object() };
             var _Destination = new InsaderObject() { X1 = 3 };
 
-            var _result = _source.Adapt(_Destination);
+            var _result = _source.AdaptToTarget(_Destination);
 
             _result.X1.ShouldBe(_source.X1); 
         }
@@ -105,7 +105,7 @@ namespace Mapster.Tests
         Dest524 Somemap(object source)
         {
             var dest = new Dest524 { X1 = 321 };
-            var dest1 = source.Adapt(dest);
+            var dest1 = source.AdaptToTarget(dest);
 
             return dest;
         }
@@ -113,7 +113,7 @@ namespace Mapster.Tests
         ManyDest524 SomemapManyDest(object source)
         {
             var dest = new ManyDest524 { X1 = 321, X2 = 127 };
-            var dest1 = source.Adapt(dest);
+            var dest1 = source.AdaptToTarget(dest);
 
             return dest;
         }

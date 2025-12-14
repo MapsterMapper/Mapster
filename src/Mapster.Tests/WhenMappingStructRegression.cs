@@ -49,7 +49,7 @@ namespace Mapster.Tests
             {
                 Ignore = "Ignored property",
             };
-            dest = source.Adapt(dest);
+            dest = source.AdaptToTarget(dest);
 
             dest.Ignore.ShouldBe("Ignored property");
             dest.Name.ShouldBe("Some Name");
@@ -71,7 +71,7 @@ namespace Mapster.Tests
             {
                 Ignore = "Ignored property",
             };
-            dest = source.Adapt(dest);
+            dest = source.AdaptToTarget(dest);
 
             dest.Ignore.ShouldBe("Ignored property");
             dest.Name.ShouldBe("Some Name");

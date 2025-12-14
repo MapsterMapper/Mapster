@@ -53,7 +53,7 @@ namespace Mapster.Tests
             generatedType.Name.ShouldBe("Name 1");
             generatedType.Address.ShouldBe("Address 1");
 
-            generatedType = c2.Adapt(generatedType);
+            generatedType = c2.AdaptToTarget(generatedType);
 
             generatedType.Id.ShouldBe(2);
             generatedType.Name.ShouldBe("Name 2");

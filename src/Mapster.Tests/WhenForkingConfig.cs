@@ -65,7 +65,7 @@ namespace Mapster.Tests
             dto.Name1.ShouldBe(poco.Name1);
             dto.Name2.ShouldBe("Bar");
 
-            var str = poco.Name2.Adapt(dto.Name2, config);
+            var str = poco.Name2.AdaptToTarget(dto.Name2, config);
             str.ShouldBe(poco.Name2);
         }
 

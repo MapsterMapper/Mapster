@@ -87,7 +87,7 @@ namespace Mapster.Tests
                 Name = "test",
             };
             var oldDto = new SimpleDto { Name = "zzz", };
-            var result = poco.Adapt(oldDto);
+            var result = poco.AdaptToTarget(oldDto);
 
             result.ShouldNotBeSameAs(oldDto);
             result.Id.ShouldBe(poco.Id);

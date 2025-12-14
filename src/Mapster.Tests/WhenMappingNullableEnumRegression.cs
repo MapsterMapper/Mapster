@@ -47,7 +47,7 @@ namespace Mapster.Tests
             var mDest2 = new MyDestination() { TypeEmployer = new KeyValueData("Admin", null) };
            
             var _MyDestination = myClass?.Adapt<MyDestination?>(); // Work
-            var _result = _MyDestination.Adapt(mDest2);
+            var _result = _MyDestination.AdaptToTarget(mDest2);
 
             _result.TypeEmployer.Key.ShouldBe(MyEnum.User.ToString());
         }

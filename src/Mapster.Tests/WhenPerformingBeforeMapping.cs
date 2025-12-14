@@ -67,7 +67,7 @@ namespace Mapster.Tests
             IEnumerable<int> source = new List<int> { 1, 2, 3, };
             IEnumerable<int> destination = new List<int> { 0, };
 
-            var result = source.Adapt(destination);
+            var result = source.AdaptToTarget(destination);
 
             destination.ShouldBe(new List<int> { 0, });
             source.ShouldBe(new List<int> { 1, 2, 3, });

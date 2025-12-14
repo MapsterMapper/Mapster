@@ -83,7 +83,7 @@ namespace Mapster.Tests
             var dest = new B707(123, "Hello");
 
             var docKind = source.Adapt<B707>(config); 
-            var mapTotarget = source.Adapt(dest,config);
+            var mapTotarget = source.AdaptToTarget(dest,config);
 
             docKind.Id.ShouldBe(0);
             mapTotarget.Id.ShouldBe(123);

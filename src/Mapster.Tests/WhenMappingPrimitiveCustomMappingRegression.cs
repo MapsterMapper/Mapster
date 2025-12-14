@@ -44,8 +44,8 @@ namespace Mapster.Tests
             var target = new Source561 { Name = new Optional561<string>("John") }.Adapt<Target561>();
 
             var TargetDestinationFromNull = new Target561() { Name = "Me" };
-            var NullToupdateoptional = sourceNull.Adapt(TargetDestinationFromNull);
-            var _result = sourceNull.Adapt(target);
+            var NullToupdateoptional = sourceNull.AdaptToTarget(TargetDestinationFromNull);
+            var _result = sourceNull.AdaptToTarget(target);
 
             target.Name.ShouldBe("John");
             NullToupdateoptional.Name.ShouldBe("Me");
