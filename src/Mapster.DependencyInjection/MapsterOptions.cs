@@ -8,114 +8,96 @@ public sealed record MapsterOptions
     /// <summary>
     /// The default configuration section name used for options binding.
     /// </summary>
-    public const string DefaultSectionName = "Mapster";
+    public const string DefaultName = "Mapster";
 
-    /// <summary>
-    /// Engine-level configuration switches applied to <see cref="TypeAdapterConfig"/>.
-    /// </summary>
-    public MapsterConfigOptions Config { get; init; } = new();
+	/// <summary>
+	/// Require that every destination member has a source.
+	/// </summary>
+	public bool RequireDestinationMemberSource { get; set; }
 
-    /// <summary>
-    /// Global default mapping settings applied to <see cref="TypeAdapterConfig.Default"/>.
-    /// </summary>
-    public MapsterSettingsOptions Settings { get; init; } = new();
+	/// <summary>
+	/// Require explicit mapping (disable implicit mapping).
+	/// </summary>
+	public bool RequireExplicitMapping { get; set; }
 
-    public void ApplyTo(TypeAdapterConfig config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
+	/// <summary>
+	/// Require explicit mapping even for primitive types.
+	/// </summary>
+	public bool RequireExplicitMappingPrimitive { get; set; }
 
-        var defaultConfig = TypeAdapterConfig.GlobalSettings;
-        var defaultSettings = defaultConfig.Default.Settings;
+	/// <summary>
+	/// Allow implicit inheritance on destination types.
+	/// </summary>
+	public bool AllowImplicitDestinationInheritance { get; set; }
 
-        if (Config.RequireDestinationMemberSource != defaultConfig.RequireDestinationMemberSource)
-        {
-            config.RequireDestinationMemberSource = Config.RequireDestinationMemberSource;
-        }
+	/// <summary>
+	/// Allow implicit inheritance on source types.
+	/// </summary>
+	public bool AllowImplicitSourceInheritance { get; set; } = true;
 
-        if (Config.RequireExplicitMapping != defaultConfig.RequireExplicitMapping)
-        {
-            config.RequireExplicitMapping = Config.RequireExplicitMapping;
-        }
+	/// <summary>
+	/// Generate self-contained code (no shared helpers) for source generation.
+	/// </summary>
+	public bool SelfContainedCodeGeneration { get; set; }
 
-        if (Config.RequireExplicitMappingPrimitive != defaultConfig.RequireExplicitMappingPrimitive)
-        {
-            config.RequireExplicitMappingPrimitive = Config.RequireExplicitMappingPrimitive;
-        }
+	/// <summary>
+	/// Name matching strategy (Exact, Flexible, IgnoreCase, ToCamelCase, FromCamelCase).
+	/// </summary>
+	public string? NameMatchingStrategy { get; set; }
 
-        if (Config.AllowImplicitDestinationInheritance != defaultConfig.AllowImplicitDestinationInheritance)
-        {
-            config.AllowImplicitDestinationInheritance = Config.AllowImplicitDestinationInheritance;
-        }
+	/// <summary>
+	/// Enable mapping to constructors when available.
+	/// </summary>
+	public bool MapToConstructor { get; set; }
 
-        if (Config.AllowImplicitSourceInheritance != defaultConfig.AllowImplicitSourceInheritance)
-        {
-            config.AllowImplicitSourceInheritance = Config.AllowImplicitSourceInheritance;
-        }
+	/// <summary>
+	/// Preserve reference cycles when mapping.
+	/// </summary>
+	public bool PreserveReference { get; set; }
 
-        if (Config.SelfContainedCodeGeneration != defaultConfig.SelfContainedCodeGeneration)
-        {
-            config.SelfContainedCodeGeneration = Config.SelfContainedCodeGeneration;
-        }
+	/// <summary>
+	/// Use shallow copy optimization when source and destination types are the same.
+	/// </summary>
+	public bool ShallowCopyForSameType { get; set; }
 
-        if (!string.IsNullOrWhiteSpace(Settings.NameMatchingStrategy))
-        {
-            config.Default.ApplyNameMatchingStrategy(Settings.NameMatchingStrategy);
-        }
+	/// <summary>
+	/// Ignore null source values.
+	/// </summary>
+	public bool IgnoreNullValues { get; set; }
 
-        if (Settings.MapToConstructor)
-        {
-            config.Default.MapToConstructor(Settings.MapToConstructor);
-        }
+	/// <summary>
+	/// Map enums by name instead of numeric value.
+	/// </summary>
+	public bool MapEnumByName { get; set; }
 
-        if (Settings.PreserveReference)
-        {
-            config.Default.PreserveReference(Settings.PreserveReference);
-        }
+	/// <summary>
+	/// Ignore members not mapped explicitly.
+	/// </summary>
+	public bool IgnoreNonMapped { get; set; }
 
-        if (Settings.ShallowCopyForSameType)
-        {
-            config.Default.ShallowCopyForSameType(Settings.ShallowCopyForSameType);
-        }
+	/// <summary>
+	/// Avoid inline mapping when generating code.
+	/// </summary>
+	public bool AvoidInlineMapping { get; set; }
 
-        if (Settings.IgnoreNullValues)
-        {
-            config.Default.IgnoreNullValues(Settings.IgnoreNullValues);
-        }
+	/// <summary>
+	/// Enable unflattening (map nested source to flat destination).
+	/// </summary>
+	public bool Unflattening { get; set; }
 
-        if (Settings.MapEnumByName != (defaultSettings.MapEnumByName ?? false))
-        {
-            config.Default.Settings.MapEnumByName = Settings.MapEnumByName;
-        }
+	/// <summary>
+	/// Skip destination member checks when mapping.
+	/// </summary>
+	public bool SkipDestinationMemberCheck { get; set; }
 
-        if (Settings.IgnoreNonMapped)
-        {
-            config.Default.IgnoreNonMapped(Settings.IgnoreNonMapped);
-        }
+	/// <summary>
+	/// Allow mapping to non-public members.
+	/// </summary>
+	public bool EnableNonPublicMembers { get; set; }
 
-        if (Settings.AvoidInlineMapping != (defaultSettings.AvoidInlineMapping ?? false))
-        {
-            config.Default.AvoidInlineMapping(Settings.AvoidInlineMapping);
-        }
-
-        if (Settings.Unflattening != (defaultSettings.Unflattening ?? false))
-        {
-            config.Default.Unflattening(Settings.Unflattening);
-        }
-
-        if (Settings.SkipDestinationMemberCheck)
-        {
-            config.Default.Settings.SkipDestinationMemberCheck = Settings.SkipDestinationMemberCheck;
-        }
-
-        if (Settings.EnableNonPublicMembers)
-        {
-            config.Default.EnableNonPublicMembers(Settings.EnableNonPublicMembers);
-        }
-
-        if (Settings.MaxDepth > 0)
-        {
-            config.Default.MaxDepth(Settings.MaxDepth);
-        }
-    }
+	/// <summary>
+	/// Maximum mapping depth (0 = unlimited).
+	/// </summary>
+	public int MaxDepth { get; set; }
 }
 

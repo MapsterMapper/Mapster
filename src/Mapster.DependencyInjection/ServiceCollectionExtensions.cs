@@ -2,81 +2,48 @@
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddMapster(this IServiceCollection serviceCollection)
-    {
-        serviceCollection.AddTransient<IMapper, Mapper>();
-    }
+	/// <summary>
+	/// Adds Mapster mapping services to the specified <see cref="IServiceCollection"/> and optionally configures <see cref="MapsterOptions"/>.
+	/// </summary>
+	/// <param name="services">The <see cref="IServiceCollection"/> to which the Mapster services will be added. Cannot be null.</param>
+	/// <param name="configure">An optional delegate to configure <see cref="MapsterOptions"/>. If null, default options are used.</param>
+	/// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
+	public static IServiceCollection AddMapster(
+		this IServiceCollection services,
+		Action<MapsterOptions>? configure = null)
+	{
+		if (configure is not null)
+		{
+			services.Configure(configure);
+		}
+		else
+		{
+			services.AddOptions<MapsterOptions>();
+		}
 
-    public static IServiceCollection AddMapster(this IServiceCollection services, Action<MapsterOptions> configureOptions)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configureOptions);
+		return services.AddMapster();
+	}
 
-        services.AddOptions<MapsterOptions>().Configure(configureOptions);
-        return services.AddMapsterCore();
-    }
+	/// <summary>
+	/// Adds Mapster <see cref="IOptions{TOptions}"/> to the specified <see cref="IServiceCollection"> using configuration, calls <see cref="AddMapster(IServiceCollection)"/> to register Mapster services.
+	/// </summary>
+	/// <param name="services">The <see cref="IServiceCollection"/> to insert <paramref name="configuration"/> to.</param>
+	/// <param name="configuration">The <see cref="IConfiguration"/> instance to use</param>
+	/// <returns>The same <see cref="IServiceCollection"/> as provided, added up with the Mapster services</returns>
+	public static IServiceCollection AddMapster(this IServiceCollection services, IConfiguration configuration)
+	{
+		services.Configure<MapsterOptions>(configuration);
+		return services.AddMapster();
+	}
 
-    public static IServiceCollection AddMapster(this IServiceCollection services, IConfiguration configuration, string sectionName = MapsterOptions.DefaultSectionName)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        var section = configuration.GetSection(sectionName);
-
-        if (section.Exists())
-        {
-            services.AddOptions<MapsterOptions>().Bind(section);
-        }
-        else
-        {
-            services.AddOptions<MapsterOptions>();
-        }
-
-        return services.AddMapsterCore();
-    }
-
-    /// <summary>
-    /// Adds an additional configuration callback that will be applied to the DI-provided <see cref="TypeAdapterConfig"/>.
-    /// This enables modular configuration (for example per assembly or feature).
-    /// </summary>
-    public static IServiceCollection AddMapsterConfig(this IServiceCollection services, Action<TypeAdapterConfig> configure)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configure);
-
-        return services.AddMapsterConfig((cfg, _) => configure(cfg));
-    }
-
-    /// <summary>
-    /// Adds an additional configuration callback that will be applied to the DI-provided <see cref="TypeAdapterConfig"/>.
-    /// The <see cref="IServiceProvider"/> allows resolving services used by mapping configuration.
-    /// </summary>
-    public static IServiceCollection AddMapsterConfig(this IServiceCollection services, Action<TypeAdapterConfig, IServiceProvider> configure)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configure);
-
-        services.AddSingleton(new MapsterConfigRegistration(configure));
-        return services;
-    }
-
-    private static IServiceCollection AddMapsterCore(this IServiceCollection services)
-    {
-        services.AddSingleton(sp =>
-        {
-            var config = TypeAdapterConfig.GlobalSettings.Clone();
-            var options = sp.GetRequiredService<IOptions<MapsterOptions>>().Value;
-            options.ApplyTo(config);
-
-            foreach (var reg in sp.GetServices<MapsterConfigRegistration>())
-            {
-                reg.Configure(config, sp);
-            }
-
-            return config;
-        });
-
-        services.AddTransient<IMapper, ServiceMapper>();
-        return services;
-    }
+	/// <summary>
+	/// Adds Mapster mapping services to the specified <see cref="IServiceCollection"/>.
+	/// </summary>
+	/// <param name="services">The <see cref="IServiceCollection"/> to which the Mapster services will be added.</param>
+	/// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
+	public static IServiceCollection AddMapster(this IServiceCollection services)
+	{
+		services.TryAddTransient<IMapper, ServiceMapper>();
+		return services;
+	}
 }
