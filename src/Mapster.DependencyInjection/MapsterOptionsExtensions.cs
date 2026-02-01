@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Mapster.DependencyInjection;
@@ -12,12 +11,12 @@ internal static class MapsterOptionsExtensions
 	/// Applies the settings from <see cref="MapsterOptions"/> to the specified <see cref="TypeAdapterConfig"/>.
 	/// </summary>
 	/// <param name="options">The <see cref="MapsterOptions"/> instance containing the settings to apply.</param>
-	/// <param name="config">The <see cref="TypeAdapterConfig"/> instance to which the settings will be applied. Can be <see langword="null"/>.</param>
-	[return: NotNullIfNotNull(nameof(config))]
-	public static TypeAdapterConfig? ApplyTo(this MapsterOptions options, TypeAdapterConfig? config) 
+	/// <param name="config">The <see cref="TypeAdapterConfig"/> instance to which the settings will be applied.</param>
+	/// <returns>The updated <see cref="TypeAdapterConfig"/> instance.</returns>
+	public static TypeAdapterConfig ApplyTo(this MapsterOptions options, TypeAdapterConfig config) 
 	{
 		ArgumentNullException.ThrowIfNull(options);
-        if (config is null) return null;
+		ArgumentNullException.ThrowIfNull(config);
 
 		config.RequireDestinationMemberSource = options.RequireDestinationMemberSource;
 		config.RequireExplicitMapping = options.RequireExplicitMapping;
