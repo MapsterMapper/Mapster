@@ -3,37 +3,76 @@
 public static class ServiceCollectionExtensions
 {
 	/// <summary>
-	/// Adds Mapster mapping services to the specified <see cref="IServiceCollection"/> and optionally configures <see cref="MapsterOptions"/>.
+	/// Adds <see cref="MapsterOptions"/> to the specified <see cref="IServiceCollection"/>.
+	/// </summary>
+	/// <param name="services">The <see cref="IServiceCollection"/> to which the Mapster options will be added.</param>
+	/// <param name="context">The <see cref="HostBuilderContext"/> providing context for the host builder.</param>
+	/// <param name="sectionName">The configuration section name to bind <see cref="MapsterOptions"/> from. Defaults to <see cref="MapsterOptions.DefaultName"/> .</param>
+	/// <param name="configuration">A delegate to provide a custom <see cref="IConfiguration"/> instance for binding.</param>
+	/// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
+	public static IServiceCollection AddMapsterOptions(
+		this IServiceCollection services,
+		HostBuilderContext context,
+		string sectionName = "",
+	 	Func<HostBuilderContext, IConfiguration>? configuration = default)
+	{
+		if (context.IsRegistered(nameof(AddMapsterOptions)))
+		{
+			return services;
+		}
+		if (configuration is null)
+		{
+			if (sectionName is not { Length: > 0 })
+			{
+				sectionName = MapsterOptions.DefaultName;
+			}
+			configuration = ctx => ctx.Configuration.GetSection(sectionName);
+		}
+		var configSection = configuration.Invoke(context);
+		return services.Configure<MapsterOptions>(configSection);
+	}
+	/// <summary>
+	/// Adds Mapster <see cref="TypeAdapterConfig"/> as Singleton to the specified <see cref="IServiceCollection"/>.
 	/// </summary>
 	/// <param name="services">The <see cref="IServiceCollection"/> to which the Mapster services will be added. Cannot be null.</param>
-	/// <param name="configure">An optional delegate to configure <see cref="MapsterOptions"/>. If null, default options are used.</param>
+	/// <param name="useGlobalConfig">If <see langword="true"> <see cref="TypeAdapterConfig.GlobalSettings"/> will be used, otherwise a new instance of <see cref="TypeAdapterConfig"/> will be used.</param>
+	/// <param name="useExisting">If true, uses an existing registered <see cref="TypeAdapterConfig"/> instance as base if available.</param>
+	/// <param name="readFromOptions">If true, applies the configured <see cref="MapsterOptions"/> to the <see cref="TypeAdapterConfig"/>.</param>
+	/// <param name="configure">Delegate to configure <see cref="MapsterOptions"/>. If empty, the configuration defined by the previous Settings will be used.</param>
 	/// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
-	public static IServiceCollection AddMapster(
+	/// <remarks>
+	/// The configuration options will be applyed in the order of parameters in the method signature.<br/>
+	/// Important: If <paramref name="useExisting"/> is <see langword="true"/> and an existing <see cref="TypeAdapterConfig"/> is found, this will replace the config created by <paramref name="useGlobalConfig"/>!<br/>
+	/// </remarks>
+	public static IServiceCollection AddTypeAdapterConfig(
 		this IServiceCollection services,
-		Action<MapsterOptions>? configure = null)
+		HostBuilderContext context,
+		bool useGlobalConfig = true,
+		bool useExisting = false,
+		bool readFromOptions = true,
+		Func<TypeAdapterConfig, TypeAdapterConfig>? configure = default)
 	{
-		if (configure is not null)
+		if (context.IsRegistered(nameof(AddTypeAdapterConfig)))
 		{
-			services.Configure(configure);
+			return services;
 		}
-		else
+		return services.AddSingleton(serviceProvider =>
 		{
-			services.AddOptions<MapsterOptions>();
-		}
+			var config = useGlobalConfig ? TypeAdapterConfig.GlobalSettings : new TypeAdapterConfig();
 
-		return services.AddMapster();
-	}
+			if (useExisting && serviceProvider.GetService<TypeAdapterConfig>() is TypeAdapterConfig existingConfig)
+			{
+				config = existingConfig; // TODO: Find a way to apply to existing config instead of replacing it
+			}
 
-	/// <summary>
-	/// Adds Mapster <see cref="IOptions{TOptions}"/> to the specified <see cref="IServiceCollection"> using configuration, calls <see cref="AddMapster(IServiceCollection)"/> to register Mapster services.
-	/// </summary>
-	/// <param name="services">The <see cref="IServiceCollection"/> to insert <paramref name="configuration"/> to.</param>
-	/// <param name="configuration">The <see cref="IConfiguration"/> instance to use</param>
-	/// <returns>The same <see cref="IServiceCollection"/> as provided, added up with the Mapster services</returns>
-	public static IServiceCollection AddMapster(this IServiceCollection services, IConfiguration configuration)
-	{
-		services.Configure<MapsterOptions>(configuration);
-		return services.AddMapster();
+			if (readFromOptions && serviceProvider.GetService<IOptions<MapsterOptions>>()?.Value is MapsterOptions options)
+			{
+				config = options.ApplyTo(config);
+			}
+
+			return configure?.Invoke(config) ?? config;
+		});
+
 	}
 
 	/// <summary>
