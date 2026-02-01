@@ -9,6 +9,9 @@
 - name: Dependency Injection
   uid: Mapster.Packages.DependencyInjection
   href: Dependency-Injection.md
+- name: Configuration Support
+  uid: Mapster.Packages.DependencyInjection.Configuration
+  href: DI-Configuration.md
 - name: "EF 6 and EF Core Support"
   uid: Mapster.Packages.EntityFramework
   href: EF-6-and-EF-Core.md
