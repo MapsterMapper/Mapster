@@ -135,7 +135,7 @@ var result = source.Adapt<RecordDestination>()
 
 ```
 
-#### MultyConsturctor Record types
+#### MultiConstructor Record types
 
 If there is more than one constructor, by default, mapping will be performed on the constructor with the largest number of parameters.
 
