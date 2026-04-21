@@ -132,15 +132,18 @@ namespace Mapster.Adapters
             var lines = new List<MemberBinding>();
 
 
-            foreach (var member in members)
-            {
-                if (destination == null)
+			foreach (var member in members)
+			{
+				if (destination == null)
+					continue;
+
+                if (!member.ShouldMapMember(arg, MemberSide.Destination))
                     continue;
 
                 IgnoreItem ignore;
-                ProcessIgnores(arg, member, out ignore);
+				ProcessIgnores(arg, member, out ignore);
 
-                if (member.SetterModifier == AccessModifier.None ||
+				if (member.SetterModifier == AccessModifier.None ||
                    ignore.Condition != null ||
                    contructorMembers.Any(x => string.Equals(x.Name, member.Name, StringComparison.InvariantCultureIgnoreCase)))
                     continue;

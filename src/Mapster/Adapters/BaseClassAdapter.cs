@@ -300,6 +300,8 @@ namespace Mapster.Adapters
 
             foreach (var item in notMappingToIgnore)
             {
+                if (!item.ShouldMapMember(arg, MemberSide.Destination))
+                    continue;
                 arg.Settings.Ignore.TryAdd(item.Name, new IgnoreDictionary.IgnoreItem());
             }
         }
