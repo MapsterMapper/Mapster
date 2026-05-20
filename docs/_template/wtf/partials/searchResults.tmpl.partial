@@ -1,9 +1,0 @@
-{{!Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license.}}
-
-<div id="search-results">
-  <div class="search-list">{{__global.searchResults}} <span></span></div>
-  <div class="sr-items">
-    <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
-  </div>
-  <ul id="pagination" data-first={{__global.pageFirst}} data-prev={{__global.pagePrev}} data-next={{__global.pageNext}} data-last={{__global.pageLast}}></ul>
-</div>

@@ -1,8 +1,0 @@
-{{!Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license.}}
-
-<div class="sidenav hide-when-search">
-  <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">{{__global.tocToggleButton}}</a>
-  <div class="sidetoggle collapse" id="sidetoggle">
-    <div id="sidetoc"></div>
-  </div>
-</div>
