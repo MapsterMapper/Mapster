@@ -503,7 +503,15 @@ namespace Mapster.Adapters
             var notUsingDestinationValue = mapping is not { UseDestinationValue: true };
             Expression exp;
 
-            if (_source.Type == destinationType && arg.Settings.ShallowCopyForSameType == true
+            var shallowCopy = arg.Settings.ShallowCopyForSameType;
+            if (_source.Type == destinationType)
+            {
+                var typeSettings = arg.Context.Config.GetMergedSettings(tuple, arg.MapType);
+                if (typeSettings.ShallowCopyForSameType != null)
+                    shallowCopy = typeSettings.ShallowCopyForSameType;
+            }
+
+            if (_source.Type == destinationType && shallowCopy == true
                 && notUsingDestinationValue && rule == null)
                 exp = _source;
             else if (source is ConditionalExpression cond && mapping != null)
