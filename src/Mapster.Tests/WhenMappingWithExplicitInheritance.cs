@@ -97,6 +97,30 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void Child_Explicit_Map_Overrides_Base_Ignore()
+        {
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Ignore(dest => dest.Name)
+                .Compile();
+
+            TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+                .Inherits<SimplePoco, SimpleDto>()
+                .Map(dest => dest.Name, src => src.Name)
+                .Compile();
+
+            var source = new DerivedPoco
+            {
+                Id = new Guid(),
+                Name = "SourceName"
+            };
+
+            var dto = TypeAdapter.Adapt<DerivedDto>(source);
+
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe(source.Name);
+        }
+
+        [TestMethod]
         public void Derived_Config_Shares_Base_Config_Properties()
         {
             TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
