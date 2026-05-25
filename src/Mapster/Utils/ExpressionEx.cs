@@ -445,7 +445,7 @@ namespace Mapster.Utils
             return getter;
         }
 
-        public static Expression ApplyNullPropagationFromCtor(this Expression getter, Expression adapt, CompileArgument arg)
+        public static Expression ApplyNullPropagationFromCtor(this Expression getter, Expression adapt, CompileArgument arg, MemberMapping? member = null)
         {
             if (getter == null)
                 return adapt;
@@ -481,9 +481,12 @@ namespace Mapster.Utils
             }
 
             if (condition == null)
-                return ApplyDestinationTransform(adapt, arg);
+                return ApplyDestinationTransform(adapt, arg, member);
 
             // add supporting DestinationTransforms
+            if (HasExplicitMemberMap(member, arg))
+                return Expression.Condition(condition, adapt, Expression.Default(adapt.Type));
+
             var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(adapt.Type));
             if (transform != null)
                 return transform.TransformFunc(adapt.Type).Apply(arg.MapType, Expression.Condition(condition, adapt, Expression.Default(adapt.Type)));
@@ -491,13 +494,27 @@ namespace Mapster.Utils
             return Expression.Condition(condition, adapt, Expression.Default(adapt.Type));
         }
 
-        public static Expression ApplyDestinationTransform(Expression exp, CompileArgument arg)
+        public static Expression ApplyDestinationTransform(Expression exp, CompileArgument arg, MemberMapping? mapping = null)
         {
+            if (HasExplicitMemberMap(mapping, arg))
+                return exp;
+
             var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
             if (transform == null)
                 return exp;
 
             return transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
+        }
+
+        static bool HasExplicitMemberMap(MemberMapping? mapping, CompileArgument arg)
+        {
+            if (mapping?.DestinationMember == null)
+                return false;
+
+            var memberName = mapping.DestinationMember.Name;
+            return arg.Settings.Resolvers.Any(resolver =>
+                !resolver.IsChildPath &&
+                resolver.DestinationMemberName.Equals(memberName, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public static string? GetMemberPath(this LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)
