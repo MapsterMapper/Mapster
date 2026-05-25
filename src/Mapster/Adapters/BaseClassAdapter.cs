@@ -225,23 +225,9 @@ namespace Mapster.Adapters
                 Expression defaultConst;
                 Expression getter;
 
-#if NETSTANDARD2_0
-                try
-                {
-                    defaultConst = parameterInfo.IsOptional && parameterInfo.DefaultValue != null
-                    ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
+                defaultConst = parameterInfo.IsOptional
+                    ? CreateOptionalParameterDefault(parameterInfo, member.DestinationMember.Type)
                     : parameterInfo.ParameterType.CreateDefault();
-                }
-                catch (FormatException)
-                {
-                    defaultConst = parameterInfo.ParameterType.CreateDefault();
-                }
-
-#else
-                defaultConst = parameterInfo.IsOptional && parameterInfo.DefaultValue != null
-                    ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
-                    : parameterInfo.ParameterType.CreateDefault();
-#endif
                 
                 if (member.Getter == null)
                 {
@@ -287,6 +273,15 @@ namespace Mapster.Adapters
             }
 
             return Expression.New(classConverter.ConstructorInfo!, arguments);
+        }
+
+        static Expression CreateOptionalParameterDefault(ParameterInfo parameterInfo, Type destinationType)
+        {
+            var defaultValue = parameterInfo.DefaultValue;
+            if (defaultValue == null || defaultValue is DBNull)
+                return destinationType.CreateDefault();
+
+            return Expression.Constant(defaultValue, destinationType);
         }
 
         protected virtual ClassModel GetConstructorModel(ConstructorInfo ctor, bool breakOnUnmatched)
