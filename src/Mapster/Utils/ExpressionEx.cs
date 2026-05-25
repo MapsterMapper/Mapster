@@ -481,7 +481,7 @@ namespace Mapster.Utils
             }
 
             if (condition == null)
-                return adapt;
+                return ApplyDestinationTransform(adapt, arg);
 
             // add supporting DestinationTransforms
             var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(adapt.Type));
@@ -489,6 +489,15 @@ namespace Mapster.Utils
                 return transform.TransformFunc(adapt.Type).Apply(arg.MapType, Expression.Condition(condition, adapt, Expression.Default(adapt.Type)));
 
             return Expression.Condition(condition, adapt, Expression.Default(adapt.Type));
+        }
+
+        public static Expression ApplyDestinationTransform(Expression exp, CompileArgument arg)
+        {
+            var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
+            if (transform == null)
+                return exp;
+
+            return transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
         }
 
         public static string? GetMemberPath(this LambdaExpression lambda, bool firstLevelOnly = false, bool noError = false)

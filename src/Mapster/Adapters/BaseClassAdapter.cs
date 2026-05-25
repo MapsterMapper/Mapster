@@ -283,7 +283,7 @@ namespace Mapster.Adapters
                            getter = TryRestoreRecordMember(member.DestinationMember, recordRestorParamModel, destination) ?? getter;
                     }
                 }
-                arguments.Add(getter);
+                arguments.Add(ExpressionEx.ApplyDestinationTransform(getter, arg));
             }
 
             return Expression.New(classConverter.ConstructorInfo!, arguments);
