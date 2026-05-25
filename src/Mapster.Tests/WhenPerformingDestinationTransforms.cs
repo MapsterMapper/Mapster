@@ -108,6 +108,19 @@ namespace Mapster.Tests
             destination.Strings.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void Explicit_Null_Record_Ctor_Mapping_Is_Not_Overridden_By_EmptyCollectionIfNull()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.AddDestinationTransform(DestinationTransform.EmptyCollectionIfNull);
+            config.NewConfig<ExplicitNullSource, ExplicitNullRecordDestination>()
+                .Map(d => d.Strings, _ => (string[]?)null);
+
+            var destination = new ExplicitNullSource([]).Adapt<ExplicitNullRecordDestination>(config);
+
+            destination.Strings.ShouldBeNull();
+        }
+
         #region TestClasses
 
         public class SimplePoco
@@ -164,6 +177,8 @@ namespace Mapster.Tests
         {
             public string[]? Strings { get; set; }
         }
+
+        public record ExplicitNullRecordDestination(string[]? Strings);
 
         #endregion
 
