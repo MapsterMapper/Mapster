@@ -31,6 +31,12 @@ namespace Mapster
                 throw new InvalidOperationException("TypeAdapter.Adapt was already called, please clone or create new TypeAdapterConfig.");
         }
 
+        internal static void AddMemberResolver<TSetter>(this TSetter setter, InvokerModel resolver) where TSetter : TypeAdapterSetter
+        {
+            setter.Settings.Resolvers.Add(resolver);
+            setter.Settings.Ignore.TryRemove(resolver.DestinationMemberName, out _);
+        }
+
         public static TSetter AddDestinationTransform<TSetter, TDestinationMember>(this TSetter setter, Expression<Func<TDestinationMember, TDestinationMember>> transform) where TSetter : TypeAdapterSetter
         {
             setter.CheckCompiled();
@@ -174,7 +180,7 @@ namespace Mapster
             setter.CheckCompiled();
 
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(object)));
-            setter.Settings.Resolvers.Add(new InvokerModel
+            setter.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = memberName,
                 Invoker = invoker,
@@ -190,7 +196,7 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.Resolvers.Add(new InvokerModel
+            setter.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = memberName,
                 SourceMemberName = source.GetMemberPath(noError: true),
@@ -206,7 +212,7 @@ namespace Mapster
         {
             setter.CheckCompiled();
 
-            setter.Settings.Resolvers.Add(new InvokerModel
+            setter.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = destinationMemberName,
                 SourceMemberName = sourceMemberName,
@@ -426,7 +432,7 @@ namespace Mapster
                 return this;
             }
 
-            Settings.Resolvers.Add(new InvokerModel
+            this.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = member.GetMemberPath()!,
                 Invoker = invoker,
@@ -447,7 +453,7 @@ namespace Mapster
                 return this;
             }
 
-            Settings.Resolvers.Add(new InvokerModel
+            this.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = destinationMember.GetMemberPath()!,
                 SourceMemberName = sourceMemberName,
@@ -669,7 +675,7 @@ namespace Mapster
                 return this;
             }
 
-            Settings.Resolvers.Add(new InvokerModel
+            this.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = member.GetMemberPath()!,
                 SourceMemberName = sourceName,
@@ -685,7 +691,7 @@ namespace Mapster
         {
             this.CheckCompiled();
 
-            Settings.Resolvers.Add(new InvokerModel
+            this.AddMemberResolver(new InvokerModel
             {
                 DestinationMemberName = memberName,
                 SourceMemberName = source.GetMemberPath(noError: true),
