@@ -496,6 +496,13 @@ namespace Mapster.Adapters
                 ? _source
                 : CreateAdaptExpressionCore(_source, destinationType, arg, mapping, destination);
 
+            if (notUsingDestinationValue
+                && _source.CanBeNull()
+                && destinationType.IsAbstractOrNotPublicCtor())
+            {
+                exp = _source.NotNullReturn(exp);
+            }
+
             //transform(adapt(_source));
             if (notUsingDestinationValue)
             {
