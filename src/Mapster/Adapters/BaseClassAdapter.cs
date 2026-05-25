@@ -200,6 +200,13 @@ namespace Mapster.Adapters
             return false;
         }
 
+        protected static bool HasCustomMemberMap(CompileArgument arg, IMemberModel destinationMember)
+        {
+            return arg.Settings.Resolvers.Any(resolver =>
+                !resolver.IsChildPath &&
+                string.Equals(resolver.DestinationMemberName, destinationMember.Name, StringComparison.InvariantCultureIgnoreCase));
+        }
+
         protected static bool ProcessIgnores(
             CompileArgument arg,
             IMemberModel destinationMember,

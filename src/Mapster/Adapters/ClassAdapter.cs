@@ -110,7 +110,8 @@ namespace Mapster.Adapters
             Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>? conditions = null;
             foreach (var member in members)
             {
-                var destMember = arg.MapType == MapType.MapToTarget || member.UseDestinationValue
+                var hasCustomMap = HasCustomMemberMap(arg, member.DestinationMember);
+                var destMember = (arg.MapType == MapType.MapToTarget || member.UseDestinationValue) && !hasCustomMap
                     ? member.DestinationMember.GetExpression(destination)
                     : null;
 
