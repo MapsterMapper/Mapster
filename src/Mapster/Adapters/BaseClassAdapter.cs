@@ -211,7 +211,7 @@ namespace Mapster.Adapters
             {
                 var parameterInfo = (ParameterInfo)member.DestinationMember.Info!;
                 var defaultConst = parameterInfo.IsOptional
-                    ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
+                    ? CreateOptionalParameterDefault(parameterInfo, member.DestinationMember.Type)
                     : parameterInfo.ParameterType.CreateDefault();
 
                 Expression getter;
@@ -257,6 +257,15 @@ namespace Mapster.Adapters
             }
 
             return Expression.New(classConverter.ConstructorInfo!, arguments);
+        }
+
+        static Expression CreateOptionalParameterDefault(ParameterInfo parameterInfo, Type destinationType)
+        {
+            var defaultValue = parameterInfo.DefaultValue;
+            if (defaultValue == null || defaultValue is DBNull)
+                return destinationType.CreateDefault();
+
+            return Expression.Constant(defaultValue, destinationType);
         }
 
         protected virtual ClassModel GetConstructorModel(ConstructorInfo ctor, bool breakOnUnmatched)
