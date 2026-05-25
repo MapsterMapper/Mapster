@@ -36,6 +36,8 @@ namespace ExpressionDebugger
         private List<PropertyDefinitions>? _properties;
         public List<PropertyDefinitions> Properties => _properties ??= new List<PropertyDefinitions>();
 
+        private HashSet<string>? _inheritDocMembers;
+
         public bool HasDynamic { get; private set; }
         public TypeDefinitions? Definitions { get; }
 
@@ -44,6 +46,18 @@ namespace ExpressionDebugger
             Definitions = definitions;
             _writer = new StringWriter();
             ResetIndentLevel();
+        }
+
+        public void AddInheritDocMember(string memberName)
+        {
+            _inheritDocMembers ??= new HashSet<string>();
+            _inheritDocMembers.Add(memberName);
+        }
+
+        private void WriteInheritDocIfNeeded(string memberName)
+        {
+            if (_inheritDocMembers?.Contains(memberName) == true)
+                WriteNextLine("/// <inheritdoc />");
         }
 
         private void ResetIndentLevel()
@@ -1204,6 +1218,7 @@ namespace ExpressionDebugger
                     if (!isInternal)
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                    WriteInheritDocIfNeeded(name);
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     var funcType = MakeDelegateType(node.ReturnType, node.Parameters.Select(it => it.Type).ToArray());
                     var exprType = typeof(Expression<>).MakeGenericType(funcType);
@@ -1238,6 +1253,7 @@ namespace ExpressionDebugger
                     if (!isInternal)
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                    WriteInheritDocIfNeeded(name);
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     Methods[name] = node.Type;
                 }

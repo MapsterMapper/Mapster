@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
 		<IsTestProject>true</IsTestProject>
         <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
