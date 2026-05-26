@@ -508,7 +508,7 @@ namespace Mapster.Adapters
                 : arg.Settings;
 
             if (_source.Type == destinationType && shallowCopySettings.ShallowCopyForSameType == true
-                && notUsingDestinationValue)
+                && notUsingDestinationValue && rule == null)
                 exp = _source;
             else if (source is ConditionalExpression cond && mapping != null)
             {
