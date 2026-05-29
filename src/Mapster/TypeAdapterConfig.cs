@@ -1,18 +1,26 @@
-﻿using System;
+﻿using Mapster.Adapters;
+using Mapster.Models;
+using Mapster.Utils;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Mapster.Adapters;
-using Mapster.Models;
-using Mapster.Utils;
+using System.Threading;
 
 namespace Mapster
 {
     public class TypeAdapterConfig
     {
+        #region ConcurrencyMod
+
+        [AdaptIgnore]
+        internal AutoResetEvent ConfigureSync { get; set; }
+
+        #endregion ConcurrencyMod
+
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
         public static TypeAdapterConfig GlobalSettings { get; } = new TypeAdapterConfig();
 
@@ -96,6 +104,8 @@ namespace Mapster
 
         public TypeAdapterConfig()
         {
+            ConfigureSync = new(true);
+           
             Rules = RulesTemplate.ToList();
             var settings = new TypeAdapterSettings();
             Default = new TypeAdapterSetter(settings, this);
@@ -323,10 +333,19 @@ namespace Mapster
         }
         internal Delegate GetMapFunction(Type sourceType, Type destinationType)
         {
-            var key = new TypeTuple(sourceType, destinationType);
-            if (!_mapDict.TryGetValue(key, out var del))
-                del = AddToHash(_mapDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.Map)));
-            return del;
+            ConfigureSync.WaitOne();
+
+            try
+            {
+                var key = new TypeTuple(sourceType, destinationType);
+                if (!_mapDict.TryGetValue(key, out var del))
+                    del = AddToHash(_mapDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.Map)));
+                return del;
+            }
+            finally
+            {
+                ConfigureSync.Set();
+            }
         }
 
         private readonly ConcurrentDictionary<TypeTuple, Delegate> _mapToTargetDict = new ConcurrentDictionary<TypeTuple, Delegate>();
@@ -336,10 +355,20 @@ namespace Mapster
         }
         internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
-            var key = new TypeTuple(sourceType, destinationType);
-            if (!_mapToTargetDict.TryGetValue(key, out var del))
-                del = AddToHash(_mapToTargetDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.MapToTarget)));
-            return del;
+            ConfigureSync.WaitOne();
+
+            try
+            {
+                var key = new TypeTuple(sourceType, destinationType);
+                if (!_mapToTargetDict.TryGetValue(key, out var del))
+                    del = AddToHash(_mapToTargetDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.MapToTarget)));
+                return del;
+            }
+            finally
+            {
+                ConfigureSync.Set();
+            }
+            
         }
 
         private readonly ConcurrentDictionary<TypeTuple, MethodCallExpression> _projectionDict = new ConcurrentDictionary<TypeTuple, MethodCallExpression>();
@@ -351,19 +380,37 @@ namespace Mapster
         }
         internal MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
         {
-            var key = new TypeTuple(sourceType, destinationType);
-            if (!_projectionDict.TryGetValue(key, out var del))
-                del = AddToHash(_projectionDict, key, CreateProjectionCallExpression);
-            return del;
+            ConfigureSync.WaitOne();
+
+            try
+            {
+                var key = new TypeTuple(sourceType, destinationType);
+                if (!_projectionDict.TryGetValue(key, out var del))
+                    del = AddToHash(_projectionDict, key, CreateProjectionCallExpression);
+                return del;
+            }
+            finally
+            {
+                ConfigureSync.Set();
+            }
         }
 
         private readonly ConcurrentDictionary<TypeTuple, Delegate> _dynamicMapDict = new ConcurrentDictionary<TypeTuple, Delegate>();
         public Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
-            var key = new TypeTuple(sourceType, typeof(TDestination));
-            if (!_dynamicMapDict.TryGetValue(key, out var del))
-                del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
-            return (Func<object, TDestination>)del;
+            ConfigureSync.WaitOne();
+
+            try
+            {
+                var key = new TypeTuple(sourceType, typeof(TDestination));
+                if (!_dynamicMapDict.TryGetValue(key, out var del))
+                    del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
+                return (Func<object, TDestination>)del;
+            }
+            finally
+            {
+                ConfigureSync.Set();
+            }
         }
 
         private Expression CreateSelfExpression()
@@ -404,6 +451,7 @@ namespace Mapster
             }
             finally
             {
+               
                 if (fork != null)
                     context.Configs.Pop();
                 context.Running.Remove(tuple);
@@ -742,12 +790,25 @@ namespace Mapster
             return registers;
         }
 
+        public IList<IRegister> ScanConcurrency(params Assembly[] assemblies)
+        {
+            ConfigureSync.WaitOne();
+           
+            try
+            {
+                return Scan(assemblies);
+            }
+            finally
+            {
+                ConfigureSync.Set();
+            }
+        }
 
-		/// <summary>
-		/// Applies type mappings.
-		/// </summary>
-		/// <param name="registers">collection of IRegister interface to apply mapping.</param>
-		public void Apply(IEnumerable<Lazy<IRegister>> registers)
+        /// <summary>
+        /// Applies type mappings.
+        /// </summary>
+        /// <param name="registers">collection of IRegister interface to apply mapping.</param>
+        public void Apply(IEnumerable<Lazy<IRegister>> registers)
         {
             Apply(registers.Select(register => register.Value));
         }
@@ -884,6 +945,25 @@ namespace Mapster
 		public static void Clear()
         {
             TypeAdapterConfig.GlobalSettings.Remove(typeof(TSource), typeof(TDestination));
+        }
+    }
+
+    public static class TypeAdapterConfigConcurrency<TSource, TDestination>
+    {
+        public static void NewConfig(Action<TypeAdapterSetter<TSource, TDestination>> cfg)
+        {
+            var config = TypeAdapterConfig.GlobalSettings;
+
+            config.ConfigureSync.WaitOne();
+
+            try
+            {
+                cfg.Invoke(TypeAdapterConfig<TSource, TDestination>.NewConfig());
+            }
+            finally
+            {
+                config.ConfigureSync.Set();
+            }
         }
     }
 }
