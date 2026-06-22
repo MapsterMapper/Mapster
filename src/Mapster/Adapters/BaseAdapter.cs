@@ -504,10 +504,10 @@ namespace Mapster.Adapters
             else
                 exp = CreateAdaptExpressionCore(_source, destinationType, arg, mapping, destination);
 
-            // NullablePropagation when for member using Custom converter MapWith 
-            if (notUsingDestinationValue && arg.MapType != MapType.Projection
-               && mapping != null && mapping.Getter.CanBeNull())
-                exp = mapping.Getter.NotNullReturn(exp);
+            //// NullablePropagation when for member using Custom converter MapWith 
+            //if (notUsingDestinationValue && arg.MapType != MapType.Projection
+            //   && mapping != null && mapping.Getter.CanBeNull())
+            //    exp = mapping.Getter.NotNullReturn(exp);
 
             //transform(adapt(_source));
             if (notUsingDestinationValue)
