@@ -138,6 +138,8 @@ namespace Mapster.Tool
                         var funcArgs = propArgs.GetGenericArguments();
                         var tuple = new TypeTuple(funcArgs[0], funcArgs[1]);
                         var expr = config.CreateMapExpression(tuple, MapType.Projection);
+                        if (XmlDocumentationReader.HasDocumentation(assembly, prop))
+                            translator.AddInheritDocMember(prop.Name);
                         translator.VisitLambda(
                             expr,
                             ExpressionTranslator.LambdaType.PublicLambda,
@@ -162,6 +164,8 @@ namespace Mapster.Tool
                             tuple,
                             methodArgs.Length == 1 ? MapType.Map : MapType.MapToTarget
                         );
+                        if (XmlDocumentationReader.HasDocumentation(assembly, method))
+                            translator.AddInheritDocMember(method.Name);
                         translator.VisitLambda(
                             expr,
                             ExpressionTranslator.LambdaType.PublicMethod,

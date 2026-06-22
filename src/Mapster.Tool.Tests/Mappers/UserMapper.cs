@@ -7,11 +7,13 @@ namespace Mapster.Tool.Tests.Mappers
 {
     public partial class UserMapper : IUserMapper
     {
+        /// <inheritdoc />
         public Expression<Func<_User, _UserDto>> UserProjection => p1 => new _UserDto()
         {
             Id = p1.Id,
             Name = p1.Name
         };
+        /// <inheritdoc />
         public _UserDto MapTo(_User p2)
         {
             return p2 == null ? null : new _UserDto()
@@ -20,6 +22,7 @@ namespace Mapster.Tool.Tests.Mappers
                 Name = p2.Name
             };
         }
+        /// <inheritdoc />
         public _UserDto MapTo(_User p3, _UserDto p4)
         {
             if (p3 == null)
