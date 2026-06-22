@@ -510,7 +510,7 @@ namespace Mapster.Adapters
             //    exp = mapping.Getter.NotNullReturn(exp);
 
             //transform(adapt(_source));
-            if (notUsingDestinationValue)
+            if (notUsingDestinationValue && !HasExplicitMemberMap(mapping, arg))
             {
                 var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
                 if (transform != null)
@@ -533,6 +533,17 @@ namespace Mapster.Adapters
             }
 
             return exp.To(destinationType);
+        }
+
+        static bool HasExplicitMemberMap(MemberMapping? mapping, CompileArgument arg)
+        {
+            if (mapping?.DestinationMember == null)
+                return false;
+
+            var memberName = mapping.DestinationMember.Name;
+            return arg.Settings.Resolvers.Any(resolver =>
+                !resolver.IsChildPath &&
+                resolver.DestinationMemberName.Equals(memberName, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

@@ -264,7 +264,7 @@ namespace Mapster.Adapters
                     }
                     else
                        getter = member.Getter
-                            .ApplyNullPropagationFromCtor(CreateAdaptExpressionCore(member.Getter, member.DestinationMember.Type, arg, member), arg);
+                            .ApplyNullPropagationFromCtor(CreateAdaptExpressionCore(member.Getter, member.DestinationMember.Type, arg, member), arg, member);
                     
 
                     if (member.Ignore.Condition != null)
@@ -284,7 +284,7 @@ namespace Mapster.Adapters
                            getter = TryRestoreRecordMember(member.DestinationMember, recordRestorParamModel, destination) ?? getter;
                     }
                 }
-                arguments.Add(getter);
+                arguments.Add(ExpressionEx.ApplyDestinationTransform(getter, arg, member));
             }
 
             return Expression.New(classConverter.ConstructorInfo!, arguments);

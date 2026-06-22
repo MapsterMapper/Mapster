@@ -95,6 +95,32 @@ namespace Mapster.Tests
             destination.Set.Count.ShouldBe(0);
         }
 
+        [TestMethod]
+        public void Explicit_Null_Mapping_Is_Not_Overridden_By_EmptyCollectionIfNull()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.AddDestinationTransform(DestinationTransform.EmptyCollectionIfNull);
+            config.NewConfig<ExplicitNullSource, ExplicitNullDestination>()
+                .Map(d => d.Strings, _ => (string[]?)null);
+
+            var destination = new ExplicitNullSource([]).Adapt<ExplicitNullDestination>(config);
+
+            destination.Strings.ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void Explicit_Null_Record_Ctor_Mapping_Is_Not_Overridden_By_EmptyCollectionIfNull()
+        {
+            var config = new TypeAdapterConfig();
+            config.Default.AddDestinationTransform(DestinationTransform.EmptyCollectionIfNull);
+            config.NewConfig<ExplicitNullSource, ExplicitNullRecordDestination>()
+                .Map(d => d.Strings, _ => (string[]?)null);
+
+            var destination = new ExplicitNullSource([]).Adapt<ExplicitNullRecordDestination>(config);
+
+            destination.Strings.ShouldBeNull();
+        }
+
         #region TestClasses
 
         public class SimplePoco
@@ -144,6 +170,15 @@ namespace Mapster.Tests
             public IReadOnlyDictionary<string, ChildDto> ChildDict { get; set; }
             public ISet<string> Set { get; set; }
         }
+
+        public record ExplicitNullSource(string?[] Strings);
+
+        public class ExplicitNullDestination
+        {
+            public string[]? Strings { get; set; }
+        }
+
+        public record ExplicitNullRecordDestination(string[]? Strings);
 
         #endregion
 
