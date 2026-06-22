@@ -20,7 +20,9 @@
 		<PackageIconUrl>https://cloud.githubusercontent.com/assets/5763993/26522718/d16f3e42-4330-11e7-9b78-f8c7402624e7.png</PackageIconUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>$(SolutionDir)/Mapster/Mapster.snk</AssemblyOriginatorKeyFile>
+		<!-- SolutionDir is not always set when building a project directly (e.g. dotnet test path/to/csproj). -->
+		<AssemblyOriginatorKeyFile Condition="'$(SolutionDir)' != '' and Exists('$(SolutionDir)Mapster/Mapster.snk')">$(SolutionDir)Mapster/Mapster.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile Condition="'$(AssemblyOriginatorKeyFile)' == '' and Exists('$(MSBuildThisFileDirectory)Mapster/Mapster.snk')">$(MSBuildThisFileDirectory)Mapster/Mapster.snk</AssemblyOriginatorKeyFile>
 		<PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
 		<PackageTags>Mapper;AutoMapper;Fast;Mapping</PackageTags>
 		<PackageIcon>icon.png</PackageIcon>
