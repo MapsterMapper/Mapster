@@ -402,7 +402,7 @@ namespace Mapster
             : base(settings, parentConfig)
         { }
 
-        public TypeAdapterSetter<TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public TypeAdapterSetter<TDestination> Ignore(params Expression<Func<TDestination, object?>>[] members)
         {
             this.CheckCompiled();
 
@@ -568,12 +568,12 @@ namespace Mapster
 
         #region replace for chaining
 
-        public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public new TypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object?>>[] members)
         {
             return (TypeAdapterSetter<TSource, TDestination>)base.Ignore(members);
         }
 
-        public TypeAdapterSetter<TDestination> IgnoredRemove(params Expression<Func<TDestination, object>>[] members)
+        public TypeAdapterSetter<TDestination> IgnoredRemove(params Expression<Func<TDestination, object?>>[] members)
         {
             this.CheckCompiled();
 
@@ -1114,7 +1114,7 @@ namespace Mapster
             return this;
         }
 
-        public TwoWaysTypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object>>[] members)
+        public TwoWaysTypeAdapterSetter<TSource, TDestination> Ignore(params Expression<Func<TDestination, object?>>[] members)
         {
             foreach (var member in members)
             {
