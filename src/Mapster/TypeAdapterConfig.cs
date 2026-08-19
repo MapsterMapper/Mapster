@@ -450,7 +450,7 @@ namespace Mapster
         {
             
             if(arg.Settings.ApplyCustomConverterFactoryNullPropagation.GetValueOrDefault())
-                lambda = Expression.Lambda(lambda.Parameters[0].NotNullReturn(lambda.Body),lambda.Parameters);
+                lambda = Expression.Lambda(lambda.Parameters[0].NotNullReturn(lambda.Body,arg),lambda.Parameters);
          
             var destinationType = arg.DestinationType;
             var returnType = lambda.ReturnType;
@@ -495,7 +495,7 @@ namespace Mapster
 
                 var condition = Expression.TypeIs(tempDest, destinationType);
                 UnaryExpression ifTrue = Expression.Convert(tempDest, destinationType);
-                DefaultExpression ifFalse = Expression.Default(destinationType);
+                Expression ifFalse = destinationType.CreateDefault(arg);
 
                 ConditionalExpression conditionalExpr = Expression.Condition(condition, ifTrue, ifFalse);
                 blockbody.Add(conditionalExpr);
@@ -544,6 +544,26 @@ namespace Mapster
                     arg.Settings.Resolvers.AddRange(mapping.NextResolvers);
                     arg.Settings.Ignore.Apply(mapping.NextIgnore);
                     arg.UseDestinationValue = mapping.UseDestinationValue;
+
+                    if (mapping.OverrideSettings != null)
+                    {
+                        mapping.OverrideSettings.Apply(arg.Settings);
+
+                        if(mapping.OverrideSettings.ConverterFactory == null  || mapping.OverrideSettings.ConverterToTargetFactory == null)
+                        {
+                            var defaultfactory = GetOvverideDefaultSettings(tuple, mapType);
+
+                            if (mapping.OverrideSettings.ConverterFactory == null)
+                                mapping.OverrideSettings.ConverterFactory = defaultfactory.ConverterFactory;
+                            if (mapping.OverrideSettings.ConverterToTargetFactory == null)
+                                mapping.OverrideSettings.ConverterToTargetFactory = defaultfactory.ConverterToTargetFactory;
+
+                        }
+
+                       
+                        arg.Settings = mapping.OverrideSettings;
+                    }
+                        
                 }
 
                 return CreateMapExpression(arg);
@@ -697,6 +717,36 @@ namespace Mapster
             return result;
         }
 
+        internal TypeAdapterSettings GetOvverideDefaultSettings(TypeTuple tuple, MapType mapType)
+        {
+            var arg = new PreCompileArgument
+            {
+                SourceType = tuple.Source,
+                DestinationType = tuple.Destination,
+                MapType = mapType,
+                ExplicitMapping = true,
+            };
+
+            var result = new TypeAdapterSettings();
+
+            var rules = RulesTemplate.Reverse<TypeAdapterRule>();
+            var settings = from rule in rules
+                           let priority = rule.Priority(arg)
+                           where priority != null
+                           orderby priority.Value descending
+                           select rule.Settings;
+            foreach (var setting in settings)
+            {
+                result.Apply(setting);
+            }
+
+            return result;
+        }
+
+        internal CompileArgument GetCompileArgument(Type sourcetype, Type destintaiontype, MapType mapType, CompileContext context)
+        {
+            return GetCompileArgument(new TypeTuple(sourcetype, destintaiontype), mapType, context);
+        }
         private CompileArgument GetCompileArgument(TypeTuple tuple, MapType mapType, CompileContext context)
         {
             var setting = GetMergedSettings(tuple, mapType);

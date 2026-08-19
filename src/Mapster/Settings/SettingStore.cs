@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Mapster
 {
@@ -46,19 +48,18 @@ namespace Mapster
             return (T)_objectStore.GetOrAdd(key, _ => initializer());
         }
 
-        public virtual void Apply(object other)
+
+        private void ApplyBoolSettings (IEnumerable<KeyValuePair<string, bool?>> otherBoolStore)
         {
-            if (other is SettingStore settingStore)
-                Apply(settingStore);
-        }
-        public void Apply(SettingStore other)
-        {
-            foreach (var kvp in other._booleanStore)
+            foreach (var kvp in otherBoolStore)
             {
                 _booleanStore.TryAdd(kvp.Key, kvp.Value);
             }
+        }
 
-            foreach (var kvp in other._objectStore)
+        private void ApplyObjectSettings(IEnumerable<KeyValuePair<string, object?>> otherBoolStore)
+        {
+            foreach (var kvp in otherBoolStore)
             {
                 var self = _objectStore.GetOrAdd(kvp.Key, key =>
                 {
@@ -80,5 +81,26 @@ namespace Mapster
                 }
             }
         }
+
+
+        public virtual void Apply(object other)
+        {
+            if (other is SettingStore settingStore)
+                Apply(settingStore);
+        }
+
+
+        public virtual void Apply(SettingStore other)
+        {
+            ApplyBoolSettings(other._booleanStore);
+            ApplyObjectSettings(other._objectStore);
+        }
+
+        public virtual void ApplyWithSkipSettings(SettingStore other, List<String> skipSettingNames)
+        {
+            ApplyBoolSettings(other._booleanStore.Where(x => !skipSettingNames.Contains(x.Key)));
+            ApplyObjectSettings(other._objectStore.Where(x => !skipSettingNames.Contains(x.Key)));
+        }
+
     }
 }

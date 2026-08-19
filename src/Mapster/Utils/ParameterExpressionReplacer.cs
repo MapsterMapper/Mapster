@@ -8,10 +8,20 @@ namespace Mapster.Utils
         //fields
         readonly ReadOnlyCollection<ParameterExpression> _from;
         readonly Expression[] _to;
+        readonly bool _FromExtraSource;
 
         public int[] ReplaceCounts { get; }
 
         //constructors
+
+        public ParameterExpressionReplacer(ReadOnlyCollection<ParameterExpression> from,bool isExtraSource, params Expression[] to )
+        {
+            _from = from;
+            _to = to;
+            ReplaceCounts = new int[_to.Length];
+            _FromExtraSource = isExtraSource;
+        }
+
         public ParameterExpressionReplacer(ReadOnlyCollection<ParameterExpression> from, params Expression[] to)
         {
             _from = from;
@@ -24,7 +34,16 @@ namespace Mapster.Utils
             for (var i = 0; i < _from.Count; i++)
             {
                 if (node != _from[i])
-                    continue;
+                {
+                    if (_FromExtraSource)
+                    {
+                        if (node.Type != _from[i].Type)
+                            continue;
+                    }
+                    else
+                        continue;
+                }
+
                 if (i >= _to.Length)
                     return node.Type.CreateDefault();
 

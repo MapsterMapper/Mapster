@@ -358,8 +358,15 @@ namespace Mapster
             return type == typeof(object) || type.UnwrapNullable().IsConvertible();
         }
 
-        public static Expression CreateDefault(this Type type)
+        public static Expression CreateDefault(this Type type, CompileArgument? arg = null, MemberMapping? member = null)
         {
+            if(arg !=null && arg.Settings.CustomDefaultValue != null)
+                return arg.Settings.CustomDefaultValue;
+
+            if (member != null && member.OverrideSettings != null
+                && member.OverrideSettings.CustomDefaultValue != null)
+                return member.OverrideSettings.CustomDefaultValue;
+
             return type.CanBeNull()
                 ? Expression.Constant(null, type)
                 : Expression.Constant(Activator.CreateInstance(type), type);

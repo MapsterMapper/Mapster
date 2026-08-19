@@ -26,6 +26,9 @@ namespace Mapster.Adapters
                 ? Expression.Convert(source, source.Type.GetGenericArguments()[0]) 
                 : source;
 
+            //var destType = arg.DestinationType.GetNotNullableTypeDefenition();
+            //var customArg = arg.Context.Config.GetCompileArgument(_source.Type, destType, arg.MapType, arg.Context);
+
             Expression adapt = CreateAdaptExpression(_source, arg.DestinationType.GetNotNullableTypeDefenition(),arg);
                        
             return adapt.ToNullableExp(arg);

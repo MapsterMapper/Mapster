@@ -9,5 +9,6 @@ namespace Mapster
         MapToTarget = 2,
         Projection = 4,
         ApplyNullPropagation = 8,
+        CtorParam = 16,
     }
 }

@@ -97,7 +97,7 @@ namespace Mapster.Adapters
                 if (arg.Context.MaxDepth.HasValue)
                 {
                     if (ObjectType != ObjectType.Primitive && arg.Context.Depth >= arg.Context.MaxDepth.Value)
-                        return arg.DestinationType.CreateDefault();
+                        return arg.DestinationType.CreateDefault(arg);
                     if (ObjectType == ObjectType.Class)
                         arg.Context.Depth++;
                 }
@@ -208,7 +208,7 @@ namespace Mapster.Adapters
             /// Not create destination is abstract type if source is null
             if (arg.DestinationType.IsAbstract)
                 blocks.Add(Expression.IfThen(Expression.Equal(source, Expression.Constant(null, arg.SourceType)), 
-                    Expression.Return(label, Expression.Default(arg.DestinationType))));
+                    Expression.Return(label, arg.DestinationType.CreateDefault(arg))));
 
             //new TDest();
             Expression transformedSource = source;
@@ -259,7 +259,7 @@ namespace Mapster.Adapters
                     var compareNull = Expression.Equal(source, Expression.Constant(null, source.Type));
                     blocks.Add(
                         Expression.IfThen(compareNull,
-                            Expression.Return(label, arg.DestinationType.CreateDefault()))
+                            Expression.Return(label, arg.DestinationType.CreateDefault(arg)))
                     );
                 }
 
@@ -351,7 +351,7 @@ namespace Mapster.Adapters
                 }
             }
 
-            blocks.Add(Expression.Label(label, arg.DestinationType.CreateDefault()));
+            blocks.Add(Expression.Label(label, arg.DestinationType.CreateDefault(arg)));
             return Expression.Block(vars, blocks);
         }
 
@@ -388,9 +388,12 @@ namespace Mapster.Adapters
             if (exp == null)
                 return null;
 
+            if(arg.MapType == MapType.CtorParam)
+                return exp;
+
             //projection null is handled by EF
             if (arg.MapType != MapType.Projection)
-                exp = source.NotNullReturn(exp);
+                exp = source.NotNullReturn(exp,arg);
 
             return exp;
         }
@@ -448,9 +451,10 @@ namespace Mapster.Adapters
             }
         }
 
-        internal static Expression CreateAdaptExpressionCore(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping = null, Expression? destination = null)
+        internal static Expression CreateAdaptExpressionCore(Expression source, Type destinationType, CompileArgument arg, MemberMapping? mapping = null, Expression? destination = null, MapType? mapTypeCtor = null)
         {
-            var mapType = arg.MapType == MapType.MapToTarget && destination == null ? MapType.Map :
+            var mapType = mapTypeCtor != null ? mapTypeCtor.Value:
+                arg.MapType == MapType.MapToTarget && destination == null ? MapType.Map :
                 mapping?.UseDestinationValue == true ? MapType.MapToTarget :
                 arg.MapType;
             var extraParams = new HashSet<ParameterExpression>();
@@ -512,7 +516,9 @@ namespace Mapster.Adapters
             //transform(adapt(_source));
             if (notUsingDestinationValue)
             {
-                var transform = arg.Settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
+                var settings = mapping?.OverrideSettings ?? arg.Settings;
+
+                var transform = settings.DestinationTransforms.Find(it => it.Condition(exp.Type));
                 if (transform != null)
                     exp = transform.TransformFunc(exp.Type).Apply(arg.MapType, exp);
             }

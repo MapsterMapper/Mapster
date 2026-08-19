@@ -12,7 +12,9 @@ namespace Mapster
         public int? MaxDepth { get; set; }
         public int Depth { get; set; }
         public HashSet<ParameterExpression> ExtraParameters { get; } = new();
-        public HashSet<(Expression param, CompileArgument arg)> NullChecks { get; } = new();
+
+        // ReadyToCleanUp
+       // public HashSet<(Expression param, CompileArgument arg)> NullChecks { get; } = new();
 
         internal bool IsSubFunction()
         {

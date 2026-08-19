@@ -43,9 +43,13 @@ namespace Mapster
         public static TDestination? Adapt<TDestination>(this object? source, TypeAdapterConfig config)
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            Type? type;
+
             if (source == null)
-                return default;
-            var type = source.GetType();
+                type = typeof(Object);
+            else
+                type = source.GetType();
+
             var fn = config.GetDynamicMapFunction<TDestination>(type);
             return fn(source)!;
         }

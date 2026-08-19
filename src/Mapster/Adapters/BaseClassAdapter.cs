@@ -25,24 +25,31 @@ namespace Mapster.Adapters
             if (arg.Settings.IgnoreNonMapped == true)
                 IgnoreNonMapped(classModel,arg);
           
-            var sources = new List<Expression> {source};
+            var sources = new List<ResolverSourceInput> {new ResolverSourceInput(source)};
             sources.AddRange(
-                arg.Settings.ExtraSources.Select(src =>
-                    src is LambdaExpression lambda 
-                        ? lambda.Apply(arg.MapType, source) 
-                        : ExpressionEx.PropertyOrFieldPath(source, (string)src)));
+                arg.Settings.ExtraSources.Select(src => ResolverSourceInput.ConvertFrom(src,source,arg)));
             foreach (var destinationMember in destinationMembers)
             {
-                if (ProcessIgnores(arg, destinationMember, out var ignore) && !ctorMapping)
+                if (!destinationMember.ShouldMapMember(arg, MemberSide.Destination))
                     continue;
 
                 var resolvers = arg.Settings.ValueAccessingStrategies.AsEnumerable();
                 if (arg.Settings.IgnoreNonMapped == true)
                     resolvers = resolvers.Where(ValueAccessingStrategy.CustomResolvers.Contains);
-                var getter = (from fn in resolvers
+                var resolver = (from fn in resolvers
                         from src in sources
                         select fn(src, destinationMember, arg))
                     .FirstOrDefault(result => result != null);
+                var getter = resolver?.Exp;
+                var overideSettings = resolver?.Settings;
+
+                if (ProcessIgnores(arg, destinationMember,out var ignore, resolver) && !ctorMapping)
+                    continue;
+
+                // ReadyToCleanUp
+                // source in overideSettings is not source in this context 
+                //  if (overideSettings != null && getter != null)
+                //  getter = ReplaceOvverideExpressionParam.Replace(getter, source);
 
                 if (arg.MapType == MapType.Projection && getter != null)
                 {
@@ -66,7 +73,7 @@ namespace Mapster.Adapters
                     getter = (from fn in resolvers
                               from src in sources
                               select fn(src, destinationMember, arg))
-                    .FirstOrDefault(result => result != null);
+                    .FirstOrDefault(result => result != null)?.Exp;
                 }
 
 
@@ -98,7 +105,6 @@ namespace Mapster.Adapters
 
                 }
 
-
                 var nextIgnore = arg.Settings.Ignore.Next((ParameterExpression)source, (ParameterExpression?)destination, destinationMember.Name);
                 var nextResolvers = arg.Settings.Resolvers.Next(arg.Settings.Ignore, (ParameterExpression)source, destinationMember.Name)
                     .ToList();
@@ -112,6 +118,7 @@ namespace Mapster.Adapters
                     Source = (ParameterExpression)source,
                     Destination = (ParameterExpression?)destination,
                     UseDestinationValue = IsCanUsingDestinationValue(arg, destinationMember),
+                    OverrideSettings = overideSettings
                 };
                 if(arg.MapType == MapType.ApplyNullPropagation &&
                     getter == null && !arg.DestinationType.IsRecordType()  
@@ -120,19 +127,19 @@ namespace Mapster.Adapters
                     if (propinfo.GetCustomAttributes()
                         .Any(y => y.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute"))
                     {
-                        getter = destinationMember.Type.CreateDefault();
+                        getter = destinationMember.Type.CreateDefault(arg);
                     }
                 }
 
                 if (arg.MapType == MapType.MapToTarget && getter == null && arg.DestinationType.IsRecordType())
                 {
-                    getter = TryRestoreRecordMember(destinationMember, recordRestorMemberModel, destination) ?? getter;
+                    getter = TryRestoreRecordMember(destinationMember, recordRestorMemberModel, destination, arg) ?? getter;
                 }
                 if (getter != null)
                 {
-                    propertyModel.Getter = arg.MapType == MapType.Projection 
-                        ? getter 
-                        : getter.ApplyPropertyNullPropagation();
+                    propertyModel.Getter = arg.MapType == MapType.Projection || ctorMapping
+                        ? getter
+                        : getter.ApplyPropertyNullPropagation(arg, source);
                     properties.Add(propertyModel);
                 }
                 else
@@ -202,10 +209,20 @@ namespace Mapster.Adapters
 
         protected static bool ProcessIgnores(
             CompileArgument arg,
-            IMemberModel destinationMember,
-            out IgnoreDictionary.IgnoreItem ignore)
+            IMemberModel destinationMember, 
+            out IgnoreDictionary.IgnoreItem ignore,
+            ResolverResult? resolver = null)
         {
             ignore = new IgnoreDictionary.IgnoreItem();
+
+            if (resolver?.Settings != null)
+            {
+               if(resolver.Settings.ReMapExtraSource.GetValueOrDefault() 
+                    || resolver.Settings.ReMapDestination.Contains(destinationMember.Name)
+                    || arg.Settings.ReMapDestinationMembers.Contains(destinationMember.Name))
+                    return false;
+            }
+                
             if (!destinationMember.ShouldMapMember(arg, MemberSide.Destination))
                 return true;
 
@@ -218,7 +235,8 @@ namespace Mapster.Adapters
             var members = classConverter.Members;
 
             var arguments = new List<Expression>();
-            arg.Context.NullChecks.UnionWith(members.Where(x => x.Getter != null).Select(x => (x.Getter, arg)));
+            // ReadyToCleanUp
+            // arg.Context.NullChecks.UnionWith(members.Where(x => x.Getter != null).Select(x => (x.Getter, arg)));
             foreach (var member in members)
             {
                 var parameterInfo = (ParameterInfo)member.DestinationMember.Info!;
@@ -230,17 +248,17 @@ namespace Mapster.Adapters
                 {
                     defaultConst = parameterInfo.IsOptional && parameterInfo.DefaultValue != null
                     ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
-                    : parameterInfo.ParameterType.CreateDefault();
+                    : parameterInfo.ParameterType.CreateDefault(arg);
                 }
                 catch (FormatException)
                 {
-                    defaultConst = parameterInfo.ParameterType.CreateDefault();
+                    defaultConst = parameterInfo.ParameterType.CreateDefault(arg);
                 }
 
 #else
                 defaultConst = parameterInfo.IsOptional && parameterInfo.DefaultValue != null
                     ? Expression.Constant(parameterInfo.DefaultValue, member.DestinationMember.Type)
-                    : parameterInfo.ParameterType.CreateDefault();
+                    : parameterInfo.ParameterType.CreateDefault(arg);
 #endif
                 
                 if (member.Getter == null)
@@ -248,7 +266,7 @@ namespace Mapster.Adapters
                     getter = defaultConst;
 
                     if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
-                        getter = TryRestoreRecordMember(member.DestinationMember,recordRestorParamModel,destination) ?? getter;
+                        getter = TryRestoreRecordMember(member.DestinationMember,recordRestorParamModel,destination, arg) ?? getter;
                 }
                 else
                 {
@@ -264,14 +282,15 @@ namespace Mapster.Adapters
                     }
                     else
                        getter = member.Getter
-                            .ApplyNullPropagationFromCtor(CreateAdaptExpressionCore(member.Getter, member.DestinationMember.Type, arg, member), arg);
+                            .ApplyNullPropagationFromCtor(CreateAdaptExpressionCore(member.Getter, member.DestinationMember.Type, arg, member,mapTypeCtor:MapType.CtorParam), arg, member);
+
                     
 
                     if (member.Ignore.Condition != null)
                     {
                         var body = member.Ignore.IsChildPath
                             ? member.Ignore.Condition.Body
-                            : member.Ignore.Condition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault());
+                            : member.Ignore.Condition.Apply(arg.MapType, source, arg.DestinationType.CreateDefault(arg));
                         var condition = ExpressionEx.Not(body);
                         getter = Expression.Condition(condition, getter, defaultConst);
                     }
@@ -281,8 +300,9 @@ namespace Mapster.Adapters
                         getter = defaultConst;
 
                         if (arg.MapType == MapType.MapToTarget && arg.DestinationType.IsRecordType())
-                           getter = TryRestoreRecordMember(member.DestinationMember, recordRestorParamModel, destination) ?? getter;
+                           getter = TryRestoreRecordMember(member.DestinationMember, recordRestorParamModel, destination, arg) ?? getter;
                     }
+
                 }
                 arguments.Add(getter);
             }
@@ -335,7 +355,7 @@ namespace Mapster.Adapters
             };
         }
 
-        protected Expression? TryRestoreRecordMember(IMemberModelEx member, ClassModel? restorRecordModel, Expression? destination)
+        protected Expression? TryRestoreRecordMember(IMemberModelEx member, ClassModel? restorRecordModel, Expression? destination, CompileArgument arg)
         {
             if (restorRecordModel != null && destination != null)
             {
@@ -345,7 +365,7 @@ namespace Mapster.Adapters
                 if (find != null)
                 {
                     var compareNull = Expression.Equal(destination, Expression.Constant(null, destination.Type));
-                    return Expression.Condition(compareNull, member.Type.CreateDefault(), Expression.MakeMemberAccess(destination, (MemberInfo)find.Info));
+                    return Expression.Condition(compareNull, member.Type.CreateDefault(arg), Expression.MakeMemberAccess(destination, (MemberInfo)find.Info));
                 }
 
             }

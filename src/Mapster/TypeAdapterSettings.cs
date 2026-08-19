@@ -134,17 +134,17 @@ namespace Mapster
         {
             get => Get(nameof(ShouldMapMember), () => new List<Func<IMemberModel, MemberSide, bool?>>());
         }
-        public List<Func<Expression, IMemberModel, CompileArgument, Expression?>> ValueAccessingStrategies
+        public List<Func<ResolverSourceInput, IMemberModel, CompileArgument, ResolverResult?>> ValueAccessingStrategies
         {
-            get => Get(nameof(ValueAccessingStrategies), () => new List<Func<Expression, IMemberModel, CompileArgument, Expression?>>());
+            get => Get(nameof(ValueAccessingStrategies), () => new List<Func<ResolverSourceInput, IMemberModel, CompileArgument, ResolverResult?>>());
         }
         public List<InvokerModel> Resolvers
         {
             get => Get(nameof(Resolvers), () => new List<InvokerModel>());
         }
-        public List<object> ExtraSources
+        public List<ExtraSourceModel> ExtraSources
         {
-            get => Get(nameof(ExtraSources), () => new List<object>());
+            get => Get(nameof(ExtraSources), () => new List<ExtraSourceModel>());
         }
         public List<Func<CompileArgument, LambdaExpression>> BeforeMappingFactories
         {
@@ -200,6 +200,17 @@ namespace Mapster
         public List<string> UseDestinationMembers
         {
             get => Get(nameof(UseDestinationMembers), () => new List<string>());
+        }
+
+        public Expression? CustomDefaultValue 
+        {
+            get => Get<Expression>(nameof(CustomDefaultValue));
+            set => Set(nameof(CustomDefaultValue), value);
+        }
+
+        public List<string> ReMapDestinationMembers
+        {
+            get => Get(nameof(ReMapDestinationMembers), () => new List<string>());
         }
 
         internal bool Compiled { get; set; }

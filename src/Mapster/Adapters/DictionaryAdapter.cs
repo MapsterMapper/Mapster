@@ -159,7 +159,7 @@ namespace Mapster.Adapters
             actions.Add(loop);
 
             if (label != null)
-                actions.Add(Expression.Label(label, arg.DestinationType.CreateDefault()));
+                actions.Add(Expression.Label(label, arg.DestinationType.CreateDefault(arg)));
 
             return shouldConvert
                 ? Expression.Block(new[] {(ParameterExpression)dict}, actions)

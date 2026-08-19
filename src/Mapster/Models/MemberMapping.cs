@@ -13,6 +13,7 @@ namespace Mapster.Models
         public ParameterExpression Source;
         public ParameterExpression? Destination;
         public bool UseDestinationValue;
+        public TypeAdapterSettings? OverrideSettings;
 
         public bool HasSettings()
         {

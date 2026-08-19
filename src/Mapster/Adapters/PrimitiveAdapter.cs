@@ -27,7 +27,7 @@ namespace Mapster.Adapters
 
                 if (destination == null)
                 {
-                    dest = arg.DestinationType.CreateDefault();
+                    dest = arg.DestinationType.CreateDefault(arg);
                 }
                 else
                     dest = destination;
@@ -56,7 +56,7 @@ namespace Mapster.Adapters
                 {
                     //src == null ? default(TDestination) : convert(src)
                     var compareNull = Expression.Equal(source, Expression.Constant(null, sourceType));
-                    convert = Expression.Condition(compareNull, destinationType.CreateDefault(), convert);
+                    convert = Expression.Condition(compareNull, destinationType.CreateDefault(arg), convert);
                 }
             }
 

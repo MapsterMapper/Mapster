@@ -253,8 +253,8 @@ namespace Mapster.Adapters
                 if (member.UseDestinationValue)
                     return null;
 
-                if (!arg.Settings.Resolvers.Any(r => r.DestinationMemberName == member.DestinationMember.Name) 
-                    && member.Getter is MemberExpression memberExp && contructorMembers.Contains(memberExp.Member))
+                if (!arg.Settings.Resolvers.Any(r => r.DestinationMemberName == member.DestinationMember.Name)
+                    && contructorMembers.Select(x => x.Name).Contains(member.DestinationMember.Name, new MapsterStringComparer()))
                     continue;
 
                 if (member.DestinationMember.SetterModifier == AccessModifier.None)
@@ -271,7 +271,7 @@ namespace Mapster.Adapters
                     && !member.DestinationMember.Type.IsCollection()
                     && member.Getter.Type.GetTypeInfo().GetCustomAttributesData().All(attr => attr.GetAttributeType().Name != "ComplexTypeAttribute"))
                 {
-                    value = member.Getter.NotNullReturn(value);
+                    value = member.Getter.NotNullReturn(value,arg);
                 }
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, value);
                 lines.Add(bind);
@@ -282,7 +282,7 @@ namespace Mapster.Adapters
 
         static Expression CreateIncludeProjectionExpression(Expression source, CompileArgument arg)
         {
-            Expression body = Expression.Default(arg.DestinationType);
+            Expression body = arg.DestinationType.CreateDefault(arg);
             foreach (var tuple in arg.Settings.Includes)
             {
                 var itemTuple = tuple;

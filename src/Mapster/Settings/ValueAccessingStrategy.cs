@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Models;
 using Mapster.Utils;
-using ValueAccess = System.Func<System.Linq.Expressions.Expression, Mapster.Models.IMemberModel, Mapster.CompileArgument, System.Linq.Expressions.Expression?>;
+using ValueAccess = System.Func<Mapster.ResolverSourceInput, Mapster.Models.IMemberModel, Mapster.CompileArgument, Mapster.ResolverResult?>;
 
 namespace Mapster
 {
@@ -24,12 +24,14 @@ namespace Mapster
             CustomResolverForDictionary,
         };
 
-        private static Expression? CustomResolverFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static ResolverResult? CustomResolverFn(ResolverSourceInput srcInput, IMemberModel destinationMember, CompileArgument arg)
         {
+            var source = srcInput.Src;
             var config = source.Type == arg.SourceType ? arg.Settings : arg.Context.Config.GetMergedSettings(new TypeTuple(source.Type, arg.DestinationType),arg.MapType);
-            var resolvers = config.Resolvers;
+            var resolvers = srcInput.Settings != null ? srcInput.Settings.ApplyResolversOnly(config) : config.Resolvers;
             if (resolvers.Count == 0)
                 return null;
+            TypeAdapterSettings? customSettings = null;
 
             var invokes = new List<Tuple<Expression, Expression>>();
 
@@ -39,7 +41,10 @@ namespace Mapster
                 if (!destinationMember.Name.Equals(resolver.DestinationMemberName, StringComparison.InvariantCultureIgnoreCase))
                     continue;
 
-                var invoke = resolver.GetInvokingExpression(source, arg.MapType);
+                if(resolver.OvverideSettings != null && customSettings == null)
+                    customSettings = resolver.OvverideSettings;
+
+                var invoke = resolver.GetInvokingExpression(source, arg.MapType, customSettings != null);
                 var condition = resolver.GetConditionExpression(source, arg.MapType);
                 if (condition == null)
                 {
@@ -58,7 +63,7 @@ namespace Mapster
                     var type = invokes[0].Item2.Type;
                     if (destinationMember.Type.CanBeNull() && !type.CanBeNull())
                         type = typeof(Nullable<>).MakeGenericType(type);
-                    getter = type.CreateDefault();
+                    getter = type.CreateDefault(arg);
                 }
                 foreach (var invoke in invokes)
                 {
@@ -66,23 +71,33 @@ namespace Mapster
                 }
             }
 
-            return getter;
+            if (getter == null)
+                return null;
+            return new ResolverResult(getter,(OverrideTypesSettings?)customSettings);
         }
 
-        private static Expression? PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static ResolverResult? PropertyOrFieldFn(ResolverSourceInput srcInput, IMemberModel destinationMember, CompileArgument arg)
         {
+            var source = srcInput.Src;
             var members = source.Type.GetFieldsAndProperties(true);
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
-            return members
+            var resolver = members
                 .Where(member => member.ShouldMapMember(arg, MemberSide.Source))
                 .Where(member => member.GetMemberName(MemberSide.Source, arg.Settings.GetMemberNames, strategy.SourceMemberNameConverter, arg) == destinationMemberName)
                 .Select(member => member.GetExpression(source))
                 .FirstOrDefault();
+
+            if (resolver == null)
+                return null;
+            else
+                return new ResolverResult(resolver, srcInput.Settings != null ? srcInput.Settings.CloneOnlySkipSettings() : null);
+
         }
 
-        private static Expression? GetMethodFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static ResolverResult? GetMethodFn(ResolverSourceInput srcInput, IMemberModel destinationMember, CompileArgument arg)
         {
+            var source = srcInput.Src;
             if (arg.MapType == MapType.Projection)
                 return null;
             var strategy = arg.Settings.NameMatchingStrategy;
@@ -92,14 +107,18 @@ namespace Mapster
                 return null;
             if (getMethod.Name == "GetType" && destinationMember.Type != typeof(Type))
                 return null;
-            return Expression.Call(source, getMethod);
+            return new ResolverResult( Expression.Call(source, getMethod),null);
         }
 
-        private static Expression? FlattenMemberFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static ResolverResult? FlattenMemberFn(ResolverSourceInput srcInput, IMemberModel destinationMember, CompileArgument arg)
         {
+            var source = srcInput.Src;
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
-            return GetDeepFlattening(source, destinationMemberName, arg);
+            var resolver = GetDeepFlattening(source, destinationMemberName, arg);
+            if(resolver == null)
+                return null;
+            return new ResolverResult(resolver, null);
         }
 
         private static Expression? GetDeepFlattening(Expression source, string propertyName, CompileArgument arg)
@@ -177,8 +196,9 @@ namespace Mapster
             }
         }
 
-        private static Expression? DictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static ResolverResult? DictionaryFn(ResolverSourceInput srcInput, IMemberModel destinationMember, CompileArgument arg)
         {
+            var source = srcInput.Src;
             var dictType = source.Type.GetDictionaryType();
             if (dictType == null)
                 return null;
@@ -192,19 +212,22 @@ namespace Mapster
                 var method = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.FlexibleGet) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
                     .MakeGenericMethod(args[1]);
-                return Expression.Call(method, source.To(dictType), key, ExpressionEx.GetNameConverterExpression(strategy.SourceMemberNameConverter));
+                var resolver = Expression.Call(method, source.To(dictType), key, ExpressionEx.GetNameConverterExpression(strategy.SourceMemberNameConverter));
+                return new ResolverResult(resolver);
             }
             else
             {
                 var method = typeof(MapsterHelper).GetMethods()
                     .First(m => m.Name == nameof(MapsterHelper.GetValueOrDefault) && m.GetParameters()[0].ParameterType.Name == dictType.Name)
                     .MakeGenericMethod(args);
-                return Expression.Call(method, source.To(dictType), key);
+                var resolver =  Expression.Call(method, source.To(dictType), key);
+                return new ResolverResult(resolver);
             }
         }
 
-        private static Expression? CustomResolverForDictionaryFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
+        private static ResolverResult? CustomResolverForDictionaryFn(ResolverSourceInput srcInput, IMemberModel destinationMember, CompileArgument arg)
         {
+            var source = srcInput.Src;
             var config = arg.Settings;
             var resolvers = config.Resolvers;
             if (resolvers.Count == 0)
@@ -235,8 +258,22 @@ namespace Mapster
                     break;
             }
             if (lastCondition != null)
-                getter = Expression.Condition(lastCondition, getter!, getter!.Type.CreateDefault());
-            return getter;
+                getter = Expression.Condition(lastCondition, getter!, getter!.Type.CreateDefault(arg));
+            return new ResolverResult(getter);
         }
     }
+
+    public record ResolverResult(Expression Exp , OverrideTypesSettings? Settings = null);
+    public record ResolverSourceInput(Expression Src, OverrideTypesSettings? Settings = null)
+    {
+        public static explicit operator ResolverSourceInput(Expression src) => new ResolverSourceInput(src);
+        public static explicit operator ResolverSourceInput(ParameterExpression src) => new ResolverSourceInput(src);
+        public static ResolverSourceInput ConvertFrom(ExtraSourceModel extraSource,Expression source, CompileArgument arg)
+        {
+            if (extraSource.Src is LambdaExpression lambda)
+                return new ResolverSourceInput(lambda.ApplyExtraSources(arg.MapType, source), extraSource.Settings);
+            else
+                return new ResolverSourceInput(ExpressionEx.PropertyOrFieldPath(source, (string)extraSource.Src), extraSource.Settings);
+        }
+    };
 }

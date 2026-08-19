@@ -413,6 +413,15 @@ namespace Mapster
             return this;
         }
 
+        public TypeAdapterSetter<TDestination> DefaultValue(Expression<Func<TDestination, TDestination>> defaultValue)
+        {
+            this.CheckCompiled();
+
+            Settings.CustomDefaultValue = defaultValue.Body;
+            
+            return this;
+        }
+
         public TypeAdapterSetter<TDestination> Map<TDestinationMember, TSourceMember>(
             Expression<Func<TDestination, TDestinationMember>> member,
             Expression<Func<TSourceMember>> source)
@@ -422,7 +431,7 @@ namespace Mapster
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
             if (member.IsIdentity())
             {
-                Settings.ExtraSources.Add(invoker);
+                Settings.ExtraSources.Add((ExtraSourceModel)invoker);
                 return this;
             }
 
@@ -443,7 +452,7 @@ namespace Mapster
 
             if (destinationMember.IsIdentity())
             {
-                Settings.ExtraSources.Add(sourceMemberName);
+                Settings.ExtraSources.Add((ExtraSourceModel)sourceMemberName);
                 return this;
             }
 
@@ -628,6 +637,81 @@ namespace Mapster
         }
 
         #endregion
+                
+        public TypeAdapterSetter<TSource, TDestination> MapUsing<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TSourceMember>> source,
+            Action<OverrideTypesSetter<TSourceMember, TDestinationMember>>? configAction = null)
+        {
+            this.CheckCompiled();
+
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(TSource)));
+            TypeAdapterSettings? overrideSettings = null;
+
+            if (configAction != null)
+            {
+                var Tempsetter = new OverrideTypesSetter<TSourceMember, TDestinationMember>(this.Config);
+                configAction(Tempsetter);
+
+                overrideSettings = Tempsetter.Settings;
+            }
+
+            if (member.IsIdentity())
+            {
+                Settings.ExtraSources.Add(new ExtraSourceModel(invoker, (OverrideTypesSettings?)overrideSettings));
+                return this;
+            }
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = member.GetMemberPath()!,
+                Invoker = invoker,
+                Condition = null,
+                OvverideSettings = overrideSettings
+            });
+            return this;
+        }
+
+        public TypeAdapterSetter<TSource, TDestination> ReMap<TDestinationMember, TSourceMember>(
+            Expression<Func<TDestination, TDestinationMember>> member,
+            Expression<Func<TSource, TSourceMember>> source,
+            bool SkipDestinationTransforms = false)
+        {
+            this.CheckCompiled();
+
+            
+
+            var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof(TSource)));
+            TypeAdapterSettings? overrideSettings = null;
+                        
+            var Tempsetter = new OverrideTypesSetter<TSourceMember, TDestinationMember>(this.Config);
+            overrideSettings = Tempsetter.Settings;
+                            
+
+            if (SkipDestinationTransforms)
+                Tempsetter.SkipDestinationTransforms();
+
+            if (member.IsIdentity())
+            {
+                Tempsetter._Settings.ReMapExtraSource = true;
+
+                Settings.ExtraSources.Add(new ExtraSourceModel(invoker, (OverrideTypesSettings?)overrideSettings));
+                return this;
+            }
+
+            this.Settings.ReMapDestinationMembers.Add(member.GetMemberPath()!);
+
+            Settings.Resolvers.Add(new InvokerModel
+            {
+                DestinationMemberName = member.GetMemberPath()!,
+                Invoker = invoker,
+                Condition = null,
+                OvverideSettings = overrideSettings
+            });
+            return this;
+        }
+
+
 
         public TypeAdapterSetter<TSource, TDestination> IgnoreIf(
             Expression<Func<TSource, TDestination, bool>> condition,
@@ -665,7 +749,7 @@ namespace Mapster
             var sourceName = source.GetMemberPath(noError: true);
             if (member.IsIdentity())
             {
-                Settings.ExtraSources.Add((object?)sourceName ?? source);
+                Settings.ExtraSources.Add(new ExtraSourceModel((object?)sourceName ?? source));
                 return this;
             }
 

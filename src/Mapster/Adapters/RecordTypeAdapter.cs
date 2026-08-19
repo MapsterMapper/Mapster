@@ -98,7 +98,7 @@ namespace Mapster.Adapters
                         }
                         var destinationCompareNull = Expression.Equal(destination, Expression.Constant(null, destination.Type));
                         var sourceCondition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
-                        var destinationCanbeNull = Expression.Condition(destinationCompareNull, member.DestinationMember.Type.CreateDefault(), member.DestinationMember.GetExpression(destination));
+                        var destinationCanbeNull = Expression.Condition(destinationCompareNull, member.DestinationMember.Type.CreateDefault(arg), member.DestinationMember.GetExpression(destination));
                         adapt = Expression.Condition(sourceCondition, adapt, destinationCanbeNull);
                     }
                 }
@@ -134,7 +134,7 @@ namespace Mapster.Adapters
                     && !member.DestinationMember.Type.IsCollection()
                     && member.Getter.Type.GetTypeInfo().GetCustomAttributesData().All(attr => attr.GetAttributeType().Name != "ComplexTypeAttribute"))
                 {
-                    adapt = member.Getter.NotNullReturn(adapt);
+                    adapt = member.Getter.NotNullReturn(adapt,arg);
                 }
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, adapt);
                 lines.Add(bind);
