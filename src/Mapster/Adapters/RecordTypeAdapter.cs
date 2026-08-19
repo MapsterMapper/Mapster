@@ -103,6 +103,28 @@ namespace Mapster.Adapters
                     }
                 }
 
+                // IgnoreIf(...) support — unlike ClassAdapter (which drops the whole
+                // member statement into an `if (!condition) { ... }` block), record
+                // members are bound inline inside a MemberInit, so the condition is
+                // expressed as a ternary: keep the computed value when the condition
+                // is false, otherwise fall back to whatever the member should be left
+                // as (the existing destination value for MapToTarget, or the type's
+                // default value when constructing a brand-new instance).
+                if (arg.MapType != MapType.Projection && member.Ignore.Condition != null)
+                {
+                    var conditionDestination = destination ?? arg.DestinationType.CreateDefault();
+                    var conditionBody = member.Ignore.IsChildPath
+                        ? member.Ignore.Condition.Body
+                        : member.Ignore.Condition.Apply(arg.MapType, source, conditionDestination);
+                    var notIgnored = ExpressionEx.Not(conditionBody);
+
+                    var fallback = arg.MapType == MapType.MapToTarget && destination != null
+                        ? member.DestinationMember.GetExpression(destination)
+                        : member.DestinationMember.Type.CreateDefault();
+
+                    adapt = Expression.Condition(notIgnored, adapt, fallback);
+                }
+
                 //special null property check for projection
                 //if we don't set null to property, EF will create empty object
                 //except collection type & complex type which cannot be null

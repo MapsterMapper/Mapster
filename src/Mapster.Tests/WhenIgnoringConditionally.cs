@@ -172,6 +172,43 @@ namespace Mapster.Tests
             dto.Name.ShouldBeNull();
         }
 
+        // Regression test for https://github.com/MapsterMapper/Mapster/issues/1007
+        // Unlike SimpleRecord above (which maps every member through the primary
+        // constructor), NativeRecord is a real C# `record` whose Name property is
+        // NOT part of the primary constructor — it's a plain settable auto-property.
+        // Members mapped that way go through RecordTypeAdapter.RecordInlineExpression,
+        // a separate code path from constructor-argument mapping, which used to
+        // ignore member.Ignore.Condition entirely.
+        [TestMethod]
+        public void IgnoreIf_Apply_To_RecordType_Property_Not_In_Constructor_Map()
+        {
+            TypeAdapterConfig<SimplePoco, NativeRecord>.NewConfig()
+                .IgnoreIf((src, dest) => src.Name == "TestName", dest => dest.Name)
+                .Compile();
+
+            var poco = new SimplePoco { Id = 1, Name = "TestName" };
+            var dto = TypeAdapter.Adapt<SimplePoco, NativeRecord>(poco);
+
+            dto.Id.ShouldBe(1);
+            dto.Name.ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void IgnoreIf_Apply_To_RecordType_Property_Not_In_Constructor_MapToTarget()
+        {
+            TypeAdapterConfig<SimplePoco, NativeRecord>.NewConfig()
+                .IgnoreIf((src, dest) => src.Name == "TestName", dest => dest.Name)
+                .Compile();
+
+            var poco = new SimplePoco { Id = 1, Name = "TestName" };
+            var dto = new NativeRecord { Id = 999, Name = "DtoName" };
+
+            var result = TypeAdapter.Adapt(poco, dto);
+
+            result.Id.ShouldBe(1);
+            result.Name.ShouldBe("DtoName");
+        }
+
         #endregion
 
 
@@ -200,6 +237,12 @@ namespace Mapster.Tests
                 this.Id = id;
                 this.Name = name;
             }
+        }
+
+        public record NativeRecord
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
 
         #endregion

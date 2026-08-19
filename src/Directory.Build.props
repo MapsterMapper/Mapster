@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<!-- Properties related to build/pack -->
         <IsPackable>false</IsPackable>
-		<Version>10.1.0-pre02</Version>
+		<Version>10.0.12</Version>
 		<MapsterPluginsTFMs>netstandard2.0;net10.0;net9.0;net8.0</MapsterPluginsTFMs>
 		<MapsterTFMs>netstandard2.0;net10.0;net9.0;net8.0</MapsterTFMs>
 		<MapsterEFCoreTFMs>net10.0;net9.0;net8.0</MapsterEFCoreTFMs>
