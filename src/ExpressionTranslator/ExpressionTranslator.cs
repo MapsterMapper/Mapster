@@ -56,6 +56,15 @@ namespace ExpressionDebugger
                 _indentLevel++;
         }
 
+        private bool IsGeneratedTypeInternal()
+        {
+            if (Definitions == null)
+                return false;
+
+            return Definitions.IsInternal ||
+                   Definitions.Implements?.Any(it => !it.GetTypeInfo().IsVisible) == true;
+        }
+
         public static ExpressionTranslator Create(Expression node, ExpressionDefinitions? definitions = null)
         {
             var translator = new ExpressionTranslator(definitions);
@@ -1201,7 +1210,7 @@ namespace ExpressionDebugger
                 if (type == LambdaType.PublicLambda)
                 {
                     var name = methodName ?? "Main";
-                    if (!isInternal)
+                    if (!isInternal && !IsGeneratedTypeInternal())
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
                     WriteModifierNextLine(isInternal ? "internal" : "public");
@@ -1235,7 +1244,7 @@ namespace ExpressionDebugger
                 var name = methodName ?? "Main";
                 if (type == LambdaType.PublicMethod || type == LambdaType.ExtensionMethod)
                 {
-                    if (!isInternal)
+                    if (!isInternal && !IsGeneratedTypeInternal())
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
                     WriteModifierNextLine(isInternal ? "internal" : "public");
@@ -1891,10 +1900,7 @@ namespace ExpressionDebugger
                         Indent();
                     }
 
-                    var isInternal = Definitions.IsInternal;
-                    if (!isInternal)
-                        isInternal = Definitions.Implements?.Any(it =>
-                            !it.GetTypeInfo().IsInterface && !it.GetTypeInfo().IsPublic) ?? false;
+                    var isInternal = IsGeneratedTypeInternal();
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     Write("partial ", Definitions.IsRecordType ? "record " : "class ", Definitions.TypeName);
                     if (Definitions.IsRecordType && ctorParams?.Count > 0)
