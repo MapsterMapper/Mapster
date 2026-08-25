@@ -1,10 +1,4 @@
-﻿using CommandLine;
-using ExpressionDebugger;
-using ExpressionDebugger.Helpers;
-using ExpressionDebugger.Helpers.GeneratedAttributes;
-using Mapster.Models;
-using Mapster.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +6,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
+using CommandLine;
+using ExpressionDebugger;
+using Mapster.Models;
+using Mapster.Utils;
 
 namespace Mapster.Tool
 {
@@ -93,14 +91,6 @@ namespace Mapster.Tool
             config.SelfContainedCodeGeneration = true;
             config.Scan(assembly);
 
-            var generatedAtrr = new List<IGeneratedAttribute>();
-
-            if (opt.CreateHelpers)
-                generatedAtrr.Add(new MapsterToolGeneratedMapperAttribute(
-                    opt.HelpersNamespace ?? Path.GetFileNameWithoutExtension(opt.Assembly)
-                    ));
-            
-
             foreach (var type in assembly.GetLoadableTypes())
             {
                 if (!type.IsInterface)
@@ -119,10 +109,7 @@ namespace Mapster.Tool
                     TypeName = attr.Name ?? GetImplName(GetCodeFriendlyTypeName(type)),
                     IsInternal = attr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
-                    GeneratedAttributes = new(generatedAtrr)
                 };
-
-                bool? _isForceInternal = definitions.IsInternal ? true : null;
 
                 var path = GetOutput(opt.Output, segments, definitions.TypeName);
                 if (opt.SkipExistingFiles && File.Exists(path))
@@ -137,9 +124,7 @@ namespace Mapster.Tool
                 var interfaces = type.GetAllInterfaces();
                 foreach (var @interface in interfaces)
                 {
-                    foreach (var prop in @interface.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                .Where(x => x.IsGetterPublicOrInternal())
-                            )
+                    foreach (var prop in @interface.GetProperties())
                     {
                         if (!prop.PropertyType.IsGenericType)
                             continue;
@@ -153,21 +138,17 @@ namespace Mapster.Tool
                         var funcArgs = propArgs.GetGenericArguments();
                         var tuple = new TypeTuple(funcArgs[0], funcArgs[1]);
                         var expr = config.CreateMapExpression(tuple, MapType.Projection);
-                        translator.VisitLambdaForGenerateMappers(
+                        translator.VisitLambda(
                             expr,
                             ExpressionTranslator.LambdaType.PublicLambda,
-                            @interface,
-                            prop.Name,
-                            _isForceInternal ?? (!prop.GetMethod?.IsPublic ?? false)
+                            prop.Name
                         );
                     }
                 }
 
                 foreach (var @interface in interfaces)
                 {
-                    foreach (var method in @interface.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                .Where(x => x.IsPublicOrInternal())
-                            )
+                    foreach (var method in @interface.GetMethods())
                     {
                         if (method.IsGenericMethod)
                             continue;
@@ -181,12 +162,10 @@ namespace Mapster.Tool
                             tuple,
                             methodArgs.Length == 1 ? MapType.Map : MapType.MapToTarget
                         );
-                        translator.VisitLambdaForGenerateMappers(
+                        translator.VisitLambda(
                             expr,
                             ExpressionTranslator.LambdaType.PublicMethod,
-                            @interface,
-                            method.Name,
-                            _isForceInternal ?? !method.IsPublic
+                            method.Name
                         );
                     }
                 }
@@ -195,12 +174,6 @@ namespace Mapster.Tool
                     ? $"#nullable enable{Environment.NewLine}{translator}"
                     : translator.ToString();
                 WriteFile(code, path);
-            }
-
-            
-            foreach (var item in generatedAtrr)
-            {
-                WriteFile(item.Declaration, GetOutput(opt.Output, null, item.FileName));
             }
         }
 
