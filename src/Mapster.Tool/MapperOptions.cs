@@ -28,6 +28,13 @@ namespace Mapster.Tool
         [Option('N', "nullableDirective", Required = false, HelpText = "Set true to add \"#nullable enable\" to the top of generated mapper files")]
         public bool GenerateNullableDirective { get; set; }
 
+        [Option('h', "helpersCreate", Required = false, HelpText = "Generate helpers features")]
+        public bool CreateHelpers { get; set; }
+
+        [Option('H', "helpersNamespace", Required = false, HelpText = "Specify additional namespace to generated helpers features")]
+        public string? HelpersNamespace { get; set; }
+               
+
         [Usage(ApplicationAlias = "dotnet mapster mapper")]
         public static IEnumerable<Example> Examples =>
             new List<Example>
