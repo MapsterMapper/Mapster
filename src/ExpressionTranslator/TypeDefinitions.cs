@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExpressionDebugger.Helpers.GeneratedAttributes;
+using System;
 using System.Collections.Generic;
 
 namespace ExpressionDebugger
@@ -12,6 +13,7 @@ namespace ExpressionDebugger
         public IEnumerable<Type>? Implements { get; set; }
         public bool PrintFullTypeName { get; set; }
         public bool IsRecordType { get; set; }
+        public HashSet<IGeneratedAttribute> GeneratedAttributes { get; set; } = new HashSet<IGeneratedAttribute>();
 
         /// <summary>
         /// Set to 2 to mark all properties as nullable

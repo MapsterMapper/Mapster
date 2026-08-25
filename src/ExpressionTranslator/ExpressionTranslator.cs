@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace ExpressionDebugger
 {
@@ -1268,6 +1269,88 @@ namespace ExpressionDebugger
             }
         }
 
+        public Expression VisitLambdaForGenerateMappers(LambdaExpression node, LambdaType type, Type InterfaceType, string? methodName = null,
+           bool isInternal = false)
+        {
+            VisitLambda(node, type, methodName, isInternal);
+
+            if (!isInternal)
+                isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
+                             node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+
+            if(!isInternal)
+                return node; // skip create interface implimentation if public only
+
+            if (type == LambdaType.PrivateLambda || type == LambdaType.PublicLambda)
+            {
+                _inlineCount++;
+                if (type == LambdaType.PublicLambda)
+                {
+                    var name = methodName != null ? $"{InterfaceType.FullName}.{methodName}" : "Main";
+                    WriteLine();
+                    var funcType = MakeDelegateType(node.ReturnType, node.Parameters.Select(it => it.Type).ToArray());
+                    var exprType = typeof(Expression<>).MakeGenericType(funcType);
+                    Write(Translate(exprType), " ", name, " => ");
+                }
+
+                IList<ParameterExpression> args;
+                if (node.Parameters.Count == 1)
+                {
+                    args = new List<ParameterExpression>();
+                    var arg = VisitParameter(node.Parameters[0]);
+                    args.Add((ParameterExpression)arg);
+                }
+                else
+                {
+                    args = VisitArguments("(", node.Parameters.ToList(), p => (ParameterExpression)VisitParameter(p),
+                        ")");
+                }
+
+                Write(" => ");
+                var body = VisitGroup(node.Body, ExpressionType.Quote);
+                if (type == LambdaType.PublicLambda)
+                    Write(";");
+                _inlineCount--;
+                return Expression.Lambda(body, node.Name, node.TailCall, args);
+            }
+            else
+            {
+                var name = methodName != null ? $"{InterfaceType.FullName}.{methodName}" : "Main";
+                if (type == LambdaType.PublicMethod || type == LambdaType.ExtensionMethod)
+                {
+                    if (!isInternal)
+                        isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
+                                     node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                    WriteLine();
+                    Methods[name] = node.Type;
+                }
+                else
+                {
+                    name = GetName(node, name);
+                    WriteModifierNextLine("private");
+                }
+
+                Write(Translate(node.ReturnType), " ", name);
+                var open = "(";
+                if (type == LambdaType.ExtensionMethod)
+                {
+                    if (Definitions?.IsStatic != true)
+                        throw new InvalidOperationException("Extension method requires static class");
+                    if (node.Parameters.Count == 0)
+                        throw new InvalidOperationException("Extension method requires at least 1 parameter");
+                    open = "(this ";
+                }
+
+                var args = VisitArguments(open, node.Parameters, VisitParameterDeclaration, ")");
+                Indent();
+                var body = VisitBody(node.Body, true);
+
+                Outdent();
+
+                return Expression.Lambda(body, name, node.TailCall, args);
+            }
+        }
+
         private HashSet<LambdaExpression>? _visitedLambda;
         private int _writerLevel;
 
@@ -1865,8 +1948,15 @@ namespace ExpressionDebugger
                             WriteNextLine("using ", ns, ";");
                         }
 
-                        WriteLine();
                     }
+
+                    foreach (var ns in Definitions.GeneratedAttributes.Select(x => x.NameSpace).Distinct())
+                    {
+                        WriteNextLine("using ", ns, ";");
+                    }
+
+                    if(_usings != null || Definitions.GeneratedAttributes.Count != 0)
+                        WriteLine();
 
                     // NOTE: type alias cannot solve all name conflicted case, user should use PrintFullTypeName
                     // keep logic here for compatibility
@@ -1889,6 +1979,11 @@ namespace ExpressionDebugger
                     {
                         WriteNextLine("namespace ", Definitions.Namespace);
                         Indent();
+                    }
+
+                    foreach (var gAttr in Definitions.GeneratedAttributes)
+                    {
+                        WriteNextLine(gAttr.Implimentation);
                     }
 
                     var isInternal = Definitions.IsInternal;
