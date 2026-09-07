@@ -490,7 +490,6 @@ namespace Mapster.Tool
                         new InvokerModel
                         {
                             DestinationMemberName = setting.TargetPropertyName ?? name,
-                            SourceMemberName = name,
                             Invoker = setting.MapFunc,
                         }
                     );
