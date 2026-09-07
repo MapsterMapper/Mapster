@@ -1,5 +1,4 @@
-﻿using CommandLine;
-using ExpressionDebugger;
+﻿using ExpressionDebugger;
 using ExpressionDebugger.Helpers;
 using ExpressionDebugger.Helpers.GeneratedAttributes;
 using Mapster.Models;
@@ -15,17 +14,9 @@ using System.Text;
 
 namespace Mapster.Tool
 {
-    class Program
+    internal static class Generators
     {
-        static void Main(string[] args)
-        {
-            Parser.Default
-                .ParseArguments<MapperOptions, ModelOptions, ExtensionOptions>(args)
-                .WithParsed<MapperOptions>(GenerateMappers)
-                .WithParsed<ModelOptions>(GenerateModels)
-                .WithParsed<ExtensionOptions>(GenerateExtensions);
-        }
-
+        
         private static string? GetSegments(string? ns, string? baseNs)
         {
             if (ns == null || string.IsNullOrEmpty(baseNs) || baseNs == ns)
@@ -66,7 +57,7 @@ namespace Mapster.Tool
             File.WriteAllText(path, code);
         }
 
-        private static void GenerateMappers(MapperOptions opt)
+        internal static void GenerateMappers(MapperOptions opt, List<string>? DebugMappers = null)
         {
             // We want loaded assemblies that we're scanning to be isolated from our currently
             // running assembly load context in order to avoid type/framework collisions between Mapster assemblies
@@ -194,7 +185,12 @@ namespace Mapster.Tool
                 var code = opt.GenerateNullableDirective
                     ? $"#nullable enable{Environment.NewLine}{translator}"
                     : translator.ToString();
-                WriteFile(code, path);
+
+                // Debug only mode - create mapper code, not print to file
+                if (DebugMappers != null)
+                    DebugMappers.Add(code);
+                else
+                    WriteFile(code, path);
             }
 
             
@@ -211,7 +207,7 @@ namespace Mapster.Tool
             return name + "Impl";
         }
 
-        private static void GenerateModels(ModelOptions opt)
+        internal static void GenerateModels(ModelOptions opt, List<string>? DebugModels = null)
         {
             var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
                 assemblyPath: Path.GetFullPath(opt.Assembly),
@@ -245,7 +241,7 @@ namespace Mapster.Tool
                 Console.WriteLine($"Processing: {type.FullName}");
                 foreach (var builder in builders)
                 {
-                    CreateModel(opt, type, builder);
+                    CreateModel(opt, type, builder, DebugModels);
                 }
             }
         }
@@ -261,7 +257,7 @@ namespace Mapster.Tool
                 : null;
         }
 
-        private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder)
+        private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder, List<string>? DebugModels)
         {
             var segments = GetSegments(type.Namespace, opt.BaseNamespace);
             var attr = builder.Attribute;
@@ -371,7 +367,12 @@ namespace Mapster.Tool
             var code = opt.GenerateNullableDirective
                 ? $"#nullable enable{Environment.NewLine}{translator}"
                 : translator.ToString();
-            WriteFile(code, path);
+
+            // Debug only mode - create model code, not print to file
+            if (DebugModels != null)
+                DebugModels.Add(code);
+            else
+                WriteFile(code, path);
 
             static Type getPropType(MemberInfo mem)
             {
@@ -501,7 +502,7 @@ namespace Mapster.Tool
             }
         }
 
-        private static void GenerateExtensions(ExtensionOptions opt)
+        internal static void GenerateExtensions(ExtensionOptions opt, List<string>? DebugExtentions = null)
         {
             var assembly = DeferredDependencyAssemblyLoadContext.LoadAssemblyFrom(
                 assemblyPath: Path.GetFullPath(opt.Assembly),
@@ -642,7 +643,12 @@ namespace Mapster.Tool
                 var code = opt.GenerateNullableDirective
                     ? $"#nullable enable{Environment.NewLine}{translator}"
                     : translator.ToString();
-                WriteFile(code, path);
+
+                // Debug only mode - create ExtensionMethods code, not print to file
+                if (DebugExtentions != null)
+                    DebugExtentions.Add(code);
+                else
+                    WriteFile(code, path);
             }
         }
 
