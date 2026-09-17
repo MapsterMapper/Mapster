@@ -22,6 +22,58 @@ public class WhenMappingWithExistingObjectAndInitProperties : TestBase
         userMapper.MapTo(user, dto);
         dto.Name.Should().Be(expected);
     }
+
+    /// <summary>
+    /// https://github.com/MapsterMapper/Mapster/issues/1017
+    /// </summary>
+    [Fact]
+    public void CreateDtoWithcustomResolver()
+    {
+        var mappers = new List<string>();
+
+        Generators.GenerateExtensions(ConfigHelpers.optExtentions, mappers);
+
+        var result = mappers.Where(x => x.Contains("User1017Dto AdaptToDto(this User1017")).FirstOrDefault();
+
+        result.Should().NotBeNullOrEmpty();
+        result.Contains("FullName = string.Format(\"{0} {1}\", p1.FirstName, p1.LastName)").Should().BeTrue();
+    }
+}
+
+
+
+public class User1017
+{
+    public int Id { get; set; }
+    public string Email { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int Age { get; set; }
+}
+
+public partial class User1017Dto
+{
+    public int Id { get; set; }
+    public string Email { get; set; }
+    public string FullName { get; set; }
+    public int Age { get; set; }
+}
+
+
+public class UserCodeGenConfig : ICodeGenerationRegister
+{
+    public void Register(CodeGenerationConfig config)
+    {
+        config.AdaptTo("[name]Dto", MapType.Map)
+            .ForType<User1017>(p =>
+            {
+                p.Ignore(s => s.FirstName);
+                p.Map(s => s.LastName, s => $"{s.FirstName} {s.LastName}", "FullName");
+            });
+
+        config.GenerateMapper("[name]Mapper")
+            .ForType<User1017>();
+    }
 }
 
 public class UserMappingRegister : IRegister
