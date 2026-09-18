@@ -14,6 +14,8 @@ namespace Mapster
         public HashSet<ParameterExpression> ExtraParameters { get; } = new();
         public HashSet<(Expression param, CompileArgument arg)> NullChecks { get; } = new();
 
+        internal AttributeMetadataCache AttributeMetadata { get; } = new();
+
         internal bool IsSubFunction()
         {
             return MaxDepth.HasValue || ExtraParameters.Count > 0;
