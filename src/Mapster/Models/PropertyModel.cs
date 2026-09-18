@@ -8,9 +8,16 @@ namespace Mapster.Models
     public class PropertyModel : IMemberModelEx
     {
         private readonly PropertyInfo _propertyInfo;
+        private readonly AttributeMetadataCache? _attributeMetadata;
         public PropertyModel(PropertyInfo propertyInfo)
         {
             _propertyInfo = propertyInfo;
+        }
+
+        internal PropertyModel(PropertyInfo propertyInfo, AttributeMetadataCache? attributeMetadata)
+            : this(propertyInfo)
+        {
+            _attributeMetadata = attributeMetadata;
         }
 
         public Type Type => _propertyInfo.PropertyType;
@@ -48,7 +55,7 @@ namespace Mapster.Models
         }
         public IEnumerable<CustomAttributeData> GetCustomAttributesData()
         {
-            return _propertyInfo.GetCustomAttributesData();
+            return _attributeMetadata?.Get(_propertyInfo) ?? _propertyInfo.GetCustomAttributesData();
         }
     }
 }

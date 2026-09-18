@@ -71,7 +71,8 @@ namespace Mapster
 
         private static Expression? PropertyOrFieldFn(Expression source, IMemberModel destinationMember, CompileArgument arg)
         {
-            var members = source.Type.GetFieldsAndProperties(true);
+            // Repeated source scans create fresh wrappers; share metadata, not mapping decisions.
+            var members = source.Type.GetFieldsAndProperties(true, arg.Context.AttributeMetadata);
             var strategy = arg.Settings.NameMatchingStrategy;
             var destinationMemberName = destinationMember.GetMemberName(MemberSide.Destination, arg.Settings.GetMemberNames, strategy.DestinationMemberNameConverter, arg);
             return members

@@ -8,9 +8,16 @@ namespace Mapster.Models
     public class FieldModel : IMemberModelEx
     {
         private readonly FieldInfo _fieldInfo;
+        private readonly AttributeMetadataCache? _attributeMetadata;
         public FieldModel(FieldInfo fieldInfo)
         {
             _fieldInfo = fieldInfo;
+        }
+
+        internal FieldModel(FieldInfo fieldInfo, AttributeMetadataCache? attributeMetadata)
+            : this(fieldInfo)
+        {
+            _attributeMetadata = attributeMetadata;
         }
 
         public Type Type => _fieldInfo.FieldType;
@@ -33,7 +40,7 @@ namespace Mapster.Models
         }
         public IEnumerable<CustomAttributeData> GetCustomAttributesData()
         {
-            return _fieldInfo.GetCustomAttributesData();
+            return _attributeMetadata?.Get(_fieldInfo) ?? _fieldInfo.GetCustomAttributesData();
         }
     }
 }
