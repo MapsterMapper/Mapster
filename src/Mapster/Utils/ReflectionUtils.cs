@@ -99,16 +99,18 @@ namespace Mapster
 
         public static IEnumerable<T> DropHiddenMembers<T>(this IEnumerable<T> allMembers, ICollection<MemberInfo> currentTypeMembers) where T : MemberInfo
         {
-            var compareMemberNames = LinqCompat.IntersectBy(
-                allMembers,
-                currentTypeMembers.Select(x => x.Name),
-                x => x.Name).Select(x => x.Name);
+            var firstMembersByName = new Dictionary<string, MemberInfo>(StringComparer.Ordinal);
+            foreach (var member in currentTypeMembers)
+            {
+                if (!firstMembersByName.ContainsKey(member.Name))
+                    firstMembersByName.Add(member.Name, member);
+            }
 
             foreach (var member in allMembers)
             {
-                if (compareMemberNames.Contains(member.Name))
+                if (firstMembersByName.TryGetValue(member.Name, out var currentMember))
                 {
-                    if (currentTypeMembers.First(x => x.Name == member.Name).MetadataToken == member.MetadataToken)
+                    if (currentMember.MetadataToken == member.MetadataToken)
                         yield return member;
                 }
                 else
