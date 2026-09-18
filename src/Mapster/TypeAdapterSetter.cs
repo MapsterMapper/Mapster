@@ -942,6 +942,26 @@ namespace Mapster
 
         }
 
+        public TypeAdapterSetter<TSource, TDestination> InheritsLazy<TBaseSource, TBaseDestination>()
+        {
+            this.CheckCompiled();
+
+            Type baseSourceType = typeof(TBaseSource);
+            Type baseDestinationType = typeof(TBaseDestination);
+
+            if (!baseSourceType.GetTypeInfo().IsAssignableFrom(typeof(TSource).GetTypeInfo()))
+                throw new InvalidCastException("In order to use inherits, TSource must be inherited from TBaseSource.");
+
+            if (!baseDestinationType.GetTypeInfo().IsAssignableFrom(typeof(TDestination).GetTypeInfo()))
+                throw new InvalidCastException("In order to use inherits, TDestination must be inherited from TBaseDestination.");
+
+            Settings.InheritsTypeTuples.Add(new InheritsTypeTuple(baseSourceType, baseDestinationType));
+
+
+            return this;
+        }
+
+
         public TypeAdapterSetter<TSource, TDestination> Fork(Action<TypeAdapterConfig> action)
         {
             this.CheckCompiled();
