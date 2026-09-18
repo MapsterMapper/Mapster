@@ -99,10 +99,10 @@ namespace Mapster
 
         public static IEnumerable<T> DropHiddenMembers<T>(this IEnumerable<T> allMembers, ICollection<MemberInfo> currentTypeMembers) where T : MemberInfo
         {
-            var compareMemberNames = LinqCompat.IntersectBy(
+            var compareMemberNames = new HashSet<string>(LinqCompat.IntersectBy(
                 allMembers,
                 currentTypeMembers.Select(x => x.Name),
-                x => x.Name).Select(x => x.Name);
+                x => x.Name).Select(x => x.Name), StringComparer.Ordinal);
 
             foreach (var member in allMembers)
             {
