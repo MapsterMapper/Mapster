@@ -70,7 +70,7 @@ namespace Mapster
             return type.GetFieldsAndProperties().Any(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) != 0);
         }
 
-        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool includeNonPublic = false)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool includeNonPublic = false, AttributeMetadataCache? attributeMetadata = null)
         {
             var bindingFlags = BindingFlags.Instance | BindingFlags.Public;
             if (includeNonPublic)
@@ -90,13 +90,14 @@ namespace Mapster
 
             return GetPropertiesFunc(type).Concat(GetFieldsFunc(type));
 
+
             IEnumerable<IMemberModelEx> GetPropertiesFunc(Type t) => t.GetProperties(bindingFlags)
                 .Where(x => x.GetIndexParameters().Length == 0).DropHiddenMembers(firstMembersByName)
-                .Select(CreateModel);
+                .Select(x => new PropertyModel(x, attributeMetadata));
 
             IEnumerable<IMemberModelEx> GetFieldsFunc(Type t) =>
                 t.GetFields(bindingFlags).DropHiddenMembers(firstMembersByName)
-                .Select(CreateModel);
+                .Select(x => new FieldModel(x, attributeMetadata));
         }
 
         public static IEnumerable<T> DropHiddenMembers<T>(this IEnumerable<T> allMembers, ICollection<MemberInfo> currentTypeMembers) where T : MemberInfo
