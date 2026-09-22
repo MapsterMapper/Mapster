@@ -97,7 +97,7 @@ namespace Mapster
 
             IEnumerable<IMemberModelEx> GetFieldsFunc(Type t) =>
                 t.GetFields(bindingFlags).DropHiddenMembers(firstMembersByName)
-                .Select(x => new PropertyModel(x, attributeMetadata));
+                .Select(x => new FieldModel(x, attributeMetadata));
         }
 
         public static IEnumerable<T> DropHiddenMembers<T>(this IEnumerable<T> allMembers, ICollection<MemberInfo> currentTypeMembers) where T : MemberInfo
