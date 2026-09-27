@@ -51,6 +51,39 @@ namespace Mapster.Tests
                 .CompileProjection();
         }
 
+        [TestMethod]
+        public void TypesWithIncludeSettingsIgnoreNullValueCorrect()
+        {
+            TypeAdapterConfig<Vehicle, VehicleDto>.NewConfig()
+                .Include<Car, CarDto>()
+                .AfterMapping((src, dest) => dest.Name += "xxx")
+                .Compile();
+
+            TypeAdapterConfig<VehicleInsaider, VehicleDtoInsaider>.NewConfig()
+                 .IgnoreNullValues(true)
+                 .Compile();
+
+            var vehicleNull = new VehicleInsaider();
+            var vehicleDto = new VehicleDtoInsaider() { Vehicle = new CarDto { Id = 1, Name = "Car", Make = "Toyota", ChassiNumber = "XXX" } };
+
+
+            var update = vehicleNull.Adapt(vehicleDto);
+
+            update.Vehicle.ShouldBeOfType<CarDto>();
+            ((CarDto)update.Vehicle).Make.ShouldBe("Toyota");
+        }
+
+
+        public class VehicleInsaider
+        {
+            public Vehicle Vehicle { get; set; }
+        }
+
+        public class VehicleDtoInsaider
+        {
+            public VehicleDto Vehicle { get; set; }
+        }
+
         public abstract class PocoA801
         {
             public int Id { get; set; }
