@@ -266,16 +266,53 @@ namespace Mapster
     }
 
     public record ResolverResult(Expression Exp , OverrideTypesSettings? Settings = null);
-    public record ResolverSourceInput(Expression Src, OverrideTypesSettings? Settings = null, bool IsRemapMembers = false)
+    public record ResolverSourceInput
     {
+        private ResolverSourceInput(Expression src)
+        {
+            Src = src;
+        }
+
+        public ResolverSourceInput(string src, OverrideTypesSettings? settings = null, bool isRemapMembers = false)
+        {
+            _stringSource = src;
+            Settings = settings;
+            IsRemapMembers = isRemapMembers;
+        }
+
+        public ResolverSourceInput(LambdaExpression resolver, OverrideTypesSettings? settings = null, bool isRemapMembers = false)
+        {
+            _resolver = resolver;
+            Settings = settings;
+            IsRemapMembers = isRemapMembers;
+        }
+
+        private readonly string? _stringSource;
+        private readonly LambdaExpression? _resolver;
+
+        public Expression Src { get; private set; }
+        public OverrideTypesSettings? Settings { get; init; }
+        public bool IsRemapMembers { get; init; }
+
+        public static explicit operator ResolverSourceInput(string src) => new ResolverSourceInput(src);
         public static explicit operator ResolverSourceInput(Expression src) => new ResolverSourceInput(src);
         public static explicit operator ResolverSourceInput(ParameterExpression src) => new ResolverSourceInput(src);
-        public static ResolverSourceInput ConvertFrom(ExtraSourceModel extraSource,Expression source, CompileArgument arg)
+        //public static ResolverSourceInput ConvertFrom(ExtraSourceModel extraSource,Expression source, CompileArgument arg)
+        //{
+        //    if (extraSource.Src is LambdaExpression lambda)
+        //        return new ResolverSourceInput(lambda.ApplyExtraSources(arg.MapType, source), extraSource.Settings, extraSource.IsRemapMembers);
+        //    else
+        //        return new ResolverSourceInput(ExpressionEx.PropertyOrFieldPath(source, (string)extraSource.Src), extraSource.Settings, extraSource.IsRemapMembers);
+        //}
+
+        public ResolverSourceInput Activate (Expression source, CompileArgument arg)
         {
-            if (extraSource.Src is LambdaExpression lambda)
-                return new ResolverSourceInput(lambda.ApplyExtraSources(arg.MapType, source), extraSource.Settings, extraSource.IsRemapMembers);
-            else
-                return new ResolverSourceInput(ExpressionEx.PropertyOrFieldPath(source, (string)extraSource.Src), extraSource.Settings, extraSource.IsRemapMembers);
+            if (_resolver != null)
+                Src = _resolver.ApplyExtraSources(arg.MapType, source);
+            if(_stringSource != null)
+                Src = ExpressionEx.PropertyOrFieldPath(source, _stringSource);
+
+            return this;
         }
     };
 }

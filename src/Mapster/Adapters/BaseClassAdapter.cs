@@ -25,9 +25,9 @@ namespace Mapster.Adapters
             if (arg.Settings.IgnoreNonMapped == true)
                 IgnoreNonMapped(classModel,arg);
           
-            var sources = new List<ResolverSourceInput> {new ResolverSourceInput(source)};
+            var sources = new List<ResolverSourceInput> {(ResolverSourceInput)source};
             sources.AddRange(
-                arg.Settings.ExtraSources.Select(src => ResolverSourceInput.ConvertFrom(src,source,arg)));
+                arg.Settings.ExtraSources.Select(src => src.Activate(source, arg)));
             foreach (var destinationMember in destinationMembers)
             {
                 ProcessIgnores(arg, destinationMember, out var ignore);
