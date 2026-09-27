@@ -11,12 +11,16 @@ namespace Mapster.Models
     {
         private readonly PropertyInfo _propertyInfo;
         private readonly AttributeMetadataCache? _attributeMetadata;
+        private readonly CustomAttributeData[] _customAttributeData;
+
         public PropertyModel(PropertyInfo propertyInfo)
         {
             _propertyInfo = propertyInfo;
 
             IsRequired = propertyInfo.GetCustomAttributes()
                     .Any(y => y.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute");
+
+            _customAttributeData = _propertyInfo.GetCustomAttributesData().ToArray();
         }
 
         internal PropertyModel(PropertyInfo propertyInfo, AttributeMetadataCache? attributeMetadata)
@@ -63,7 +67,7 @@ namespace Mapster.Models
         }
         public IEnumerable<CustomAttributeData> GetCustomAttributesData()
         {
-            return _attributeMetadata?.Get(_propertyInfo) ?? _propertyInfo.GetCustomAttributesData();
+            return _customAttributeData;
         }
     }
 }

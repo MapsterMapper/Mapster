@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mapster.Utils;
@@ -9,10 +10,13 @@ namespace Mapster.Models
     public class ParameterModel : IMemberModelEx
     {
         private readonly ParameterInfo _parameterInfo;
+        private readonly CustomAttributeData[] _customAttributeData;
+
         public ParameterModel(ParameterInfo parameterInfo)
         {
             _parameterInfo = parameterInfo;
             IsRequired = !parameterInfo.IsOptional;
+            _customAttributeData = _parameterInfo.GetCustomAttributesData().ToArray();
         }
 
         public Type Type => _parameterInfo.ParameterType;
@@ -40,7 +44,7 @@ namespace Mapster.Models
         }
         public IEnumerable<CustomAttributeData> GetCustomAttributesData()
         {
-            return _parameterInfo.GetCustomAttributesData();
+            return _customAttributeData;
         }
     }
 }

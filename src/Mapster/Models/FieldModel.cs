@@ -10,9 +10,12 @@ namespace Mapster.Models
     {
         private readonly FieldInfo _fieldInfo;
         private readonly AttributeMetadataCache? _attributeMetadata;
+        private readonly CustomAttributeData[] _customAttributeData;
+
         public FieldModel(FieldInfo fieldInfo)
         {
             _fieldInfo = fieldInfo;
+            _customAttributeData = _fieldInfo.GetCustomAttributesData().ToArray();
         }
 
         internal FieldModel(FieldInfo fieldInfo, AttributeMetadataCache? attributeMetadata)
@@ -48,7 +51,7 @@ namespace Mapster.Models
         }
         public IEnumerable<CustomAttributeData> GetCustomAttributesData()
         {
-            return _attributeMetadata?.Get(_fieldInfo) ?? _fieldInfo.GetCustomAttributesData();
+            return _customAttributeData;
         }
     }
 }
