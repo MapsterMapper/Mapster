@@ -762,6 +762,10 @@ namespace Mapster
                 MapType = mapType,
                 Context = context,
                 Settings = setting,
+
+                Source = Expression.Parameter(tuple.Source,"p1"),
+                Destination = Expression.Parameter(tuple.Destination,"p2"),
+                Result = Expression.Parameter(tuple.Destination,"result")
             };
         }
 

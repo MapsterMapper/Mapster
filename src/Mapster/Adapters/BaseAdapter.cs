@@ -25,20 +25,20 @@ namespace Mapster.Adapters
 
         public LambdaExpression CreateAdaptFunc(CompileArgument arg)
         {
-            var p = Expression.Parameter(arg.SourceType);
-            var body = CreateExpressionBody(p, null, arg);
+            //var p = Expression.Parameter(arg.SourceType);
+            var body = CreateExpressionBody(arg.Source, null, arg);
             return Expression.Lambda(body,
-                    new[] {p}.Concat(arg.Context.ExtraParameters))
+                    new[] {arg.Source}.Concat(arg.Context.ExtraParameters))
                 .TrimParameters(1);
         }
 
         public LambdaExpression CreateAdaptToTargetFunc(CompileArgument arg)
         {
-            var p = Expression.Parameter(arg.SourceType);
-            var p2 = Expression.Parameter(arg.DestinationType);
-            var body = CreateExpressionBody(p, p2, arg);
+            //var p = Expression.Parameter(arg.SourceType);
+           // var p2 = Expression.Parameter(arg.DestinationType);
+            var body = CreateExpressionBody(arg.Source, arg.Destination, arg);
             return Expression.Lambda(body,
-                    new[] {p, p2}.Concat(arg.Context.ExtraParameters))
+                    new[] {arg.Source, arg.Destination}.Concat(arg.Context.ExtraParameters))
                 .TrimParameters(2);
         }
 
@@ -205,7 +205,7 @@ namespace Mapster.Adapters
                     }
 
                     //var result = new TDest();
-                    var result = Expression.Variable(arg.DestinationType, "result");
+                    var result = arg.Result; //Expression.Variable(arg.DestinationType, "result");
                     var assign = Expression.Assign(result, set);
                     var assignActions = new List<Expression>();
                     if (transform != source)
