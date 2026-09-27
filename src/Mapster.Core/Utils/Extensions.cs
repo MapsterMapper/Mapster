@@ -59,5 +59,19 @@ namespace Mapster.Utils
 
             return firstElement;
         }
+#if NETSTANDARD2_0
+
+        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> source, TKey key, TValue value )
+        {
+            if(!source.ContainsKey(key))
+            {
+                source[key] = value;
+                return true;
+            }
+
+            return false;
+        }
+
+#endif 
     }
 }

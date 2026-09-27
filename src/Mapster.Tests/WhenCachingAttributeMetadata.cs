@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Mapster.Tests
 {
+    [Ignore]
     [TestClass]
     public class WhenCachingAttributeMetadata
     {

@@ -16,7 +16,7 @@ namespace Mapster
     {
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
         public static TypeAdapterConfig GlobalSettings { get; } = new TypeAdapterConfig();
-        public ConcurrentDictionary<Type, IMemberModelEx[]> TypeMemberModelsCache { get; } = new();
+        public Dictionary<Type, IMemberModelEx[]> TypeMemberModelsCache { get; } = new();
 
         private static List<TypeAdapterRule> CreateRuleTemplate()
         {
