@@ -212,7 +212,6 @@ namespace Mapster.Tests
             //derivedConfig.MaxDepth.ShouldBe(5);
         }
 
-        [Ignore("Any concurent problems")]
         [TestMethod]
         public void Derived_Config_Doesnt_Share_Base_Dest_Config_Properties_If_Disabled()
         {
