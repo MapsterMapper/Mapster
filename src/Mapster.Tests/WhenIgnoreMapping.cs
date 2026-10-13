@@ -41,7 +41,6 @@ namespace Mapster.Tests
         {
             TypeAdapterConfig<Poco, Dto>.NewConfig()
                 .TwoWays()
-                .EnableNonPublicMembers(true)
                 .IgnoreMember((member, side) =>
                     member.GetCustomAttribute<JsonIgnoreAttribute>() != null && side == MemberSide.Destination);
 

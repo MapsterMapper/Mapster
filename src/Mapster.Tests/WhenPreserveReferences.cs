@@ -36,8 +36,6 @@ namespace Mapster.Tests
             var node2 = new LinkNode {Id = Guid.NewGuid()};
             node1.AttachRight(node2);
 
-            var s = node1.BuildAdapter().CreateMapExpression<LinkNode>();
-
             var another = TypeAdapter.Adapt<LinkNode>(node1);
             var another2 = another.Right;
             another.ShouldBeSameAs(another2.Left);
