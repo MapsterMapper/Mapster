@@ -96,7 +96,7 @@ namespace Mapster
             if (model is null)
             {
                 model = type.GetAllFieldsAndProperties(attributeMetadata).ToArray();
-                arg.Context.Config.TypeMemberModelsCache.Add(type, model);
+                arg.Context.Config.TypeMemberModelsCache[type] = model;
             }
 
             if (includeNonPublic)
