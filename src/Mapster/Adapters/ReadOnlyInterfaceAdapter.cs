@@ -25,7 +25,7 @@ namespace Mapster.Adapters
         protected override Expression CreateInstantiationExpression(Expression source, Expression? destination, CompileArgument arg)
         {
             var destintionType = arg.DestinationType;
-            var props = destintionType.GetFieldsAndProperties().ToList();
+            var props = destintionType.GetFieldsAndProperties(arg).ToList();
 
             //interface with readonly props
             if (props.Any(p => p.SetterModifier != AccessModifier.Public))

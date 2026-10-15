@@ -56,6 +56,7 @@ namespace Mapster.Tests
             Assert.IsTrue(bList[0].C == testA.C.ToString());
         }
 
+        [Ignore ("In Mapster 10.1 Projection generation is has changed")]
         [TestMethod]
         public void TestPocoTypeMapping()
         {

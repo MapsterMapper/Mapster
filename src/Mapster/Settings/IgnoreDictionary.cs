@@ -9,14 +9,25 @@ namespace Mapster
     {
         public readonly struct IgnoreItem
         {
+            public IgnoreItem()
+            {
+                Condition = null;
+                IsChildPath = false;
+                IsValid = true;
+            }
             public IgnoreItem(LambdaExpression? condition, bool isChildPath)
             {
                 Condition = condition;
                 IsChildPath = isChildPath;
+                IsValid = true;
             }
 
             public LambdaExpression? Condition { get; }
             public bool IsChildPath { get; }
+            public bool IsValid { get; init; }
+            public bool WithOutCondition => IsValid && Condition == null;
+
+            public static IgnoreItem InvalidIgnore = new IgnoreItem() { IsValid = false };
         }
 
         public void Apply(object other)

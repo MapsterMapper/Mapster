@@ -29,6 +29,8 @@ public class DirectParameterMemberFinder : ExpressionVisitor
     {
         if (node.Object is MemberExpression mem && _TargetParams.Contains(GetParametr(mem)))
             FoundMembers.Add(mem);
+        if (node.Object is ParameterExpression param && _TargetParams.Contains(GetParametr(param)))
+            FoundMembers.Add(param);
 
         foreach (var arg in node.Arguments)
         {
@@ -70,7 +72,7 @@ public class DirectParameterMemberFinder : ExpressionVisitor
     }
       
 
-    private Expression GetParametr(MemberExpression member)
+    private Expression GetParametr(Expression member)
     {
         Expression current = member;
 

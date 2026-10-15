@@ -2,10 +2,12 @@
 using Mapster.Utils;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Mapster
@@ -51,7 +53,7 @@ namespace Mapster
             return !type.GetTypeInfo().IsValueType || type.IsNullable();
         }
 
-        public static bool IsPoco(this Type type)
+        public static bool IsPoco(this Type type, IEnumerable<IMemberModelEx> members)
         {
             //not nullable
             if (type.IsNullable())
@@ -67,48 +69,119 @@ namespace Mapster
             if (type.IsClass && type.GetProperties().Count() != 0)
                 return true;
 
-            return type.GetFieldsAndProperties().Any(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) != 0);
+            return members.Any(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) != 0);
         }
 
-        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, bool includeNonPublic = false)
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, PreCompileArgument arg, bool includeNonPublic = false, AttributeMetadataCache? attributeMetadata = null)
         {
-            var bindingFlags = BindingFlags.Instance | BindingFlags.Public;
+           arg.TypeMemberModelsCache.TryGetValue(type, out var model);
+
+            if(model is null)
+            {
+                model = type.GetAllFieldsAndProperties(attributeMetadata).ToArray();
+                arg.TypeMemberModelsCache[type] = model;
+            }
+
+            if(includeNonPublic)
+                return model;
+
+            return model.Where(member => ((member.Info as MemberInfo)?.IsPublicPropertyOrField()).GetValueOrDefault());
+
+        }
+
+        public static IEnumerable<IMemberModelEx> GetFieldsAndProperties(this Type type, CompileArgument arg, bool includeNonPublic = false, AttributeMetadataCache? attributeMetadata = null)
+        {
+            arg.Context.Config.TypeMemberModelsCache.TryGetValue(type, out var model);
+
+            if (model is null)
+            {
+                model = type.GetAllFieldsAndProperties(attributeMetadata).ToArray();
+                arg.Context.Config.TypeMemberModelsCache[type] = model;
+            }
+
             if (includeNonPublic)
-                bindingFlags |= BindingFlags.NonPublic;
+                return model;
+
+            return model.Where(member => ((member.Info as MemberInfo)?.IsPublicPropertyOrField()).GetValueOrDefault());
+        }
+
+        private static IEnumerable<IMemberModelEx> GetAllFieldsAndProperties(this Type type, AttributeMetadataCache? attributeMetadata = null)
+        {
+            IEnumerable<MemberInfo> members = type.GetTypeInfo().IsInterface 
+                ? GetAllInterfaces(type).SelectMany(type => type.GetPropertiesOrFields())
+                : type.GetPropertiesOrFields();
 
             var currentTypeMembers = type.FindMembers(MemberTypes.Property | MemberTypes.Field,
                  BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                  (x, y) => true, type.FullName);
 
-            if (type.GetTypeInfo().IsInterface)
-            {
-                var allInterfaces = GetAllInterfaces(type);
-                return allInterfaces.SelectMany(x => GetPropertiesFunc(x, currentTypeMembers));
-            }
+            var firstMembersByName = CreateFirstMembersByName(currentTypeMembers);
 
-            return GetPropertiesFunc(type, currentTypeMembers).Concat(GetFieldsFunc(type, currentTypeMembers));
+            return GetPropertiesFunc(members).Concat(GetFieldsFunc(members));
 
-            IEnumerable<IMemberModelEx> GetPropertiesFunc(Type t, MemberInfo[] currentTypeMembers) => t.GetProperties(bindingFlags)
-                .Where(x => x.GetIndexParameters().Length == 0).DropHiddenMembers(currentTypeMembers)
-                .Select(CreateModel);
 
-            IEnumerable<IMemberModelEx> GetFieldsFunc(Type t, MemberInfo[] overlapMembers) =>
-                t.GetFields(bindingFlags).DropHiddenMembers(overlapMembers)
-                .Select(CreateModel);
+            IEnumerable<IMemberModelEx> GetPropertiesFunc(IEnumerable<MemberInfo> t) =>
+                t.OfType<PropertyInfo>()
+                .Where(x => x.GetIndexParameters().Length == 0).DropHiddenMembers(firstMembersByName)
+                .Select(x => new PropertyModel(x, attributeMetadata));
+
+            IEnumerable<IMemberModelEx> GetFieldsFunc(IEnumerable<MemberInfo> t) =>
+                t.OfType<FieldInfo>()
+                .DropHiddenMembers(firstMembersByName)
+                .Select(x => new FieldModel(x, attributeMetadata));
+        }
+
+        public static MemberInfo[] GetPropertiesOrFields(this Type type)
+        {
+            return type.FindMembers(MemberTypes.Property | MemberTypes.Field,
+                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                 (x, y) => true, true);
+        }
+
+        public static bool IsPublicPropertyOrField(this MemberInfo member)
+        {
+            if (member is PropertyInfo property)
+                return property.IsPublicProperty();
+            if (member is FieldInfo field)
+                return field.IsPublic;
+
+            return false;
+        } 
+        public static bool IsPublicProperty(this PropertyInfo property)
+        {
+            if (property.CanRead && property.GetMethod.IsPublic) return true;
+
+            if (property.CanWrite && property.SetMethod.IsPublic) return true;
+
+            return false;
         }
 
         public static IEnumerable<T> DropHiddenMembers<T>(this IEnumerable<T> allMembers, ICollection<MemberInfo> currentTypeMembers) where T : MemberInfo
         {
-            var compareMemberNames = LinqCompat.IntersectBy(
-                allMembers,
-                currentTypeMembers.Select(x => x.Name),
-                x => x.Name).Select(x => x.Name);
+            var firstMembersByName = CreateFirstMembersByName(currentTypeMembers);
+            foreach (var member in allMembers.DropHiddenMembers(firstMembersByName))
+                yield return member;
+        }
 
+        private static Dictionary<string, MemberInfo> CreateFirstMembersByName(ICollection<MemberInfo> currentTypeMembers)
+        {
+            var firstMembersByName = new Dictionary<string, MemberInfo>(StringComparer.Ordinal);
+            foreach (var member in currentTypeMembers)
+            {
+                if (!firstMembersByName.ContainsKey(member.Name))
+                    firstMembersByName.Add(member.Name, member);
+            }
+
+            return firstMembersByName;
+        }
+
+        private static IEnumerable<T> DropHiddenMembers<T>(this IEnumerable<T> allMembers, Dictionary<string, MemberInfo> firstMembersByName) where T : MemberInfo
+        {
             foreach (var member in allMembers)
             {
-                if (compareMemberNames.Contains(member.Name))
+                if (firstMembersByName.TryGetValue(member.Name, out var currentMember))
                 {
-                    if (currentTypeMembers.First(x => x.Name == member.Name).MetadataToken == member.MetadataToken)
+                    if (currentMember.MetadataToken == member.MetadataToken)
                         yield return member;
                 }
                 else
@@ -461,7 +534,7 @@ namespace Mapster
             return type.IsMapsterPrimitive() || type.IsRecordType();
         }
 
-        public static bool IsNotSelfCreation(this Type type)
+        public static bool IsNotSelfCreation(this Type type, IEnumerable<IMemberModelEx> members)
         {
             if (type.IsMapsterPrimitive())
                 return false;
@@ -473,7 +546,7 @@ namespace Mapster
                 return true;
             
 
-            return type.GetFieldsAndProperties().All(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) == 0);
+            return members.All(it => (it.SetterModifier & (AccessModifier.Public | AccessModifier.NonPublic)) == 0);
         }
 
         public static bool IsNotCustomConverterFactory(this CompileArgument arg, TypeAdapterRule? rule)

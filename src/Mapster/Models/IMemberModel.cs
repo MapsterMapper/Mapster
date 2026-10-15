@@ -9,6 +9,8 @@ namespace Mapster.Models
         Type Type { get; }
         string Name { get; }
         object? Info { get; }
+        public bool IsBackField { get; }
+        public bool IsRequired { get; }
         AccessModifier SetterModifier { get; }
         AccessModifier AccessModifier { get; }
 

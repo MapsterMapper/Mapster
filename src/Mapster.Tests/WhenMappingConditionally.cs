@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Shouldly;
+using static Mapster.Tests.WhenMappingConditionally;
 
 namespace Mapster.Tests
 {
@@ -88,7 +89,46 @@ namespace Mapster.Tests
             dto.Start.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void Map_Condition_Different_src()
+        {
+            TypeAdapterConfig<DiffPoco, DiffDto>.NewConfig()
+                .Map(dest => dest.Value, src => src.ValueInt, cond => cond.Checker == 1)
+                .Map(dest => dest.Value, src => src.ValueString, cond => cond.Checker == 2)
+                .Map(dest => dest.Value, src => src.ValueBool, cond => cond.Checker == 3)
+                .Map(dest => dest.Value, src => src.Checker);
+
+            var src1 = new DiffPoco { Checker = 1};
+            var src2 = new DiffPoco { Checker = 2 };
+            var src3 = new DiffPoco { Checker = 3 };
+
+            var result1 = src1.Adapt<DiffDto>();
+            var result2 = src2.Adapt<DiffDto>();
+            var result3 = src3.Adapt<DiffDto>();
+
+            result1.Value.ShouldBe("42");
+            result2.Value.ShouldBe("34");
+            result3.Value.ShouldBe("True");
+
+        }
+
+
         #region TestClasses
+
+        public class DiffPoco
+        {
+            public int Checker { get; set;  }
+            public int ValueInt { get; set; } = 42;
+            public string ValueString { get; set; } = "34";
+            public bool ValueBool { get; set; } = true;
+
+        }
+        public class DiffDto
+        {
+            public string Value { get; set; }
+
+        }
+
 
         public class SimplePoco
         {

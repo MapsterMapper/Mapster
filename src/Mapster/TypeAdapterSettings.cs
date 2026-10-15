@@ -134,17 +134,17 @@ namespace Mapster
         {
             get => Get(nameof(ShouldMapMember), () => new List<Func<IMemberModel, MemberSide, bool?>>());
         }
-        public List<Func<ResolverSourceInput, IMemberModel, CompileArgument, ResolverResult?>> ValueAccessingStrategies
+        public List<Func<ResolverSourceInput, IMemberModel, MemberMapping, CompileArgument, bool>> ValueAccessingStrategies
         {
-            get => Get(nameof(ValueAccessingStrategies), () => new List<Func<ResolverSourceInput, IMemberModel, CompileArgument, ResolverResult?>>());
+            get => Get(nameof(ValueAccessingStrategies), () => new List<Func<ResolverSourceInput, IMemberModel, MemberMapping, CompileArgument, bool>>());
         }
         public List<InvokerModel> Resolvers
         {
             get => Get(nameof(Resolvers), () => new List<InvokerModel>());
         }
-        public List<ExtraSourceModel> ExtraSources
+        public List<ResolverSourceInput> ExtraSources
         {
-            get => Get(nameof(ExtraSources), () => new List<ExtraSourceModel>());
+            get => Get(nameof(ExtraSources), () => new List<ResolverSourceInput>());
         }
         public List<Func<CompileArgument, LambdaExpression>> BeforeMappingFactories
         {

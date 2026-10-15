@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Contracts;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Shouldly;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Mapster.Tests
@@ -307,7 +308,66 @@ namespace Mapster.Tests
             result.ShouldBe(new List<string> { "1", "3", });
         }
 
+        [TestMethod]
+        public void WhenCollectionIsParamNullCheckIsWorking()
+        {
+            var config = new TypeAdapterConfig();
+            config.SelfContainedCodeGeneration = true;
+
+            bool IsCondition = true;
+
+            config
+                .NewConfig<Contract1006, ContractDTO1006>()
+                .Map(d => d.ContractMarks, s => s.ContractContractMarks.Select(ccm => ccm.ContractMark)
+                    .OrderBy(cm => cm.Name), _ => IsCondition);
+
+            config
+                .NewConfig<ContractMark1006, ContractMarkDTO1006>();
+
+            var src = new Contract1006();
+
+            var str = src.BuildAdapter(config).CreateMapExpression<ContractDTO1006>();
+
+            var result = src.Adapt<ContractDTO1006>(config);
+        }
+
         #region TestClass
+
+        public record ContractDTO1006
+        {
+            public int Id { get; init; }
+
+            public ContractMarkDTO1006[] ContractMarks { get; init; }
+        }
+
+        public record ContractMarkDTO1006
+        {
+            public int Id { get; init; }
+
+            public string Name { get; init; }
+        }
+
+
+        public class Contract1006
+        {
+            public int Id { get; set; }
+            public virtual ICollection<ContractContractMark1006> ContractContractMarks { get; set; }
+        }
+
+        public class ContractContractMark1006
+        {
+            public int ContractId { get; set; }
+            public int ContractMarkId { get; set; }
+            public virtual Contract1006 Contract { get; set; }
+            public virtual ContractMark1006 ContractMark { get; set; }
+        }
+
+        public class ContractMark1006
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
 
         [Flags]
         public enum CloneTestEnum

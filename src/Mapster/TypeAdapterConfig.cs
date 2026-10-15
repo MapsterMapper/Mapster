@@ -16,6 +16,7 @@ namespace Mapster
     {
         public static List<TypeAdapterRule> RulesTemplate { get; } = CreateRuleTemplate();
         public static TypeAdapterConfig GlobalSettings { get; } = new TypeAdapterConfig();
+        public Dictionary<Type, IMemberModelEx[]> TypeMemberModelsCache { get; } = new();
 
         private static List<TypeAdapterRule> CreateRuleTemplate()
         {
@@ -24,7 +25,7 @@ namespace Mapster
                 new PrimitiveAdapter().CreateRule(),    //-210
                 new ClassAdapter().CreateRule(),        //-200
                 new NotSelfCreationAdapter().CreateRule(), //-150
-                new RecordTypeAdapter().CreateRule(),   //-149
+                new RecordTypeAdapter2().CreateRule(),   //-149
                 new ReadOnlyInterfaceAdapter().CreateRule(), // -148
                 new CollectionAdapter().CreateRule(),   //-125
                 new DictionaryAdapter().CreateRule(),   //-124
@@ -411,6 +412,7 @@ namespace Mapster
             }
             finally
             {
+                context.AttributeMetadata.Complete();
                 if (fork != null)
                     context.Configs.Pop();
                 context.Running.Remove(tuple);
@@ -684,6 +686,8 @@ namespace Mapster
                 DestinationType = tuple.Destination,
                 MapType = mapType,
                 ExplicitMapping = RuleMap.ContainsKey(tuple),
+                TypeMemberModelsCache = this.TypeMemberModelsCache
+
             };
 
             //auto add setting if there is attr setting
@@ -758,6 +762,10 @@ namespace Mapster
                 MapType = mapType,
                 Context = context,
                 Settings = setting,
+
+                Source = Expression.Parameter(tuple.Source,"p1"),
+                Destination = Expression.Parameter(tuple.Destination,"p2"),
+                Result = Expression.Parameter(tuple.Destination,"result")
             };
         }
 

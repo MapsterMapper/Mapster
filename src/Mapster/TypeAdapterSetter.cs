@@ -431,7 +431,7 @@ namespace Mapster
             var invoker = Expression.Lambda(source.Body, Expression.Parameter(typeof (object)));
             if (member.IsIdentity())
             {
-                Settings.ExtraSources.Add((ExtraSourceModel)invoker);
+                Settings.ExtraSources.Add((ResolverSourceInput)invoker);
                 return this;
             }
 
@@ -452,7 +452,7 @@ namespace Mapster
 
             if (destinationMember.IsIdentity())
             {
-                Settings.ExtraSources.Add((ExtraSourceModel)sourceMemberName);
+                Settings.ExtraSources.Add((ResolverSourceInput)sourceMemberName);
                 return this;
             }
 
@@ -658,7 +658,7 @@ namespace Mapster
 
             if (member.IsIdentity())
             {
-                Settings.ExtraSources.Add(new ExtraSourceModel(invoker, (OverrideTypesSettings?)overrideSettings));
+                Settings.ExtraSources.Add(new ResolverSourceInput(invoker, (OverrideTypesSettings?)overrideSettings));
                 return this;
             }
 
@@ -695,7 +695,7 @@ namespace Mapster
             {
                 Tempsetter._Settings.ReMapExtraSource = true;
 
-                Settings.ExtraSources.Add(new ExtraSourceModel(invoker, (OverrideTypesSettings?)overrideSettings));
+                Settings.ExtraSources.Add(new ResolverSourceInput(invoker, (OverrideTypesSettings?)overrideSettings, true));
                 return this;
             }
 
@@ -749,7 +749,7 @@ namespace Mapster
             var sourceName = source.GetMemberPath(noError: true);
             if (member.IsIdentity())
             {
-                Settings.ExtraSources.Add(new ExtraSourceModel((object?)sourceName ?? source));
+                Settings.ExtraSources.Add(new ResolverSourceInput(source));
                 return this;
             }
 

@@ -28,7 +28,8 @@ namespace Mapster.Tests
             };
             var poco = dto.Adapt<Invoice>();
             poco.Id.ShouldBe(dto.Id);
-            poco.DocumentNumber.ShouldBe("FOO");
+            //poco.DocumentNumber.ShouldBe("FOO");  //UseDestination has priopity on standard mapping pipeline
+            poco.DocumentNumber.ShouldBe("AA001");
             poco.Supplier.Name.ShouldBe(dto.SupplierName);
             poco.Supplier.Company.ShouldBe(dto.SupplierCompany);
             poco.Numbers.ShouldBe(Enumerable.Range(1, 5));

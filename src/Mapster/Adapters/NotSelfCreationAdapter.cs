@@ -10,7 +10,8 @@
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return !arg.ExplicitMapping && arg.SourceType == arg.DestinationType && arg.DestinationType.IsNotSelfCreation(); 
+            return !arg.ExplicitMapping && arg.SourceType == arg.DestinationType 
+                && arg.DestinationType.IsNotSelfCreation(arg.DestinationType.GetFieldsAndProperties(arg)); 
         }
     }
 }

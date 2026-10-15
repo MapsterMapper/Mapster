@@ -41,5 +41,37 @@ namespace Mapster.Utils
                 return e.Types.Where(t => t != null).Cast<Type>();
             }
         }
+
+        public static T? GetIfSingle<T>(this IEnumerable<T>? sequence)
+        {
+            if (sequence is null)
+                return default;
+
+            using var enumerator = sequence.GetEnumerator();
+
+            if (!enumerator.MoveNext())
+                return default;
+
+            var firstElement = enumerator.Current;
+
+            if (enumerator.MoveNext())
+                return default;
+
+            return firstElement;
+        }
+#if NETSTANDARD2_0
+
+        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> source, TKey key, TValue value )
+        {
+            if(!source.ContainsKey(key))
+            {
+                source[key] = value;
+                return true;
+            }
+
+            return false;
+        }
+
+#endif 
     }
 }

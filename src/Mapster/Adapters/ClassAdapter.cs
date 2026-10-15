@@ -20,7 +20,7 @@ namespace Mapster.Adapters
 
         protected override bool CanMap(PreCompileArgument arg)
         {
-            return arg.ExplicitMapping || arg.DestinationType.IsPoco();
+            return arg.ExplicitMapping || arg.DestinationType.IsPoco(arg.DestinationType.GetFieldsAndProperties(arg));
         }
 
         protected override bool CanInline(Expression source, Expression? destination, CompileArgument arg)
@@ -110,90 +110,11 @@ namespace Mapster.Adapters
             Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>? conditions = null;
             foreach (var member in members)
             {
-                var destMember = arg.MapType == MapType.MapToTarget || member.UseDestinationValue
-                    ? member.DestinationMember.GetExpression(destination)
-                    : null;
-
-                var adapt = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member, destMember);
-
-                if (member.UseDestinationValue
-                    && member.DestinationMember.Type.IsMapsterImmutable()
-                    && member.DestinationMember.SetterModifier == AccessModifier.None)
-                {
-                    if (member.DestinationMember is PropertyModel && arg.MapType != MapType.Projection)
-                        adapt = SetValueTypeAutoPropertyByReflection(member, adapt, classModel);
-                    else
-                        continue;
-                    if (adapt == Expression.Empty())
-                        continue;
-                }
-              
-                if (!member.UseDestinationValue)
-                {
-                    if (arg.Settings.IgnoreNullValues == true && member.Getter.CanBeNull() 
-                        && member.DestinationMember.SetterModifier != AccessModifier.None)
-                    {
-                        if (adapt is ConditionalExpression condEx)
-                        {
-                            if (condEx.Test is BinaryExpression {NodeType: ExpressionType.Equal} binEx && 
-                                binEx.Left == member.Getter && 
-                                binEx.Right is ConstantExpression {Value: null})
-                                adapt = condEx.IfFalse;
-                        }
-                        adapt = member.DestinationMember.SetExpression(destination, adapt);
-                        var condition = Expression.NotEqual(member.Getter, Expression.Constant(null, member.Getter.Type));
-                        adapt = Expression.IfThen(condition, adapt);
-                    }
-                    else
-                    {
-                        //Todo Try catch block should be removed after pull request approved
-                        try
-                        {
-                            if (member.DestinationMember.SetterModifier != AccessModifier.None)
-                            {
-                                var destinationPropertyInfo = (PropertyInfo)member.DestinationMember.Info!;
-                                adapt = destinationPropertyInfo.IsInitOnly()
-                                    ? SetValueByReflection(member, (MemberExpression)adapt)
-                                    : member.DestinationMember.SetExpression(destination, adapt);
-                            }
-
-                        }
-                        catch (Exception e)
-                        {
-                            adapt = member.DestinationMember.SetExpression(destination, adapt);
-                        }
-                    }
-                }
-                else if (!adapt.IsComplex())
+                if (member.Ignore.WithOutCondition && !member.IsMaybeReMapping)
                     continue;
 
-                if (member.Ignore.Condition != null)
-                {
-                    conditions ??= new Dictionary<LambdaExpression, Tuple<List<Expression>, Expression>>();
-                    if (!conditions.TryGetValue(member.Ignore.Condition, out var tuple))
-                    {
-                        var body = member.Ignore.IsChildPath
-                            ? member.Ignore.Condition.Body
-                            : member.Ignore.Condition.Apply(arg.MapType, source, destination);
-                        tuple = Tuple.Create(new List<Expression>(), body);
-                        conditions[member.Ignore.Condition] = tuple;
-                    }
-
-                    tuple.Item1.Add(adapt);
-                }
-                else
-                    lines.Add(adapt);
-            }
-
-            if (conditions != null)
-            {
-                foreach (var kvp in conditions)
-                {
-                    var condition = Expression.IfThen(
-                        ExpressionEx.Not(kvp.Value.Item2),
-                        Expression.Block(kvp.Value.Item1));
-                    lines.Add(condition);
-                }
+                lines.AddRange(
+                    GetMemberMapToTargetAdapter(member, destination, destination, arg));
             }
 
             return lines.Count > 0 ? (Expression)Expression.Block(lines) : Expression.Empty();
@@ -250,6 +171,9 @@ namespace Mapster.Adapters
                 lines.AddRange(memberInit.Bindings);
             foreach (var member in members)
             {
+                if (member.Ignore.WithOutCondition && !member.IsMaybeReMapping)
+                    continue;
+
                 if (member.UseDestinationValue)
                     return null;
 
@@ -260,19 +184,44 @@ namespace Mapster.Adapters
                 if (member.DestinationMember.SetterModifier == AccessModifier.None)
                     continue;
 
-                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg, member);
+                var value = GetMemberInlineAdapter(member, arg);
 
-                //special null property check for projection
-                //if we don't set null to property, EF will create empty object
-                //except collection type & complex type which cannot be null
-                if (arg.MapType == MapType.Projection
-                    && member.Getter.Type != member.DestinationMember.Type
-                    && !member.Getter.Type.IsCollection()
-                    && !member.DestinationMember.Type.IsCollection()
-                    && member.Getter.Type.GetTypeInfo().GetCustomAttributesData().All(attr => attr.GetAttributeType().Name != "ComplexTypeAttribute"))
-                {
-                    value = member.Getter.NotNullReturn(value,arg);
-                }
+                var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, value);
+                lines.Add(bind);
+            }
+
+            return Expression.MemberInit(newInstance, lines);
+        }
+
+        protected override Expression CreateInlineWithRequiredMemberOnly(Expression source, CompileArgument arg)
+        {
+            var transformArg = arg.MapType == MapType.MapToTarget ? arg.CloneWith(MapType.Map) : arg;
+
+            var exp = CreateInstantiationExpression(source, transformArg);
+            if (exp.NodeType == ExpressionType.Throw)
+                return exp;
+
+            var memberInit = exp as MemberInitExpression;
+            var newInstance = memberInit?.NewExpression ?? exp as NewExpression;
+            if (newInstance == null)
+                return exp;
+
+           var classModel = GetSetterModel(transformArg);
+           var classConverter = CreateClassConverter(source, classModel, transformArg);
+
+            var members = classConverter.Members;
+
+            var lines = new List<MemberBinding>();
+            if (memberInit != null)
+                lines.AddRange(memberInit.Bindings);
+
+            foreach (var member in members)
+            {
+                if (!member.DestinationMember.IsRequired)
+                    continue;
+
+                var value = GetMemberInlineAdapter(member, transformArg);
+
                 var bind = Expression.Bind((MemberInfo)member.DestinationMember.Info!, value);
                 lines.Add(bind);
             }
@@ -322,5 +271,7 @@ namespace Mapster.Adapters
 
             return base.CreateExpressionBody(source, destination, arg);
         }
+
+        
     }
 }

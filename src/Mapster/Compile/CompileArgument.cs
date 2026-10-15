@@ -17,6 +17,10 @@ namespace Mapster
         public bool UseDestinationValue { get; set; }
         public bool? ConstructorMapping { get; set; }
 
+        public ParameterExpression Source { get; init; }
+        public ParameterExpression Destination { get; init; }
+        public ParameterExpression Result { get; init; }
+
         private HashSet<string>? _srcNames;
         internal HashSet<string> GetSourceNames()
         {
@@ -64,7 +68,11 @@ namespace Mapster
                 _srcNames = this._srcNames,
                 _destNames = this._destNames,
                 _fetchConstructUsing = this._fetchConstructUsing,
-                _constructUsing = this._constructUsing
+                _constructUsing = this._constructUsing,
+
+                Source = this.Source,
+                Destination = this.Destination,
+                Result = this.Result
             };
 
             if (mapType != null)

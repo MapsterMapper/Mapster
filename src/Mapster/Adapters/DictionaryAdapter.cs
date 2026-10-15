@@ -206,7 +206,8 @@ namespace Mapster.Adapters
                 lines.AddRange(listInit.Initializers);
             foreach (var member in members)
             {
-                var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
+               // var value = CreateAdaptExpression(member.Getter, member.DestinationMember.Type, arg);
+                var value = GetMemberInlineAdapter(member, arg);
 
                 Expression key = Expression.Constant(member.DestinationMember.Name);
                 var itemInit = Expression.ElementInit(add!, key, value);
@@ -225,7 +226,7 @@ namespace Mapster.Adapters
             if (arg.SourceType.GetDictionaryType() == null)
             {
                 var srcNames = arg.GetSourceNames();
-                var propNames = arg.SourceType.GetFieldsAndProperties(true)
+                var propNames = arg.SourceType.GetFieldsAndProperties(arg, true)
                     .Where(model => model.ShouldMapMember(arg, MemberSide.Source))
                     .Select(model => model.Name)
                     .Where(name => !srcNames.Contains(name))

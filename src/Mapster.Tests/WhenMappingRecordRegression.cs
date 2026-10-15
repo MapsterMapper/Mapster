@@ -615,6 +615,7 @@ namespace Mapster.Tests
 
                 config.Compile();
             });
+
         }
 
         /// <summary>

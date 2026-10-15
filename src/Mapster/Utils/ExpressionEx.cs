@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Mapster.Utils
 {
@@ -421,6 +422,154 @@ namespace Mapster.Utils
 
             return param;
         }
+
+        public static void CreateNullPropagationChecker(this MemberMapping mapping, CompileArgument arg)
+        {
+            var IsSingleSource = mapping.GetterLines.Select(x => x.Source).Distinct().SingleOrDefault();
+            
+            if(IsSingleSource != null)
+            {
+                var finder = new DirectParameterMemberFinder(false, IsSingleSource);
+
+                foreach (var item in mapping.GetterLines)
+                {
+                    item.NullPropagationChecker = finder.Find(item.Getter)
+                    .Select(x => x.GetNullPropagationChecks(arg))
+                    .Where(x => x != null)
+                    .ToArray().ConcatPropagationChecks();
+                }
+
+            }
+            else // multisource
+            {
+                foreach (var item in mapping.GetterLines)
+                {
+                    var finder = new DirectParameterMemberFinder(false, IsSingleSource);
+                    
+                    item.NullPropagationChecker = finder.Find(item.Getter)
+                    .Select(x => x.GetNullPropagationChecks(arg))
+                    .Where(x => x != null)
+                    .ToArray().ConcatPropagationChecks();
+                }
+            }
+        }
+
+        public static Expression ApplyProjectionNullCheck(this Expression test, Expression getter)
+        {
+            if (getter.Type.CanBeNull())
+                return Expression.AndAlso(test, Expression.NotEqual(getter,getter.Type.CreateDefault()));
+           
+            return test;
+        }
+
+        public static Expression? ApplyUseDesitationValueAndInitOnlyProps(this Expression adapt, MemberMapping member, CompileArgument arg)
+        {
+
+            if(member.DestinationMember.Info is PropertyInfo propertyInfo)
+            {
+                if (propertyInfo.IsInitOnly() 
+                 || member.UseDestinationValue
+                 && member.DestinationMember.Type.IsMapsterImmutable()
+                 && member.DestinationMember.SetterModifier == AccessModifier.None)
+                    return SetValueTypeAutoPropertyByReflection(member, adapt, arg.DestinationType.GetFieldsAndProperties(arg, true));
+            }
+
+            return adapt;
+        }
+
+        private static Expression? SetValueTypeAutoPropertyByReflection(MemberMapping member, Expression adapt, IEnumerable<IMemberModelEx> destinationProperty)
+        {
+            var modDesinationMemeberName = $"<{member.DestinationMember.Name}>k__BackingField";
+            if (destinationProperty.Any(x => x.Name == modDesinationMemeberName) == false) // Property is not autoproperty
+                return null;
+            var typeofExpression = Expression.Constant(member.Destination!.Type);
+            var getPropertyMethod = typeof(Type).GetMethod("GetField", new[] { typeof(string), typeof(BindingFlags) })!;
+            var getPropertyExpression = Expression.Call(typeofExpression, getPropertyMethod,
+                Expression.Constant(modDesinationMemeberName), Expression.Constant(BindingFlags.Instance | BindingFlags.NonPublic));
+            var setValueMethod =
+                typeof(FieldInfo).GetMethod("SetValue", new[] { typeof(object), typeof(object) })!;
+            var memberAsObject = adapt.To(typeof(object));
+            return Expression.Call(getPropertyExpression, setValueMethod,
+                new[] { member.Result ?? member.Destination, memberAsObject });
+        }
+
+        public static Expression? TransformGetterToProjection(this Expression? getter, MemberMapping member, CompileArgument arg)
+        { 
+            /// Apply .Include() to getter 
+
+            if (getter is null)
+                return getter;
+
+            if (arg.Settings.ProjectToTypeResolvers.Count == 0)
+                return getter;
+
+            var s = new TopLevelMemberNameVisitor();
+
+            s.Visit(getter);
+
+            if (s.MemberName != null && arg.Settings.ProjectToTypeResolvers.TryGetValue(s.MemberName, out var match))
+            {
+                var transFormGetter = (match.Operand as LambdaExpression)?.Apply(member.Source);
+
+                if (transFormGetter != null)
+                    return transFormGetter;
+            }
+
+            return getter;
+        }
+
+
+
+        public static (Expression? modgetter, Expression? modCondition, GetterLine getterLine) ApplyContextSettings(this GetterLine getterLine, MemberMapping member, CompileArgument arg)
+        {
+            if (getterLine.Getter == null)
+                return (getterLine.Getter, getterLine.Condition, getterLine);
+
+            var modgetter = arg.MapType == MapType.Projection ? getterLine.Getter.TransformGetterToProjection(member,arg)
+                    : getterLine.Getter.CreateNullPropagation(getterLine.NullPropagationChecker);
+
+            // create test expression -> modgetter != null && getterLine.Condition
+            var modCondition = arg.Settings.IgnoreNullValues.GetValueOrDefault() == false ? getterLine.Condition
+                : modgetter.CanBeNull() == false ? getterLine.Condition
+                : getterLine.Condition == null ? modgetter.NotNullTestCondition()
+                : Expression.AndAlso(modgetter.NotNullTestCondition(), getterLine.Condition);
+
+            if(arg.DestinationType.IsRecordType() && member.Ignore.Condition != null)
+            {
+                var test = member.Ignore.IsChildPath
+                            ? member.Ignore.Condition.Body
+                            : member.Ignore.Condition.Apply(arg.MapType, member.Source, member.Destination);
+
+                modCondition = modCondition == null ? Expression.Not(test)
+                    : Expression.AndAlso(modCondition, Expression.Not(test));
+            }
+
+            return (modgetter, modCondition, getterLine);
+
+        }
+
+        public static Expression NotNullTestCondition(this Expression exp)
+        {
+            if (exp.Type.CanBeNull())
+                return Expression.NotEqual(exp, Expression.Constant(null, exp.Type));
+            else
+                throw new ArgumentException($"Expression: {exp} never return null!");
+        }
+
+        public static Expression CreateNullPropagation(this Expression getter, Expression? condition)
+        {
+            if (condition == null)
+                return getter;
+
+            if (!getter.Type.CanBeNull())
+            {
+                var transform = Expression.Convert(getter, typeof(Nullable<>).MakeGenericType(getter.Type));
+                return Expression.Condition(condition, transform, transform.Type.CreateDefault());
+            }
+            else
+                return Expression.Condition(condition, getter, getter.Type.CreateDefault());
+        }
+
 
         public static Expression ApplyPropertyNullPropagation(this Expression getter, CompileArgument arg, Expression source)
         {

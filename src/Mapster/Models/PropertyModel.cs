@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -8,9 +10,23 @@ namespace Mapster.Models
     public class PropertyModel : IMemberModelEx
     {
         private readonly PropertyInfo _propertyInfo;
+        private readonly AttributeMetadataCache? _attributeMetadata;
+        private readonly CustomAttributeData[] _customAttributeData;
+
         public PropertyModel(PropertyInfo propertyInfo)
         {
             _propertyInfo = propertyInfo;
+
+            IsRequired = propertyInfo.GetCustomAttributes()
+                    .Any(y => y.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute");
+
+            _customAttributeData = _propertyInfo.GetCustomAttributesData().ToArray();
+        }
+
+        internal PropertyModel(PropertyInfo propertyInfo, AttributeMetadataCache? attributeMetadata)
+            : this(propertyInfo)
+        {
+            _attributeMetadata = attributeMetadata;
         }
 
         public Type Type => _propertyInfo.PropertyType;
@@ -34,6 +50,9 @@ namespace Mapster.Models
             }
         }
 
+        public bool IsBackField => false;
+        public bool IsRequired { get; private set; }
+
         public virtual Expression GetExpression(Expression source)
         {
             return Expression.Property(source, _propertyInfo);
@@ -48,7 +67,7 @@ namespace Mapster.Models
         }
         public IEnumerable<CustomAttributeData> GetCustomAttributesData()
         {
-            return _propertyInfo.GetCustomAttributesData();
+            return _customAttributeData;
         }
     }
 }

@@ -69,7 +69,7 @@ namespace Mapster.Tests
 
     [TestClass]
     public class WhenConfiguringMapping
-    {
+    {        
         [TestMethod]
         public void IgnoreMemberTest()
         {

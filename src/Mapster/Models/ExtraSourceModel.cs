@@ -6,5 +6,7 @@ namespace Mapster.Models
     {
         public static explicit operator ExtraSourceModel(Expression src) => new ExtraSourceModel(src);
         public static explicit operator ExtraSourceModel(string src) => new ExtraSourceModel(src);
+
+        public bool IsRemapMembers => true;
     }
 }
