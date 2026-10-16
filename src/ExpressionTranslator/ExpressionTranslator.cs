@@ -537,7 +537,7 @@ namespace ExpressionDebugger
         private string GetSingleTypeName(Type type)
         {
             var name = type.DeclaringType == null && Definitions?.PrintFullTypeName == true
-                ? type.FullName!
+                ? $"global::{type.FullName!}"
                 : type.Name;
             if (!type.GetTypeInfo().IsGenericType)
             {
