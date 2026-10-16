@@ -330,11 +330,40 @@ namespace Mapster
         }
         internal Delegate GetMapFunction(Type sourceType, Type destinationType)
         {
+            LoadInheritedRulesLazy(new TypeTuple(sourceType, destinationType));
+
             var key = new TypeTuple(sourceType, destinationType);
             if (!_mapDict.TryGetValue(key, out var del))
                 del = AddToHash(_mapDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.Map)));
             return del;
         }
+
+        private void LoadInheritedRulesLazy(TypeTuple types)
+        {
+            if (RuleMap.TryGetValue(types, out var rule))
+            {
+                if (rule.Settings.InheritsTypeTuples.Count > 0)
+                {
+                    LoadInheritedRules(rule, rule.Settings.InheritsTypeTuples);
+                }
+            }
+        }
+        private void LoadInheritedRules(TypeAdapterRule rule, IEnumerable<InheritsTypeTuple> inheritedTypes)
+        {
+            foreach (var typeTuple in inheritedTypes.Where(t => !t.IsLoading))
+            {
+                if (RuleMap.TryGetValue(new TypeTuple(typeTuple.Source, typeTuple.Destination), out var parentRule))
+                {
+                    rule.LoadLasyInherits(parentRule);
+                    typeTuple.IsUploaded();
+                }
+                if (parentRule != null && parentRule.Settings.InheritsTypeTuples.Any())
+                {
+                    LoadInheritedRules(rule, parentRule.Settings.InheritsTypeTuples);
+                }
+            }
+        }
+
 
         private readonly ConcurrentDictionary<TypeTuple, Delegate> _mapToTargetDict = new ConcurrentDictionary<TypeTuple, Delegate>();
         public Func<TSource, TDestination, TDestination> GetMapToTargetFunction<TSource, TDestination>()
@@ -344,6 +373,9 @@ namespace Mapster
         internal Delegate GetMapToTargetFunction(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
+
+            LoadInheritedRulesLazy(key);
+
             if (!_mapToTargetDict.TryGetValue(key, out var del))
                 del = AddToHash(_mapToTargetDict, key, tuple => Compiler(CreateMapExpression(tuple, MapType.MapToTarget)));
             return del;
@@ -359,6 +391,9 @@ namespace Mapster
         internal MethodCallExpression GetProjectionCallExpression(Type sourceType, Type destinationType)
         {
             var key = new TypeTuple(sourceType, destinationType);
+
+            LoadInheritedRulesLazy(key);
+
             if (!_projectionDict.TryGetValue(key, out var del))
                 del = AddToHash(_projectionDict, key, CreateProjectionCallExpression);
             return del;
@@ -368,6 +403,9 @@ namespace Mapster
         public Func<object, TDestination> GetDynamicMapFunction<TDestination>(Type sourceType)
         {
             var key = new TypeTuple(sourceType, typeof(TDestination));
+
+            LoadInheritedRulesLazy(key);
+
             if (!_dynamicMapDict.TryGetValue(key, out var del))
                 del = AddToHash(_dynamicMapDict, key, tuple => Compiler(CreateDynamicMapExpression(tuple)));
             return (Func<object, TDestination>)del;

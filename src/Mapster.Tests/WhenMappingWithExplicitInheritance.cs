@@ -130,15 +130,77 @@ namespace Mapster.Tests
 
         }
 
+        [TestMethod]
+        public void InheritsLasyLoad__IsWork()
+        {
+            TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+               .Inherits<SimplePoco, SimpleDto>()
+               .Compile();
+
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .Inherits<RootPoco, RootDto>()
+                .Ignore(dest => dest.Name)
+                .Compile();
+
+            TypeAdapterConfig<RootPoco, RootDto>.NewConfig()
+                .Map(dest => dest.NumberDto, src => 42)
+                .Compile();
+
+            var source = new DerivedPoco
+            {
+                Id = new Guid(),
+                Name = "SourceName"
+            };
+
+            var dto = TypeAdapter.Adapt<DerivedDto>(source);
+
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBe("SourceName"); // Inherits Ignore not work
+            dto.NumberDto.ShouldBe(0); // Inherits not work
+
+            Setup(); // clean config
+
+            TypeAdapterConfig<DerivedPoco, DerivedDto>.NewConfig()
+                .InheritsLazy<SimplePoco, SimpleDto>()
+                .Compile();
+
+            TypeAdapterConfig<SimplePoco, SimpleDto>.NewConfig()
+                .InheritsLazy<RootPoco, RootDto>()
+                .Ignore(dest => dest.Name)
+                .Compile();
+
+            TypeAdapterConfig<RootPoco, RootDto>.NewConfig()
+                .Map(dest => dest.NumberDto, src => 42)
+                .Compile();
+
+            dto = TypeAdapter.Adapt<DerivedDto>(source);
+
+            dto.Id.ShouldBe(source.Id);
+            dto.Name.ShouldBeNull();  // InheritsLazy Ignore is work
+            dto.NumberDto.ShouldBe(42); // InheritsLazy is work
+        }
+
+
         #region TestMethod Classes
 
-        public class SimplePoco
+        public class RootPoco
+        {
+            public int Number { get; set; }
+        }
+
+        public class RootDto
+        {
+            public int NumberDto { get; set; }
+        }
+
+
+        public class SimplePoco: RootPoco
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
         }
 
-        public class SimpleDto
+        public class SimpleDto : RootDto
         {
             public Guid Id { get; set; }
             public string Name { get; set; }
