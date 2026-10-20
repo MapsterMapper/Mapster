@@ -40,17 +40,7 @@ namespace Mapster.Adapters
             else
             {
                 var restorParamModel = GetSetterModel(arg);
-                var MappingScoreGroups = arg.DestinationType.GetConstructors()
-                .Select(it => GetConstructorModel(it, false))
-                .Select(it => CreateClassConverter(source, it, arg, ctorMapping: true))
-                // if param of ctor is optional it case equal find getter state
-                .GroupBy(x => x.Members.Where(y => !y.IsNotFoundGetter || !y.DestinationMember.IsRequired).Count() - (x.ConstructorInfo?.GetParameters().Count()).GetValueOrDefault())
-                .OrderByDescending(x => x.Key)
-                .Take(2);
-
-                var classConverter = MappingScoreGroups.FirstOrDefault()
-                    ?.OrderByDescending(x => x.ConstructorInfo?.GetParameters().Count())
-                    .FirstOrDefault();
+                var classConverter = OptimalConstuctorSelector(source, arg);
 
                 if (classConverter == null)
                     return base.CreateInstantiationExpression(source, destination, arg);

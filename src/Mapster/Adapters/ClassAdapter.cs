@@ -68,26 +68,7 @@ namespace Mapster.Adapters
                 if (destType == null)
                     return base.CreateInstantiationExpression(source, destination, arg);
 
-                var MappingScoreGroups = arg.DestinationType.GetConstructors()
-                .Select(it => GetConstructorModel(it, false))
-                .Select(it => CreateClassConverter(source, it, arg, ctorMapping: true))
-                // if param of ctor is optional it case equal find getter state
-                .GroupBy(x => x.Members.Where(y => !y.IsNotFoundGetter || !y.DestinationMember.IsRequired).Count() - (x.ConstructorInfo?.GetParameters().Count()).GetValueOrDefault())
-                .OrderByDescending(x => x.Key)
-                .Take(2);
-
-                classConverter = MappingScoreGroups.FirstOrDefault()
-                    ?.OrderByDescending(x => x.ConstructorInfo?.GetParameters().Count())
-                    .FirstOrDefault();
-
-                //var constructors = destType.GetConstructors();
-                //classConverter = constructors
-                //    .OrderByDescending(it => it.GetParameters().Length)
-                //    .Select(it => GetConstructorModel(it, true))
-                //    .Select(it => CreateClassConverter(source, it, arg, ctorMapping: true))
-                //    .FirstOrDefault(it => it != null);
-                //if (classConverter == null && constructors.Length > 0)
-                //    classConverter = CreateClassConverter(source, GetConstructorModel(constructors[0], false), arg, ctorMapping: true);
+                classConverter = OptimalConstuctorSelector(source, arg);
             }
             else
             {
@@ -283,6 +264,19 @@ namespace Mapster.Adapters
             return base.CreateExpressionBody(source, destination, arg);
         }
 
-        
+        protected ClassMapping? OptimalConstuctorSelector(Expression source, CompileArgument arg)
+        {
+            var MappingScoreGroups = arg.DestinationType.GetConstructors()
+                .Select(it => GetConstructorModel(it, false))
+                .Select(it => CreateClassConverter(source, it, arg, ctorMapping: true))
+                // if param of ctor is optional it case equal find getter state
+                .GroupBy(x => x.Members.Where(y => !y.IsNotFoundGetter || !y.DestinationMember.IsRequired).Count() - (x.ConstructorInfo?.GetParameters().Count()).GetValueOrDefault())
+                .OrderByDescending(x => x.Key)
+                .Take(2);
+
+            return MappingScoreGroups.FirstOrDefault()
+                ?.OrderByDescending(x => x.ConstructorInfo?.GetParameters().Count())
+                .FirstOrDefault();
+        }
     }
 }
