@@ -39,11 +39,21 @@ namespace Mapster.Adapters
                 installExpr = base.CreateInstantiationExpression(source, destination, arg);
             else
             {
-                var ctor = arg.DestinationType.GetConstructors()
-                        .OrderByDescending(it => it.GetParameters().Length).ToArray().FirstOrDefault(); // Will be used public constructor with the maximum number of parameters 
-                var classModel = GetConstructorModel(ctor, false);
                 var restorParamModel = GetSetterModel(arg);
-                var classConverter = CreateClassConverter(source, classModel, arg, ctorMapping: true);
+                var MappingScoreGroups = arg.DestinationType.GetConstructors()
+                .Select(it => GetConstructorModel(it, false))
+                .Select(it => CreateClassConverter(source, it, arg, ctorMapping: true))
+                .GroupBy(x => x.Members.Where(y => !y.IsNotFoundGetter).Count() - (x.ConstructorInfo?.GetParameters().Count()).GetValueOrDefault())
+                .OrderByDescending(x => x.Key)
+                .Take(2);
+
+                var classConverter = MappingScoreGroups.FirstOrDefault()
+                    ?.OrderByDescending(x => x.ConstructorInfo?.GetParameters().Count())
+                    .FirstOrDefault();
+
+                if (classConverter == null)
+                    return base.CreateInstantiationExpression(source, destination, arg);
+
                 installExpr = CreateInstantiationExpression(source, classConverter, arg, destination, restorParamModel);
             }
 
