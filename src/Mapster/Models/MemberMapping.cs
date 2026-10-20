@@ -24,7 +24,7 @@ namespace Mapster.Models
             return NextResolvers.Count > 0 || NextIgnore.Count > 0;
         }
 
-        public bool isNotFoundGetter => GetterLines.Count == 0;
+        public bool IsNotFoundGetter => GetterLines.Count == 0;
         public bool IsMaybeReMapping => GetterLines.Any(x => x.IsCustomMap);
     }
 
