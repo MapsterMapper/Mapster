@@ -1,0 +1,178 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "DocFX.WN.PostProcessor/1.0.0": {
+        "dependencies": {
+          "Docfx.Plugins": "2.78.5",
+          "HtmlAgilityPack": "1.12.4",
+          "System.Composition": "10.0.3"
+        },
+        "runtime": {
+          "DocFX.WN.PostProcessor.dll": {}
+        }
+      },
+      "Docfx.Plugins/2.78.5": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.4"
+        },
+        "runtime": {
+          "lib/net8.0/Docfx.Plugins.dll": {
+            "assemblyVersion": "2.78.5.0",
+            "fileVersion": "2.78.5.0"
+          }
+        }
+      },
+      "HtmlAgilityPack/1.12.4": {
+        "runtime": {
+          "lib/net7.0/HtmlAgilityPack.dll": {
+            "assemblyVersion": "1.12.4.0",
+            "fileVersion": "1.12.4.0"
+          }
+        }
+      },
+      "Newtonsoft.Json/13.0.4": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.4.30916"
+          }
+        }
+      },
+      "System.Composition/10.0.3": {
+        "dependencies": {
+          "System.Composition.AttributedModel": "10.0.3",
+          "System.Composition.Convention": "10.0.3",
+          "System.Composition.Hosting": "10.0.3",
+          "System.Composition.Runtime": "10.0.3",
+          "System.Composition.TypedParts": "10.0.3"
+        }
+      },
+      "System.Composition.AttributedModel/10.0.3": {
+        "runtime": {
+          "lib/net8.0/System.Composition.AttributedModel.dll": {
+            "assemblyVersion": "10.0.0.3",
+            "fileVersion": "10.0.326.7603"
+          }
+        }
+      },
+      "System.Composition.Convention/10.0.3": {
+        "dependencies": {
+          "System.Composition.AttributedModel": "10.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/System.Composition.Convention.dll": {
+            "assemblyVersion": "10.0.0.3",
+            "fileVersion": "10.0.326.7603"
+          }
+        }
+      },
+      "System.Composition.Hosting/10.0.3": {
+        "dependencies": {
+          "System.Composition.Runtime": "10.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/System.Composition.Hosting.dll": {
+            "assemblyVersion": "10.0.0.3",
+            "fileVersion": "10.0.326.7603"
+          }
+        }
+      },
+      "System.Composition.Runtime/10.0.3": {
+        "runtime": {
+          "lib/net8.0/System.Composition.Runtime.dll": {
+            "assemblyVersion": "10.0.0.3",
+            "fileVersion": "10.0.326.7603"
+          }
+        }
+      },
+      "System.Composition.TypedParts/10.0.3": {
+        "dependencies": {
+          "System.Composition.AttributedModel": "10.0.3",
+          "System.Composition.Hosting": "10.0.3",
+          "System.Composition.Runtime": "10.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/System.Composition.TypedParts.dll": {
+            "assemblyVersion": "10.0.0.3",
+            "fileVersion": "10.0.326.7603"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DocFX.WN.PostProcessor/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Docfx.Plugins/2.78.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5kl3GzzKlfmkIOteSCA2qu2+iXYh6tdAWF1HP2tYoil2EeCZ3OMac6Gk9z3u22/3p79I40lIiffgMzwkRITtFA==",
+      "path": "docfx.plugins/2.78.5",
+      "hashPath": "docfx.plugins.2.78.5.nupkg.sha512"
+    },
+    "HtmlAgilityPack/1.12.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ljqvBabvFwKoLniuoQKO8b5bJfJweKLs4fUNS/V5dsvpo0A8MlJqxxn9XVmP2DaskbUXty6IYaWAi1SArGIMeQ==",
+      "path": "htmlagilitypack/1.12.4",
+      "hashPath": "htmlagilitypack.1.12.4.nupkg.sha512"
+    },
+    "Newtonsoft.Json/13.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A==",
+      "path": "newtonsoft.json/13.0.4",
+      "hashPath": "newtonsoft.json.13.0.4.nupkg.sha512"
+    },
+    "System.Composition/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-sCMsrPnpHco09yyP4T3Yy84S3iFTyOiHGHTFlGvjJAk+vVRcBqPVDlK7kvkXH5/jj2eROTI80TU7BW4Ghcqtdg==",
+      "path": "system.composition/10.0.3",
+      "hashPath": "system.composition.10.0.3.nupkg.sha512"
+    },
+    "System.Composition.AttributedModel/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Pj+8+lQhO6XOm8HD4xQLf5Mxiq4z64sq5rXSwesCDUFAC4AtSmAScGuxDCyoEmr4O8p7ygxnh9FOvd9vfi3ApQ==",
+      "path": "system.composition.attributedmodel/10.0.3",
+      "hashPath": "system.composition.attributedmodel.10.0.3.nupkg.sha512"
+    },
+    "System.Composition.Convention/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-54QQpj0H9njit0OXvgUzfPulCQsHzWw+yxOjqEG+4P03DclWT+r1j0qcT+AnJnHWDOXDPIhJVakc8Sw851NbYg==",
+      "path": "system.composition.convention/10.0.3",
+      "hashPath": "system.composition.convention.10.0.3.nupkg.sha512"
+    },
+    "System.Composition.Hosting/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lspQaAjo7moZAlKGpk0kBouGgK1fEp1qP73SuvijZg6Q0hbD6GVeMCDwL66XP4ZhMnOwxRlyEtpyL0czl5TM3Q==",
+      "path": "system.composition.hosting/10.0.3",
+      "hashPath": "system.composition.hosting.10.0.3.nupkg.sha512"
+    },
+    "System.Composition.Runtime/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0d/fA/1xPx+W2M8ifYIpiFu5FhPGhCfSjRyWWB8EO0hoCtl0Nyu9baYntmV6UkrKYcNtbI1URFlUXbUIW24R/w==",
+      "path": "system.composition.runtime/10.0.3",
+      "hashPath": "system.composition.runtime.10.0.3.nupkg.sha512"
+    },
+    "System.Composition.TypedParts/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Q51EbO0XjF/mRjzy7MYM/5tEHgKbfImBRUhtTSYdO2MuVZdCmlkUKCRNF18TyUQYr/SCzMZXptvrKc1xeQz/TA==",
+      "path": "system.composition.typedparts/10.0.3",
+      "hashPath": "system.composition.typedparts.10.0.3.nupkg.sha512"
+    }
+  }
+}

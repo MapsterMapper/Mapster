@@ -6,7 +6,15 @@
       "version": "8.1.0",
       "commands": [
         "dotnet-mapster"
-      ]
+      ],
+      "rollForward": false
+    },
+    "docfx": {
+      "version": "2.78.5",
+      "commands": [
+        "docfx"
+      ],
+      "rollForward": false
     }
   }
 }

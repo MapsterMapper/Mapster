@@ -10,3 +10,5 @@
 - name: Reference
   uid: Mapster.References
   href: api/Reference.md
+- name: Whats New!
+  href: tags-reference.md
