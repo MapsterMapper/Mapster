@@ -348,7 +348,10 @@ namespace Mapster.Tests
             var src = new Contract1006();
             var querible = new List<Contract1006> { src }.AsQueryable();
 
-            var result = querible.ProjectToType<ContractDTO1006>(config).FirstOrDefault();
+            Should.NotThrow(
+                () => querible.ProjectToType<ContractDTO1006>(config).FirstOrDefault()
+                );
+            
         }
 
         #region TestClass
