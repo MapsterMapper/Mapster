@@ -431,7 +431,7 @@ namespace Mapster.Utils
             {
                 var finder = new DirectParameterMemberFinder(false, IsSingleSource);
 
-                foreach (var item in mapping.GetterLines)
+                foreach (var item in mapping.GetterLines.OfType<GetterLine>())
                 {
                     item.NullPropagationChecker = finder.Find(item.Getter)
                     .Select(x => x.GetNullPropagationChecks(arg))
@@ -442,7 +442,7 @@ namespace Mapster.Utils
             }
             else // multisource
             {
-                foreach (var item in mapping.GetterLines)
+                foreach (var item in mapping.GetterLines.OfType<GetterLine>())
                 {
                     var finder = new DirectParameterMemberFinder(false, IsSingleSource);
                     
@@ -520,10 +520,10 @@ namespace Mapster.Utils
 
 
 
-        public static (Expression? modgetter, Expression? modCondition, GetterLine getterLine) ApplyContextSettings(this GetterLine getterLine, MemberMapping member, CompileArgument arg)
+        public static (Expression? modgetter, Expression? modCondition, IGetterLineConsumer getterLine, Expression? TransformFunc) ApplyContextSettings(this IGetterLineConsumer getterLine, MemberMapping member, CompileArgument arg)
         {
             if (getterLine.Getter == null)
-                return (getterLine.Getter, getterLine.Condition, getterLine);
+                return (getterLine.Getter, getterLine.Condition, getterLine, null);
 
             var modgetter = arg.MapType == MapType.Projection ? getterLine.Getter.TransformGetterToProjection(member,arg)
                     : getterLine.Getter.CreateNullPropagation(getterLine.NullPropagationChecker);
@@ -534,7 +534,11 @@ namespace Mapster.Utils
                 : getterLine.Condition == null ? modgetter.NotNullTestCondition()
                 : Expression.AndAlso(modgetter.NotNullTestCondition(), getterLine.Condition);
 
-            if(arg.DestinationType.IsRecordType() && member.Ignore.Condition != null)
+            if (arg.MapType == MapType.Projection 
+                && modCondition != null && getterLine.NullPropagationChecker != null)
+                    modCondition = Expression.AndAlso(modCondition, getterLine.NullPropagationChecker);
+
+            if (arg.DestinationType.IsRecordType() && member.Ignore.Condition != null)
             {
                 var test = member.Ignore.IsChildPath
                             ? member.Ignore.Condition.Body
@@ -544,7 +548,7 @@ namespace Mapster.Utils
                     : Expression.AndAlso(modCondition, Expression.Not(test));
             }
 
-            return (modgetter, modCondition, getterLine);
+            return (modgetter, modCondition, getterLine, null);
 
         }
 

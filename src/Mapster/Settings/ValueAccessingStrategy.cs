@@ -49,7 +49,7 @@ namespace Mapster
 
                 var condition = resolver.GetConditionExpression(source, arg.MapType);
 
-                memberMapping.GetterLines.Add(new(srcInput.Src,invoke, customSettings, true) { Condition = condition});
+                memberMapping.GetterLines.Add(new GetterLine(srcInput.Src,invoke, customSettings, true) { Condition = condition});
                 MatchingGetter++;
             }
 
@@ -75,7 +75,7 @@ namespace Mapster
             if (resolver == null)
                 return false;
             else
-                memberMapping.GetterLines.Add(new(srcInput.Src, resolver, srcInput.Settings, srcInput.IsRemapMembers));
+                memberMapping.GetterLines.Add(new GetterLine(srcInput.Src, resolver, srcInput.Settings, srcInput.IsRemapMembers));
 
             return true;
 
@@ -94,7 +94,7 @@ namespace Mapster
             if (getMethod.Name == "GetType" && destinationMember.Type != typeof(Type))
                 return false;
 
-            memberMapping.GetterLines.Add(new(srcInput.Src, Expression.Call(source, getMethod), srcInput.Settings, srcInput.IsRemapMembers));
+            memberMapping.GetterLines.Add(new GetterLine(srcInput.Src, Expression.Call(source, getMethod), srcInput.Settings, srcInput.IsRemapMembers));
 
             return true;
         }
@@ -108,7 +108,7 @@ namespace Mapster
             if(resolver == null)
                 return false;
 
-            memberMapping.GetterLines.Add(new(srcInput.Src, resolver, srcInput.Settings, srcInput.IsRemapMembers));
+            memberMapping.GetterLines.Add(new GetterLine(srcInput.Src, resolver, srcInput.Settings, srcInput.IsRemapMembers));
 
             return true;
         }
@@ -206,7 +206,7 @@ namespace Mapster
                     .MakeGenericMethod(args[1]);
                 var resolver = Expression.Call(method, source.To(dictType), key, ExpressionEx.GetNameConverterExpression(strategy.SourceMemberNameConverter));
 
-                memberMapping.GetterLines.Add(new(srcInput.Src, resolver, srcInput.Settings, srcInput.IsRemapMembers));
+                memberMapping.GetterLines.Add(new GetterLine(srcInput.Src, resolver, srcInput.Settings, srcInput.IsRemapMembers));
                 return true;
             }
             else
@@ -216,7 +216,7 @@ namespace Mapster
                     .MakeGenericMethod(args);
                 var resolver =  Expression.Call(method, source.To(dictType), key);
 
-                memberMapping.GetterLines.Add(new(srcInput.Src, resolver, null, srcInput.IsRemapMembers));
+                memberMapping.GetterLines.Add(new GetterLine(srcInput.Src, resolver, null, srcInput.IsRemapMembers));
                 return true;
             }
         }
@@ -259,7 +259,7 @@ namespace Mapster
             if (getter == null)
                 return false;
 
-            memberMapping.GetterLines.Add(new(srcInput.Src, getter, null, true));
+            memberMapping.GetterLines.Add(new GetterLine(srcInput.Src, getter, null, true));
 
             return true;
         }

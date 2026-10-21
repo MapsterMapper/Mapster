@@ -78,7 +78,7 @@ namespace Mapster.Adapters
                     if (propinfo.GetCustomAttributes()
                         .Any(y => y.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute"))
                     {
-                        propertyModel.GetterLines.Add(new(source, destinationMember.Type.CreateDefault(arg), null));
+                        propertyModel.GetterLines.Add(new GetterLine(source, destinationMember.Type.CreateDefault(arg), null));
                     }
                 }
 
@@ -89,7 +89,7 @@ namespace Mapster.Adapters
                         .RestoreDestinationMemberExp = TryRestoreRecordMember(destinationMember, recordRestorMemberModel, destination, arg);
 
                     if (propertyModel.GetterLines.Count == 0 && propertyModel.RestoreDestinationMemberExp != null)
-                        propertyModel.GetterLines.Add(new(destination, destinationMember.GetExpression(destination), null));
+                        propertyModel.GetterLines.Add(new GetterLine(destination, destinationMember.GetExpression(destination), null));
 
                 }
                 if (propertyModel.GetterLines.Count != 0 || propertyModel.Ignore.IsValid)
@@ -124,7 +124,7 @@ namespace Mapster.Adapters
                     }
                     else if (propertyModel.HasSettings())
                     {
-                        propertyModel.GetterLines.Add(new(source, Expression.New(typeof(Never)), null));
+                        propertyModel.GetterLines.Add(new GetterLine(source, Expression.New(typeof(Never)), null));
                         properties.Add(propertyModel);
                     }
                     else if (destinationMember.UseDestinationValue(arg) || destinationMember.SetterModifier != AccessModifier.None)
@@ -334,8 +334,8 @@ namespace Mapster.Adapters
             Expression defaultcase = null;
 
             var modGetterLine = member.GetterLines.All(x => x.Condition == null) 
-                ? member.GetterLines.Take(1).Select(x => x.ApplyContextSettings(member, arg))
-                : member.GetterLines.Select(x => x.ApplyContextSettings(member, arg));
+                ? member.GetterLines.Take(1).Select(x => x.ApplyContextSettings(member, arg)).ToArray()
+                : member.GetterLines.Select(x => x.ApplyContextSettings(member, arg)).ToArray();
             var single = modGetterLine.GetIfSingle();
 
             if (single.getterLine != null && single.modCondition == null)
@@ -354,26 +354,27 @@ namespace Mapster.Adapters
                 return CreateAdaptExpression(single.modgetter, member.DestinationMember.Type, arg, member);
             }
                
-
-
-            foreach (var item in modGetterLine)
+            for (var i = 0; i < modGetterLine.Length; i++)
             {
-                member.OverrideSettings = item.getterLine.OverrideSettings; // need refactoring
+                member.OverrideSettings = modGetterLine[i].getterLine.OverrideSettings; // need refactoring
 
-                item.getterLine.TransformFunc = CreateAdaptExpression(item.modgetter, member.DestinationMember.Type, arg, member);
+                modGetterLine[i].TransformFunc = CreateAdaptExpression(modGetterLine[i].modgetter, member.DestinationMember.Type, arg, member);
             }
 
             defaultcase = member.RestoreDestinationMemberExp 
-                ?? modGetterLine.Where(x => x.modCondition == null).FirstOrDefault().getterLine?.TransformFunc ?? member.DestinationMember.Type.CreateDefault();
+                ?? modGetterLine.Where(x => x.modCondition == null).FirstOrDefault().TransformFunc ?? member.DestinationMember.Type.CreateDefault();
 
             foreach (var item in modGetterLine.Where(x => x.modCondition != null).Reverse())
             {
                 if (result == null)
                 {
-                    result = Expression.Condition(item.modCondition, item.getterLine.TransformFunc, defaultcase);
+                    var transformDefault = item.TransformFunc.Type == defaultcase.Type
+                        ? defaultcase : item.TransformFunc.Type.CreateDefault();
+
+                    result = Expression.Condition(item.modCondition, item.TransformFunc, transformDefault);
                 }
                 else
-                    result = Expression.Condition(item.modCondition, item.getterLine.TransformFunc, result);
+                    result = Expression.Condition(item.modCondition, item.TransformFunc, result);
             }
 
             return result;

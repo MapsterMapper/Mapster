@@ -326,9 +326,32 @@ namespace Mapster.Tests
 
             var src = new Contract1006();
 
-            var str = src.BuildAdapter(config).CreateMapExpression<ContractDTO1006>();
-
             var result = src.Adapt<ContractDTO1006>(config);
+        }
+
+        [TestMethod]
+        public void WhenCollectionIsParamNullCheckIsWorkingProjection()
+        {
+            var config = new TypeAdapterConfig();
+            config.SelfContainedCodeGeneration = true;
+
+            bool IsCondition = true;
+
+            config
+                .NewConfig<Contract1006, ContractDTO1006>()
+                .Map(d => d.ContractMarks, s => s.ContractContractMarks.Select(ccm => ccm.ContractMark)
+                    .OrderBy(cm => cm.Name), _ => IsCondition);
+
+            config
+                .NewConfig<ContractMark1006, ContractMarkDTO1006>();
+
+            var src = new Contract1006();
+            var querible = new List<Contract1006> { src }.AsQueryable();
+
+            Should.NotThrow(
+                () => querible.ProjectToType<ContractDTO1006>(config).FirstOrDefault()
+                );
+            
         }
 
         #region TestClass

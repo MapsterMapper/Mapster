@@ -7,7 +7,7 @@ namespace Mapster.Models
     public class MemberMapping
     {
         public Expression Getter => GetterLines.FirstOrDefault()?.Getter;
-        public List<GetterLine> GetterLines { get; } = new List<GetterLine>();
+        public List<IGetterLineConsumer> GetterLines { get; } = new List<IGetterLineConsumer>();
         public IMemberModelEx DestinationMember;
         public Expression? RestoreDestinationMemberExp;
         public IgnoreDictionary.IgnoreItem Ignore;
@@ -28,7 +28,17 @@ namespace Mapster.Models
         public bool IsMaybeReMapping => GetterLines.Any(x => x.IsCustomMap);
     }
 
-    public class GetterLine
+    public interface IGetterLineConsumer
+    {
+        Expression? Condition { get;}
+        Expression? Getter { get;}
+        bool IsCustomMap { get;}
+        Expression? NullPropagationChecker { get;}
+        TypeAdapterSettings? OverrideSettings { get;}
+        Expression Source { get;}
+    }
+
+    public class GetterLine : IGetterLineConsumer
     {
         public GetterLine(Expression source, Expression? getter, TypeAdapterSettings? overrideSettings, bool isCustomMap = false)
         {
@@ -38,13 +48,12 @@ namespace Mapster.Models
             IsCustomMap = isCustomMap;
         }
 
-        public Expression Source {  get; init; }
-        public Expression? Getter {  get; init; }
+        public Expression Source { get; init; }
+        public Expression? Getter { get; init; }
         public TypeAdapterSettings? OverrideSettings { get; init; }
         public Expression? Condition { get; set; }
         public Expression? NullPropagationChecker { get; set; }
-        public Expression? TransformFunc { get; set; }
         public bool IsCustomMap { get; init; }
-        
+
     }
 }
