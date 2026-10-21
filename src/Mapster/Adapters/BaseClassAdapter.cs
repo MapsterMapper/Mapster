@@ -78,7 +78,7 @@ namespace Mapster.Adapters
                     if (propinfo.GetCustomAttributes()
                         .Any(y => y.GetType().FullName == "System.Runtime.CompilerServices.RequiredMemberAttribute"))
                     {
-                        propertyModel.GetterLines.Add(new(source, destinationMember.Type.CreateDefault(arg), null));
+                        propertyModel.GetterLines.Add(new GetterLine(source, destinationMember.Type.CreateDefault(arg), null));
                     }
                 }
 
@@ -89,7 +89,7 @@ namespace Mapster.Adapters
                         .RestoreDestinationMemberExp = TryRestoreRecordMember(destinationMember, recordRestorMemberModel, destination, arg);
 
                     if (propertyModel.GetterLines.Count == 0 && propertyModel.RestoreDestinationMemberExp != null)
-                        propertyModel.GetterLines.Add(new(destination, destinationMember.GetExpression(destination), null));
+                        propertyModel.GetterLines.Add(new GetterLine(destination, destinationMember.GetExpression(destination), null));
 
                 }
                 if (propertyModel.GetterLines.Count != 0 || propertyModel.Ignore.IsValid)
@@ -124,7 +124,7 @@ namespace Mapster.Adapters
                     }
                     else if (propertyModel.HasSettings())
                     {
-                        propertyModel.GetterLines.Add(new(source, Expression.New(typeof(Never)), null));
+                        propertyModel.GetterLines.Add(new GetterLine(source, Expression.New(typeof(Never)), null));
                         properties.Add(propertyModel);
                     }
                     else if (destinationMember.UseDestinationValue(arg) || destinationMember.SetterModifier != AccessModifier.None)

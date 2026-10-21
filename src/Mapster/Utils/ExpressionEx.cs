@@ -431,7 +431,7 @@ namespace Mapster.Utils
             {
                 var finder = new DirectParameterMemberFinder(false, IsSingleSource);
 
-                foreach (var item in mapping.GetterLines)
+                foreach (var item in mapping.GetterLines.OfType<GetterLine>())
                 {
                     item.NullPropagationChecker = finder.Find(item.Getter)
                     .Select(x => x.GetNullPropagationChecks(arg))
@@ -442,7 +442,7 @@ namespace Mapster.Utils
             }
             else // multisource
             {
-                foreach (var item in mapping.GetterLines)
+                foreach (var item in mapping.GetterLines.OfType<GetterLine>())
                 {
                     var finder = new DirectParameterMemberFinder(false, IsSingleSource);
                     
@@ -520,7 +520,7 @@ namespace Mapster.Utils
 
 
 
-        public static (Expression? modgetter, Expression? modCondition, GetterLine getterLine, Expression? TransformFunc) ApplyContextSettings(this GetterLine getterLine, MemberMapping member, CompileArgument arg)
+        public static (Expression? modgetter, Expression? modCondition, IGetterLineConsumer getterLine, Expression? TransformFunc) ApplyContextSettings(this IGetterLineConsumer getterLine, MemberMapping member, CompileArgument arg)
         {
             if (getterLine.Getter == null)
                 return (getterLine.Getter, getterLine.Condition, getterLine, null);
