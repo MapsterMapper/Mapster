@@ -370,7 +370,10 @@ namespace Mapster.Adapters
             {
                 if (result == null)
                 {
-                    result = Expression.Condition(item.modCondition, item.getterLine.TransformFunc, defaultcase);
+                    var transformDefault = item.getterLine.TransformFunc.Type == defaultcase.Type
+                        ? defaultcase : item.getterLine.TransformFunc.Type.CreateDefault();
+
+                    result = Expression.Condition(item.modCondition, item.getterLine.TransformFunc, transformDefault);
                 }
                 else
                     result = Expression.Condition(item.modCondition, item.getterLine.TransformFunc, result);

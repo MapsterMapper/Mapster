@@ -534,7 +534,11 @@ namespace Mapster.Utils
                 : getterLine.Condition == null ? modgetter.NotNullTestCondition()
                 : Expression.AndAlso(modgetter.NotNullTestCondition(), getterLine.Condition);
 
-            if(arg.DestinationType.IsRecordType() && member.Ignore.Condition != null)
+            if (arg.MapType == MapType.Projection 
+                && modCondition != null && getterLine.NullPropagationChecker != null)
+                    modCondition = Expression.AndAlso(modCondition, getterLine.NullPropagationChecker);
+
+            if (arg.DestinationType.IsRecordType() && member.Ignore.Condition != null)
             {
                 var test = member.Ignore.IsChildPath
                             ? member.Ignore.Condition.Body
