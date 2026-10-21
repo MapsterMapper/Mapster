@@ -635,6 +635,23 @@ namespace Mapster.Tests
             });
         }
 
+        [TestMethod]
+        public void RecordTypeGetOptimalConstuctorFromSource()
+        {
+            var src = new OptimMultyCtorSource();
+
+            var result = src.Adapt<OptimMultyCtorRecord>();
+
+            result.ShouldSatisfyAllConditions(
+
+                () => result.A.ShouldBe(src.A),
+                () => result.B.ShouldBe(src.B),
+                () => result.C.ShouldBe(src.C),
+                () => result.D.ShouldBe("Default data")
+
+            );
+        }
+
         #region NowNotWorking
 
         /// <summary>
@@ -1108,6 +1125,52 @@ namespace Mapster.Tests
         string Id { get; }
         string Value { get; }
         IList<string> ValueList { get; }
+    }
+
+    public record OptimMultyCtorRecord
+    {
+        public OptimMultyCtorRecord()
+        {
+
+        }
+
+        public OptimMultyCtorRecord (string a)
+        {
+            A = a;
+        }
+
+        public OptimMultyCtorRecord(string a, string b)
+        {
+            A = a;
+            B = b;
+        }
+
+        public OptimMultyCtorRecord(string a, string b, string c)
+        {
+            A = a;
+            B = b;
+            C = c;
+        }
+
+        public OptimMultyCtorRecord(string a, string b, string c, string d)
+        {
+            A = a;
+            B = b;
+            C = c;
+            D = d;
+        }
+
+        public string A { get; private set; } = "Default data";
+        public string B { get; private set; } = "Default data";
+        public string C { get; private set; } = "Default data";
+        public string D { get; private set; } = "Default data";
+    }
+
+    public class OptimMultyCtorSource
+    {
+        public string A { get; init; } = "Input A";
+        public string B { get; init; } = "Input B";
+        public string C { get; init; } = "Input C";
     }
 
     #endregion TestClasses

@@ -71,7 +71,7 @@ namespace Mapster.Adapters
 
 
                 if(arg.MapType == MapType.ApplyNullPropagation &&
-                    propertyModel.isNotFoundGetter  
+                    propertyModel.IsNotFoundGetter  
                     && !arg.DestinationType.IsRecordType()  
                     && destinationMember.Info is PropertyInfo propinfo)
                 {
@@ -208,7 +208,7 @@ namespace Mapster.Adapters
                     : parameterInfo.ParameterType.CreateDefault(arg);
 #endif
                 
-                if (member.isNotFoundGetter)
+                if (member.IsNotFoundGetter)
                 {
                     getter = defaultConst;
 
