@@ -43,7 +43,6 @@ namespace Mapster.Models
         public TypeAdapterSettings? OverrideSettings { get; init; }
         public Expression? Condition { get; set; }
         public Expression? NullPropagationChecker { get; set; }
-        public Expression? TransformFunc { get; set; }
         public bool IsCustomMap { get; init; }
         
     }

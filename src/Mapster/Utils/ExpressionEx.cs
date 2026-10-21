@@ -520,10 +520,10 @@ namespace Mapster.Utils
 
 
 
-        public static (Expression? modgetter, Expression? modCondition, GetterLine getterLine) ApplyContextSettings(this GetterLine getterLine, MemberMapping member, CompileArgument arg)
+        public static (Expression? modgetter, Expression? modCondition, GetterLine getterLine, Expression? TransformFunc) ApplyContextSettings(this GetterLine getterLine, MemberMapping member, CompileArgument arg)
         {
             if (getterLine.Getter == null)
-                return (getterLine.Getter, getterLine.Condition, getterLine);
+                return (getterLine.Getter, getterLine.Condition, getterLine, null);
 
             var modgetter = arg.MapType == MapType.Projection ? getterLine.Getter.TransformGetterToProjection(member,arg)
                     : getterLine.Getter.CreateNullPropagation(getterLine.NullPropagationChecker);
@@ -548,7 +548,7 @@ namespace Mapster.Utils
                     : Expression.AndAlso(modCondition, Expression.Not(test));
             }
 
-            return (modgetter, modCondition, getterLine);
+            return (modgetter, modCondition, getterLine, null);
 
         }
 
