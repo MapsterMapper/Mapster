@@ -11,6 +11,7 @@ namespace ExpressionDebugger
         public bool IsInternal { get; set; }
         public IEnumerable<Type>? Implements { get; set; }
         public bool PrintFullTypeName { get; set; }
+        public bool UseGlobalPrefix { get; set; }
         public bool IsRecordType { get; set; }
 
         /// <summary>

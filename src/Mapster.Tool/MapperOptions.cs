@@ -18,6 +18,9 @@ namespace Mapster.Tool
         
         [Option('p', "printFullTypeName", Required = false, HelpText = "Set true to print full type name")]
         public bool PrintFullTypeName { get; set; }
+
+        [Option('g', "useGlobalPrefix", Required = false, HelpText = "Set true to prefix full type names with global::")]
+        public bool UseGlobalPrefix { get; set; }
         
         [Option('b', "baseNamespace", Required = false, HelpText = "Provide base namespace to generate nested output & namespace")]
         public string? BaseNamespace { get; set; }

@@ -19,6 +19,9 @@ namespace Mapster.Tool
         [Option('p', "printFullTypeName", Required = false, HelpText = "Set true to print full type name")]
         public bool PrintFullTypeName { get; set; }
 
+        [Option('g', "useGlobalPrefix", Required = false, HelpText = "Set true to prefix full type names with global::")]
+        public bool UseGlobalPrefix { get; set; }
+
         [Option('r', "isRecordType", Required = false, HelpText = "Generate record type")]
         public bool IsRecordType { get; set; }
         

@@ -487,14 +487,14 @@ namespace ExpressionDebugger
             if (_nilCtx != null || _nil != null)
             {
                 name = GetTypeName(type);
-                if (Definitions?.PrintFullTypeName != true && !string.IsNullOrEmpty(type.Namespace))
+                if (!ShouldPrintFullTypeName && !string.IsNullOrEmpty(type.Namespace))
                     _usings.Add(type.Namespace);
             }
             else if (!TypeNames.TryGetValue(type, out name))
             {
                 name = GetTypeName(type);
 
-                if (Definitions?.PrintFullTypeName != true)
+                if (!ShouldPrintFullTypeName)
                 {
                     var count = TypeNames.Count(kvp => GetTypeName(kvp.Key) == name);
                     if (count > 0)
@@ -533,10 +533,12 @@ namespace ExpressionDebugger
             return TranslateInner(type.DeclaringType) + "." + name;
         }
 
+        private bool ShouldPrintFullTypeName => Definitions?.PrintFullTypeName == true || Definitions?.UseGlobalPrefix == true;
+
         private string GetSingleTypeName(Type type)
         {
-            var name = type.DeclaringType == null && Definitions?.PrintFullTypeName == true
-                ? type.FullName!
+            var name = type.DeclaringType == null && ShouldPrintFullTypeName
+                ? (Definitions?.UseGlobalPrefix == true ? $"global::{type.FullName!}" : type.FullName!)
                 : type.Name;
             if (!type.GetTypeInfo().IsGenericType)
             {

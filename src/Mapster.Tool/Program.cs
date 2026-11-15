@@ -109,6 +109,7 @@ namespace Mapster.Tool
                     TypeName = attr.Name ?? GetImplName(GetCodeFriendlyTypeName(type)),
                     IsInternal = attr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
+                    UseGlobalPrefix = opt.UseGlobalPrefix,
                 };
 
                 var path = GetOutput(opt.Output, segments, definitions.TypeName);
@@ -243,6 +244,7 @@ namespace Mapster.Tool
                 Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
                 TypeName = attr.Name!.Replace("[name]", type.Name),
                 PrintFullTypeName = opt.PrintFullTypeName,
+                UseGlobalPrefix = opt.UseGlobalPrefix,
                 IsRecordType = opt.IsRecordType,
                 NullableContext = GetTypeNullableContext(type),
             };
@@ -549,6 +551,7 @@ namespace Mapster.Tool
                     TypeName = mapperAttr.Name.Replace("[name]", GetCodeFriendlyTypeName(type)),
                     IsInternal = mapperAttr.IsInternal,
                     PrintFullTypeName = opt.PrintFullTypeName,
+                    UseGlobalPrefix = opt.UseGlobalPrefix,
                 };
 
                 var path = GetOutput(opt.Output, segments, definitions.TypeName);
