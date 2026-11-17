@@ -131,7 +131,7 @@ public static class StudentMapper {
 - [Fluent API for code generation](https://mapstermapper.github.io/Mapster/articles/tools/mapster-tool/Fluent-API-Code-generation.html)
 - [Automatically generate mapping code on build](https://mapstermapper.github.io/Mapster/articles/tools/mapster-tool/Mapster-Tool-Overview.html)
 - [Define setting to nested mapping](https://mapstermapper.github.io/Mapster/articles/configuration/Config-for-nested-mapping.html)
-- [`ISet`, `IDictionary`, `IReadOnlyDictionary` support](https://mapstermapper.github.io/Mapster/articles/mapping/Data-types.html#collections)
+- [`ISet`, `IDictionary`, `IReadOnlyDictionary` support](https://mapstermapper.github.io/Mapster/articles/mapping/data-types/Collections.html)
 - [`EmptyCollectionIfNull`, `CreateNewIfNull` DestinationTransform](https://mapstermapper.github.io/Mapster/articles/settings/Setting-values.html#transform-value)
 - [Several fixes](https://github.com/MapsterMapper/Mapster/releases/)
 - New plugins
@@ -167,7 +167,7 @@ The snapshot below shows the `FlatTypes` scenario (`Person -> PersonDTO`), a bes
 
 ### Step into debugging
 
-[Step-into debugging](https://mapstermapper.github.io/docs/packages/Diagnostics.html) lets you debug your mapping and inspect values just like your code.
+[Step-into debugging](https://mapstermapper.github.io/Mapster/articles/packages/ExpressionDebugging.html) lets you debug your mapping and inspect values just like your code.
 
 ![inspect-generated-source-code-while-debugging](https://cloud.githubusercontent.com/assets/5763993/26521773/180427b6-431b-11e7-9188-10c01fa5ba5c.png)
 
