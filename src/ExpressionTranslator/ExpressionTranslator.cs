@@ -2038,7 +2038,7 @@ namespace ExpressionDebugger
                         Indent();
                         foreach (var parameter in ctorParams)
                         {
-                            WriteNextLine("this.", parameter.Name, " = ", char.ToLower(parameter.Name[0]).ToString(),
+                            WriteNextLine("this.", parameter.Name, " = ", char.ToLowerInvariant(parameter.Name[0]).ToString(),
                                 parameter.Name.Substring(1), ";");
                         }
 
@@ -2090,7 +2090,7 @@ namespace ExpressionDebugger
                 if (i > 0)
                     Write(", ");
                 Write(
-                    $"{TranslateNullable(parameter.Type, parameter.NullableContext ?? Definitions?.NullableContext, parameter.Nullable)} {char.ToLower(parameter.Name[0]) + parameter.Name.Substring(1)}");
+                    $"{TranslateNullable(parameter.Type, parameter.NullableContext ?? Definitions?.NullableContext, parameter.Nullable)} {char.ToLowerInvariant(parameter.Name[0]) + parameter.Name.Substring(1)}");
             }
 
             Write(")");

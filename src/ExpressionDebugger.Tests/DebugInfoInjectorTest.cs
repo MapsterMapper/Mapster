@@ -772,7 +772,38 @@ namespace ExpressionDebugger.Tests
 }".Trim(), str);
         }
 
-        
+        [TestMethod]
+        public void TestConstructorParameterNamesDoNotDependOnCurrentCulture()
+        {
+            // In the Turkish culture char.ToLower('I') is 'ı' (dotless i).
+            var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("tr-TR");
+            try
+            {
+                var translator = new ExpressionTranslator(new TypeDefinitions
+                {
+                    IsStatic = false,
+                    Namespace = "ExpressionDebugger.Tests",
+                    TypeName = "MockClass",
+                });
+                translator.Properties.Add(new PropertyDefinitions
+                {
+                    Name = "Id",
+                    Type = typeof(int),
+                    IsReadOnly = true,
+                });
+                var str = translator.ToString();
+
+                Assert.IsTrue(str.Contains("public MockClass(int id)"), "Generated constructor: " + str.Replace("{", "{{").Replace("}", "}}"));
+                Assert.IsTrue(str.Contains("this.Id = id;"), "Generated assignment: " + str.Replace("{", "{{").Replace("}", "}}"));
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+            }
+        }
+
+
         [TestMethod]
         public void TestRecordType()
         {
