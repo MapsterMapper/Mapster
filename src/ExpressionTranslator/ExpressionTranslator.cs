@@ -1192,6 +1192,16 @@ namespace ExpressionDebugger
         }
 
         private int _inlineCount;
+        private bool _writeInheritDoc;
+
+        private void WriteInheritDoc()
+        {
+            if (!_writeInheritDoc)
+                return;
+            _writeInheritDoc = false;
+            WriteLine();
+            Write("/// <inheritdoc />");
+        }
 
         public Expression VisitLambda(LambdaExpression node, LambdaType type, string? methodName = null,
             bool isInternal = false)
@@ -1205,6 +1215,7 @@ namespace ExpressionDebugger
                     if (!isInternal)
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                    WriteInheritDoc();
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     var funcType = MakeDelegateType(node.ReturnType, node.Parameters.Select(it => it.Type).ToArray());
                     var exprType = typeof(Expression<>).MakeGenericType(funcType);
@@ -1239,6 +1250,7 @@ namespace ExpressionDebugger
                     if (!isInternal)
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                    WriteInheritDoc();
                     WriteModifierNextLine(isInternal ? "internal" : "public");
                     Methods[name] = node.Type;
                 }
@@ -1272,7 +1284,11 @@ namespace ExpressionDebugger
         public Expression VisitLambdaForGenerateMappers(LambdaExpression node, LambdaType type, Type InterfaceType, string? methodName = null,
            bool isInternal = false)
         {
+            _writeInheritDoc = !isInternal &&
+                               !node.ReturnType.GetTypeInfo().IsNotPublic &&
+                               !node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
             VisitLambda(node, type, methodName, isInternal);
+            _writeInheritDoc = false;
 
             if (!isInternal)
                 isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
@@ -1287,6 +1303,8 @@ namespace ExpressionDebugger
                 if (type == LambdaType.PublicLambda)
                 {
                     var name = methodName != null ? $"{InterfaceType.FullName}.{methodName}" : "Main";
+                    WriteLine();
+                    Write("/// <inheritdoc />");
                     WriteLine();
                     var funcType = MakeDelegateType(node.ReturnType, node.Parameters.Select(it => it.Type).ToArray());
                     var exprType = typeof(Expression<>).MakeGenericType(funcType);
@@ -1321,6 +1339,8 @@ namespace ExpressionDebugger
                     if (!isInternal)
                         isInternal = node.ReturnType.GetTypeInfo().IsNotPublic ||
                                      node.Parameters.Any(it => it.Type.GetTypeInfo().IsNotPublic);
+                    WriteLine();
+                    Write("/// <inheritdoc />");
                     WriteLine();
                     Methods[name] = node.Type;
                 }
