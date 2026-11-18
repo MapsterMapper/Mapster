@@ -827,7 +827,7 @@ namespace ExpressionDebugger
                 case long _:
                 case uint _:
                 case ulong _:
-                    Write(value.ToString(), GetLiteral(value.GetType()));
+                    Write(Convert.ToString(value, CultureInfo.InvariantCulture), GetLiteral(value.GetType()));
                     break;
                 case byte _:
                 case sbyte _:

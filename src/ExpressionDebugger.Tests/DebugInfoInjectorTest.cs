@@ -805,6 +805,24 @@ namespace ExpressionDebugger.Tests
 
 
         [TestMethod]
+        public void TestDecimalConstantDoesNotDependOnCurrentCulture()
+        {
+            // In the Turkish culture the decimal separator is a comma.
+            var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("tr-TR");
+            try
+            {
+                var str = Expression.Constant(1.5m).ToScript();
+
+                Assert.IsTrue(str.Contains("1.5m"), str.Replace("{", "{{").Replace("}", "}}"));
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+            }
+        }
+
+        [TestMethod]
         public void TestRecordType()
         {
             var translator = new ExpressionTranslator(new TypeDefinitions
