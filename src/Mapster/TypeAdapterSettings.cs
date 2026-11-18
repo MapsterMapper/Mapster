@@ -142,6 +142,12 @@ namespace Mapster
         {
             get => Get(nameof(Resolvers), () => new List<InvokerModel>());
         }
+
+        public HashSet<InheritsTypeTuple> InheritsTypeTuples
+        {
+            get => Get(nameof(InheritsTypeTuples), () => new HashSet<InheritsTypeTuple>());
+        }
+
         public List<object> ExtraSources
         {
             get => Get(nameof(ExtraSources), () => new List<object>());
