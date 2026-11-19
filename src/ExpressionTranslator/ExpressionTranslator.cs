@@ -779,16 +779,10 @@ namespace ExpressionDebugger
                     Write($"@\"{str}\"");
                     break;
                 case string str:
-                    Write($"\"{str}\"");
-                    break;
-                case char c when c == '\\':
-                    Write(@"'\\'");
-                    break;
-                case char c when c == '\'':
-                    Write(@"'\''");
+                    Write("\"", EscapeString(str), "\"");
                     break;
                 case char c:
-                    Write($"'{c}'");
+                    Write("'", char.IsSurrogate(c) ? ToUnicodeEscape(c) : EscapeChar(c, '\''), "'");
                     break;
                 case bool _:
                     Write(value.ToString().ToLower());
@@ -876,6 +870,46 @@ namespace ExpressionDebugger
         {
             WriteValue(node.Value);
             return node;
+        }
+
+        private static string EscapeString(string str)
+        {
+            var sb = new System.Text.StringBuilder(str.Length);
+            foreach (var c in str)
+            {
+                sb.Append(EscapeChar(c, '"'));
+            }
+            return sb.ToString();
+        }
+
+        private static string EscapeChar(char c, char quote)
+        {
+            switch (c)
+            {
+                case '\\': return @"\\";
+                case '\0': return @"\0";
+                case '\a': return @"\a";
+                case '\b': return @"\b";
+                case '\f': return @"\f";
+                case '\n': return @"\n";
+                case '\r': return @"\r";
+                case '\t': return @"\t";
+                case '\v': return @"\v";
+            }
+
+            if (c == quote)
+                return "\\" + c;
+
+            // Control characters and the Unicode line/paragraph separators would break the literal.
+            if (char.IsControl(c) || c == '\u2028' || c == '\u2029')
+                return ToUnicodeEscape(c);
+
+            return c.ToString();
+        }
+
+        private static string ToUnicodeEscape(char c)
+        {
+            return @"\u" + ((int)c).ToString("x4", CultureInfo.InvariantCulture);
         }
 
         private static string GetLiteral(Type type)

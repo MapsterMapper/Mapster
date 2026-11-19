@@ -823,6 +823,38 @@ namespace ExpressionDebugger.Tests
         }
 
         [TestMethod]
+        public void TestCharConstantEscapes()
+        {
+            Assert.AreEqual(@"'\n'", Expression.Constant('\n').ToScript());
+            Assert.AreEqual(@"'\r'", Expression.Constant('\r').ToScript());
+            Assert.AreEqual(@"'\t'", Expression.Constant('\t').ToScript());
+            Assert.AreEqual(@"'\0'", Expression.Constant('\0').ToScript());
+            Assert.AreEqual(@"'\u2028'", Expression.Constant('\u2028').ToScript());
+            Assert.AreEqual(@"'\ud83d'", Expression.Constant('\ud83d').ToScript());
+            Assert.AreEqual(@"'\\'", Expression.Constant('\\').ToScript());
+            Assert.AreEqual(@"'\''", Expression.Constant('\'').ToScript());
+            Assert.AreEqual(@"'""'", Expression.Constant('"').ToScript());
+            Assert.AreEqual("'a'", Expression.Constant('a').ToScript());
+        }
+
+        [TestMethod]
+        public void TestStringConstantEscapesControlCharacters()
+        {
+            Assert.AreEqual(@"""a\rb\0c\td""", Expression.Constant("a\rb\0c\td").ToScript());
+            Assert.AreEqual(@"""a\u2028b""", Expression.Constant("a\u2028b").ToScript());
+            Assert.AreEqual(@"""it's""", Expression.Constant("it's").ToScript());
+        }
+
+        [TestMethod]
+        public void TestCompileWithDebugInfoCharNewLine()
+        {
+            Expression<Func<string, int>> fn = s => s.IndexOf('\n');
+            var compiled = fn.CompileWithDebugInfo(new ExpressionCompilationOptions { ThrowOnFailedCompilation = true });
+
+            Assert.AreEqual(1, compiled("a\nb"));
+        }
+
+        [TestMethod]
         public void TestRecordType()
         {
             var translator = new ExpressionTranslator(new TypeDefinitions
