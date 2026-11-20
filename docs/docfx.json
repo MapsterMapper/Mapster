@@ -50,7 +50,8 @@
           "articles/toc.yml",
           "articles/**/toc.yml",
           "toc.yml",
-          "index.md"
+          "index.md",
+          "tags-reference.md"
         ],
         "exclude": [
           "**/.include/**",
@@ -86,7 +87,8 @@
     ],
     "template": [
       "default",
-      "modern"
+      "modern",
+      "_template/wtf"
     ],
     "xref": [ "https://learn.microsoft.com/en-us/dotnet/.xrefmap.json" ],
     "markdownEngineProperties": {

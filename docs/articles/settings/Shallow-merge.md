@@ -34,7 +34,7 @@ TypeAdapterConfig<Source, Destination>
     var dest = new Destination { A = src.A, B = src.B }
 ```
 
-### Direct assignment [v10.0.8+]
+### Direct assignment <sup>[v10.0.8+]<sup>
 
 >[!NOTE]
 > 1. Changes mapping behavior for Type.
