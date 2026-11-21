@@ -791,7 +791,7 @@ namespace ExpressionDebugger
                     Write($"typeof({Translate(t)})");
                     break;
                 case int _:
-                    Write(value.ToString());
+                    Write(Convert.ToString(value, CultureInfo.InvariantCulture));
                     break;
                 case double d when double.IsNaN(d):
                     Write("double.NaN");
@@ -827,7 +827,7 @@ namespace ExpressionDebugger
                 case sbyte _:
                 case short _:
                 case ushort _:
-                    Write("((", Translate(value.GetType()), ")", value.ToString(), ")");
+                    Write("((", Translate(value.GetType()), ")", Convert.ToString(value, CultureInfo.InvariantCulture), ")");
                     break;
                 default:
                 {
@@ -837,7 +837,7 @@ namespace ExpressionDebugger
                         if (name != null)
                             Write(Translate(value.GetType()), ".", name);
                         else
-                            Write("(", Translate(value.GetType()), ")", value.ToString());
+                            Write("(", Translate(value.GetType()), ")", Convert.ToString(Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()), CultureInfo.InvariantCulture), CultureInfo.InvariantCulture));
                     }
                     else
                     {
