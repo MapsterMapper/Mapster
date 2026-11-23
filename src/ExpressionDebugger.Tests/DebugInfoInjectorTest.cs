@@ -823,6 +823,31 @@ namespace ExpressionDebugger.Tests
         }
 
         [TestMethod]
+        public void TestNegativeIntegerConstantsDoNotDependOnCurrentCulture()
+        {
+            // fi-FI writes negative numbers with U+2212 MINUS SIGN, which is not valid in C#.
+            var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("fi-FI");
+            try
+            {
+                var intStr = Expression.Constant(-5).ToScript();
+                Assert.IsTrue(intStr.Contains("-5"), intStr.Replace("{", "{{").Replace("}", "}}"));
+
+                var shortStr = Expression.Constant((short)-3).ToScript();
+                Assert.IsTrue(shortStr.Contains("((short)-3)"), shortStr.Replace("{", "{{").Replace("}", "}}"));
+
+                var enumStr = Expression.Constant((DayOfWeek)(-2)).ToScript();
+                Assert.IsTrue(enumStr.Contains(")-2"), enumStr.Replace("{", "{{").Replace("}", "}}"));
+
+                Assert.IsFalse((intStr + shortStr + enumStr).Contains("−"));
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+            }
+        }
+
+        [TestMethod]
         public void TestCharConstantEscapes()
         {
             Assert.AreEqual(@"'\n'", Expression.Constant('\n').ToScript());
