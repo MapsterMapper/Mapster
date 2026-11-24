@@ -249,6 +249,48 @@ namespace Mapster.Tests
         }
 
         [TestMethod]
+        public void MapToListDisposesEnumeratorWhenMappingThrows()
+        {
+            var disposed = false;
+
+            IEnumerable<string> GetValues()
+            {
+                try
+                {
+                    yield return "not an integer";
+                }
+                finally
+                {
+                    disposed = true;
+                }
+            }
+
+            Should.Throw<FormatException>(() => GetValues().Adapt<IEnumerable<string>, List<int>>());
+            disposed.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void MapToListDisposesNonGenericEnumeratorWhenMappingThrows()
+        {
+            var disposed = false;
+
+            IEnumerable GetValues()
+            {
+                try
+                {
+                    yield return "not an integer";
+                }
+                finally
+                {
+                    disposed = true;
+                }
+            }
+
+            Should.Throw<FormatException>(() => GetValues().Adapt<IEnumerable, List<int>>());
+            disposed.ShouldBeTrue();
+        }
+
+        [TestMethod]
         public void MapToMultiRanksArrayEnumerateOnlyOnce()
         {
             var i = 0;

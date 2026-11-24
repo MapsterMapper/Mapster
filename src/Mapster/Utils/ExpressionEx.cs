@@ -320,18 +320,26 @@ namespace Mapster.Utils
             Expression current = Expression.Property(enumeratorVar, "Current");
             if (!isGeneric)
                 current = Expression.Convert(current, elementType);
-            return Expression.Block(new[] { enumeratorVar },
-                enumeratorAssign,
-                Expression.Loop(
-                    Expression.IfThenElse(
-                        moveNextCall,
-                        Expression.Block(new[] { loopVar },
-                            new[] { Assign(loopVar, current) }.Concat(loopContent)
-                        ),
-                        Expression.Break(breakLabel)
+            Expression loop = Expression.Loop(
+                Expression.IfThenElse(
+                    moveNextCall,
+                    Expression.Block(new[] { loopVar },
+                        new[] { Assign(loopVar, current) }.Concat(loopContent)
                     ),
-                    breakLabel)
-            );
+                    Expression.Break(breakLabel)
+                ),
+                breakLabel);
+
+            var disposable = isGeneric ? enumeratorVar : Expression.Variable(typeof(IDisposable), "disposable");
+            var dispose = Expression.Call(disposable, typeof(IDisposable).GetMethod(nameof(IDisposable.Dispose))!);
+            var notNull = Expression.NotEqual(disposable, Expression.Constant(null, disposable.Type));
+            Expression cleanup = Expression.IfThen(notNull, dispose);
+            if (!isGeneric)
+                cleanup = Expression.Block(new[] { disposable },
+                    Expression.Assign(disposable, Expression.TypeAs(enumeratorVar, disposable.Type)),
+                    cleanup);
+
+            return Expression.Block(new[] { enumeratorVar }, enumeratorAssign, Expression.TryFinally(loop, cleanup));
         }
 
         public static bool CanBeNull(this Expression exp)
